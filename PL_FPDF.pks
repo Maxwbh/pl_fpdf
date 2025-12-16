@@ -34,6 +34,37 @@ type point is record (x number, y number);
 
 type tab_points is table of point index by pls_integer;
 
+--------------------------------------------------------------------------------
+-- TASK 1.6: Native BLOB-based image handling (replaces deprecated OrdImage)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-16
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Type: recImageBlob
+* Description: Native BLOB-based image container replacing deprecated ORDSYS.ORDIMAGE.
+*              Supports PNG and JPEG formats with header parsing for metadata.
+* Fields:
+*   image_blob - The raw image data as BLOB
+*   mime_type - MIME type ('image/png', 'image/jpeg', 'image/jpg')
+*   file_format - File format code ('PNG', 'JPEG', 'JPG')
+*   width - Image width in pixels (parsed from header)
+*   height - Image height in pixels (parsed from header)
+*   bit_depth - Bits per channel (8, 16, 24, 32)
+*   color_type - PNG color type or JPEG marker (0=grayscale, 2=RGB, 3=indexed, 4=gray+alpha, 6=RGBA)
+*   has_transparency - TRUE if image has alpha channel or transparency
+*******************************************************************************/
+type recImageBlob is record (
+  image_blob blob,
+  mime_type varchar2(100),
+  file_format varchar2(20),
+  width integer,
+  height integer,
+  bit_depth integer,
+  color_type integer,
+  has_transparency boolean
+);
+
 -- Constantes globales
 FPDF_VERSION constant varchar2(10) := '1.53';
 PL_FPDF_VERSION constant varchar2(10) := '0.9.4';
@@ -366,7 +397,24 @@ procedure Error(pmsg in varchar2);
 procedure DebugEnabled;
 procedure DebugDisabled;
 function GetScaleFactor return number;
-function getImageFromUrl(p_Url in varchar2) return ordsys.ordImage;
+
+/*******************************************************************************
+* Function: getImageFromUrl
+* Description: Fetches an image from a URL and returns it as a native BLOB
+*              with parsed metadata (dimensions, format, etc.)
+*              Replaces legacy OrdImage-based implementation.
+* Parameters:
+*   p_Url - Image URL (http/https)
+* Returns: recImageBlob with image data and metadata
+* Supported Formats: PNG, JPEG/JPG
+* Raises:
+*   -20220: Unsupported image format
+*   -20221: Invalid image header
+*   -20222: Unable to fetch image from URL
+* Example:
+*   l_img := PL_FPDF.getImageFromUrl('http://example.com/image.png');
+*******************************************************************************/
+function getImageFromUrl(p_Url in varchar2) return recImageBlob;
 
 --
 -- Sample codes.
