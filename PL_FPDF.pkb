@@ -763,9 +763,9 @@ begin
   if g_page_formats.exists(l_format_upper) then
     l_format := g_page_formats(l_format_upper);
   else
-    -- Unknown format, use A4 as default
-    log_message(2, 'Unknown format: ' || p_format_name || ', using A4 default');
-    l_format := g_page_formats('A4');
+    -- Unknown format, raise error (Task 1.2 requirement)
+    raise_application_error(-20103,
+      'Unknown page format: ' || p_format_name || '. Use A3, A4, A5, Letter, Legal, Ledger, Executive, Folio, B5, or custom format like "100,200"');
   end if;
 
   return l_format;
@@ -3258,8 +3258,14 @@ begin
       'Invalid rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
   end if;
 
-  -- Store page metadata
-  g_current_page := g_current_page + 1;
+  -- Call internal legacy AddPage implementation for actual page setup
+  -- This will increment the legacy 'page' variable
+  p_addpage_internal(l_orientation);
+
+  -- Sync modern page counter with legacy
+  g_current_page := page;
+
+  -- Store page metadata AFTER page creation
   g_pages(g_current_page).number_val := g_current_page;
   g_pages(g_current_page).orientation := l_orientation;
   g_pages(g_current_page).format := l_format;
@@ -3270,10 +3276,6 @@ begin
   log_message(4, 'AddPage (modern): page ' || g_current_page ||
     ', orientation=' || l_orientation || ', format=' || p_format ||
     ', rotation=' || p_rotation);
-
-  -- Call internal legacy AddPage implementation for actual page setup
-  -- Pass orientation as string ('P' or 'L')
-  p_addpage_internal(l_orientation);
 
 exception
   when others then
