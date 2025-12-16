@@ -321,8 +321,61 @@ procedure MultiCell
     palignment in varchar2 default 'J',
     pfillin in number default 0,
     phMaximum in number default 0);
-    
+
 procedure Write(pH in varchar2, ptxt in varchar2, plink in varchar2 default null);
+
+--------------------------------------------------------------------------------
+-- TASK 1.4: Modern Cell/MultiCell/Write with rotation support
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-16
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: CellRotated
+* Description: Modern Cell with text rotation support
+* Parameters:
+*   p_width - Cell width (0 = extend to right margin)
+*   p_height - Cell height
+*   p_text - Text content
+*   p_border - Border: 0=none, 1=frame, or combination of L,T,R,B
+*   p_ln - Line break: 0=right, 1=below, 2=below
+*   p_align - Alignment: L=left, C=center, R=right
+*   p_fill - Fill: 0=no fill, 1=fill
+*   p_link - URL/internal link
+*   p_rotation - Text rotation: 0, 90, 180, 270 degrees
+* Raises:
+*   -20110: Invalid rotation value
+*******************************************************************************/
+procedure CellRotated(
+  p_width number,
+  p_height number default 0,
+  p_text varchar2 default '',
+  p_border varchar2 default '0',
+  p_ln number default 0,
+  p_align varchar2 default '',
+  p_fill number default 0,
+  p_link varchar2 default '',
+  p_rotation pls_integer default 0
+);
+
+/*******************************************************************************
+* Procedure: WriteRotated
+* Description: Modern Write with text rotation support
+* Parameters:
+*   p_height - Line height
+*   p_text - Text content
+*   p_link - URL/internal link
+*   p_rotation - Text rotation: 0, 90, 180, 270 degrees
+* Raises:
+*   -20110: Invalid rotation value
+*******************************************************************************/
+procedure WriteRotated(
+  p_height number,
+  p_text varchar2,
+  p_link varchar2 default null,
+  p_rotation pls_integer default 0
+);
+
 procedure image ( pFile in varchar2, 
 		  		pX in number, 
 				  pY in number, 
