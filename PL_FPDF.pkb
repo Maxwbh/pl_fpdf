@@ -3192,9 +3192,62 @@ begin
 
   -- Get page format
   if p_format is not null then
-    l_format := get_page_format(p_format);
+    -- Check for custom format (e.g., "100,200" or "100x200")
+    if instr(p_format, ',') > 0 or instr(p_format, 'x') > 0 or instr(p_format, 'X') > 0 then
+      -- Parse custom format: "width,height" or "widthxheight"
+      declare
+        l_separator varchar2(1);
+        l_pos pls_integer;
+        l_width varchar2(20);
+        l_height varchar2(20);
+      begin
+        -- Determine separator
+        if instr(p_format, ',') > 0 then
+          l_separator := ',';
+          l_pos := instr(p_format, ',');
+        elsif instr(p_format, 'x') > 0 then
+          l_separator := 'x';
+          l_pos := instr(p_format, 'x');
+        else
+          l_separator := 'X';
+          l_pos := instr(p_format, 'X');
+        end if;
+
+        -- Extract width and height
+        l_width := trim(substr(p_format, 1, l_pos - 1));
+        l_height := trim(substr(p_format, l_pos + 1));
+
+        -- Validate and convert to numbers
+        begin
+          l_format.width := to_number(l_width);
+          l_format.height := to_number(l_height);
+
+          -- Validate dimensions
+          if l_format.width <= 0 or l_format.height <= 0 then
+            raise_application_error(-20108,
+              'Invalid custom format dimensions: ' || p_format || '. Width and height must be positive.');
+          end if;
+
+          log_message(4, 'Custom page format: ' || l_format.width || 'x' || l_format.height || 'mm');
+
+        exception
+          when value_error then
+            raise_application_error(-20108,
+              'Invalid custom format: ' || p_format || '. Use format like "100,200" or "100x200" or named format like "A4"');
+        end;
+      end;
+    else
+      -- Named format (A4, Letter, etc.)
+      l_format := get_page_format(p_format);
+    end if;
   else
     l_format := g_default_format;  -- Use default from Init
+  end if;
+
+  -- Validate rotation
+  if p_rotation not in (0, 90, 180, 270) then
+    raise_application_error(-20109,
+      'Invalid rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
   end if;
 
   -- Store page metadata
