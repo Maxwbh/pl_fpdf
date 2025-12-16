@@ -188,6 +188,18 @@ type ArrayCharWidths is table of charSet index by word;
  originalsize word;
  size1 word;
  size2 word;
+
+--------------------------------------------------------------------------------
+-- TASK 1.1: New global variables for modernized initialization
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+ g_initialized boolean := false;       -- Initialization state flag
+ g_encoding varchar2(20) := 'UTF-8';   -- Character encoding
+ g_log_level pls_integer := 2;         -- Log level (0=OFF, 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG)
+ -- Note: CLOB buffers not added yet - will be part of Task 1.7 (buffer refactoring)
+--------------------------------------------------------------------------------
+
 /*******************************************************************************
 *                                                                              *
 *           Protected methods : Internal function and procedures               *
@@ -2599,6 +2611,191 @@ procedure update_line_spacing is
 begin
 	Linespacing := (fontsizePt / k);	-- minimum line spacing in multicell
 end;
+
+--------------------------------------------------------------------------------
+-- TASK 1.1: Modernized Initialization Procedures
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: log_message (Internal helper)
+* Description: Simple logging utility for debugging and monitoring
+*******************************************************************************/
+procedure log_message(
+  p_level pls_integer,
+  p_message varchar2
+) is
+begin
+  if p_level <= g_log_level and gb_mode_debug then
+    dbms_output.put_line(
+      to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') || ' [' ||
+      case p_level
+        when 1 then 'ERROR'
+        when 2 then 'WARN'
+        when 3 then 'INFO'
+        when 4 then 'DEBUG'
+      end || '] ' || p_message
+    );
+  end if;
+end log_message;
+
+/*******************************************************************************
+* Procedure: Init
+* Description: Modern initialization with validation and UTF-8 support
+*******************************************************************************/
+procedure Init(
+  p_orientation varchar2 default 'P',
+  p_unit varchar2 default 'mm',
+  p_format varchar2 default 'A4',
+  p_encoding varchar2 default 'UTF-8'
+) is
+  l_orientation varchar2(1);
+  l_unit varchar2(10);
+  l_format varchar2(20);
+begin
+  log_message(3, 'Initializing PL_FPDF v2.0...');
+
+  -- ========================================================================
+  -- 1. VALIDATE PARAMETERS
+  -- ========================================================================
+
+  -- Validate orientation
+  l_orientation := upper(substr(p_orientation, 1, 1));
+  if l_orientation not in ('P', 'L') then
+    raise_application_error(
+      -20001,
+      'Invalid orientation: ' || p_orientation || '. Must be P or L.'
+    );
+  end if;
+
+  -- Validate unit
+  l_unit := lower(p_unit);
+  if l_unit not in ('mm', 'cm', 'in', 'pt') then
+    raise_application_error(
+      -20002,
+      'Invalid unit: ' || p_unit || '. Must be mm, cm, in, or pt.'
+    );
+  end if;
+
+  -- Validate encoding
+  if upper(p_encoding) not in ('UTF-8', 'UTF8', 'AL32UTF8', 'ISO-8859-1', 'WINDOWS-1252') then
+    raise_application_error(
+      -20003,
+      'Unsupported encoding: ' || p_encoding
+    );
+  end if;
+
+  -- ========================================================================
+  -- 2. RESET IF ALREADY INITIALIZED (re-initialization)
+  -- ========================================================================
+
+  if g_initialized then
+    log_message(3, 'Re-initializing - resetting existing state...');
+    Reset();
+  end if;
+
+  -- ========================================================================
+  -- 3. SET ENCODING
+  -- ========================================================================
+
+  g_encoding := upper(p_encoding);
+  log_message(4, 'Encoding set to: ' || g_encoding);
+
+  -- ========================================================================
+  -- 4. CONFIGURE SESSION FOR UTF-8 (best effort)
+  -- ========================================================================
+
+  begin
+    -- Set numeric characters for PDF coordinates
+    execute immediate 'alter session set nls_numeric_characters = ''.,''';
+    log_message(4, 'Session configured for numeric format');
+  exception
+    when others then
+      log_message(2, 'Warning: Could not set session parameters: ' || sqlerrm);
+  end;
+
+  -- ========================================================================
+  -- 5. CALL LEGACY fpdf() CONSTRUCTOR
+  --    (maintains compatibility with existing code)
+  -- ========================================================================
+
+  l_format := upper(p_format);
+  fpdf(l_orientation, l_unit, l_format);
+
+  -- ========================================================================
+  -- 6. MARK AS INITIALIZED
+  -- ========================================================================
+
+  g_initialized := true;
+
+  log_message(3,
+    'PL_FPDF initialized successfully: ' ||
+    'orientation=' || l_orientation ||
+    ', unit=' || l_unit ||
+    ', format=' || l_format ||
+    ', encoding=' || g_encoding
+  );
+
+exception
+  when others then
+    g_initialized := false;
+    log_message(1, 'Initialization failed: ' || sqlerrm);
+    raise;
+end Init;
+
+/*******************************************************************************
+* Procedure: Reset
+* Description: Resets the PDF engine, freeing resources
+*******************************************************************************/
+procedure Reset is
+begin
+  log_message(3, 'Resetting PL_FPDF engine...');
+
+  -- Clear arrays (using existing structures)
+  begin
+    pdfDoc.delete;
+    pages.delete;
+    fonts.delete;
+    FontFiles.delete;
+    images.delete;
+    if PageLinks is not null then
+      PageLinks.delete;
+    end if;
+    if links is not null then
+      links.delete;
+    end if;
+  exception
+    when others then
+      log_message(2, 'Warning during array cleanup: ' || sqlerrm);
+  end;
+
+  -- Reset state variables
+  g_initialized := false;
+  state := 0;
+  page := 0;
+  n := 2;
+
+  log_message(3, 'PL_FPDF reset complete');
+
+exception
+  when others then
+    log_message(1, 'Error during reset: ' || sqlerrm);
+    raise;
+end Reset;
+
+/*******************************************************************************
+* Function: IsInitialized
+* Description: Checks initialization state
+*******************************************************************************/
+function IsInitialized return boolean is
+begin
+  return g_initialized;
+end IsInitialized;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.1 implementations
+--------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------
 procedure fpdf
