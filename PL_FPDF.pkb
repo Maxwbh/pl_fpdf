@@ -4572,5 +4572,139 @@ begin
     Output();
 end testHeader;
 
+--------------------------------------------------------------------------------
+-- TASK 1.4: Modern Cell/Write with rotation support - Implementations
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-16
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: CellRotated
+* Description: Modern Cell with text rotation support
+*******************************************************************************/
+procedure CellRotated(
+  p_width number,
+  p_height number default 0,
+  p_text varchar2 default '',
+  p_border varchar2 default '0',
+  p_ln number default 0,
+  p_align varchar2 default '',
+  p_fill number default 0,
+  p_link varchar2 default '',
+  p_rotation pls_integer default 0
+) is
+  l_angle number;
+  l_x number;
+  l_y number;
+  l_cos number;
+  l_sin number;
+begin
+  -- Validate rotation
+  if p_rotation not in (0, 90, 180, 270) then
+    raise_application_error(-20110,
+      'Invalid text rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
+  end if;
+
+  -- If no rotation, use legacy Cell implementation
+  if p_rotation = 0 then
+    Cell(p_width, p_height, p_text, p_border, p_ln, p_align, p_fill, p_link);
+    return;
+  end if;
+
+  -- Apply rotation transformation
+  l_x := x;
+  l_y := y;
+  l_angle := p_rotation * 3.14159265359 / 180;  -- Convert to radians
+  l_cos := cos(l_angle);
+  l_sin := sin(l_angle);
+
+  -- Output rotation transformation matrix
+  p_out(sprintf('q'));  -- Save graphics state
+  p_out(sprintf('%.5F %.5F %.5F %.5F %.2F %.2F cm',
+    l_cos, l_sin, -l_sin, l_cos, l_x * k, (h - l_y) * k));
+
+  -- Temporarily reset position for Cell output
+  x := 0;
+  y := 0;
+
+  -- Call legacy Cell implementation
+  Cell(p_width, p_height, p_text, p_border, p_ln, p_align, p_fill, p_link);
+
+  -- Restore position and graphics state
+  x := l_x;
+  y := l_y;
+  p_out('Q');  -- Restore graphics state
+
+  log_message(4, 'CellRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
+
+exception
+  when others then
+    log_message(1, 'Error in CellRotated: ' || sqlerrm);
+    raise;
+end CellRotated;
+
+/*******************************************************************************
+* Procedure: WriteRotated
+* Description: Modern Write with text rotation support
+*******************************************************************************/
+procedure WriteRotated(
+  p_height number,
+  p_text varchar2,
+  p_link varchar2 default null,
+  p_rotation pls_integer default 0
+) is
+  l_angle number;
+  l_x number;
+  l_y number;
+  l_cos number;
+  l_sin number;
+begin
+  -- Validate rotation
+  if p_rotation not in (0, 90, 180, 270) then
+    raise_application_error(-20110,
+      'Invalid text rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
+  end if;
+
+  -- If no rotation, use legacy Write implementation
+  if p_rotation = 0 then
+    Write(p_height, p_text, p_link);
+    return;
+  end if;
+
+  -- Apply rotation transformation
+  l_x := x;
+  l_y := y;
+  l_angle := p_rotation * 3.14159265359 / 180;  -- Convert to radians
+  l_cos := cos(l_angle);
+  l_sin := sin(l_angle);
+
+  -- Output rotation transformation matrix
+  p_out(sprintf('q'));  -- Save graphics state
+  p_out(sprintf('%.5F %.5F %.5F %.5F %.2F %.2F cm',
+    l_cos, l_sin, -l_sin, l_cos, l_x * k, (h - l_y) * k));
+
+  -- Temporarily reset position for Write output
+  x := 0;
+  y := 0;
+
+  -- Call legacy Write implementation
+  Write(p_height, p_text, p_link);
+
+  -- Restore position and graphics state
+  x := l_x;
+  y := l_y;
+  p_out('Q');  -- Restore graphics state
+
+  log_message(4, 'WriteRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
+
+exception
+  when others then
+    log_message(1, 'Error in WriteRotated: ' || sqlerrm);
+    raise;
+end WriteRotated;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.4 implementations
+--------------------------------------------------------------------------------
 
 END PL_FPDF;
