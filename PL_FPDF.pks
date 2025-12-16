@@ -91,6 +91,51 @@ function IsInitialized return boolean;
 -- End of Task 1.1 additions
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 1.2: Modernization - AddPage/SetPage with BLOB streaming (Oracle 19c/23c)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Type: recPageFormat
+* Description: Record type for page dimensions (width x height)
+*******************************************************************************/
+type recPageFormat is record (
+  width number(10,5),
+  height number(10,5)
+);
+
+/*******************************************************************************
+* Type: recPage
+* Description: Enhanced page structure with CLOB content and metadata
+* Fields:
+*   number_val - Page number
+*   orientation - Page orientation ('P' or 'L')
+*   format - Page dimensions (recPageFormat)
+*   rotation - Page rotation in degrees (0, 90, 180, 270)
+*   content_clob - CLOB for page content (replaces VARCHAR2 array)
+*   created_at - Timestamp when page was created
+*******************************************************************************/
+type recPage is record (
+  number_val pls_integer,
+  orientation varchar2(1),
+  format recPageFormat,
+  rotation pls_integer default 0,
+  content_clob clob,
+  created_at timestamp default systimestamp
+);
+
+/*******************************************************************************
+* Type: tPages
+* Description: Collection of pages indexed by page number
+*******************************************************************************/
+type tPages is table of recPage index by pls_integer;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.2 type additions
+--------------------------------------------------------------------------------
+
 -- methods added to FPDF
 function GetCurrentFontSize return number;
 function GetCurrentFontStyle return varchar2;
@@ -188,7 +233,62 @@ function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default nu
 
 procedure OpenPDF;
 procedure ClosePDF;
-procedure AddPage(orientation in varchar2 default '');
+
+--------------------------------------------------------------------------------
+-- TASK 1.2: Enhanced AddPage with rotation and format support
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: AddPage
+* Description: Adds a new page to the PDF document with modern CLOB streaming
+*              and support for custom formats and rotation
+* Parameters:
+*   p_orientation - Page orientation ('P'=Portrait, 'L'=Landscape, NULL=current)
+*   p_format - Page format ('A4', 'Letter', 'Legal', 'width,height', NULL=current)
+*   p_rotation - Page rotation in degrees (0, 90, 180, 270)
+* Raises:
+*   -20100: PDF not initialized
+*   -20101: Invalid orientation
+*   -20102: Page dimensions too large (>10000mm)
+*   -20103: Invalid custom format
+*   -20104: Invalid rotation value
+* Example:
+*   PL_FPDF.AddPage('P', 'A4', 0);
+*   PL_FPDF.AddPage('L', '210,297', 90);  -- Custom format with rotation
+* Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+* Date: 2025-12-15
+*******************************************************************************/
+procedure AddPage(
+  p_orientation varchar2 default null,
+  p_format varchar2 default null,
+  p_rotation pls_integer default 0
+);
+
+/*******************************************************************************
+* Procedure: SetPage
+* Description: Sets the current active page for content manipulation
+* Parameters:
+*   p_page_number - Page number to set as current (must exist)
+* Raises:
+*   -20105: PDF not initialized
+*   -20106: Page does not exist
+* Example:
+*   PL_FPDF.SetPage(1);  -- Go back to page 1
+*******************************************************************************/
+procedure SetPage(p_page_number pls_integer);
+
+/*******************************************************************************
+* Function: GetCurrentPage
+* Description: Returns the current page number
+* Returns: Current page number (PLS_INTEGER)
+* Example:
+*   l_page := PL_FPDF.GetCurrentPage();
+*******************************************************************************/
+function GetCurrentPage return pls_integer;
+
+--------------------------------------------------------------------------------
+-- Legacy compatibility (maintained for backward compatibility)
+--------------------------------------------------------------------------------
 procedure fpdf  (orientation in varchar2 default 'P', unit in varchar2 default 'mm', format in varchar2 default 'A4');
 procedure Error(pmsg in varchar2);
 procedure DebugEnabled;
