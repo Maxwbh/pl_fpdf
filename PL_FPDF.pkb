@@ -200,6 +200,20 @@ type ArrayCharWidths is table of charSet index by word;
  -- Note: CLOB buffers not added yet - will be part of Task 1.7 (buffer refactoring)
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 1.2: New global variables for enhanced page management
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+ type tPageFormats is table of recPageFormat index by varchar2(20);
+
+ g_pages tPages;                           -- Modern page collection with CLOB content
+ g_current_page pls_integer := 0;          -- Current page number
+ g_page_formats tPageFormats;              -- Standard page format definitions
+ g_default_format recPageFormat;           -- Default page format
+ g_formats_initialized boolean := false;  -- Flag indicating if page formats are initialized
+--------------------------------------------------------------------------------
+
 /*******************************************************************************
 *                                                                              *
 *           Protected methods : Internal function and procedures               *
@@ -2795,6 +2809,155 @@ end IsInitialized;
 
 --------------------------------------------------------------------------------
 -- End of Task 1.1 implementations
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- TASK 1.2: AddPage/SetPage with BLOB streaming - Implementations
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: init_page_formats (Internal)
+* Description: Initializes standard page format definitions (in mm)
+*******************************************************************************/
+procedure init_page_formats is
+begin
+  if g_formats_initialized then
+    return;  -- Already initialized
+  end if;
+
+  -- ISO A series (in mm)
+  g_page_formats('A3').width := 297;
+  g_page_formats('A3').height := 420;
+
+  g_page_formats('A4').width := 210;
+  g_page_formats('A4').height := 297;
+
+  g_page_formats('A5').width := 148;
+  g_page_formats('A5').height := 210;
+
+  -- North American formats
+  g_page_formats('LETTER').width := 215.9;
+  g_page_formats('LETTER').height := 279.4;
+
+  g_page_formats('LEGAL').width := 215.9;
+  g_page_formats('LEGAL').height := 355.6;
+
+  g_page_formats('LEDGER').width := 279.4;
+  g_page_formats('LEDGER').height := 431.8;
+
+  g_page_formats('TABLOID').width := 279.4;
+  g_page_formats('TABLOID').height := 431.8;
+
+  -- Other formats
+  g_page_formats('EXECUTIVE').width := 184.15;
+  g_page_formats('EXECUTIVE').height := 266.7;
+
+  g_page_formats('FOLIO').width := 210;
+  g_page_formats('FOLIO').height := 330;
+
+  g_page_formats('B5').width := 176;
+  g_page_formats('B5').height := 250;
+
+  g_formats_initialized := true;
+
+  log_message(4, 'Page formats initialized: ' || g_page_formats.count || ' formats');
+
+exception
+  when others then
+    log_message(1, 'Error initializing page formats: ' || sqlerrm);
+    raise;
+end init_page_formats;
+
+
+/*******************************************************************************
+* Function: get_page_format (Internal)
+* Description: Returns dimensions for a named page format
+*******************************************************************************/
+function get_page_format(p_format_name varchar2) return recPageFormat is
+  l_format recPageFormat;
+  l_format_upper varchar2(20) := upper(p_format_name);
+begin
+  -- Ensure formats are initialized
+  if not g_formats_initialized then
+    init_page_formats();
+  end if;
+
+  -- Look up format
+  if g_page_formats.exists(l_format_upper) then
+    l_format := g_page_formats(l_format_upper);
+  else
+    -- Unknown format, use A4 as default
+    log_message(2, 'Unknown format: ' || p_format_name || ', using A4 default');
+    l_format := g_page_formats('A4');
+  end if;
+
+  return l_format;
+
+exception
+  when others then
+    log_message(1, 'Error getting page format: ' || sqlerrm);
+    -- Return A4 as fallback
+    l_format.width := 210;
+    l_format.height := 297;
+    return l_format;
+end get_page_format;
+
+
+/*******************************************************************************
+* Function: GetCurrentPage
+* Description: Returns the current page number
+*******************************************************************************/
+function GetCurrentPage return pls_integer is
+begin
+  return g_current_page;
+end GetCurrentPage;
+
+
+/*******************************************************************************
+* Procedure: SetPage
+* Description: Sets the current active page for content manipulation
+*******************************************************************************/
+procedure SetPage(p_page_number pls_integer) is
+begin
+  -- Validate initialization
+  if not g_initialized then
+    raise_application_error(-20105,
+      'PL_FPDF not initialized. Call Init() first.');
+  end if;
+
+  -- Validate page exists
+  if not g_pages.exists(p_page_number) then
+    raise_application_error(-20106,
+      'Page ' || p_page_number || ' does not exist. Total pages: ' || g_current_page);
+  end if;
+
+  -- Close current page if different
+  if g_current_page > 0 and g_current_page != p_page_number then
+    -- Note: p_endpage() will be called by legacy code if needed
+    null;
+  end if;
+
+  -- Switch to specified page
+  g_current_page := p_page_number;
+  page := p_page_number;  -- Update legacy variable for compatibility
+
+  -- Update global dimensions to match this page
+  w := g_pages(p_page_number).format.width;
+  h := g_pages(p_page_number).format.height;
+
+  log_message(4, 'Switched to page ' || p_page_number ||
+    ' (' || w || 'x' || h || 'mm)');
+
+exception
+  when others then
+    log_message(1, 'Error in SetPage: ' || sqlerrm);
+    raise;
+end SetPage;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.2 helper implementations
 --------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------
