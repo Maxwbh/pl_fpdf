@@ -4619,9 +4619,10 @@ begin
   l_sin := sin(l_angle);
 
   -- Output rotation transformation matrix
-  p_out(sprintf('q'));  -- Save graphics state
-  p_out(sprintf('%.5F %.5F %.5F %.5F %.2F %.2F cm',
-    l_cos, l_sin, -l_sin, l_cos, l_x * k, (h - l_y) * k));
+  p_out('q');  -- Save graphics state
+  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
+        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
+        tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
 
   -- Temporarily reset position for Cell output
   x := 0;
@@ -4679,9 +4680,10 @@ begin
   l_sin := sin(l_angle);
 
   -- Output rotation transformation matrix
-  p_out(sprintf('q'));  -- Save graphics state
-  p_out(sprintf('%.5F %.5F %.5F %.5F %.2F %.2F cm',
-    l_cos, l_sin, -l_sin, l_cos, l_x * k, (h - l_y) * k));
+  p_out('q');  -- Save graphics state
+  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
+        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
+        tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
 
   -- Temporarily reset position for Write output
   x := 0;
