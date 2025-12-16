@@ -662,6 +662,32 @@ end fontsExists;
 */
 
 --------------------------------------------------------------------------------
+-- TASK 1.1: Internal logging utility (needed by Task 1.6)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+--------------------------------------------------------------------------------
+/*******************************************************************************
+* Procedure: log_message (Internal helper)
+* Description: Simple logging utility for debugging and monitoring
+*******************************************************************************/
+procedure log_message(
+  p_level pls_integer,
+  p_message varchar2
+) is
+begin
+  if p_level <= g_log_level and gb_mode_debug then
+    dbms_output.put_line(
+      to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') || ' [' ||
+      case p_level
+        when 1 then 'ERROR'
+        when 2 then 'WARN'
+        when 3 then 'INFO'
+        when 4 then 'DEBUG'
+      end || '] ' || p_message
+    );
+  end if;
+end log_message;
+
+--------------------------------------------------------------------------------
 -- TASK 1.6: Native BLOB-based image handling (replaces OrdImage)
 -- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-16
@@ -2726,7 +2752,11 @@ begin
 end ClosePDF;
 
 ----------------------------------------------------------------------------------------
-procedure AddPage(orientation in varchar2 default '') is 
+--------------------------------------------------------------------------------
+-- Internal legacy AddPage implementation (renamed to avoid overload ambiguity)
+-- This is called by the modern AddPage() which is the public API
+--------------------------------------------------------------------------------
+procedure p_addpage_internal(orientation in varchar2 default '') is
 myFamily txt;
 myStyle txt;
 mySize number := fontsizePt;
@@ -2742,9 +2772,9 @@ begin
 		OpenPDF();
 	end if;
 	myFamily:= FontFamily;
-	if (underline) then 
+	if (underline) then
 	   myStyle := FontStyle || 'U';
-	end if; 
+	end if;
 	if(page>0) then
 		-- Page footer
 		InFooter:=true;
@@ -2752,7 +2782,7 @@ begin
 		InFooter:=false;
 		-- Close page
 		p_endpage();
-	end if; 
+	end if;
 	-- Start new page
 	p_beginpage(orientation);
 	-- Set line cap style to square
@@ -2763,16 +2793,16 @@ begin
 	-- Set font
 	if(myFamily is not null) then
 		SetFont(myFamily,myStyle,mySize);
-	end if; 
+	end if;
 	-- Set colors
 	DrawColor:=dc;
 	if(dc!='0 G') then
 		p_out(dc);
-	end if; 
+	end if;
 	FillColor:=fc;
 	if(fc!='0 g') then
 		p_out(fc);
-	end if; 
+	end if;
 	TextColor:= tc;
 	ColorFlag:= cf;
 	-- Page header
@@ -2781,24 +2811,24 @@ begin
 	if(LineWidth!=lw) then
 		LineWidth:=lw;
 		p_out(tochar(lw*k)||' w');
-	end if; 
+	end if;
 	-- Restore font
 
 	if myFamily is null then
 		SetFont(myFamily,myStyle,mySize);
-	end if; 
+	end if;
 	-- Restore colors
 	if(DrawColor!=dc) then
 		DrawColor:=dc;
 		p_out(dc);
-	end if; 
-	if(FillColor!=fc) then 
+	end if;
+	if(FillColor!=fc) then
 		FillColor:=fc;
 		p_out(fc);
-	end if; 
+	end if;
 	TextColor:=tc;
 	ColorFlag:=cf;
-end AddPage;
+end p_addpage_internal;
 
 ----------------------------------------------------------------------------------------
 procedure update_line_spacing is
@@ -2811,29 +2841,6 @@ end;
 -- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
-
-/*******************************************************************************
-* Procedure: log_message (Internal helper)
-* Description: Simple logging utility for debugging and monitoring
-*******************************************************************************/
-procedure log_message(
-  p_level pls_integer,
-  p_message varchar2
-) is
-begin
-  if p_level <= g_log_level and gb_mode_debug then
-    dbms_output.put_line(
-      to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') || ' [' ||
-      case p_level
-        when 1 then 'ERROR'
-        when 2 then 'WARN'
-        when 3 then 'INFO'
-        when 4 then 'DEBUG'
-      end || '] ' || p_message
-    );
-  end if;
-end log_message;
-
 /*******************************************************************************
 * Procedure: Init
 * Description: Modern initialization with validation and UTF-8 support
@@ -3135,6 +3142,67 @@ exception
     log_message(1, 'Error in SetPage: ' || sqlerrm);
     raise;
 end SetPage;
+
+/*******************************************************************************
+* Procedure: AddPage (Modern version with BLOB streaming)
+* Description: Adds a new page with specified orientation, format, and rotation.
+*              This is the modernized version declared in the package spec.
+*              Calls the legacy AddPage internally for compatibility.
+*******************************************************************************/
+procedure AddPage(
+  p_orientation varchar2 default null,
+  p_format varchar2 default null,
+  p_rotation pls_integer default 0
+) is
+  l_orientation varchar2(1);
+  l_format recPageFormat;
+begin
+  -- Validate initialization
+  if not g_initialized then
+    raise_application_error(-20105,
+      'PL_FPDF not initialized. Call Init() first.');
+  end if;
+
+  -- Determine orientation
+  if p_orientation is null then
+    l_orientation := g_default_orientation;  -- Use default from Init
+  else
+    l_orientation := upper(substr(p_orientation, 1, 1));
+    if l_orientation not in ('P', 'L') then
+      raise_application_error(-20107,
+        'Invalid orientation: ' || p_orientation || '. Use P (Portrait) or L (Landscape)');
+    end if;
+  end if;
+
+  -- Get page format
+  if p_format is not null then
+    l_format := get_page_format(p_format);
+  else
+    l_format := g_default_format;  -- Use default from Init
+  end if;
+
+  -- Store page metadata
+  g_current_page := g_current_page + 1;
+  g_pages(g_current_page).page_number := g_current_page;
+  g_pages(g_current_page).orientation := l_orientation;
+  g_pages(g_current_page).format := l_format;
+  g_pages(g_current_page).rotation := p_rotation;
+
+  dbms_lob.createtemporary(g_pages(g_current_page).content, true, dbms_lob.session);
+
+  log_message(4, 'AddPage (modern): page ' || g_current_page ||
+    ', orientation=' || l_orientation || ', format=' || p_format ||
+    ', rotation=' || p_rotation);
+
+  -- Call internal legacy AddPage implementation for actual page setup
+  -- Pass orientation as string ('P' or 'L')
+  p_addpage_internal(l_orientation);
+
+exception
+  when others then
+    log_message(1, 'Error in AddPage (modern): ' || sqlerrm);
+    raise;
+end AddPage;
 
 --------------------------------------------------------------------------------
 -- End of Task 1.2 helper implementations
