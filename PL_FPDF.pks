@@ -35,9 +35,61 @@ type point is record (x number, y number);
 type tab_points is table of point index by pls_integer;
 
 -- Constantes globales
-FPDF_VERSION constant varchar2(10) := '1.53'; 
-PL_FPDF_VERSION constant varchar2(10) := '0.9.4'; 
+FPDF_VERSION constant varchar2(10) := '1.53';
+PL_FPDF_VERSION constant varchar2(10) := '0.9.4';
 noParam tv4000a;
+
+--------------------------------------------------------------------------------
+-- TASK 1.1: Modernization - Initialization procedures (Oracle 19c/23c)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: Init
+* Description: Initializes the PDF generation engine with modern Oracle 19c+
+*              features including UTF-8 support and CLOB buffers.
+*              Replaces/extends the legacy fpdf() constructor.
+* Parameters:
+*   p_orientation - Page orientation ('P'=Portrait, 'L'=Landscape)
+*   p_unit - Measurement unit ('mm', 'cm', 'in', 'pt')
+*   p_format - Page format ('A4', 'Letter', 'Legal', etc.)
+*   p_encoding - Character encoding (default 'UTF-8')
+* Raises:
+*   -20001: Invalid orientation parameter
+*   -20002: Invalid measurement unit
+*   -20003: Unsupported encoding
+* Example:
+*   PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
+*******************************************************************************/
+procedure Init(
+  p_orientation varchar2 default 'P',
+  p_unit varchar2 default 'mm',
+  p_format varchar2 default 'A4',
+  p_encoding varchar2 default 'UTF-8'
+);
+
+/*******************************************************************************
+* Procedure: Reset
+* Description: Resets the PDF engine to initial state, freeing all resources
+*              including temporary CLOBs and clearing all arrays.
+* Example:
+*   PL_FPDF.Reset();
+*******************************************************************************/
+procedure Reset;
+
+/*******************************************************************************
+* Function: IsInitialized
+* Description: Checks if the PDF engine has been properly initialized via Init()
+* Returns: TRUE if initialized, FALSE otherwise
+* Example:
+*   IF PL_FPDF.IsInitialized() THEN ...
+*******************************************************************************/
+function IsInitialized return boolean;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.1 additions
+--------------------------------------------------------------------------------
 
 -- methods added to FPDF
 function GetCurrentFontSize return number;
