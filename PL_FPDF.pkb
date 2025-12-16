@@ -689,6 +689,97 @@ begin
 end log_message;
 
 --------------------------------------------------------------------------------
+-- TASK 1.2: Page format helper functions (needed by Init)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+--------------------------------------------------------------------------------
+/*******************************************************************************
+* Procedure: init_page_formats (Internal)
+* Description: Initializes standard page format definitions (in mm)
+*******************************************************************************/
+procedure init_page_formats is
+begin
+  if g_formats_initialized then
+    return;  -- Already initialized
+  end if;
+
+  -- ISO A series (in mm)
+  g_page_formats('A3').width := 297;
+  g_page_formats('A3').height := 420;
+
+  g_page_formats('A4').width := 210;
+  g_page_formats('A4').height := 297;
+
+  g_page_formats('A5').width := 148;
+  g_page_formats('A5').height := 210;
+
+  -- North American formats
+  g_page_formats('LETTER').width := 215.9;
+  g_page_formats('LETTER').height := 279.4;
+
+  g_page_formats('LEGAL').width := 215.9;
+  g_page_formats('LEGAL').height := 355.6;
+
+  g_page_formats('LEDGER').width := 279.4;
+  g_page_formats('LEDGER').height := 431.8;
+
+  g_page_formats('TABLOID').width := 279.4;
+  g_page_formats('TABLOID').height := 431.8;
+
+  -- Other formats
+  g_page_formats('EXECUTIVE').width := 184.15;
+  g_page_formats('EXECUTIVE').height := 266.7;
+
+  g_page_formats('FOLIO').width := 210;
+  g_page_formats('FOLIO').height := 330;
+
+  g_page_formats('B5').width := 176;
+  g_page_formats('B5').height := 250;
+
+  g_formats_initialized := true;
+
+  log_message(4, 'Page formats initialized: ' || g_page_formats.count || ' formats');
+
+exception
+  when others then
+    log_message(1, 'Error initializing page formats: ' || sqlerrm);
+    raise;
+end init_page_formats;
+
+
+/*******************************************************************************
+* Function: get_page_format (Internal)
+* Description: Returns dimensions for a named page format
+*******************************************************************************/
+function get_page_format(p_format_name varchar2) return recPageFormat is
+  l_format recPageFormat;
+  l_format_upper varchar2(20) := upper(p_format_name);
+begin
+  -- Ensure formats are initialized
+  if not g_formats_initialized then
+    init_page_formats();
+  end if;
+
+  -- Look up format
+  if g_page_formats.exists(l_format_upper) then
+    l_format := g_page_formats(l_format_upper);
+  else
+    -- Unknown format, use A4 as default
+    log_message(2, 'Unknown format: ' || p_format_name || ', using A4 default');
+    l_format := g_page_formats('A4');
+  end if;
+
+  return l_format;
+
+exception
+  when others then
+    log_message(1, 'Error getting page format: ' || sqlerrm);
+    -- Return A4 as fallback
+    l_format.width := 210;
+    l_format.height := 297;
+    return l_format;
+end get_page_format;
+
+--------------------------------------------------------------------------------
 -- TASK 1.6: Native BLOB-based image handling (replaces OrdImage)
 -- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-16
@@ -3014,94 +3105,8 @@ end IsInitialized;
 -- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
-
-/*******************************************************************************
-* Procedure: init_page_formats (Internal)
-* Description: Initializes standard page format definitions (in mm)
-*******************************************************************************/
-procedure init_page_formats is
-begin
-  if g_formats_initialized then
-    return;  -- Already initialized
-  end if;
-
-  -- ISO A series (in mm)
-  g_page_formats('A3').width := 297;
-  g_page_formats('A3').height := 420;
-
-  g_page_formats('A4').width := 210;
-  g_page_formats('A4').height := 297;
-
-  g_page_formats('A5').width := 148;
-  g_page_formats('A5').height := 210;
-
-  -- North American formats
-  g_page_formats('LETTER').width := 215.9;
-  g_page_formats('LETTER').height := 279.4;
-
-  g_page_formats('LEGAL').width := 215.9;
-  g_page_formats('LEGAL').height := 355.6;
-
-  g_page_formats('LEDGER').width := 279.4;
-  g_page_formats('LEDGER').height := 431.8;
-
-  g_page_formats('TABLOID').width := 279.4;
-  g_page_formats('TABLOID').height := 431.8;
-
-  -- Other formats
-  g_page_formats('EXECUTIVE').width := 184.15;
-  g_page_formats('EXECUTIVE').height := 266.7;
-
-  g_page_formats('FOLIO').width := 210;
-  g_page_formats('FOLIO').height := 330;
-
-  g_page_formats('B5').width := 176;
-  g_page_formats('B5').height := 250;
-
-  g_formats_initialized := true;
-
-  log_message(4, 'Page formats initialized: ' || g_page_formats.count || ' formats');
-
-exception
-  when others then
-    log_message(1, 'Error initializing page formats: ' || sqlerrm);
-    raise;
-end init_page_formats;
-
-
-/*******************************************************************************
-* Function: get_page_format (Internal)
-* Description: Returns dimensions for a named page format
-*******************************************************************************/
-function get_page_format(p_format_name varchar2) return recPageFormat is
-  l_format recPageFormat;
-  l_format_upper varchar2(20) := upper(p_format_name);
-begin
-  -- Ensure formats are initialized
-  if not g_formats_initialized then
-    init_page_formats();
-  end if;
-
-  -- Look up format
-  if g_page_formats.exists(l_format_upper) then
-    l_format := g_page_formats(l_format_upper);
-  else
-    -- Unknown format, use A4 as default
-    log_message(2, 'Unknown format: ' || p_format_name || ', using A4 default');
-    l_format := g_page_formats('A4');
-  end if;
-
-  return l_format;
-
-exception
-  when others then
-    log_message(1, 'Error getting page format: ' || sqlerrm);
-    -- Return A4 as fallback
-    l_format.width := 210;
-    l_format.height := 297;
-    return l_format;
-end get_page_format;
-
+-- NOTE: init_page_formats() and get_page_format() have been moved earlier
+--       in the file (after log_message) so they can be called by Init()
 
 /*******************************************************************************
 * Function: GetCurrentPage
