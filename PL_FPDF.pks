@@ -136,6 +136,78 @@ type tPages is table of recPage index by pls_integer;
 -- End of Task 1.2 type additions
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 1.3: TrueType/Unicode Font Support (Oracle 19c/23c)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Type: recTTFFont
+* Description: TrueType font structure with parsed metrics
+*******************************************************************************/
+type recTTFFont is record (
+  font_name varchar2(100),
+  file_name varchar2(255),
+  font_blob blob,
+  encoding varchar2(20) default 'UTF-8',
+  units_per_em number,
+  ascent number,
+  descent number,
+  line_gap number default 0,
+  cap_height number default 0,
+  x_height number default 0,
+  is_bold boolean default false,
+  is_italic boolean default false,
+  is_embedded boolean default true,
+  loaded_at timestamp default systimestamp
+);
+
+/*******************************************************************************
+* Type: tTTFFonts
+* Description: Collection of TrueType fonts indexed by font name
+*******************************************************************************/
+type tTTFFonts is table of recTTFFont index by varchar2(100);
+
+/*******************************************************************************
+* Procedure: AddTTFFont - Add TrueType font from BLOB
+*******************************************************************************/
+procedure AddTTFFont(
+  p_font_name varchar2,
+  p_font_blob blob,
+  p_encoding varchar2 default 'UTF-8',
+  p_embed boolean default true
+);
+
+/*******************************************************************************
+* Procedure: LoadTTFFromFile - Load TrueType from filesystem
+*******************************************************************************/
+procedure LoadTTFFromFile(
+  p_font_name varchar2,
+  p_file_path varchar2,
+  p_directory varchar2 default 'FONTS_DIR',
+  p_encoding varchar2 default 'UTF-8'
+);
+
+/*******************************************************************************
+* Function: IsTTFFontLoaded - Check if font is loaded
+*******************************************************************************/
+function IsTTFFontLoaded(p_font_name varchar2) return boolean;
+
+/*******************************************************************************
+* Function: GetTTFFontInfo - Get font metadata
+*******************************************************************************/
+function GetTTFFontInfo(p_font_name varchar2) return recTTFFont;
+
+/*******************************************************************************
+* Procedure: ClearTTFFontCache - Clear font cache
+*******************************************************************************/
+procedure ClearTTFFontCache;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.3 additions
+--------------------------------------------------------------------------------
+
 -- methods added to FPDF
 function GetCurrentFontSize return number;
 function GetCurrentFontStyle return varchar2;

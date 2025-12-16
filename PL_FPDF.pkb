@@ -214,6 +214,15 @@ type ArrayCharWidths is table of charSet index by word;
  g_formats_initialized boolean := false;  -- Flag indicating if page formats are initialized
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 1.3: TrueType/Unicode Font Support - Global variables
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-15
+--------------------------------------------------------------------------------
+ g_ttf_fonts tTTFFonts;                     -- TrueType font cache
+ g_ttf_fonts_count pls_integer := 0;        -- Number of loaded TTF fonts
+--------------------------------------------------------------------------------
+
 /*******************************************************************************
 *                                                                              *
 *           Protected methods : Internal function and procedures               *
