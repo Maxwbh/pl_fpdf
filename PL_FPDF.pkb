@@ -211,6 +211,7 @@ type ArrayCharWidths is table of charSet index by word;
  g_current_page pls_integer := 0;          -- Current page number
  g_page_formats tPageFormats;              -- Standard page format definitions
  g_default_format recPageFormat;           -- Default page format
+ g_default_orientation varchar2(1) := 'P'; -- Default page orientation ('P' or 'L')
  g_formats_initialized boolean := false;  -- Flag indicating if page formats are initialized
 --------------------------------------------------------------------------------
 
@@ -2897,14 +2898,24 @@ begin
   end if;
 
   -- ========================================================================
-  -- 3. SET ENCODING
+  -- 3. SET DEFAULT ORIENTATION AND FORMAT (Task 1.2)
+  -- ========================================================================
+
+  g_default_orientation := l_orientation;
+  g_default_format := get_page_format(upper(p_format));
+  log_message(4, 'Defaults: orientation=' || g_default_orientation ||
+    ', format=' || upper(p_format) || ' (' ||
+    g_default_format.width || 'x' || g_default_format.height || 'mm)');
+
+  -- ========================================================================
+  -- 4. SET ENCODING
   -- ========================================================================
 
   g_encoding := upper(p_encoding);
   log_message(4, 'Encoding set to: ' || g_encoding);
 
   -- ========================================================================
-  -- 4. CONFIGURE SESSION FOR UTF-8 (best effort)
+  -- 5. CONFIGURE SESSION FOR UTF-8 (best effort)
   -- ========================================================================
 
   begin
@@ -2917,7 +2928,7 @@ begin
   end;
 
   -- ========================================================================
-  -- 5. CALL LEGACY fpdf() CONSTRUCTOR
+  -- 6. CALL LEGACY fpdf() CONSTRUCTOR
   --    (maintains compatibility with existing code)
   -- ========================================================================
 
@@ -2925,7 +2936,7 @@ begin
   fpdf(l_orientation, l_unit, l_format);
 
   -- ========================================================================
-  -- 6. MARK AS INITIALIZED
+  -- 7. MARK AS INITIALIZED
   -- ========================================================================
 
   g_initialized := true;
@@ -3183,12 +3194,12 @@ begin
 
   -- Store page metadata
   g_current_page := g_current_page + 1;
-  g_pages(g_current_page).page_number := g_current_page;
+  g_pages(g_current_page).number_val := g_current_page;
   g_pages(g_current_page).orientation := l_orientation;
   g_pages(g_current_page).format := l_format;
   g_pages(g_current_page).rotation := p_rotation;
 
-  dbms_lob.createtemporary(g_pages(g_current_page).content, true, dbms_lob.session);
+  dbms_lob.createtemporary(g_pages(g_current_page).content_clob, true, dbms_lob.session);
 
   log_message(4, 'AddPage (modern): page ' || g_current_page ||
     ', orientation=' || l_orientation || ', format=' || p_format ||
