@@ -3193,13 +3193,15 @@ begin
   -- Get page format
   if p_format is not null then
     -- Check for custom format (e.g., "100,200" or "100x200")
+    -- Try to parse as custom format if it contains separators
     if instr(p_format, ',') > 0 or instr(p_format, 'x') > 0 or instr(p_format, 'X') > 0 then
-      -- Parse custom format: "width,height" or "widthxheight"
+      -- Attempt to parse custom format: "width,height" or "widthxheight"
       declare
         l_separator varchar2(1);
         l_pos pls_integer;
         l_width varchar2(20);
         l_height varchar2(20);
+        l_is_custom boolean := false;
       begin
         -- Determine separator
         if instr(p_format, ',') > 0 then
@@ -3217,24 +3219,30 @@ begin
         l_width := trim(substr(p_format, 1, l_pos - 1));
         l_height := trim(substr(p_format, l_pos + 1));
 
-        -- Validate and convert to numbers
+        -- Try to convert to numbers
         begin
           l_format.width := to_number(l_width);
           l_format.height := to_number(l_height);
 
           -- Validate dimensions
           if l_format.width <= 0 or l_format.height <= 0 then
-            raise_application_error(-20108,
+            raise_application_error(-20103,
               'Invalid custom format dimensions: ' || p_format || '. Width and height must be positive.');
           end if;
 
+          l_is_custom := true;
           log_message(4, 'Custom page format: ' || l_format.width || 'x' || l_format.height || 'mm');
 
         exception
           when value_error then
-            raise_application_error(-20108,
-              'Invalid custom format: ' || p_format || '. Use format like "100,200" or "100x200" or named format like "A4"');
+            -- Not a valid custom format, try as named format
+            l_is_custom := false;
         end;
+
+        -- If not parsed as custom, try named format lookup
+        if not l_is_custom then
+          l_format := get_page_format(p_format);
+        end if;
       end;
     else
       -- Named format (A4, Letter, etc.)
@@ -3246,7 +3254,7 @@ begin
 
   -- Validate rotation
   if p_rotation not in (0, 90, 180, 270) then
-    raise_application_error(-20109,
+    raise_application_error(-20104,
       'Invalid rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
   end if;
 
