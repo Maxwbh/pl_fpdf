@@ -662,53 +662,225 @@ end fontsExists;
 */
 
 --------------------------------------------------------------------------------
--- get an image in a blob from an http url.
--- The image is converted  on the fly to PNG format.
+-- TASK 1.6: Native BLOB-based image handling (replaces OrdImage)
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-16
 --------------------------------------------------------------------------------
-function getImageFromUrl(p_Url in varchar2) return ordsys.ordImage is
-	myImg ordsys.ordImage; 
-	lv_url varchar2(2000) := p_Url;
-	urityp URIType;
+
+--------------------------------------------------------------------------------
+-- Parse PNG header to extract metadata
+--------------------------------------------------------------------------------
+function parse_png_header(p_blob blob, p_img in out recImageBlob) return boolean is
+  l_signature raw(8);
+  l_chunk_length raw(4);
+  l_chunk_type raw(4);
+  l_ihdr_data raw(13);
+  l_pos integer := 1;
+  c_png_signature constant raw(8) := hextoraw('89504E470D0A1A0A');
 begin
-	 -- normalize url.
-     if (instr(lv_url, 'http') = 0 ) then
-	   lv_url := 'http://'||owa_util.get_cgi_env('SERVER_NAME')||'/'||lv_url;
-	 end if;
-	 
-	 urityp := URIFactory.getURI(lv_url);
+  -- Validate PNG signature
+  if dbms_lob.getlength(p_blob) < 33 then
+    return false;
+  end if;
 
-	 myImg := ORDSYS.ORDImage.init();
-	 myImg.source.localdata := urityp.getBlob();
-	 myImg.setMimeType(urityp.getContentType());	
-	 	 
-	 begin
-	 	  myImg.setProperties();
-	 Exception
-	 when others then
-	 	  null; -- Ignore exceptions, mimetype is enough.
-	 end;
+  l_signature := dbms_lob.substr(p_blob, 8, 1);
+  if l_signature != c_png_signature then
+    return false;
+  end if;
 
-	 -- Transform image to PNG if it is a GIF, a JPG or a BMP
-	 if (myImg.getFileFormat() != 'PNGF' ) then
-	 	myImg.process('fileFormat=PNGF,contentFormat=8bitlutrgb');
-		myImg.setProperties();
-	 end if;
+  -- Read IHDR chunk (always first after signature)
+  l_pos := 9;
+  l_chunk_length := dbms_lob.substr(p_blob, 4, l_pos); -- Should be 0x0000000D (13 bytes)
+  l_pos := l_pos + 4;
+  l_chunk_type := dbms_lob.substr(p_blob, 4, l_pos);   -- Should be 'IHDR'
+  l_pos := l_pos + 4;
 
-	 return myImg;
+  if l_chunk_type != hextoraw('49484452') then -- 'IHDR'
+    return false;
+  end if;
+
+  -- Read IHDR data: width(4) height(4) bit_depth(1) color_type(1) ...
+  l_ihdr_data := dbms_lob.substr(p_blob, 13, l_pos);
+
+  -- Extract width (bytes 0-3, big-endian)
+  p_img.width := utl_raw.cast_to_binary_integer(utl_raw.substr(l_ihdr_data, 1, 4), utl_raw.big_endian);
+
+  -- Extract height (bytes 4-7, big-endian)
+  p_img.height := utl_raw.cast_to_binary_integer(utl_raw.substr(l_ihdr_data, 5, 4), utl_raw.big_endian);
+
+  -- Extract bit depth (byte 8)
+  p_img.bit_depth := utl_raw.cast_to_binary_integer(utl_raw.substr(l_ihdr_data, 9, 1));
+
+  -- Extract color type (byte 9)
+  -- 0=grayscale, 2=RGB, 3=indexed, 4=grayscale+alpha, 6=RGBA
+  p_img.color_type := utl_raw.cast_to_binary_integer(utl_raw.substr(l_ihdr_data, 10, 1));
+
+  -- Check for transparency
+  p_img.has_transparency := (p_img.color_type = 4 or p_img.color_type = 6);
+
+  p_img.file_format := 'PNG';
+  p_img.mime_type := 'image/png';
+
+  log_message(4, 'PNG parsed: ' || p_img.width || 'x' || p_img.height ||
+              ', bit_depth=' || p_img.bit_depth || ', color_type=' || p_img.color_type);
+
+  return true;
 exception
-	when others then
-		Error('pl_fpdf.getImageFromUrl :'||sqlerrm||', image :'||p_Url);
-		return myImg;
-  return myImg;
+  when others then
+    log_message(1, 'Error parsing PNG header: ' || sqlerrm);
+    return false;
+end parse_png_header;
+
+--------------------------------------------------------------------------------
+-- Parse JPEG header to extract metadata
+--------------------------------------------------------------------------------
+function parse_jpeg_header(p_blob blob, p_img in out recImageBlob) return boolean is
+  l_marker raw(2);
+  l_pos integer := 1;
+  l_length integer;
+  l_seg_length raw(2);
+  l_seg_len integer;
+  l_data raw(32767);
+  c_soi constant raw(2) := hextoraw('FFD8'); -- Start of Image
+  c_sof0 constant raw(2) := hextoraw('FFC0'); -- Start of Frame (baseline)
+  c_sof2 constant raw(2) := hextoraw('FFC2'); -- Start of Frame (progressive)
+begin
+  l_length := dbms_lob.getlength(p_blob);
+
+  if l_length < 4 then
+    return false;
+  end if;
+
+  -- Validate JPEG signature (SOI marker)
+  l_marker := dbms_lob.substr(p_blob, 2, 1);
+  if l_marker != c_soi then
+    return false;
+  end if;
+
+  l_pos := 3;
+
+  -- Scan for SOF marker to get dimensions
+  while l_pos < l_length - 10 loop
+    l_marker := dbms_lob.substr(p_blob, 2, l_pos);
+
+    -- Check if this is SOF0 or SOF2 marker
+    if l_marker = c_sof0 or l_marker = c_sof2 then
+      -- Read segment length
+      l_seg_length := dbms_lob.substr(p_blob, 2, l_pos + 2);
+      l_seg_len := utl_raw.cast_to_binary_integer(l_seg_length, utl_raw.big_endian);
+
+      -- Read SOF data: length(2) precision(1) height(2) width(2) ...
+      l_data := dbms_lob.substr(p_blob, 9, l_pos + 2);
+
+      -- Precision (byte 2)
+      p_img.bit_depth := utl_raw.cast_to_binary_integer(utl_raw.substr(l_data, 3, 1));
+
+      -- Height (bytes 3-4, big-endian)
+      p_img.height := utl_raw.cast_to_binary_integer(utl_raw.substr(l_data, 4, 2), utl_raw.big_endian);
+
+      -- Width (bytes 5-6, big-endian)
+      p_img.width := utl_raw.cast_to_binary_integer(utl_raw.substr(l_data, 6, 2), utl_raw.big_endian);
+
+      -- Number of components (byte 7) - 1=grayscale, 3=RGB, 4=CMYK
+      p_img.color_type := utl_raw.cast_to_binary_integer(utl_raw.substr(l_data, 8, 1));
+
+      p_img.has_transparency := false; -- JPEG doesn't support transparency
+      p_img.file_format := 'JPEG';
+      p_img.mime_type := 'image/jpeg';
+
+      log_message(4, 'JPEG parsed: ' || p_img.width || 'x' || p_img.height ||
+                  ', bit_depth=' || p_img.bit_depth || ', components=' || p_img.color_type);
+
+      return true;
+    end if;
+
+    -- Move to next marker
+    if utl_raw.substr(l_marker, 1, 1) = hextoraw('FF') then
+      -- Read segment length and skip
+      l_seg_length := dbms_lob.substr(p_blob, 2, l_pos + 2);
+      l_seg_len := utl_raw.cast_to_binary_integer(l_seg_length, utl_raw.big_endian);
+      l_pos := l_pos + 2 + l_seg_len;
+    else
+      l_pos := l_pos + 1;
+    end if;
+  end loop;
+
+  return false;
+exception
+  when others then
+    log_message(1, 'Error parsing JPEG header: ' || sqlerrm);
+    return false;
+end parse_jpeg_header;
+
+--------------------------------------------------------------------------------
+-- Get image from URL with native BLOB handling (replaces OrdImage)
+--------------------------------------------------------------------------------
+function getImageFromUrl(p_Url in varchar2) return recImageBlob is
+  l_img recImageBlob;
+  lv_url varchar2(2000) := p_Url;
+  urityp URIType;
+  l_parsed boolean := false;
+begin
+  -- Initialize image BLOB
+  dbms_lob.createtemporary(l_img.image_blob, true, dbms_lob.session);
+
+  -- Normalize URL
+  if instr(lv_url, 'http') = 0 then
+    lv_url := 'http://' || owa_util.get_cgi_env('SERVER_NAME') || '/' || lv_url;
+  end if;
+
+  log_message(4, 'Fetching image from URL: ' || lv_url);
+
+  begin
+    -- Fetch image using URIFactory
+    urityp := URIFactory.getURI(lv_url);
+    l_img.image_blob := urityp.getBlob();
+    l_img.mime_type := urityp.getContentType();
+
+    log_message(4, 'Image fetched, MIME type: ' || l_img.mime_type ||
+                ', size: ' || dbms_lob.getlength(l_img.image_blob) || ' bytes');
+
+  exception
+    when others then
+      raise_application_error(-20222, 'Unable to fetch image from URL: ' || p_Url || ' - ' || sqlerrm);
+  end;
+
+  -- Parse image header based on format
+  if l_img.mime_type like '%png%' or dbms_lob.substr(l_img.image_blob, 8, 1) = hextoraw('89504E470D0A1A0A') then
+    l_parsed := parse_png_header(l_img.image_blob, l_img);
+    if not l_parsed then
+      raise_application_error(-20221, 'Invalid PNG header in image: ' || p_Url);
+    end if;
+
+  elsif l_img.mime_type like '%jpeg%' or l_img.mime_type like '%jpg%' or
+        dbms_lob.substr(l_img.image_blob, 2, 1) = hextoraw('FFD8') then
+    l_parsed := parse_jpeg_header(l_img.image_blob, l_img);
+    if not l_parsed then
+      raise_application_error(-20221, 'Invalid JPEG header in image: ' || p_Url);
+    end if;
+
+  else
+    raise_application_error(-20220, 'Unsupported image format (only PNG and JPEG supported): ' ||
+                           nvl(l_img.mime_type, 'unknown') || ' for URL: ' || p_Url);
+  end if;
+
+  return l_img;
+exception
+  when others then
+    if dbms_lob.istemporary(l_img.image_blob) = 1 then
+      dbms_lob.freetemporary(l_img.image_blob);
+    end if;
+    raise;
 end getImageFromUrl;
 
 --------------------------------------------------------------------------------
--- get an image in a blob from an oracle table.
+-- get an image in a blob from an oracle table (DEPRECATED - Task 1.6)
 --------------------------------------------------------------------------------
 /*
-function getImageFromDatabase(pFile in varchar2) return ordsys.ordImage is
-  myImg ordsys.ordImage := ordsys.ordImage.init();
+function getImageFromDatabase(pFile in varchar2) return recImageBlob is
+  myImg recImageBlob;
 begin
+  -- TODO: Implement database image retrieval if needed
   return myImg;
 end getImageFromDatabase;
 */
@@ -1580,13 +1752,11 @@ end p_freadint;
 
 /*
 --------------------------------------------------------------------------------
--- Parse an image
+-- Parse an image (OLD VERSION - COMMENTED OUT - Updated for Task 1.6)
 --------------------------------------------------------------------------------
 function p_parseImage(pFile varchar2) return recImage is
-  myImg ordsys.ordImage := ordsys.ordImage.init();
+  myImg recImageBlob;  -- Changed from ordsys.ordImage
   myImgInfo recImage;
-  myCtFormat word;
-  -- colspace word;
   myblob blob;
   png_signature constant varchar2(8)  := chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
   amount number;
@@ -1625,8 +1795,7 @@ function p_parseImage(pFile varchar2) return recImage is
 begin
     myImgInfo.data := empty_blob();
 	myImg := getImageFromUrl(pFile);
-	myCtFormat := myImg.getContentFormat();
-	myblob := myImg.getContent();
+	myblob := myImg.image_blob;  -- Use BLOB field directly
 	myImgInfo.i := 1;
 	-- reading the blob
 	amount := 8;
@@ -1643,9 +1812,10 @@ begin
 	if(buf != 'IHDR') then
 	   Error('Incorrect PNG file: ' || pFile);
 	end if;
-	
-    myImgInfo.w := myImg.getWidth();
-    myImgInfo.h := myImg.getHeight();
+
+    -- Use width and height parsed from header
+    myImgInfo.w := myImg.width;
+    myImgInfo.h := myImg.height;
 
 	-- ^^^ I have already get width and height, so go forward (read 4 Bytes twice)
 	buf := fread(myblob, f, amount);
@@ -1760,12 +1930,11 @@ end p_parseImage;
 */
 
 --------------------------------------------------------------------------------
--- Parse an image
+-- Parse an image (Updated for Task 1.6: Native BLOB support)
 --------------------------------------------------------------------------------
 function p_parseImage(pFile in varchar2) return recImage is
-  myImg ordsys.ordImage := ordsys.ordImage.init();
+  myImg recImageBlob;  -- Changed from ordsys.ordImage to recImageBlob
   myImgInfo recImage;
-  myCtFormat word;
   myblob blob;
   chunk_content blob;
   png_signature constant varchar2(8)  := chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
@@ -1797,15 +1966,15 @@ function p_parseImage(pFile in varchar2) return recImage is
   begin
     return utl_raw.cast_to_varchar2(freadb(pBlob, pHandle, pLength));
   end fread;
-  
-  procedure fread_blob(pBlob in out nocopy blob, pHandle in out number, 
+
+  procedure fread_blob(pBlob in out nocopy blob, pHandle in out number,
                        pLength in out number, pDestBlob in out nocopy blob ) is
   begin
     dbms_lob.trim( pDestBlob, 0);
     dbms_lob.copy( pDestBlob, pBlob, pLength, 1, pHandle );
     pHandle := pHandle + pLength;
   end fread_blob;
-  
+
   ---------------------------------------------------------------------------------------------
 
 begin
@@ -1815,10 +1984,11 @@ begin
   dbms_lob.createtemporary(imgBlob, true );
   myImgInfo.data := imgBlob;
   dbms_lob.open(myImgInfo.data,dbms_lob.LOB_READWRITE);
-     myImg := getImageFromUrl(pFile);
-    myCtFormat := myImg.getContentFormat();
-    myblob := myImg.getContent();
-    myImgInfo.i := 1;
+
+  -- Fetch and parse image using native BLOB handling
+  myImg := getImageFromUrl(pFile);
+  myblob := myImg.image_blob;  -- Use BLOB field directly
+  myImgInfo.i := 1;
     -- reading the blob
 
     --Check signature
@@ -1826,8 +1996,9 @@ begin
         Error('Not a PNG file: ' || pFile);
     end if;
 
-  myImgInfo.w := myImg.getWidth();
-  myImgInfo.h := myImg.getHeight();
+  -- Use width and height parsed from header
+  myImgInfo.w := myImg.width;
+  myImgInfo.h := myImg.height;
 
     -- scan chunks looking for palette, transparency and image data
     loop
