@@ -4717,23 +4717,21 @@ begin
   l_cos := cos(l_angle);
   l_sin := sin(l_angle);
 
-  -- Output rotation transformation matrix
+  -- Save graphics state and apply rotation transformation
   p_out('q');  -- Save graphics state
-  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
-        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
-        tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
 
-  -- Temporarily reset position for Cell output
-  x := 0;
-  y := 0;
+  -- Translate to rotation point, rotate, translate back
+  -- This rotates around the point (l_x, l_y)
+  p_out('1 0 0 1 ' || tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
+  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
+        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' 0 0 cm');
+  p_out('1 0 0 1 ' || tochar(-l_x * k, 2) || ' ' || tochar(-(h - l_y) * k, 2) || ' cm');
 
   -- Call legacy Cell implementation
   Cell(p_width, p_height, p_text, p_border, p_ln, p_align, p_fill, p_link);
 
-  -- Restore position and graphics state
-  x := l_x;
-  y := l_y;
-  p_out('Q');  -- Restore graphics state
+  -- Restore graphics state
+  p_out('Q');
 
   log_message(4, 'CellRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
 
@@ -4778,23 +4776,21 @@ begin
   l_cos := cos(l_angle);
   l_sin := sin(l_angle);
 
-  -- Output rotation transformation matrix
+  -- Save graphics state and apply rotation transformation
   p_out('q');  -- Save graphics state
-  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
-        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
-        tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
 
-  -- Temporarily reset position for Write output
-  x := 0;
-  y := 0;
+  -- Translate to rotation point, rotate, translate back
+  -- This rotates around the point (l_x, l_y)
+  p_out('1 0 0 1 ' || tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
+  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
+        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' 0 0 cm');
+  p_out('1 0 0 1 ' || tochar(-l_x * k, 2) || ' ' || tochar(-(h - l_y) * k, 2) || ' cm');
 
   -- Call legacy Write implementation
   Write(p_height, p_text, p_link);
 
-  -- Restore position and graphics state
-  x := l_x;
-  y := l_y;
-  p_out('Q');  -- Restore graphics state
+  -- Restore graphics state
+  p_out('Q');
 
   log_message(4, 'WriteRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
 
