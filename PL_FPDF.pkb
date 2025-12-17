@@ -116,7 +116,8 @@ type ArrayCharWidths is table of charSet index by word;
  page number;               -- current page number
  n number;                  -- current object number
  offsets tv4000;            -- array of object offsets
- pdfDoc tv32k;             -- buffer holding in-memory final PDF document. 									   
+ -- Task 1.7: Refactored to CLOB for better performance and no size limits
+ pdfDoc CLOB;               -- buffer holding in-memory final PDF document (CLOB) 									   
  imgBlob blob;              -- allows creation of persistent blobs for images
  pages tv32k;               -- array containing pages 
  state word;                -- current document state
@@ -260,14 +261,11 @@ end methode_exists;
 ----------------------------------------------------------------------------------
 -- Calculate the length of the final document contained in the plsql table pdfDoc.
 ----------------------------------------------------------------------------------
+-- Task 1.7: Updated to use CLOB length
 function getPDFDocLength return pls_integer is
-  lg pls_integer := 0;
 begin
-  for i in pdfDoc.first..pdfDoc.last loop
-    lg := lg + nvl(length(pdfDoc(i)), 0);
-  end loop;
-  return lg;
-exception 
+  return nvl(dbms_lob.getlength(pdfDoc), 0);
+exception
   when others then
    error('getPDFDocLength : '||sqlerrm);
    return -1;
@@ -1176,20 +1174,28 @@ end p_getfontpath;
 ----------------------------------------------------------------------------------------
 procedure p_out(pstr in varchar2 default null, pCRLF in boolean default true) is 
 lv_CRLF varchar2(2);
+  lv_output varchar2(32767);
 begin
-    if (pCRLF) then
-	  lv_CRLF := chr(10);
-	end if;
-	-- Add a line to the document
-	if(state = 2) then
-		pages(page):= pages(page) || pstr || lv_CRLF;
-	else
-		pdfDoc(pdfDoc.last + 1) :=  pstr || lv_CRLF;
-	end if; 
-exception 
+  -- Task 1.7: Refactored to use CLOB with DBMS_LOB.WRITEAPPEND
+  if (pCRLF) then
+    lv_CRLF := chr(10);
+  end if;
+
+  lv_output := pstr || lv_CRLF;
+
+  -- Add a line to the document
+  if(state = 2) then
+    -- Page content - append to page buffer (still VARCHAR2 array)
+    pages(page) := pages(page) || lv_output;
+  else
+    -- Main document - append to CLOB buffer
+    if lv_output is not null then
+      dbms_lob.writeappend(pdfDoc, length(lv_output), lv_output);
+    end if;
+  end if;
+exception
   when others then
-   -- bug('p_out : '||sqlerrm);
-   error('p_out : '||sqlerrm);
+    error('p_out : '||sqlerrm);
 end p_out;
 
 ----------------------------------------------------------------------------------------
@@ -2237,14 +2243,15 @@ end SetDash;
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 procedure Error(pmsg in varchar2) is
+  v_clob_content varchar2(32767);
 begin
     if gb_mode_debug then
 	  print('<pre>');
-	  for i in pdfDoc.first..pdfDoc.last loop
-	    if i is not null then
-	      print(replace(replace(pdfDoc(i),'>','&gt;'),'<','&lt;'));
-		end if;
-	  end loop;
+	  -- Task 1.7: Print CLOB content for debug (up to 32KB)
+	  if pdfDoc is not null and dbms_lob.getlength(pdfDoc) > 0 then
+	    v_clob_content := dbms_lob.substr(pdfDoc, 32767, 1);
+	    print(replace(replace(v_clob_content,'>','&gt;'),'<','&lt;'));
+	  end if;
 	  print('</pre>');
 	end if;
 	-- Fatal error
@@ -3055,9 +3062,13 @@ procedure Reset is
 begin
   log_message(3, 'Resetting PL_FPDF engine...');
 
-  -- Clear arrays (using existing structures)
+  -- Clear arrays and CLOB (using existing structures)
   begin
-    pdfDoc.delete;
+    -- Task 1.7: Free CLOB buffer
+    if dbms_lob.istemporary(pdfDoc) = 1 then
+      dbms_lob.freetemporary(pdfDoc);
+    end if;
+
     pages.delete;
     fonts.delete;
     FontFiles.delete;
@@ -3070,7 +3081,7 @@ begin
     end if;
   exception
     when others then
-      log_message(2, 'Warning during array cleanup: ' || sqlerrm);
+      log_message(2, 'Warning during cleanup: ' || sqlerrm);
   end;
 
   -- Reset state variables
@@ -3491,8 +3502,11 @@ begin
 	page:=0;
 	n:=2;
 	-- Open the final structure for the PDF document.
-  pdfDoc.delete(); --  Line added per this thread: https://github.com/Pilooz/pl_fpdf/issues/1
-	pdfDoc(1) := null;
+  -- Task 1.7: Initialize CLOB buffer instead of VARCHAR2 array
+  if dbms_lob.istemporary(pdfDoc) = 1 then
+    dbms_lob.freetemporary(pdfDoc);
+  end if;
+  dbms_lob.createtemporary(pdfDoc, true, dbms_lob.session);
 	state:=0;
 	InFooter:=false;
 	lasth:=0;
@@ -4282,25 +4296,19 @@ begin
     ClosePDF();
   end if;
 
-  -- Create temporary BLOBs
-  dbms_lob.createtemporary(v_blob, false, dbms_lob.session);
+  -- Create temporary BLOB
   dbms_lob.createtemporary(v_doc, false, dbms_lob.session);
 
-  -- Convert pdfDoc array to BLOB
-  v_len := 1;
-  for i in pdfDoc.first..pdfDoc.last loop
-    v_clob := to_clob(pdfDoc(i));
-    if v_clob is not null then
-      v_in := 1;
-      v_out := 1;
-      v_lang := 0;
-      v_warning := 0;
-      v_len := dbms_lob.getlength(v_clob);
-      dbms_lob.convertToBlob(v_blob, v_clob, v_len,
-        v_in, v_out, dbms_lob.default_csid, v_lang, v_warning);
-      dbms_lob.append(v_doc, dbms_lob.substr(v_blob, v_len));
-    end if;
-  end loop;
+  -- Task 1.7: Convert pdfDoc CLOB directly to BLOB (much simpler than array loop)
+  if pdfDoc is not null and dbms_lob.getlength(pdfDoc) > 0 then
+    v_in := 1;
+    v_out := 1;
+    v_lang := 0;
+    v_warning := 0;
+    v_len := dbms_lob.getlength(pdfDoc);
+    dbms_lob.convertToBlob(v_doc, pdfDoc, v_len,
+      v_in, v_out, dbms_lob.default_csid, v_lang, v_warning);
+  end if;
 
   log_message(3, 'OutputBlob: Generated BLOB of ' || dbms_lob.getlength(v_doc) || ' bytes');
 
@@ -4475,21 +4483,7 @@ myDest := 'D';
 end if;
 end if;
 
--- restitution du contenu...
-  v_len := 1;
-  for i in pdfDoc.first..pdfDoc.last loop
-     v_clob := to_clob(pdfDoc(i));
-     if v_clob is not null then
-        v_in := 1;
-        v_out := 1;
-        v_lang := 0;
-        v_warning := 0;
-        v_len := dbms_lob.getlength(v_clob);
-        dbms_lob.convertToBlob(v_blob, v_clob, v_len,
-           v_in, v_out, dbms_lob.default_csid, v_lang, v_warning);
-        dbms_lob.append(v_doc, dbms_lob.substr(v_blob, v_len));
-     end if;
-  end loop;
+  -- Task 1.7: Removed dead code (pdfDoc array loop was never used)
   -- Simply delegate to OutputBlob (Task 1.5 - OWA removed)
   return OutputBlob();
 exception
