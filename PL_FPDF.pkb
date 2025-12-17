@@ -4258,94 +4258,191 @@ exception
       error('write : '||sqlerrm);
 end write;
 
-----------------------------------------------------------------------------------------
-procedure Output(pname varchar2 default null,pdest varchar2 default null) is
-   myName word := pname;
-   myDest word := pdest;
-   v_doc blob;      -- finally complete document
-   v_blob blob;
-   v_clob clob;
-   v_in pls_integer;
-   v_out pls_integer;
-   v_lang pls_integer;
-   v_warning pls_integer;
-   v_len pls_integer;
+--------------------------------------------------------------------------------
+-- TASK 1.5: Modern Output Functions (OWA-Free)
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Function: OutputBlob
+* Description: Returns PDF document as BLOB (no OWA dependencies)
+* Returns: BLOB containing complete PDF
+*******************************************************************************/
+function OutputBlob return blob is
+  v_doc blob;
+  v_blob blob;
+  v_clob clob;
+  v_in pls_integer;
+  v_out pls_integer;
+  v_lang pls_integer;
+  v_warning pls_integer;
+  v_len pls_integer;
 begin
-   dbms_lob.createtemporary(v_blob, false, dbms_lob.session);
-   dbms_lob.createtemporary(v_doc, false, dbms_lob.session);
-	 -- Output PDF to some destination
-	 -- Finish document if necessary
-     
-	 if state < 3 then
-		  ClosePDF();
-	 end if; 
-     
-	 myDest := strtoupper(myDest);
-	 if(myDest is null) then
-		  if(myName is null) then
-			   myName := 'doc.pdf';
-			   myDest := 'I';
-		  else
-			   myDest := 'D';
-		  end if; 
-	 end if; 
-		
-	 if (myDest = 'I') then 
-      -- Send as pdf to a browser
-      OWA_UTIL.MIME_HEADER('application/pdf',false);
-      htp.print('Content-Length: ' || getPDFDocLength());
-      htp.print('Content-disposition: inline; filename="' || myName || '"');
-      owa_util.http_header_close;
+  -- Finish document if necessary
+  if state < 3 then
+    ClosePDF();
+  end if;
 
-			-- restitution du contenu...
-      v_len := 1;
-      
-      for i in pdfDoc.first..pdfDoc.last loop
-         v_clob := to_clob(pdfDoc(i));
-         if v_clob is not null then
-            v_in := 1;
-            v_out := 1;
-            v_lang := 0;
-            v_warning := 0;
-            v_len := dbms_lob.getlength(v_clob); 
-            dbms_lob.convertToBlob(v_blob, v_clob, v_len,
-               v_in, v_out, dbms_lob.default_csid, v_lang, v_warning);
-            dbms_lob.append(v_doc, dbms_lob.substr(v_blob, v_len));   
-         end if;
-      end loop;
-      wpg_docload.download_file(v_doc);
-       
-	 elsif (myDest = 'D') then
-      
-			-- Download file
-			if(not empty(owa_util.get_cgi_env('HTTP_USER_AGENT')) and instr(owa_util.get_cgi_env('HTTP_USER_AGENT'),'MSIE') > 0) then
-				OWA_UTIL.MIME_HEADER('application/force-download',false);
-			else
-				OWA_UTIL.MIME_HEADER('application/octet-stream',false);
-			end if; 
-			htp.print('Content-Length: ' || getPDFDocLength());
-			htp.print('Content-disposition: attachment; filename="' || myName || '"');
-			owa_util.http_header_close;
+  -- Create temporary BLOBs
+  dbms_lob.createtemporary(v_blob, false, dbms_lob.session);
+  dbms_lob.createtemporary(v_doc, false, dbms_lob.session);
 
-			-- restitution du contenu...
-				for i in pdfDoc.first..pdfDoc.last loop
-				  htp.prn(pdfDoc(i));
-				end loop;
-								
-	 elsif (myDest = 'S') then 
-     
-		    --OWA_UTIL.MIME_HEADER('application/pdf');
-			OWA_UTIL.MIME_HEADER('text/html');
-			-- Return as a string
-			for i in pdfDoc.first..pdfDoc.last loop
-			  htp.prn(replace(replace(replace(pdfDoc(i),'<', '&lt;'),'>','&gt;'),chr(10),'<br/>'));
-			end loop;
-		else
-			Error('Incorrect output destination: ' || myDest);
-		end if; 
-exception 
-   when others then
-      error('Output : '||sqlerrm);
+  -- Convert pdfDoc array to BLOB
+  v_len := 1;
+  for i in pdfDoc.first..pdfDoc.last loop
+    v_clob := to_clob(pdfDoc(i));
+    if v_clob is not null then
+      v_in := 1;
+      v_out := 1;
+      v_lang := 0;
+      v_warning := 0;
+      v_len := dbms_lob.getlength(v_clob);
+      dbms_lob.convertToBlob(v_blob, v_clob, v_len,
+        v_in, v_out, dbms_lob.default_csid, v_lang, v_warning);
+      dbms_lob.append(v_doc, dbms_lob.substr(v_blob, v_len));
+    end if;
+  end loop;
+
+  log_message(3, 'OutputBlob: Generated BLOB of ' || dbms_lob.getlength(v_doc) || ' bytes');
+
+  return v_doc;
+exception
+  when others then
+    log_message(1, 'Error in OutputBlob: ' || sqlerrm);
+    error('OutputBlob: ' || sqlerrm);
+    return null;
+end OutputBlob;
+
+/*******************************************************************************
+* Procedure: OutputFile
+* Description: Saves PDF to filesystem using UTL_FILE (no OWA dependencies)
+* Parameters:
+*   p_filename - Name of the PDF file to create
+*   p_directory - Oracle directory object (default: 'PDF_DIR')
+*******************************************************************************/
+procedure OutputFile(p_filename varchar2, p_directory varchar2 default 'PDF_DIR') is
+  v_pdf_blob blob;
+  v_file utl_file.file_type;
+  v_buffer raw(32767);
+  v_amount pls_integer := 32767;
+  v_pos pls_integer := 1;
+  v_blob_len pls_integer;
+begin
+  -- Get PDF as BLOB
+  v_pdf_blob := OutputBlob();
+  v_blob_len := dbms_lob.getlength(v_pdf_blob);
+
+  log_message(3, 'OutputFile: Saving ' || v_blob_len || ' bytes to ' || p_filename ||
+              ' in directory ' || p_directory);
+
+  -- Open file for writing
+  begin
+    v_file := utl_file.fopen(p_directory, p_filename, 'wb', 32767);
+  exception
+    when others then
+      if sqlcode = -29280 then
+        raise_application_error(-20301,
+          'Invalid or non-existent directory: ' || p_directory);
+      elsif sqlcode = -29283 then
+        raise_application_error(-20302,
+          'Permission denied accessing directory: ' || p_directory);
+      else
+        raise_application_error(-20303,
+          'Error opening file: ' || sqlerrm);
+      end if;
+  end;
+
+  -- Write BLOB to file in chunks
+  begin
+    while v_pos < v_blob_len loop
+      v_amount := least(32767, v_blob_len - v_pos + 1);
+      v_buffer := dbms_lob.substr(v_pdf_blob, v_amount, v_pos);
+      utl_file.put_raw(v_file, v_buffer, true);
+      v_pos := v_pos + v_amount;
+    end loop;
+
+    utl_file.fclose(v_file);
+
+    log_message(3, 'OutputFile: Successfully saved ' || p_filename);
+  exception
+    when others then
+      if utl_file.is_open(v_file) then
+        utl_file.fclose(v_file);
+      end if;
+      log_message(1, 'Error writing file: ' || sqlerrm);
+      raise_application_error(-20304, 'Error writing file: ' || sqlerrm);
+  end;
+
+  -- Free temporary BLOB
+  if dbms_lob.istemporary(v_pdf_blob) = 1 then
+    dbms_lob.freetemporary(v_pdf_blob);
+  end if;
+
+exception
+  when others then
+    log_message(1, 'Error in OutputFile: ' || sqlerrm);
+    error('OutputFile: ' || sqlerrm);
+    raise;
+end OutputFile;
+
+--------------------------------------------------------------------------------
+-- End of Task 1.5 implementations
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: Output (Legacy - OWA dependencies removed)
+* Description: Legacy output procedure - now delegates to modern methods
+* Parameters:
+*   pname - Filename (required for 'F' mode)
+*   pdest - Destination: 'F' = File (only supported mode)
+* Note: 'I', 'D', 'S' modes removed (used OWA/HTP)
+*       Use OutputBlob() or OutputFile() directly for new code
+*******************************************************************************/
+procedure Output(pname varchar2 default null, pdest varchar2 default null) is
+  myName word := pname;
+  myDest word := pdest;
+begin
+  -- Finish document if necessary
+  if state < 3 then
+    ClosePDF();
+  end if;
+
+  myDest := strtoupper(myDest);
+
+  -- Default destination is 'F' (File)
+  if myDest is null then
+    if myName is null then
+      myName := 'doc.pdf';
+    end if;
+    myDest := 'F';
+  end if;
+
+  -- Only 'F' (File) mode is supported
+  if myDest = 'F' then
+    if myName is null then
+      raise_application_error(-20305,
+        'Filename required for Output with pdest=''F''. Example: Output(''report.pdf'', ''F'')');
+    end if;
+
+    -- Delegate to OutputFile
+    OutputFile(myName, 'PDF_DIR');
+    log_message(3, 'Output: Saved to file ' || myName);
+
+  elsif myDest in ('I', 'D', 'S') then
+    -- OWA/HTP modes no longer supported
+    raise_application_error(-20306,
+      'Output mode ''' || myDest || ''' is no longer supported (OWA/HTP removed). ' ||
+      'Use OutputBlob() to get PDF as BLOB, or OutputFile() to save to filesystem.');
+
+  else
+    raise_application_error(-20307,
+      'Invalid output destination: ' || myDest || '. Use ''F'' for file output, ' ||
+      'or call OutputBlob()/OutputFile() directly.');
+  end if;
+
+exception
+  when others then
+    log_message(1, 'Error in Output: ' || sqlerrm);
+    error('Output: ' || sqlerrm);
 end Output;
 
 function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default null)
@@ -4393,11 +4490,13 @@ end if;
         dbms_lob.append(v_doc, dbms_lob.substr(v_blob, v_len));
      end if;
   end loop;
- -- wpg_docload.download_file(v_doc);
-  return(v_doc);
+  -- Simply delegate to OutputBlob (Task 1.5 - OWA removed)
+  return OutputBlob();
 exception
-when others then
-error('ReturnBlob : '||sqlerrm);
+  when others then
+    log_message(1, 'Error in ReturnBlob: ' || sqlerrm);
+    error('ReturnBlob: ' || sqlerrm);
+    return null;
 end ReturnBlob;
  
 ----------------------------------------------------------------------------------------
