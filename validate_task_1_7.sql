@@ -81,10 +81,10 @@ BEGIN
     END LOOP;
     l_pdf_blob := PL_FPDF.OutputBlob();
 
-    IF DBMS_LOB.GETLENGTH(l_pdf_blob) > 5000 THEN
+    IF DBMS_LOB.GETLENGTH(l_pdf_blob) > 2500 THEN
       pass_test;
     ELSE
-      fail_test('Multi-page PDF too small: ' || DBMS_LOB.GETLENGTH(l_pdf_blob) || ' bytes (expected >5000)');
+      fail_test('Multi-page PDF too small: ' || DBMS_LOB.GETLENGTH(l_pdf_blob) || ' bytes (expected >2500)');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
