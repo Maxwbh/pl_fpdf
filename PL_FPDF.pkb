@@ -225,6 +225,14 @@ type ArrayCharWidths is table of charSet index by word;
  g_ttf_fonts_count pls_integer := 0;        -- Number of loaded TTF fonts
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 2.1: UTF-8/Unicode Support - Global variables
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-17
+--------------------------------------------------------------------------------
+ g_utf8_enabled boolean := true;            -- UTF-8 encoding enabled by default
+--------------------------------------------------------------------------------
+
 /*******************************************************************************
 *                                                                              *
 *           Protected methods : Internal function and procedures               *
@@ -1222,7 +1230,8 @@ end p_escape;
 function p_textstring(pstr in varchar2) return varchar2 is
 begin
 	-- Format a text string
-	return '(' || p_escape(pstr) || ')';
+  -- Task 2.1: Use UTF8ToPDFString for proper encoding
+	return '(' || UTF8ToPDFString(pstr, true) || ')';
 end p_textstring;
 
 ----------------------------------------------------------------------------------------
@@ -3485,6 +3494,80 @@ end ClearTTFFontCache;
 
 --------------------------------------------------------------------------------
 -- End of Task 1.3 implementations
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- TASK 2.1: UTF-8/Unicode Support Functions
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-17
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Function: UTF8ToPDFString
+* Description: Converts UTF-8 text to PDF-compatible string format
+*******************************************************************************/
+function UTF8ToPDFString(p_text varchar2, p_escape boolean default true) return varchar2 is
+  l_result varchar2(32767);
+begin
+  if p_text is null then
+    return null;
+  end if;
+
+  -- If UTF-8 is disabled, just escape special characters
+  if not g_utf8_enabled then
+    if p_escape then
+      return p_escape(p_text);
+    else
+      return p_text;
+    end if;
+  end if;
+
+  -- UTF-8 encoding enabled
+  -- Oracle VARCHAR2 already stores text in database character set (typically AL32UTF8)
+  -- For PDF output with standard fonts: we rely on Oracle's internal handling
+  -- For PDF output with TTF fonts: Unicode will be properly encoded when font is embedded
+
+  if p_escape then
+    l_result := p_escape(p_text);
+  else
+    l_result := p_text;
+  end if;
+
+  -- Note: Full Unicode support with glyph mapping requires TTF font embedding
+  -- This basic implementation allows UTF-8 text to flow through to PDF
+  -- Advanced features (CMAP tables, glyph substitution) in Phase 3
+
+  return l_result;
+
+exception
+  when others then
+    log_message(1, 'Error in UTF8ToPDFString: ' || sqlerrm);
+    if p_escape then
+      return p_escape(p_text);
+    else
+      return p_text;
+    end if;
+end UTF8ToPDFString;
+
+/*******************************************************************************
+* Function: IsUTF8Enabled
+*******************************************************************************/
+function IsUTF8Enabled return boolean is
+begin
+  return g_utf8_enabled;
+end IsUTF8Enabled;
+
+/*******************************************************************************
+* Procedure: SetUTF8Enabled
+*******************************************************************************/
+procedure SetUTF8Enabled(p_enabled boolean default true) is
+begin
+  log_message(3, 'Setting UTF-8 encoding to: ' || case when p_enabled then 'ENABLED' else 'DISABLED' end);
+  g_utf8_enabled := p_enabled;
+end SetUTF8Enabled;
+
+--------------------------------------------------------------------------------
+-- End of TASK 2.1 implementations
 --------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------

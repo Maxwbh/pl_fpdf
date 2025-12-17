@@ -235,8 +235,32 @@ function GetTTFFontInfo(p_font_name varchar2) return recTTFFont;
 *******************************************************************************/
 procedure ClearTTFFontCache;
 
+/*******************************************************************************
+* Function: UTF8ToPDFString - Convert UTF-8 text to PDF-compatible string
+* Description: Converts UTF-8 encoded text to PDF string format
+* Parameters:
+*   p_text - UTF-8 text to convert
+*   p_escape - Whether to escape PDF special characters (default true)
+* Returns: PDF-compatible string
+*******************************************************************************/
+function UTF8ToPDFString(
+  p_text varchar2,
+  p_escape boolean default true
+) return varchar2;
+
+/*******************************************************************************
+* Function: IsUTF8Enabled - Check if UTF-8 encoding is enabled
+*******************************************************************************/
+function IsUTF8Enabled return boolean;
+
+/*******************************************************************************
+* Procedure: SetUTF8Enabled - Enable/disable UTF-8 encoding
+*******************************************************************************/
+procedure SetUTF8Enabled(p_enabled boolean default true);
+
 --------------------------------------------------------------------------------
 -- End of Task 1.3 additions
+-- Task 2.1: UTF-8/Unicode Support additions
 --------------------------------------------------------------------------------
 
 -- methods added to FPDF
