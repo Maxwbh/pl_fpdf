@@ -387,6 +387,12 @@ procedure image ( pFile in varchar2,
 procedure Output(pname in varchar2 default null, pdest in varchar2 default null);
 function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default null) return blob;
 
+--------------------------------------------------------------------------------
+-- TASK 1.5: Modern output methods without OWA/HTP dependencies
+--------------------------------------------------------------------------------
+function OutputBlob return blob;
+procedure OutputFile(p_filename varchar2, p_directory varchar2 default 'PDF_DIR');
+
 procedure OpenPDF;
 procedure ClosePDF;
 
