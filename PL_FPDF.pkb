@@ -3513,24 +3513,14 @@ begin
     return null;
   end if;
 
-  -- If UTF-8 is disabled, just escape special characters
-  if not g_utf8_enabled then
-    if p_escape then
-      return p_escape(p_text);
-    else
-      return p_text;
-    end if;
-  end if;
+  -- UTF-8 encoding (Oracle VARCHAR2 stores in database charset, typically AL32UTF8)
+  -- For PDF output: standard fonts use internal handling, TTF fonts use Unicode encoding
+  l_result := p_text;
 
-  -- UTF-8 encoding enabled
-  -- Oracle VARCHAR2 already stores text in database character set (typically AL32UTF8)
-  -- For PDF output with standard fonts: we rely on Oracle's internal handling
-  -- For PDF output with TTF fonts: Unicode will be properly encoded when font is embedded
-
+  -- Escape PDF special characters if requested: \, (, )
   if p_escape then
-    l_result := p_escape(p_text);
-  else
-    l_result := p_text;
+    -- Inline escape logic: add \ before \, ( and )
+    l_result := str_replace(')','\)',str_replace('(','\(',str_replace('\\','\\\\',l_result)));
   end if;
 
   -- Note: Full Unicode support with glyph mapping requires TTF font embedding
@@ -3542,8 +3532,9 @@ begin
 exception
   when others then
     log_message(1, 'Error in UTF8ToPDFString: ' || sqlerrm);
+    -- Fallback: return text with basic escaping
     if p_escape then
-      return p_escape(p_text);
+      return str_replace(')','\)',str_replace('(','\(',str_replace('\\','\\\\',p_text)));
     else
       return p_text;
     end if;
