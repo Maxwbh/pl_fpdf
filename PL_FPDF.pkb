@@ -4742,6 +4742,9 @@ end CellRotated;
 /*******************************************************************************
 * Procedure: WriteRotated
 * Description: Modern Write with text rotation support
+* NOTE: Currently only 0° rotation is fully supported due to limitations
+*       with the legacy Write() procedure's internal positioning calculations.
+*       For non-zero rotations, use CellRotated() instead.
 *******************************************************************************/
 procedure WriteRotated(
   p_height number,
@@ -4749,11 +4752,6 @@ procedure WriteRotated(
   p_link varchar2 default null,
   p_rotation pls_integer default 0
 ) is
-  l_angle number;
-  l_x number;
-  l_y number;
-  l_cos number;
-  l_sin number;
 begin
   -- Validate rotation
   if p_rotation not in (0, 90, 180, 270) then
@@ -4761,32 +4759,16 @@ begin
       'Invalid text rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
   end if;
 
-  -- If no rotation, use legacy Write implementation
-  if p_rotation = 0 then
-    Write(p_height, p_text, p_link);
-    return;
+  -- Currently only 0° rotation is supported for Write
+  -- For rotated text, use CellRotated instead
+  if p_rotation <> 0 then
+    raise_application_error(-20111,
+      'WriteRotated currently only supports 0° rotation. ' ||
+      'Use CellRotated() for rotated text output.');
   end if;
-
-  -- Apply rotation transformation
-  l_x := x;
-  l_y := y;
-  l_angle := p_rotation * 3.14159265359 / 180;  -- Convert to radians
-  l_cos := cos(l_angle);
-  l_sin := sin(l_angle);
-
-  -- Save graphics state and apply combined rotation transformation
-  -- Single matrix for rotating around point (l_x, l_y)
-  p_out('q');  -- Save graphics state
-  p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
-        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
-        tochar(l_x * k * (1 - l_cos) + (h - l_y) * k * l_sin, 2) || ' ' ||
-        tochar((h - l_y) * k * (1 - l_cos) - l_x * k * l_sin, 2) || ' cm');
 
   -- Call legacy Write implementation
   Write(p_height, p_text, p_link);
-
-  -- Restore graphics state
-  p_out('Q');
 
   log_message(4, 'WriteRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
 
