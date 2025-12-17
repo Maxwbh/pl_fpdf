@@ -4717,15 +4717,13 @@ begin
   l_cos := cos(l_angle);
   l_sin := sin(l_angle);
 
-  -- Save graphics state and apply rotation transformation
+  -- Save graphics state and apply combined rotation transformation
+  -- Single matrix for rotating around point (l_x, l_y)
   p_out('q');  -- Save graphics state
-
-  -- Translate to rotation point, rotate, translate back
-  -- This rotates around the point (l_x, l_y)
-  p_out('1 0 0 1 ' || tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
   p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
-        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' 0 0 cm');
-  p_out('1 0 0 1 ' || tochar(-l_x * k, 2) || ' ' || tochar(-(h - l_y) * k, 2) || ' cm');
+        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
+        tochar(l_x * k * (1 - l_cos) + (h - l_y) * k * l_sin, 2) || ' ' ||
+        tochar((h - l_y) * k * (1 - l_cos) - l_x * k * l_sin, 2) || ' cm');
 
   -- Call legacy Cell implementation
   Cell(p_width, p_height, p_text, p_border, p_ln, p_align, p_fill, p_link);
@@ -4776,15 +4774,13 @@ begin
   l_cos := cos(l_angle);
   l_sin := sin(l_angle);
 
-  -- Save graphics state and apply rotation transformation
+  -- Save graphics state and apply combined rotation transformation
+  -- Single matrix for rotating around point (l_x, l_y)
   p_out('q');  -- Save graphics state
-
-  -- Translate to rotation point, rotate, translate back
-  -- This rotates around the point (l_x, l_y)
-  p_out('1 0 0 1 ' || tochar(l_x * k, 2) || ' ' || tochar((h - l_y) * k, 2) || ' cm');
   p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
-        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' 0 0 cm');
-  p_out('1 0 0 1 ' || tochar(-l_x * k, 2) || ' ' || tochar(-(h - l_y) * k, 2) || ' cm');
+        tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
+        tochar(l_x * k * (1 - l_cos) + (h - l_y) * k * l_sin, 2) || ' ' ||
+        tochar((h - l_y) * k * (1 - l_cos) - l_x * k * l_sin, 2) || ' cm');
 
   -- Call legacy Write implementation
   Write(p_height, p_text, p_link);
