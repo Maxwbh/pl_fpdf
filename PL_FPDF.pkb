@@ -3081,14 +3081,14 @@ begin
     );
   end if;
 
-  -- Validate unit
-  l_unit := lower(p_unit);
-  if l_unit not in ('mm', 'cm', 'in', 'pt') then
+  -- Validate unit (validate BEFORE assignment to avoid buffer overflow)
+  if lower(p_unit) not in ('mm', 'cm', 'in', 'pt') then
     raise_application_error(
       -20002,
       'Invalid unit: ' || p_unit || '. Must be mm, cm, in, or pt.'
     );
   end if;
+  l_unit := lower(p_unit);
 
   -- Validate encoding
   if upper(p_encoding) not in ('UTF-8', 'UTF8', 'AL32UTF8', 'ISO-8859-1', 'WINDOWS-1252') then
@@ -3566,7 +3566,7 @@ function GetTTFFontInfo(p_font_name varchar2) return recTTFFont is
   l_font_name_upper varchar2(100) := upper(trim(p_font_name));
 begin
   if not g_ttf_fonts.exists(l_font_name_upper) then
-    raise_application_error(-20201, 'Font not found: ' || p_font_name || '. Call AddTTFFont() or LoadTTFFromFile() first.');
+    raise_application_error(-20206, 'Font not found: ' || p_font_name || '. Call AddTTFFont() or LoadTTFFromFile() first.');
   end if;
   return g_ttf_fonts(l_font_name_upper);
 exception
@@ -4654,7 +4654,7 @@ begin
 
   elsif myDest in ('I', 'D', 'S') then
     -- OWA/HTP modes no longer supported
-    raise_application_error(-20100,
+    raise_application_error(-20306,
       'Output mode ''' || myDest || ''' is no longer supported (OWA/HTP removed). ' ||
       'Use OutputBlob() to get PDF as BLOB, or OutputFile() to save to filesystem.');
 
