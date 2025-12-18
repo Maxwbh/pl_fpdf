@@ -5067,4 +5067,321 @@ end WriteRotated;
 -- End of Task 1.4 implementations
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 3.2: JSON Support - Implementations
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-18
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: SetDocumentConfig
+* Description: Configure PDF document using JSON_OBJECT_T
+*******************************************************************************/
+procedure SetDocumentConfig(p_config JSON_OBJECT_T) is
+  l_keys JSON_KEY_LIST;
+  l_key VARCHAR2(100);
+  l_value VARCHAR2(4000);
+begin
+  -- Handle NULL config gracefully
+  if p_config is null then
+    log_message(c_LOG_WARN, 'SetDocumentConfig: NULL config provided, ignoring');
+    return;
+  end if;
+
+  log_message(c_LOG_INFO, 'SetDocumentConfig: Processing JSON configuration');
+
+  l_keys := p_config.get_keys;
+
+  -- Process each configuration key
+  for i in 1..l_keys.count loop
+    l_key := l_keys(i);
+
+    begin
+      case upper(l_key)
+        -- Document metadata
+        when 'TITLE' then
+          title := p_config.get_String(l_key);
+          log_message(c_LOG_DEBUG, 'Set title: ' || title);
+
+        when 'AUTHOR' then
+          author := p_config.get_String(l_key);
+          log_message(c_LOG_DEBUG, 'Set author: ' || author);
+
+        when 'SUBJECT' then
+          subject := p_config.get_String(l_key);
+          log_message(c_LOG_DEBUG, 'Set subject: ' || subject);
+
+        when 'KEYWORDS' then
+          keywords := p_config.get_String(l_key);
+          log_message(c_LOG_DEBUG, 'Set keywords: ' || keywords);
+
+        when 'CREATOR' then
+          creator := p_config.get_String(l_key);
+          log_message(c_LOG_DEBUG, 'Set creator: ' || creator);
+
+        -- Page configuration (only if not initialized yet)
+        when 'ORIENTATION' then
+          l_value := p_config.get_String(l_key);
+          if not g_initialized then
+            -- Will be validated by Init()
+            g_default_orientation := upper(substr(l_value, 1, 1));
+          else
+            -- Validate if already initialized
+            if upper(substr(l_value, 1, 1)) not in ('P', 'L') then
+              raise_application_error(-20001,
+                'Invalid orientation: ' || l_value || '. Must be P or L.');
+            end if;
+          end if;
+          log_message(c_LOG_DEBUG, 'Set orientation: ' || l_value);
+
+        when 'UNIT' then
+          l_value := lower(p_config.get_String(l_key));
+          if not g_initialized then
+            -- Will be validated by Init() - just store
+            null; -- Unit is set during Init()
+          else
+            -- Already initialized, cannot change unit
+            log_message(c_LOG_WARN, 'Cannot change unit after initialization');
+          end if;
+
+        when 'FORMAT' then
+          l_value := upper(p_config.get_String(l_key));
+          if not g_initialized then
+            g_default_format := get_page_format(l_value);
+          end if;
+          log_message(c_LOG_DEBUG, 'Set format: ' || l_value);
+
+        -- Font configuration
+        when 'FONTFAMILY' then
+          l_value := p_config.get_String(l_key);
+          if g_initialized then
+            SetFont(l_value, fontstyle, fontsizePt);
+          end if;
+          log_message(c_LOG_DEBUG, 'Set font family: ' || l_value);
+
+        when 'FONTSIZE' then
+          if g_initialized then
+            SetFont(FontFamily, fontstyle, p_config.get_Number(l_key));
+          end if;
+          log_message(c_LOG_DEBUG, 'Set font size: ' || p_config.get_Number(l_key));
+
+        when 'FONTSTYLE' then
+          l_value := p_config.get_String(l_key);
+          if g_initialized then
+            SetFont(FontFamily, l_value, fontsizePt);
+          end if;
+          log_message(c_LOG_DEBUG, 'Set font style: ' || l_value);
+
+        -- Margin configuration
+        when 'LEFTMARGIN' then
+          SetLeftMargin(p_config.get_Number(l_key));
+          log_message(c_LOG_DEBUG, 'Set left margin: ' || p_config.get_Number(l_key));
+
+        when 'TOPMARGIN' then
+          SetTopMargin(p_config.get_Number(l_key));
+          log_message(c_LOG_DEBUG, 'Set top margin: ' || p_config.get_Number(l_key));
+
+        when 'RIGHTMARGIN' then
+          rMargin := p_config.get_Number(l_key);
+          log_message(c_LOG_DEBUG, 'Set right margin: ' || p_config.get_Number(l_key));
+
+        else
+          log_message(c_LOG_WARN, 'Unknown configuration key: ' || l_key);
+      end case;
+
+    exception
+      when others then
+        log_message(c_LOG_ERROR, 'Error processing key "' || l_key || '": ' || sqlerrm);
+        raise;
+    end;
+  end loop;
+
+  log_message(c_LOG_INFO, 'SetDocumentConfig: Configuration applied successfully');
+
+exception
+  when others then
+    log_message(c_LOG_ERROR, 'Error in SetDocumentConfig: ' || sqlerrm);
+    raise;
+end SetDocumentConfig;
+
+/*******************************************************************************
+* Function: GetDocumentMetadata
+* Description: Returns document metadata and statistics as JSON
+*******************************************************************************/
+function GetDocumentMetadata return JSON_OBJECT_T is
+  l_metadata JSON_OBJECT_T;
+  l_unit VARCHAR2(10);
+begin
+  l_metadata := JSON_OBJECT_T();
+
+  -- Document information
+  l_metadata.put('initialized', g_initialized);
+  l_metadata.put('pageCount', g_current_page);
+
+  -- Document metadata
+  if title is not null then
+    l_metadata.put('title', title);
+  end if;
+
+  if author is not null then
+    l_metadata.put('author', author);
+  end if;
+
+  if subject is not null then
+    l_metadata.put('subject', subject);
+  end if;
+
+  if keywords is not null then
+    l_metadata.put('keywords', keywords);
+  end if;
+
+  if creator is not null then
+    l_metadata.put('creator', creator);
+  end if;
+
+  -- Page configuration
+  l_metadata.put('orientation', case g_default_orientation
+    when 'P' then 'Portrait'
+    when 'L' then 'Landscape'
+    else 'Unknown'
+  end);
+
+  -- Determine unit from scale factor k
+  if k = c_SCALE_PT then
+    l_unit := 'pt';
+  elsif k = c_SCALE_MM then
+    l_unit := 'mm';
+  elsif k = c_SCALE_CM then
+    l_unit := 'cm';
+  elsif k = c_SCALE_IN then
+    l_unit := 'in';
+  else
+    l_unit := 'unknown';
+  end if;
+  l_metadata.put('unit', l_unit);
+
+  -- Try to determine format from default format
+  if g_formats_initialized and g_default_format.width is not null then
+    -- Match against known formats
+    if g_default_format.width = 210 and g_default_format.height = 297 then
+      l_metadata.put('format', 'A4');
+    elsif g_default_format.width = 216 and g_default_format.height = 279 then
+      l_metadata.put('format', 'Letter');
+    elsif g_default_format.width = 216 and g_default_format.height = 356 then
+      l_metadata.put('format', 'Legal');
+    elsif g_default_format.width = 297 and g_default_format.height = 420 then
+      l_metadata.put('format', 'A3');
+    elsif g_default_format.width = 148 and g_default_format.height = 210 then
+      l_metadata.put('format', 'A5');
+    else
+      l_metadata.put('format', 'Custom');
+      l_metadata.put('formatWidth', g_default_format.width);
+      l_metadata.put('formatHeight', g_default_format.height);
+    end if;
+  end if;
+
+  -- PDF version
+  l_metadata.put('pdfVersion', c_PDF_VERSION);
+  l_metadata.put('fpdfVersion', c_FPDF_VERSION);
+
+  log_message(c_LOG_DEBUG, 'GetDocumentMetadata: Returned metadata for ' || g_current_page || ' pages');
+
+  return l_metadata;
+
+exception
+  when others then
+    log_message(c_LOG_ERROR, 'Error in GetDocumentMetadata: ' || sqlerrm);
+    raise;
+end GetDocumentMetadata;
+
+/*******************************************************************************
+* Function: GetPageInfo
+* Description: Returns information about a specific page as JSON
+*******************************************************************************/
+function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_T is
+  l_page_info JSON_OBJECT_T;
+  l_page_num pls_integer;
+  l_unit VARCHAR2(10);
+begin
+  l_page_info := JSON_OBJECT_T();
+
+  -- Determine which page to query
+  if p_page_number is null then
+    l_page_num := g_current_page;
+  else
+    l_page_num := p_page_number;
+  end if;
+
+  -- Validate page number
+  if l_page_num < 1 or l_page_num > g_current_page then
+    raise_application_error(-20106,
+      'Invalid page number: ' || l_page_num || '. Must be between 1 and ' || g_current_page);
+  end if;
+
+  -- Check if page exists in modern collection
+  if not g_pages.exists(l_page_num) then
+    raise_application_error(-20106,
+      'Page ' || l_page_num || ' not found in page collection');
+  end if;
+
+  -- Page number
+  l_page_info.put('number', l_page_num);
+
+  -- Page format
+  l_page_info.put('width', g_pages(l_page_num).format.width);
+  l_page_info.put('height', g_pages(l_page_num).format.height);
+
+  -- Orientation
+  l_page_info.put('orientation', case g_pages(l_page_num).orientation
+    when 'P' then 'Portrait'
+    when 'L' then 'Landscape'
+    else 'Unknown'
+  end);
+
+  -- Rotation
+  l_page_info.put('rotation', g_pages(l_page_num).rotation);
+
+  -- Format name (if standard)
+  if g_pages(l_page_num).format.width = 210 and g_pages(l_page_num).format.height = 297 then
+    l_page_info.put('format', 'A4');
+  elsif g_pages(l_page_num).format.width = 216 and g_pages(l_page_num).format.height = 279 then
+    l_page_info.put('format', 'Letter');
+  elsif g_pages(l_page_num).format.width = 216 and g_pages(l_page_num).format.height = 356 then
+    l_page_info.put('format', 'Legal');
+  elsif g_pages(l_page_num).format.width = 297 and g_pages(l_page_num).format.height = 420 then
+    l_page_info.put('format', 'A3');
+  elsif g_pages(l_page_num).format.width = 148 and g_pages(l_page_num).format.height = 210 then
+    l_page_info.put('format', 'A5');
+  else
+    l_page_info.put('format', 'Custom');
+  end if;
+
+  -- Unit
+  if k = c_SCALE_PT then
+    l_unit := 'pt';
+  elsif k = c_SCALE_MM then
+    l_unit := 'mm';
+  elsif k = c_SCALE_CM then
+    l_unit := 'cm';
+  elsif k = c_SCALE_IN then
+    l_unit := 'in';
+  else
+    l_unit := 'unknown';
+  end if;
+  l_page_info.put('unit', l_unit);
+
+  log_message(c_LOG_DEBUG, 'GetPageInfo: Returned info for page ' || l_page_num);
+
+  return l_page_info;
+
+exception
+  when others then
+    log_message(c_LOG_ERROR, 'Error in GetPageInfo: ' || sqlerrm);
+    raise;
+end GetPageInfo;
+
+--------------------------------------------------------------------------------
+-- End of Task 3.2 implementations
+--------------------------------------------------------------------------------
+
 END PL_FPDF;

@@ -616,4 +616,88 @@ procedure SetLogLevel(p_level pls_integer);
 function GetLogLevel return pls_integer
   DETERMINISTIC;
 
+--------------------------------------------------------------------------------
+-- TASK 3.2: JSON Support - Modern Configuration and Metadata APIs
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-18
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: SetDocumentConfig
+* Description: Configure PDF document using JSON_OBJECT_T for modern integration
+* Parameters:
+*   p_config - JSON object containing configuration options
+* Supported JSON keys:
+*   - title, author, subject, keywords, creator (document metadata)
+*   - orientation ('P' or 'L'), unit ('mm','cm','in','pt'), format (page format)
+*   - fontFamily, fontSize, fontStyle (default font configuration)
+*   - leftMargin, topMargin, rightMargin (page margins in current unit)
+* Example:
+*   DECLARE
+*     l_config JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     l_config.put('title', 'Monthly Report');
+*     l_config.put('author', 'Maxwell Oliveira');
+*     l_config.put('orientation', 'P');
+*     l_config.put('format', 'A4');
+*     PL_FPDF.SetDocumentConfig(l_config);
+*   END;
+*******************************************************************************/
+procedure SetDocumentConfig(p_config JSON_OBJECT_T);
+
+/*******************************************************************************
+* Function: GetDocumentMetadata
+* Description: Returns document metadata and statistics as JSON_OBJECT_T
+* Returns: JSON object with document information
+* JSON structure:
+*   {
+*     "pageCount": <number>,
+*     "title": "<string>",
+*     "author": "<string>",
+*     "subject": "<string>",
+*     "keywords": "<string>",
+*     "format": "<string>",
+*     "orientation": "<string>",
+*     "unit": "<string>",
+*     "initialized": <boolean>
+*   }
+* Example:
+*   DECLARE
+*     l_meta JSON_OBJECT_T;
+*   BEGIN
+*     l_meta := PL_FPDF.GetDocumentMetadata();
+*     DBMS_OUTPUT.PUT_LINE('Pages: ' || l_meta.get_Number('pageCount'));
+*   END;
+*******************************************************************************/
+function GetDocumentMetadata return JSON_OBJECT_T;
+
+/*******************************************************************************
+* Function: GetPageInfo
+* Description: Returns information about a specific page as JSON_OBJECT_T
+* Parameters:
+*   p_page_number - Page number (NULL = current page)
+* Returns: JSON object with page information
+* JSON structure:
+*   {
+*     "number": <number>,
+*     "format": "<string>",
+*     "orientation": "<string>",
+*     "width": <number>,
+*     "height": <number>,
+*     "unit": "<string>"
+*   }
+* Example:
+*   DECLARE
+*     l_page_info JSON_OBJECT_T;
+*   BEGIN
+*     l_page_info := PL_FPDF.GetPageInfo(1);
+*     DBMS_OUTPUT.PUT_LINE('Width: ' || l_page_info.get_Number('width'));
+*   END;
+*******************************************************************************/
+function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_T;
+
+--------------------------------------------------------------------------------
+-- End of Task 3.2 additions
+--------------------------------------------------------------------------------
+
 END PL_FPDF;
