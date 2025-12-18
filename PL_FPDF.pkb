@@ -3893,13 +3893,18 @@ begin
 
 	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
 	-- Remove 'U' (underline) and convert to uppercase for validation
-	if pstyle is not null and pstyle != '' then
-		l_clean_style := upper(replace(replace(pstyle, 'U', ''), 'u', ''));
+	if pstyle is not null then
+		if length(pstyle) > 0 then
+			l_clean_style := upper(replace(replace(pstyle, 'U', ''), 'u', ''));
 
-		-- N = Normal, B = Bold, I = Italic, BI/IB = Bold+Italic
-		-- Accept only: N, B, I, BI, IB, or empty after removing U
-		if l_clean_style != '' and l_clean_style not in ('N', 'B', 'I', 'BI', 'IB') then
-			raise_application_error(-20100, 'Invalid font style: ''' || pstyle || '''. Valid: N, B, I, BI, IB (with optional U)');
+			-- N = Normal, B = Bold, I = Italic, BI/IB = Bold+Italic
+			-- Accept only: empty, N, B, I, BI, IB after removing U
+			if length(l_clean_style) > 0 then
+				if l_clean_style <> 'N' and l_clean_style <> 'B' and l_clean_style <> 'I' and
+				   l_clean_style <> 'BI' and l_clean_style <> 'IB' then
+					raise_application_error(-20100, 'Invalid font style: ''' || pstyle || '''. Valid: N, B, I, BI, IB (with optional U)');
+				end if;
+			end if;
 		end if;
 	end if;
 
