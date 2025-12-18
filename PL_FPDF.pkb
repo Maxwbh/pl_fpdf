@@ -3891,13 +3891,18 @@ begin
 	end if;
 
 	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
-	if pstyle is not null then
+	if pstyle is not null and pstyle != '' then
 		declare
-			l_clean_style varchar2(10) := upper(str_replace('U', '', pstyle));
+			l_clean_style varchar2(10);
 		begin
+			-- Remove 'U' (underline) and convert to uppercase for validation
+			l_clean_style := upper(replace(pstyle, 'U', ''));
+			l_clean_style := upper(replace(l_clean_style, 'u', ''));
+
 			-- N = Normal (same as empty), B = Bold, I = Italic, BI/IB = Bold+Italic
+			-- Accept: N, B, I, BI, IB, or empty after removing U
 			if l_clean_style not in ('', 'N', 'B', 'I', 'BI', 'IB') then
-				raise_application_error(-20100, 'Invalid font style: ' || substr(pstyle, 1, 20) || '. Use empty, N, B, I, BI, or IB (with optional U for underline)');
+				raise_application_error(-20100, 'Invalid font style: ' || substr(pstyle, 1, 20) || '. Valid styles: empty, N, B, I, BI, IB (with optional U)');
 			end if;
 		end;
 	end if;
