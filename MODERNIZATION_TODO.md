@@ -585,6 +585,203 @@ FORALL i IN 1..fonts.COUNT
 
 ---
 
+#### 🆕 Task 3.7: Geração de QR Code PIX
+**Prioridade:** P2 (Importante - Brasil)
+**Esforço:** Médio
+**Impacto:** Integração com sistema de pagamentos PIX brasileiro
+
+**Descrição:**
+- Gerar QR Code no formato PIX (padrão Banco Central do Brasil)
+- Suporte a PIX estático e dinâmico
+- Encoding EMV QR Code (Merchant Presented Mode)
+- Renderização direta no PDF sem dependências externas
+- Validação de chaves PIX (CPF, CNPJ, email, telefone, chave aleatória)
+
+**Especificação Técnica:**
+- EMV QR Code padrão (EMVCo Merchant-Presented QR Code)
+- Payload Format Indicator: "01" (PIX)
+- Merchant Account Information: ID "26" (br.gov.bcb.pix)
+- CRC16-CCITT para validação
+
+**Exemplo de Uso:**
+```sql
+DECLARE
+  l_pix_data JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage();
+
+  -- Configurar dados PIX
+  l_pix_data.put('chave', 'contato@exemplo.com.br');
+  l_pix_data.put('nome', 'Maxwell Oliveira');
+  l_pix_data.put('cidade', 'Sao Paulo');
+  l_pix_data.put('valor', 150.00);
+  l_pix_data.put('identificador', 'PEDIDO123');
+
+  -- Gerar QR Code PIX
+  PL_FPDF.AddQRCodePIX(
+    p_x => 50,
+    p_y => 50,
+    p_size => 50,           -- Tamanho em mm
+    p_pix_data => l_pix_data
+  );
+
+  -- Adicionar código copia-e-cola
+  PL_FPDF.SetFont('Courier', '', 8);
+  PL_FPDF.Text(50, 105, PL_FPDF.GetPixPayload(l_pix_data));
+END;
+```
+
+**Novas Funções:**
+```sql
+-- Adicionar QR Code PIX ao PDF
+PROCEDURE AddQRCodePIX(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_size NUMBER,
+  p_pix_data JSON_OBJECT_T
+);
+
+-- Gerar payload PIX (copia-e-cola)
+FUNCTION GetPixPayload(p_pix_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Validar chave PIX
+FUNCTION ValidatePixKey(
+  p_key VARCHAR2,
+  p_type VARCHAR2 -- 'CPF', 'CNPJ', 'EMAIL', 'PHONE', 'RANDOM'
+) RETURN BOOLEAN;
+
+-- Calcular CRC16 para PIX
+FUNCTION CalculateCRC16(p_payload VARCHAR2) RETURN VARCHAR2;
+```
+
+**Formato QR Code:**
+- Versão: Auto-detect baseado no tamanho do payload
+- Error Correction: M (15%)
+- Encoding: UTF-8
+- Módulos: Matriz de pontos renderizados como células no PDF
+
+**Arquivos Afetados:**
+- `PL_FPDF.pks` - Declarações das novas funções
+- `PL_FPDF.pkb` - Implementação completa de QR Code e PIX
+
+**Referências:**
+- [Manual PIX - Banco Central](https://www.bcb.gov.br/estabilidadefinanceira/pix)
+- [EMV QR Code Specification](https://www.emvco.com/emv-technologies/qrcodes/)
+- ISO/IEC 18004 (QR Code)
+
+---
+
+#### 🆕 Task 3.8: Geração de Código de Barras para Boleto Bancário
+**Prioridade:** P2 (Importante - Brasil)
+**Esforço:** Médio
+**Impacto:** Integração com sistema bancário brasileiro
+
+**Descrição:**
+- Gerar código de barras padrão FEBRABAN para boletos
+- Suporte a Código de Barras (44 dígitos)
+- Suporte a Linha Digitável (47 dígitos formatados)
+- Padrão Interbank (2x5)
+- Renderização direta no PDF
+
+**Especificação Técnica:**
+- Padrão FEBRABAN: 44 posições
+- Simbologia: Interbank 2 de 5
+- Altura mínima: 13mm (recomendado 15mm)
+- Largura módulo: 0.33mm (mínimo 0.254mm)
+- Quiet zone: 10x largura do módulo
+
+**Estrutura Código de Barras (44 posições):**
+```
+Posição  Conteúdo
+1-3      Código do banco
+4        Código da moeda (9 = Real)
+5        DV (Dígito Verificador)
+6-9      Fator de vencimento
+10-19    Valor (10 posições, sem vírgula)
+20-44    Campo livre (25 posições, definido pelo banco)
+```
+
+**Exemplo de Uso:**
+```sql
+DECLARE
+  l_boleto_data JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage();
+
+  -- Configurar dados do boleto
+  l_boleto_data.put('banco', '001');                    -- Banco do Brasil
+  l_boleto_data.put('moeda', '9');                      -- Real
+  l_boleto_data.put('vencimento', '2025-12-31');
+  l_boleto_data.put('valor', 1500.00);
+  l_boleto_data.put('campoLivre', '1234567890123456789012345');
+
+  -- Gerar código de barras
+  PL_FPDF.AddBarcodeBoleto(
+    p_x => 20,
+    p_y => 200,
+    p_width => 170,          -- Largura em mm
+    p_height => 15,          -- Altura em mm
+    p_boleto_data => l_boleto_data
+  );
+
+  -- Adicionar linha digitável
+  PL_FPDF.SetFont('Arial', 'B', 12);
+  PL_FPDF.Text(20, 195, PL_FPDF.GetLinhaDigitavel(l_boleto_data));
+END;
+```
+
+**Novas Funções:**
+```sql
+-- Adicionar código de barras de boleto
+PROCEDURE AddBarcodeBoleto(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_boleto_data JSON_OBJECT_T
+);
+
+-- Gerar linha digitável formatada
+FUNCTION GetLinhaDigitavel(p_boleto_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Calcular DV do código de barras
+FUNCTION CalculateDVBoleto(p_codigo VARCHAR2) RETURN CHAR;
+
+-- Calcular fator de vencimento
+FUNCTION CalculateFatorVencimento(p_data DATE) RETURN VARCHAR2;
+
+-- Validar código de barras
+FUNCTION ValidateCodigoBarras(p_codigo VARCHAR2) RETURN BOOLEAN;
+
+-- Renderizar Interbank 2 de 5
+PROCEDURE RenderInterbank25(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_code VARCHAR2
+);
+```
+
+**Padrão Interbank 2 de 5:**
+- Cada dígito = 5 barras (2 largas, 3 estreitas)
+- Início: barra estreita + espaço estreito + barra estreita + espaço estreito
+- Fim: barra larga + espaço estreito + barra estreita
+- Razão larga/estreita: 2.5:1 a 3:1
+
+**Arquivos Afetados:**
+- `PL_FPDF.pks` - Declarações das novas funções
+- `PL_FPDF.pkb` - Implementação de barcode e algoritmos FEBRABAN
+
+**Referências:**
+- [FEBRABAN - Código de Barras](https://portal.febraban.org.br/pagina/3166/33/pt-br/boleto)
+- [Especificação Técnica Boleto](https://cmsarquivos.febraban.org.br/)
+- Padrão Interbank 2 de 5 (ITF-14)
+
+---
+
 ## 🗂️ Estrutura de Arquivos Proposta
 
 ```
