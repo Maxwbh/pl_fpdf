@@ -3880,6 +3880,7 @@ mysize	 number;
 FontCount number := 0;
 myFontFile word;
 fontkey  word;
+l_clean_style varchar2(10);  -- For validation
 -- tabnull tv4000;
 begin
 	--------------------------------------------------------------------------------
@@ -3891,20 +3892,15 @@ begin
 	end if;
 
 	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
+	-- Remove 'U' (underline) and convert to uppercase for validation
 	if pstyle is not null and pstyle != '' then
-		declare
-			l_clean_style varchar2(10);
-		begin
-			-- Remove 'U' (underline) and convert to uppercase for validation
-			l_clean_style := upper(replace(pstyle, 'U', ''));
-			l_clean_style := upper(replace(l_clean_style, 'u', ''));
+		l_clean_style := upper(replace(replace(pstyle, 'U', ''), 'u', ''));
 
-			-- N = Normal (same as empty), B = Bold, I = Italic, BI/IB = Bold+Italic
-			-- Accept: N, B, I, BI, IB, or empty after removing U
-			if l_clean_style not in ('', 'N', 'B', 'I', 'BI', 'IB') then
-				raise_application_error(-20100, 'Invalid font style: ' || substr(pstyle, 1, 20) || '. Valid styles: empty, N, B, I, BI, IB (with optional U)');
-			end if;
-		end;
+		-- N = Normal, B = Bold, I = Italic, BI/IB = Bold+Italic
+		-- Accept only: N, B, I, BI, IB, or empty after removing U
+		if l_clean_style != '' and l_clean_style not in ('N', 'B', 'I', 'BI', 'IB') then
+			raise_application_error(-20100, 'Invalid font style: ''' || pstyle || '''. Valid: N, B, I, BI, IB (with optional U)');
+		end if;
 	end if;
 
 	-- Validate font size
