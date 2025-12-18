@@ -116,7 +116,8 @@ procedure Reset;
 * Example:
 *   IF PL_FPDF.IsInitialized() THEN ...
 *******************************************************************************/
-function IsInitialized return boolean;
+function IsInitialized return boolean
+  DETERMINISTIC;
 
 --------------------------------------------------------------------------------
 -- End of Task 1.1 additions
@@ -549,7 +550,8 @@ procedure SetPage(p_page_number pls_integer);
 * Example:
 *   l_page := PL_FPDF.GetCurrentPage();
 *******************************************************************************/
-function GetCurrentPage return pls_integer;
+function GetCurrentPage return pls_integer
+  DETERMINISTIC;
 
 --------------------------------------------------------------------------------
 -- Legacy compatibility (maintained for backward compatibility)
@@ -611,6 +613,7 @@ procedure SetLogLevel(p_level pls_integer);
 * Description: Returns the current logging level
 * Returns: Current log level (0-4)
 *******************************************************************************/
-function GetLogLevel return pls_integer;
+function GetLogLevel return pls_integer
+  DETERMINISTIC;
 
 END PL_FPDF;

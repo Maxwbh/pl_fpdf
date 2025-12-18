@@ -233,6 +233,73 @@ type ArrayCharWidths is table of charSet index by word;
  g_utf8_enabled boolean := true;            -- UTF-8 encoding enabled by default
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 3.1: Modern Code Structure - Constants
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-18
+-- Description: Replace magic numbers with named constants for better maintainability
+--------------------------------------------------------------------------------
+ -- PDF Specification Constants
+ c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
+ c_FPDF_VERSION CONSTANT VARCHAR2(10) := '2.0.0';
+
+ -- Page Dimension Limits (in mm)
+ c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
+ c_MAX_PAGE_WIDTH CONSTANT NUMBER := 10000;
+ c_MIN_PAGE_HEIGHT CONSTANT NUMBER := 1;
+ c_MAX_PAGE_HEIGHT CONSTANT NUMBER := 10000;
+
+ -- Font Size Limits (in points)
+ c_MIN_FONT_SIZE CONSTANT NUMBER := 1;
+ c_MAX_FONT_SIZE CONSTANT NUMBER := 999;
+ c_DEFAULT_FONT_SIZE CONSTANT NUMBER := 12;
+
+ -- Font Name Limits
+ c_MAX_FONT_NAME_LENGTH CONSTANT NUMBER := 80;
+
+ -- Line Width Limits (in user units)
+ c_MIN_LINE_WIDTH CONSTANT NUMBER := 0.001;
+ c_MAX_LINE_WIDTH CONSTANT NUMBER := 1000;
+ c_DEFAULT_LINE_WIDTH CONSTANT NUMBER := 0.2;
+
+ -- Color Value Limits (RGB)
+ c_MIN_COLOR_VALUE CONSTANT NUMBER := 0;
+ c_MAX_COLOR_VALUE CONSTANT NUMBER := 255;
+
+ -- Margin Limits (in mm)
+ c_MIN_MARGIN CONSTANT NUMBER := 0;
+ c_MAX_MARGIN CONSTANT NUMBER := 500;
+ c_DEFAULT_MARGIN CONSTANT NUMBER := 10;
+
+ -- Log Levels
+ c_LOG_OFF CONSTANT PLS_INTEGER := 0;
+ c_LOG_ERROR CONSTANT PLS_INTEGER := 1;
+ c_LOG_WARN CONSTANT PLS_INTEGER := 2;
+ c_LOG_INFO CONSTANT PLS_INTEGER := 3;
+ c_LOG_DEBUG CONSTANT PLS_INTEGER := 4;
+
+ -- Scale Factors (points per unit)
+ c_SCALE_PT CONSTANT NUMBER := 1;          -- points
+ c_SCALE_MM CONSTANT NUMBER := 72/25.4;    -- millimeters
+ c_SCALE_CM CONSTANT NUMBER := 72/2.54;    -- centimeters
+ c_SCALE_IN CONSTANT NUMBER := 72;         -- inches
+
+ -- Valid Rotation Angles (degrees)
+ c_ROTATION_0 CONSTANT PLS_INTEGER := 0;
+ c_ROTATION_90 CONSTANT PLS_INTEGER := 90;
+ c_ROTATION_180 CONSTANT PLS_INTEGER := 180;
+ c_ROTATION_270 CONSTANT PLS_INTEGER := 270;
+
+ -- TTF Header Signature
+ c_TTF_SIGNATURE CONSTANT RAW(4) := HEXTORAW('00010000');
+ c_OTF_SIGNATURE CONSTANT RAW(4) := HEXTORAW('4F54544F');  -- 'OTTO'
+
+ -- Image Format Signatures
+ c_PNG_SIGNATURE CONSTANT RAW(8) := HEXTORAW('89504E470D0A1A0A');
+ c_JPEG_SOI CONSTANT RAW(2) := HEXTORAW('FFD8');
+ c_JPEG_EOI CONSTANT RAW(2) := HEXTORAW('FFD9');
+--------------------------------------------------------------------------------
+
 /*******************************************************************************
 *                                                                              *
 *           Protected methods : Internal function and procedures               *
@@ -724,19 +791,22 @@ end log_message;
 *******************************************************************************/
 procedure SetLogLevel(p_level pls_integer) is
 begin
-  if p_level < 0 or p_level > 4 then
+  -- TASK 3.1: Using log level constants
+  if p_level < c_LOG_OFF or p_level > c_LOG_DEBUG then
     raise_application_error(-20100,
-      'Invalid log level: ' || p_level || '. Must be 0-4 (0=OFF, 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG)');
+      'Invalid log level: ' || p_level || '. Must be ' || c_LOG_OFF || '-' || c_LOG_DEBUG ||
+      ' (' || c_LOG_OFF || '=OFF, ' || c_LOG_ERROR || '=ERROR, ' || c_LOG_WARN || '=WARN, ' ||
+      c_LOG_INFO || '=INFO, ' || c_LOG_DEBUG || '=DEBUG)');
   end if;
 
   g_log_level := p_level;
-  log_message(3, 'Log level changed to: ' || p_level || ' (' ||
+  log_message(c_LOG_INFO, 'Log level changed to: ' || p_level || ' (' ||
     case p_level
-      when 0 then 'OFF'
-      when 1 then 'ERROR'
-      when 2 then 'WARN'
-      when 3 then 'INFO'
-      when 4 then 'DEBUG'
+      when c_LOG_OFF then 'OFF'
+      when c_LOG_ERROR then 'ERROR'
+      when c_LOG_WARN then 'WARN'
+      when c_LOG_INFO then 'INFO'
+      when c_LOG_DEBUG then 'DEBUG'
     end || ')');
 end SetLogLevel;
 
@@ -2601,18 +2671,19 @@ procedure SetDrawColor(r in number, g in number default -1, b in number default 
 begin
 	--------------------------------------------------------------------------------
 	-- TASK 2.3: Input Validation
+	-- TASK 3.1: Using constants for RGB range
 	--------------------------------------------------------------------------------
 	-- Validate RGB values (0-255 range)
-	if r < 0 or r > 255 then
-		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be 0-255');
+	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
+		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	if g <> -1 and (g < 0 or g > 255) then
-		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be 0-255');
+	if g <> -1 and (g < c_MIN_COLOR_VALUE or g > c_MAX_COLOR_VALUE) then
+		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	if b <> -1 and (b < 0 or b > 255) then
-		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be 0-255');
+	if b <> -1 and (b < c_MIN_COLOR_VALUE or b > c_MAX_COLOR_VALUE) then
+		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
 	-- Set color for all stroking operations
@@ -2631,18 +2702,19 @@ procedure SetFillColor (r in number, g in number default -1, b in number default
 begin
 	--------------------------------------------------------------------------------
 	-- TASK 2.3: Input Validation
+	-- TASK 3.1: Using constants for RGB range
 	--------------------------------------------------------------------------------
 	-- Validate RGB values (0-255 range)
-	if r < 0 or r > 255 then
-		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be 0-255');
+	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
+		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	if g <> -1 and (g < 0 or g > 255) then
-		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be 0-255');
+	if g <> -1 and (g < c_MIN_COLOR_VALUE or g > c_MAX_COLOR_VALUE) then
+		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	if b <> -1 and (b < 0 or b > 255) then
-		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be 0-255');
+	if b <> -1 and (b < c_MIN_COLOR_VALUE or b > c_MAX_COLOR_VALUE) then
+		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
 	-- Set color for all filling operations
@@ -2666,18 +2738,19 @@ procedure SetTextColor (r in number, g in number default -1, b in number default
 begin
 	--------------------------------------------------------------------------------
 	-- TASK 2.3: Input Validation
+	-- TASK 3.1: Using constants for RGB range
 	--------------------------------------------------------------------------------
 	-- Validate RGB values (0-255 range)
-	if r < 0 or r > 255 then
-		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be 0-255');
+	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
+		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	if g <> -1 and (g < 0 or g > 255) then
-		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be 0-255');
+	if g <> -1 and (g < c_MIN_COLOR_VALUE or g > c_MAX_COLOR_VALUE) then
+		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	if b <> -1 and (b < 0 or b > 255) then
-		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be 0-255');
+	if b <> -1 and (b < c_MIN_COLOR_VALUE or b > c_MAX_COLOR_VALUE) then
+		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
 	-- Set color for text
@@ -3877,10 +3950,11 @@ l_clean_style varchar2(10);  -- For validation
 begin
 	--------------------------------------------------------------------------------
 	-- TASK 2.3: Input Validation - BEFORE any variable assignments
+	-- TASK 3.1: Using constants instead of magic numbers
 	--------------------------------------------------------------------------------
 	-- Validate font family (before assignment to avoid buffer overflow)
-	if pfamily is not null and length(pfamily) > 80 then
-		raise_application_error(-20100, 'Font family name too long (max 80 characters)');
+	if pfamily is not null and length(pfamily) > c_MAX_FONT_NAME_LENGTH then
+		raise_application_error(-20100, 'Font family name too long (max ' || c_MAX_FONT_NAME_LENGTH || ' characters)');
 	end if;
 
 	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
@@ -3900,8 +3974,8 @@ begin
 	end if;
 
 	-- Validate font size
-	if psize is not null and (psize < 0 or psize > 999) then
-		raise_application_error(-20100, 'Invalid font size: ' || psize || '. Must be 0-999 points');
+	if psize is not null and (psize < c_MIN_FONT_SIZE or psize > c_MAX_FONT_SIZE) then
+		raise_application_error(-20100, 'Invalid font size: ' || psize || '. Must be ' || c_MIN_FONT_SIZE || '-' || c_MAX_FONT_SIZE || ' points');
 	end if;
 
 	-- Now safe to assign to local variables
