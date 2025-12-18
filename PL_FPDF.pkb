@@ -5459,6 +5459,13 @@ function CalculateCRC16(p_payload varchar2) return varchar2 deterministic is
   l_i pls_integer;
   l_j pls_integer;
   l_polynomial constant pls_integer := 4129;  -- 0x1021 (CRC16-CCITT polynomial)
+
+  -- Helper function for XOR (Oracle 19c doesn't have BITXOR)
+  function xor_bits(p_a pls_integer, p_b pls_integer) return pls_integer is
+  begin
+    return (p_a + p_b) - 2 * bitand(p_a, p_b);
+  end;
+
 begin
   -- Process each character
   for l_i in 1..length(p_payload) loop
@@ -5466,12 +5473,12 @@ begin
     l_crc := bitand(l_crc, 65535);  -- Keep 16 bits
 
     -- XOR byte into CRC
-    l_crc := bitxor(l_crc, l_byte * 256);  -- Shift byte left 8 bits
+    l_crc := xor_bits(l_crc, l_byte * 256);  -- Shift byte left 8 bits
 
     -- Process 8 bits
     for l_j in 1..8 loop
       if bitand(l_crc, 32768) != 0 then  -- Check MSB (0x8000)
-        l_crc := bitand(bitxor(l_crc * 2, l_polynomial), 65535);
+        l_crc := bitand(xor_bits(l_crc * 2, l_polynomial), 65535);
       else
         l_crc := bitand(l_crc * 2, 65535);
       end if;
@@ -6240,12 +6247,14 @@ begin
   -- Show text below barcode if requested
   if p_show_text then
     declare
-      l_old_font_size number := g_font_size;
+      l_old_font_size number := FontSize;
+      l_old_family varchar2(100) := FontFamily;
+      l_old_style varchar2(10) := FontStyle;
     begin
       SetFont('Arial', '', 8);
       l_y_pos := p_y + p_height + 2;
       Text(p_x, l_y_pos, p_code);
-      SetFont(g_font_family, g_font_style, l_old_font_size);
+      SetFont(l_old_family, l_old_style, l_old_font_size);
     end;
   end if;
 
