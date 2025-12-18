@@ -3890,13 +3890,14 @@ begin
 		raise_application_error(-20100, 'Font family name too long (max 80 characters): ' || substr(pfamily, 1, 50));
 	end if;
 
-	-- Validate font style (allow empty, B, I, BI, IB, U or combinations)
+	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
 	if pstyle is not null then
 		declare
 			l_clean_style varchar2(10) := upper(str_replace('U', '', pstyle));
 		begin
-			if l_clean_style not in ('', 'B', 'I', 'BI', 'IB') then
-				raise_application_error(-20100, 'Invalid font style: ' || pstyle || '. Use empty, B, I, BI, or IB (with optional U for underline)');
+			-- N = Normal (same as empty), B = Bold, I = Italic, BI/IB = Bold+Italic
+			if l_clean_style not in ('', 'N', 'B', 'I', 'BI', 'IB') then
+				raise_application_error(-20100, 'Invalid font style: ' || pstyle || '. Use empty, N, B, I, BI, or IB (with optional U for underline)');
 			end if;
 		end;
 	end if;

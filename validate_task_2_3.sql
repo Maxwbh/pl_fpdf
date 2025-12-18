@@ -60,10 +60,13 @@ BEGIN
   -- Test 2: SetFont rejects font family name too long
   BEGIN
     start_test('SetFont rejects font family > 80 chars');
+    DECLARE
+      l_long_name VARCHAR2(200);
     BEGIN
+      l_long_name := 'VeryLongFontNameThatExceedsTheMaximumAllowedLengthOf80CharactersAndShouldBeRejected';
       PL_FPDF.Init('P', 'mm', 'A4');
       PL_FPDF.AddPage();
-      PL_FPDF.SetFont(RPAD('X', 81, 'X'), 'N', 12);
+      PL_FPDF.SetFont(l_long_name, 'N', 12);
       fail_test('Exception not raised for long font name');
     EXCEPTION
       WHEN OTHERS THEN
