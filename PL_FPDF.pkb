@@ -770,7 +770,7 @@ begin
     l_format := g_page_formats(l_format_upper);
   else
     -- Unknown format, raise error (Task 1.2 requirement)
-    raise_application_error(-20103,
+    raise_application_error(-20101,
       'Unknown page format: ' || p_format_name || '. Use A3, A4, A5, Letter, Legal, Ledger, Executive, Folio, B5, or custom format like "100,200"');
   end if;
 
@@ -966,25 +966,25 @@ begin
 
   exception
     when others then
-      raise_application_error(-20222, 'Unable to fetch image from URL: ' || p_Url || ' - ' || sqlerrm);
+      raise_application_error(-20302, 'Unable to fetch image from URL: ' || p_Url || ' - ' || sqlerrm);
   end;
 
   -- Parse image header based on format
   if l_img.mime_type like '%png%' or dbms_lob.substr(l_img.image_blob, 8, 1) = hextoraw('89504E470D0A1A0A') then
     l_parsed := parse_png_header(l_img.image_blob, l_img);
     if not l_parsed then
-      raise_application_error(-20221, 'Invalid PNG header in image: ' || p_Url);
+      raise_application_error(-20301, 'Invalid PNG header in image: ' || p_Url);
     end if;
 
   elsif l_img.mime_type like '%jpeg%' or l_img.mime_type like '%jpg%' or
         dbms_lob.substr(l_img.image_blob, 2, 1) = hextoraw('FFD8') then
     l_parsed := parse_jpeg_header(l_img.image_blob, l_img);
     if not l_parsed then
-      raise_application_error(-20221, 'Invalid JPEG header in image: ' || p_Url);
+      raise_application_error(-20301, 'Invalid JPEG header in image: ' || p_Url);
     end if;
 
   else
-    raise_application_error(-20220, 'Unsupported image format (only PNG and JPEG supported): ' ||
+    raise_application_error(-20303, 'Unsupported image format (only PNG and JPEG supported): ' ||
                            nvl(l_img.mime_type, 'unknown') || ' for URL: ' || p_Url);
   end if;
 
@@ -3246,7 +3246,7 @@ begin
 
           -- Validate dimensions
           if l_format.width <= 0 or l_format.height <= 0 then
-            raise_application_error(-20103,
+            raise_application_error(-20101,
               'Invalid custom format dimensions: ' || p_format || '. Width and height must be positive.');
           end if;
 
@@ -3326,7 +3326,7 @@ function parse_ttf_header(p_font_blob blob, p_font_name varchar2) return recTTFF
   c_ttc_magic constant raw(4) := hextoraw('74746366');
 begin
   if p_font_blob is null or dbms_lob.getlength(p_font_blob) < 12 then
-    raise_application_error(-20200, 'Invalid font BLOB: NULL or too small (<12 bytes)');
+    raise_application_error(-20202, 'Invalid font BLOB: NULL or too small (<12 bytes)');
   end if;
   l_magic_number := dbms_lob.substr(p_font_blob, 4, 1);
   if l_magic_number = c_ttf_magic then
@@ -3336,9 +3336,9 @@ begin
     l_valid_ttf := true;
     log_message(4, 'Detected OpenType font with CFF outlines');
   elsif l_magic_number = c_ttc_magic then
-    raise_application_error(-20200, 'TrueType Collections (.ttc) not yet supported');
+    raise_application_error(-20202, 'TrueType Collections (.ttc) not yet supported');
   else
-    raise_application_error(-20200, 'Invalid TTF/OTF magic number: ' || rawtohex(l_magic_number));
+    raise_application_error(-20202, 'Invalid TTF/OTF magic number: ' || rawtohex(l_magic_number));
   end if;
   l_font.font_name := upper(p_font_name);
   l_font.font_blob := p_font_blob;
@@ -3413,15 +3413,15 @@ begin
   begin
     utl_file.fgetattr(p_directory, p_file_path, l_file_exists, l_file_length, l_block_size);
     if not l_file_exists then
-      raise_application_error(-20204, 'File not found: ' || p_file_path || ' in directory ' || p_directory);
+      raise_application_error(-20202, 'File not found: ' || p_file_path || ' in directory ' || p_directory);
     end if;
     log_message(4, 'File found: ' || p_file_path || ', size: ' || l_file_length || ' bytes');
   exception
     when others then
       if sqlcode = -29280 then
-        raise_application_error(-20203, 'Invalid or non-existent directory: ' || p_directory);
+        raise_application_error(-20401, 'Invalid or non-existent directory: ' || p_directory);
       elsif sqlcode = -29283 then
-        raise_application_error(-20205, 'Permission denied accessing: ' || p_directory);
+        raise_application_error(-20402, 'Permission denied accessing: ' || p_directory);
       else
         raise;
       end if;
@@ -3463,7 +3463,7 @@ function GetTTFFontInfo(p_font_name varchar2) return recTTFFont is
   l_font_name_upper varchar2(100) := upper(trim(p_font_name));
 begin
   if not g_ttf_fonts.exists(l_font_name_upper) then
-    raise_application_error(-20206, 'Font not found: ' || p_font_name || '. Call AddTTFFont() or LoadTTFFromFile() first.');
+    raise_application_error(-20201, 'Font not found: ' || p_font_name || '. Call AddTTFFont() or LoadTTFFromFile() first.');
   end if;
   return g_ttf_fonts(l_font_name_upper);
 exception
@@ -4422,13 +4422,13 @@ begin
   exception
     when others then
       if sqlcode = -29280 then
-        raise_application_error(-20301,
+        raise_application_error(-20401,
           'Invalid or non-existent directory: ' || p_directory);
       elsif sqlcode = -29283 then
-        raise_application_error(-20302,
+        raise_application_error(-20402,
           'Permission denied accessing directory: ' || p_directory);
       else
-        raise_application_error(-20303,
+        raise_application_error(-20403,
           'Error opening file: ' || sqlerrm);
       end if;
   end;
@@ -4451,7 +4451,7 @@ begin
         utl_file.fclose(v_file);
       end if;
       log_message(1, 'Error writing file: ' || sqlerrm);
-      raise_application_error(-20304, 'Error writing file: ' || sqlerrm);
+      raise_application_error(-20403, 'Error writing file: ' || sqlerrm);
   end;
 
   -- Free temporary BLOB
@@ -4501,7 +4501,7 @@ begin
   -- Only 'F' (File) mode is supported
   if myDest = 'F' then
     if myName is null then
-      raise_application_error(-20305,
+      raise_application_error(-20100,
         'Filename required for Output with pdest=''F''. Example: Output(''report.pdf'', ''F'')');
     end if;
 
@@ -4511,12 +4511,12 @@ begin
 
   elsif myDest in ('I', 'D', 'S') then
     -- OWA/HTP modes no longer supported
-    raise_application_error(-20306,
+    raise_application_error(-20100,
       'Output mode ''' || myDest || ''' is no longer supported (OWA/HTP removed). ' ||
       'Use OutputBlob() to get PDF as BLOB, or OutputFile() to save to filesystem.');
 
   else
-    raise_application_error(-20307,
+    raise_application_error(-20100,
       'Invalid output destination: ' || myDest || '. Use ''F'' for file output, ' ||
       'or call OutputBlob()/OutputFile() directly.');
   end if;
