@@ -701,34 +701,11 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Task 3.7: Generic QR Code Generation with PIX Support
+-- Task 3.7: Generic QR Code Generation
 --------------------------------------------------------------------------------
--- NOTE: PIX-specific functions (ValidatePixKey, CalculateCRC16, GetPixPayload)
---       are now in PL_FPDF_PIX package. Use PL_FPDF_PIX.* to call them directly.
+-- NOTE: PIX QR Code rendering is available in PL_FPDF_PIX.AddQRCodePIX()
+--       This package provides only generic QR Code rendering.
 --------------------------------------------------------------------------------
-
-/*******************************************************************************
-* Procedure: AddQRCodePIX
-* Description: Adds a PIX QR Code to the current page
-* Parameters:
-*   p_x - X position (in current units)
-*   p_y - Y position (in current units)
-*   p_size - QR Code size (width=height, in current units)
-*   p_pix_data - JSON object with PIX configuration (see GetPixPayload)
-* Example:
-*   l_pix_data := JSON_OBJECT_T();
-*   l_pix_data.put('pixKey', '12345678901');
-*   l_pix_data.put('pixKeyType', 'CPF');
-*   l_pix_data.put('merchantName', 'Store');
-*   l_pix_data.put('merchantCity', 'SP');
-*   PL_FPDF.AddQRCodePIX(50, 50, 50, l_pix_data);
-*******************************************************************************/
-procedure AddQRCodePIX(
-  p_x number,
-  p_y number,
-  p_size number,
-  p_pix_data JSON_OBJECT_T
-);
 
 /*******************************************************************************
 * Procedure: AddQRCode
@@ -752,67 +729,16 @@ procedure AddQRCode(
   p_error_correction varchar2 default 'M'
 );
 
-/*******************************************************************************
-* Procedure: AddQRCodeJSON
-* Description: Adds a QR Code from JSON configuration
-* Parameters:
-*   p_x - X position (in current units)
-*   p_y - Y position (in current units)
-*   p_size - QR Code size (width=height, in current units)
-*   p_config - JSON object with configuration:
-*     - format: 'TEXT', 'URL', 'PIX', 'VCARD', 'WIFI', 'EMAIL'
-*     - data: Data string (for TEXT/URL formats)
-*     - pixData: PIX data object (for PIX format)
-*     - errorCorrection: 'L', 'M', 'Q', 'H' (optional, default 'M')
-* Example:
-*   l_config := JSON_OBJECT_T();
-*   l_config.put('format', 'URL');
-*   l_config.put('data', 'https://example.com');
-*   PL_FPDF.AddQRCodeJSON(50, 50, 40, l_config);
-*******************************************************************************/
-procedure AddQRCodeJSON(
-  p_x number,
-  p_y number,
-  p_size number,
-  p_config JSON_OBJECT_T
-);
-
 --------------------------------------------------------------------------------
--- End of Task 3.7 additions
+-- End of Task 3.7: Generic QR Code
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Task 3.8: Generic Barcode Generation with Boleto Support
+-- Task 3.8: Generic Barcode Generation
 --------------------------------------------------------------------------------
--- NOTE: Boleto-specific functions (CalculateFatorVencimento, CalculateDVBoleto,
---       ValidateCodigoBarras, GetCodigoBarras, GetLinhaDigitavel) are now in
---       PL_FPDF_BOLETO package. Use PL_FPDF_BOLETO.* to call them directly.
+-- NOTE: Boleto barcode rendering is available in PL_FPDF_BOLETO.AddBarcodeBoleto()
+--       This package provides only generic barcode rendering.
 --------------------------------------------------------------------------------
-
-/*******************************************************************************
-* Procedure: AddBarcodeBoleto
-* Description: Adds a Boleto barcode (ITF14) to the current page
-* Parameters:
-*   p_x - X position (in current units)
-*   p_y - Y position (in current units)
-*   p_width - Barcode width (in current units)
-*   p_height - Barcode height (in current units, min 13mm recommended 15mm)
-*   p_boleto_data - JSON object with Boleto configuration (see GetCodigoBarras)
-* Example:
-*   l_boleto_data := JSON_OBJECT_T();
-*   l_boleto_data.put('banco', '237');
-*   l_boleto_data.put('vencimento', SYSDATE + 30);
-*   l_boleto_data.put('valor', 1500.00);
-*   l_boleto_data.put('campoLivre', '1234567890123456789012345');
-*   PL_FPDF.AddBarcodeBoleto(20, 200, 170, 15, l_boleto_data);
-*******************************************************************************/
-procedure AddBarcodeBoleto(
-  p_x number,
-  p_y number,
-  p_width number,
-  p_height number,
-  p_boleto_data JSON_OBJECT_T
-);
 
 /*******************************************************************************
 * Procedure: AddBarcode
@@ -838,36 +764,8 @@ procedure AddBarcode(
   p_show_text boolean default true
 );
 
-/*******************************************************************************
-* Procedure: AddBarcodeJSON
-* Description: Adds a barcode from JSON configuration
-* Parameters:
-*   p_x - X position (in current units)
-*   p_y - Y position (in current units)
-*   p_width - Barcode width (in current units)
-*   p_height - Barcode height (in current units)
-*   p_config - JSON object with configuration:
-*     - type: 'ITF14', 'CODE128', 'CODE39', 'EAN13', 'EAN8'
-*     - code: Data string (for generic barcodes)
-*     - boletoData: Boleto data object (for ITF14/Boleto)
-*     - showText: Boolean (optional, default true)
-* Example:
-*   l_config := JSON_OBJECT_T();
-*   l_config.put('type', 'CODE128');
-*   l_config.put('code', 'ORDER12345');
-*   l_config.put('showText', TRUE);
-*   PL_FPDF.AddBarcodeJSON(30, 50, 150, 20, l_config);
-*******************************************************************************/
-procedure AddBarcodeJSON(
-  p_x number,
-  p_y number,
-  p_width number,
-  p_height number,
-  p_config JSON_OBJECT_T
-);
-
 --------------------------------------------------------------------------------
--- End of Task 3.8 additions
+-- End of Task 3.8: Generic Barcode
 --------------------------------------------------------------------------------
 
 END PL_FPDF;

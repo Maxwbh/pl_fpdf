@@ -5,9 +5,9 @@
 -- Date: 2025-12-18
 --------------------------------------------------------------------------------
 -- This script deploys all packages in the correct order:
--- 1. PL_FPDF_PIX (independent utility package)
--- 2. PL_FPDF_BOLETO (independent utility package)
--- 3. PL_FPDF (main PDF generation package, uses PIX and Boleto)
+-- 1. PL_FPDF (base PDF generation package - independent)
+-- 2. PL_FPDF_PIX (PIX utility package - depends on PL_FPDF)
+-- 3. PL_FPDF_BOLETO (Boleto utility package - depends on PL_FPDF)
 --------------------------------------------------------------------------------
 
 SET SERVEROUTPUT ON SIZE UNLIMITED
@@ -19,11 +19,28 @@ PROMPT
 PROMPT ================================================================================
 PROMPT   Deploying PL_FPDF Package Suite
 PROMPT ================================================================================
+PROMPT   Architecture:
+PROMPT   - PL_FPDF: Base PDF generation (independent)
+PROMPT   - PL_FPDF_PIX: PIX utilities + QR Code rendering (uses PL_FPDF)
+PROMPT   - PL_FPDF_BOLETO: Boleto utilities + barcode rendering (uses PL_FPDF)
+PROMPT ================================================================================
 PROMPT
 
 PROMPT
 PROMPT --------------------------------------------------------------------------------
-PROMPT   Step 1: Deploying PL_FPDF_PIX Package
+PROMPT   Step 1: Deploying PL_FPDF Base Package
+PROMPT --------------------------------------------------------------------------------
+PROMPT
+
+@@PL_FPDF.pks
+SHOW ERRORS PACKAGE PL_FPDF
+
+@@PL_FPDF.pkb
+SHOW ERRORS PACKAGE BODY PL_FPDF
+
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT   Step 2: Deploying PL_FPDF_PIX Package
 PROMPT --------------------------------------------------------------------------------
 PROMPT
 
@@ -35,7 +52,7 @@ SHOW ERRORS PACKAGE BODY PL_FPDF_PIX
 
 PROMPT
 PROMPT --------------------------------------------------------------------------------
-PROMPT   Step 2: Deploying PL_FPDF_BOLETO Package
+PROMPT   Step 3: Deploying PL_FPDF_BOLETO Package
 PROMPT --------------------------------------------------------------------------------
 PROMPT
 
@@ -44,18 +61,6 @@ SHOW ERRORS PACKAGE PL_FPDF_BOLETO
 
 @@PL_FPDF_BOLETO.pkb
 SHOW ERRORS PACKAGE BODY PL_FPDF_BOLETO
-
-PROMPT
-PROMPT --------------------------------------------------------------------------------
-PROMPT   Step 3: Deploying PL_FPDF Main Package
-PROMPT --------------------------------------------------------------------------------
-PROMPT
-
-@@PL_FPDF.pks
-SHOW ERRORS PACKAGE PL_FPDF
-
-@@PL_FPDF.pkb
-SHOW ERRORS PACKAGE BODY PL_FPDF
 
 PROMPT
 PROMPT ================================================================================
