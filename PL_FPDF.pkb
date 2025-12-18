@@ -5119,28 +5119,34 @@ begin
           creator := p_config.get_String(l_key);
           log_message(c_LOG_DEBUG, 'Set creator: ' || creator);
 
-        -- Page configuration (only if not initialized yet)
+        -- Page configuration
         when 'ORIENTATION' then
           l_value := p_config.get_String(l_key);
+          -- ALWAYS validate orientation
+          if upper(substr(l_value, 1, 1)) not in ('P', 'L') then
+            raise_application_error(-20001,
+              'Invalid orientation: ' || l_value || '. Must be P or L.');
+          end if;
+          -- Set based on initialization state
           if not g_initialized then
-            -- Will be validated by Init()
             g_default_orientation := upper(substr(l_value, 1, 1));
           else
-            -- Validate if already initialized
-            if upper(substr(l_value, 1, 1)) not in ('P', 'L') then
-              raise_application_error(-20001,
-                'Invalid orientation: ' || l_value || '. Must be P or L.');
-            end if;
+            -- Already initialized - orientation cannot be changed
+            log_message(c_LOG_WARN, 'Cannot change orientation after initialization');
           end if;
           log_message(c_LOG_DEBUG, 'Set orientation: ' || l_value);
 
         when 'UNIT' then
           l_value := lower(p_config.get_String(l_key));
+          -- ALWAYS validate unit
+          if l_value not in ('mm', 'cm', 'in', 'pt') then
+            raise_application_error(-20002,
+              'Invalid unit: ' || l_value || '. Must be mm, cm, in, or pt.');
+          end if;
+          -- Unit can only be set during Init()
           if not g_initialized then
-            -- Will be validated by Init() - just store
-            null; -- Unit is set during Init()
+            log_message(c_LOG_INFO, 'Unit will be set during Init() call');
           else
-            -- Already initialized, cannot change unit
             log_message(c_LOG_WARN, 'Cannot change unit after initialization');
           end if;
 
