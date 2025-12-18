@@ -703,55 +703,9 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
 --------------------------------------------------------------------------------
 -- Task 3.7: Generic QR Code Generation with PIX Support
 --------------------------------------------------------------------------------
-
-/*******************************************************************************
-* Function: ValidatePixKey
-* Description: Validates a PIX key according to its type
-* Parameters:
-*   p_key - PIX key value
-*   p_type - Key type: 'CPF', 'CNPJ', 'EMAIL', 'PHONE', 'RANDOM'
-* Returns: TRUE if valid, FALSE otherwise
-* Example:
-*   IF PL_FPDF.ValidatePixKey('12345678901', 'CPF') THEN
-*     -- Key is valid
-*   END IF;
-*******************************************************************************/
-function ValidatePixKey(
-  p_key varchar2,
-  p_type varchar2
-) return boolean deterministic;
-
-/*******************************************************************************
-* Function: CalculateCRC16
-* Description: Calculates CRC16-CCITT checksum for PIX payload
-* Parameters:
-*   p_payload - PIX payload string
-* Returns: 4-character hexadecimal CRC
-* Example:
-*   l_crc := PL_FPDF.CalculateCRC16('00020126580014br.gov.bcb.pix...');
-*******************************************************************************/
-function CalculateCRC16(p_payload varchar2) return varchar2 deterministic;
-
-/*******************************************************************************
-* Function: GetPixPayload
-* Description: Generates PIX EMV QR Code payload (copy-paste string)
-* Parameters:
-*   p_pix_data - JSON object with PIX configuration:
-*     - pixKey: PIX key value (required)
-*     - pixKeyType: Key type (required)
-*     - merchantName: Merchant name (required)
-*     - merchantCity: City (required)
-*     - amount: Transaction amount (optional)
-*     - txid: Transaction ID (optional)
-* Returns: EMV-formatted PIX payload with CRC
-* Example:
-*   l_pix_data.put('pixKey', 'user@example.com');
-*   l_pix_data.put('pixKeyType', 'EMAIL');
-*   l_pix_data.put('merchantName', 'My Store');
-*   l_pix_data.put('merchantCity', 'Sao Paulo');
-*   l_payload := PL_FPDF.GetPixPayload(l_pix_data);
-*******************************************************************************/
-function GetPixPayload(p_pix_data JSON_OBJECT_T) return varchar2;
+-- NOTE: PIX-specific functions (ValidatePixKey, CalculateCRC16, GetPixPayload)
+--       are now in PL_FPDF_PIX package. Use PL_FPDF_PIX.* to call them directly.
+--------------------------------------------------------------------------------
 
 /*******************************************************************************
 * Procedure: AddQRCodePIX
@@ -830,73 +784,10 @@ procedure AddQRCodeJSON(
 --------------------------------------------------------------------------------
 -- Task 3.8: Generic Barcode Generation with Boleto Support
 --------------------------------------------------------------------------------
-
-/*******************************************************************************
-* Function: CalculateFatorVencimento
-* Description: Calculates due date factor for Boleto (days since 1997-10-07)
-* Parameters:
-*   p_data - Due date
-* Returns: 4-digit factor string
-* Example:
-*   l_fator := PL_FPDF.CalculateFatorVencimento(TO_DATE('2025-12-31','YYYY-MM-DD'));
-*******************************************************************************/
-function CalculateFatorVencimento(p_data date) return varchar2 deterministic;
-
-/*******************************************************************************
-* Function: CalculateDVBoleto
-* Description: Calculates check digit for Boleto barcode (módulo 11)
-* Parameters:
-*   p_codigo - 43-character code (without DV at position 5)
-* Returns: Single check digit character
-* Example:
-*   l_dv := PL_FPDF.CalculateDVBoleto('0019000000...');
-*******************************************************************************/
-function CalculateDVBoleto(p_codigo varchar2) return char deterministic;
-
-/*******************************************************************************
-* Function: ValidateCodigoBarras
-* Description: Validates a 44-position Boleto barcode
-* Parameters:
-*   p_codigo - 44-character barcode
-* Returns: TRUE if valid, FALSE otherwise
-* Example:
-*   IF PL_FPDF.ValidateCodigoBarras('00191234500001234567890...') THEN
-*     -- Barcode is valid
-*   END IF;
-*******************************************************************************/
-function ValidateCodigoBarras(p_codigo varchar2) return boolean deterministic;
-
-/*******************************************************************************
-* Function: GetCodigoBarras
-* Description: Generates 44-position Boleto barcode
-* Parameters:
-*   p_boleto_data - JSON object with configuration:
-*     - banco: Bank code (3 digits, required)
-*     - moeda: Currency code (1 digit, default '9' for Real)
-*     - vencimento: Due date (DATE, required)
-*     - valor: Amount (NUMBER, required)
-*     - campoLivre: Free field (25 digits, required)
-* Returns: 44-character barcode string
-* Example:
-*   l_boleto_data.put('banco', '001');
-*   l_boleto_data.put('vencimento', TO_DATE('2025-12-31','YYYY-MM-DD'));
-*   l_boleto_data.put('valor', 1500.00);
-*   l_boleto_data.put('campoLivre', '1234567890123456789012345');
-*   l_codigo := PL_FPDF.GetCodigoBarras(l_boleto_data);
-*******************************************************************************/
-function GetCodigoBarras(p_boleto_data JSON_OBJECT_T) return varchar2;
-
-/*******************************************************************************
-* Function: GetLinhaDigitavel
-* Description: Generates 47-digit formatted linha digitável from Boleto data
-* Parameters:
-*   p_boleto_data - JSON object with Boleto configuration (see GetCodigoBarras)
-* Returns: Formatted linha digitável string
-* Example:
-*   l_linha := PL_FPDF.GetLinhaDigitavel(l_boleto_data);
-*   -- Returns: "00190.00009 01234.567890 12345.678901 2 12340000150000"
-*******************************************************************************/
-function GetLinhaDigitavel(p_boleto_data JSON_OBJECT_T) return varchar2;
+-- NOTE: Boleto-specific functions (CalculateFatorVencimento, CalculateDVBoleto,
+--       ValidateCodigoBarras, GetCodigoBarras, GetLinhaDigitavel) are now in
+--       PL_FPDF_BOLETO package. Use PL_FPDF_BOLETO.* to call them directly.
+--------------------------------------------------------------------------------
 
 /*******************************************************************************
 * Procedure: AddBarcodeBoleto
