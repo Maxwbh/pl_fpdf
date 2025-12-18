@@ -263,6 +263,85 @@ procedure SetUTF8Enabled(p_enabled boolean default true);
 -- Task 2.1: UTF-8/Unicode Support additions
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- TASK 2.2 & 2.4: Custom Exceptions and Error Handling
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-17
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Custom Exceptions for PL_FPDF
+* Provides specific exception handling instead of generic ORA-20100 errors
+*******************************************************************************/
+
+-- Initialization Errors (-20001 to -20010)
+exc_invalid_orientation EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_orientation, -20001);
+
+exc_invalid_unit EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_unit, -20002);
+
+exc_invalid_encoding EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_encoding, -20003);
+
+exc_not_initialized EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_not_initialized, -20005);
+
+-- Page Errors (-20101 to -20110)
+exc_invalid_page_format EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_page_format, -20101);
+
+exc_page_not_found EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_page_not_found, -20106);
+
+-- Font Errors (-20201 to -20215)
+exc_font_not_found EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_font_not_found, -20201);
+
+exc_invalid_font_file EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_font_file, -20202);
+
+exc_invalid_font_name EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_font_name, -20210);
+
+exc_invalid_font_blob EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_font_blob, -20211);
+
+-- Image Errors (-20301 to -20310)
+exc_invalid_image EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_image, -20301);
+
+exc_image_not_found EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_image_not_found, -20302);
+
+exc_unsupported_image_format EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_unsupported_image_format, -20303);
+
+-- File I/O Errors (-20401 to -20410)
+exc_invalid_directory EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_directory, -20401);
+
+exc_file_access_denied EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_file_access_denied, -20402);
+
+exc_file_write_error EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_file_write_error, -20403);
+
+-- Color/Drawing Errors (-20501 to -20510)
+exc_invalid_color EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_color, -20501);
+
+exc_invalid_line_width EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_invalid_line_width, -20502);
+
+-- General Errors (-20100)
+exc_general_error EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_general_error, -20100);
+
+--------------------------------------------------------------------------------
+-- End of TASK 2.2 & 2.4 additions
+--------------------------------------------------------------------------------
+
 -- methods added to FPDF
 function GetCurrentFontSize return number;
 function GetCurrentFontStyle return varchar2;
