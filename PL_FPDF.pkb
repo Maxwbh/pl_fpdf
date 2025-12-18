@@ -825,19 +825,11 @@ begin
     l_format := g_page_formats(l_format_upper);
   else
     -- Unknown format, raise error (Task 1.2 requirement)
-    raise_application_error(-20101,
+    raise_application_error(-20103,
       'Unknown page format: ' || p_format_name || '. Use A3, A4, A5, Letter, Legal, Ledger, Executive, Folio, B5, or custom format like "100,200"');
   end if;
 
   return l_format;
-
-exception
-  when others then
-    log_message(1, 'Error getting page format: ' || sqlerrm);
-    -- Return A4 as fallback
-    l_format.width := 210;
-    l_format.height := 297;
-    return l_format;
 end get_page_format;
 
 --------------------------------------------------------------------------------
