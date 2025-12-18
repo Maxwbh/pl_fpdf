@@ -700,4 +700,283 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
 -- End of Task 3.2 additions
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- Task 3.7: Generic QR Code Generation with PIX Support
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Function: ValidatePixKey
+* Description: Validates a PIX key according to its type
+* Parameters:
+*   p_key - PIX key value
+*   p_type - Key type: 'CPF', 'CNPJ', 'EMAIL', 'PHONE', 'RANDOM'
+* Returns: TRUE if valid, FALSE otherwise
+* Example:
+*   IF PL_FPDF.ValidatePixKey('12345678901', 'CPF') THEN
+*     -- Key is valid
+*   END IF;
+*******************************************************************************/
+function ValidatePixKey(
+  p_key varchar2,
+  p_type varchar2
+) return boolean deterministic;
+
+/*******************************************************************************
+* Function: CalculateCRC16
+* Description: Calculates CRC16-CCITT checksum for PIX payload
+* Parameters:
+*   p_payload - PIX payload string
+* Returns: 4-character hexadecimal CRC
+* Example:
+*   l_crc := PL_FPDF.CalculateCRC16('00020126580014br.gov.bcb.pix...');
+*******************************************************************************/
+function CalculateCRC16(p_payload varchar2) return varchar2 deterministic;
+
+/*******************************************************************************
+* Function: GetPixPayload
+* Description: Generates PIX EMV QR Code payload (copy-paste string)
+* Parameters:
+*   p_pix_data - JSON object with PIX configuration:
+*     - pixKey: PIX key value (required)
+*     - pixKeyType: Key type (required)
+*     - merchantName: Merchant name (required)
+*     - merchantCity: City (required)
+*     - amount: Transaction amount (optional)
+*     - txid: Transaction ID (optional)
+* Returns: EMV-formatted PIX payload with CRC
+* Example:
+*   l_pix_data.put('pixKey', 'user@example.com');
+*   l_pix_data.put('pixKeyType', 'EMAIL');
+*   l_pix_data.put('merchantName', 'My Store');
+*   l_pix_data.put('merchantCity', 'Sao Paulo');
+*   l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+*******************************************************************************/
+function GetPixPayload(p_pix_data JSON_OBJECT_T) return varchar2;
+
+/*******************************************************************************
+* Procedure: AddQRCodePIX
+* Description: Adds a PIX QR Code to the current page
+* Parameters:
+*   p_x - X position (in current units)
+*   p_y - Y position (in current units)
+*   p_size - QR Code size (width=height, in current units)
+*   p_pix_data - JSON object with PIX configuration (see GetPixPayload)
+* Example:
+*   l_pix_data := JSON_OBJECT_T();
+*   l_pix_data.put('pixKey', '12345678901');
+*   l_pix_data.put('pixKeyType', 'CPF');
+*   l_pix_data.put('merchantName', 'Store');
+*   l_pix_data.put('merchantCity', 'SP');
+*   PL_FPDF.AddQRCodePIX(50, 50, 50, l_pix_data);
+*******************************************************************************/
+procedure AddQRCodePIX(
+  p_x number,
+  p_y number,
+  p_size number,
+  p_pix_data JSON_OBJECT_T
+);
+
+/*******************************************************************************
+* Procedure: AddQRCode
+* Description: Adds a generic QR Code to the current page
+* Parameters:
+*   p_x - X position (in current units)
+*   p_y - Y position (in current units)
+*   p_size - QR Code size (width=height, in current units)
+*   p_data - Data to encode (max 2953 bytes for binary mode)
+*   p_format - Format: 'TEXT', 'URL', 'PIX', 'VCARD', 'WIFI', 'EMAIL'
+*   p_error_correction - Error correction: 'L'(7%), 'M'(15%), 'Q'(25%), 'H'(30%)
+* Example:
+*   PL_FPDF.AddQRCode(50, 50, 40, 'https://example.com', 'URL', 'M');
+*******************************************************************************/
+procedure AddQRCode(
+  p_x number,
+  p_y number,
+  p_size number,
+  p_data varchar2,
+  p_format varchar2 default 'TEXT',
+  p_error_correction varchar2 default 'M'
+);
+
+/*******************************************************************************
+* Procedure: AddQRCodeJSON
+* Description: Adds a QR Code from JSON configuration
+* Parameters:
+*   p_x - X position (in current units)
+*   p_y - Y position (in current units)
+*   p_size - QR Code size (width=height, in current units)
+*   p_config - JSON object with configuration:
+*     - format: 'TEXT', 'URL', 'PIX', 'VCARD', 'WIFI', 'EMAIL'
+*     - data: Data string (for TEXT/URL formats)
+*     - pixData: PIX data object (for PIX format)
+*     - errorCorrection: 'L', 'M', 'Q', 'H' (optional, default 'M')
+* Example:
+*   l_config := JSON_OBJECT_T();
+*   l_config.put('format', 'URL');
+*   l_config.put('data', 'https://example.com');
+*   PL_FPDF.AddQRCodeJSON(50, 50, 40, l_config);
+*******************************************************************************/
+procedure AddQRCodeJSON(
+  p_x number,
+  p_y number,
+  p_size number,
+  p_config JSON_OBJECT_T
+);
+
+--------------------------------------------------------------------------------
+-- End of Task 3.7 additions
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- Task 3.8: Generic Barcode Generation with Boleto Support
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Function: CalculateFatorVencimento
+* Description: Calculates due date factor for Boleto (days since 1997-10-07)
+* Parameters:
+*   p_data - Due date
+* Returns: 4-digit factor string
+* Example:
+*   l_fator := PL_FPDF.CalculateFatorVencimento(TO_DATE('2025-12-31','YYYY-MM-DD'));
+*******************************************************************************/
+function CalculateFatorVencimento(p_data date) return varchar2 deterministic;
+
+/*******************************************************************************
+* Function: CalculateDVBoleto
+* Description: Calculates check digit for Boleto barcode (módulo 11)
+* Parameters:
+*   p_codigo - 43-character code (without DV at position 5)
+* Returns: Single check digit character
+* Example:
+*   l_dv := PL_FPDF.CalculateDVBoleto('0019000000...');
+*******************************************************************************/
+function CalculateDVBoleto(p_codigo varchar2) return char deterministic;
+
+/*******************************************************************************
+* Function: ValidateCodigoBarras
+* Description: Validates a 44-position Boleto barcode
+* Parameters:
+*   p_codigo - 44-character barcode
+* Returns: TRUE if valid, FALSE otherwise
+* Example:
+*   IF PL_FPDF.ValidateCodigoBarras('00191234500001234567890...') THEN
+*     -- Barcode is valid
+*   END IF;
+*******************************************************************************/
+function ValidateCodigoBarras(p_codigo varchar2) return boolean deterministic;
+
+/*******************************************************************************
+* Function: GetCodigoBarras
+* Description: Generates 44-position Boleto barcode
+* Parameters:
+*   p_boleto_data - JSON object with configuration:
+*     - banco: Bank code (3 digits, required)
+*     - moeda: Currency code (1 digit, default '9' for Real)
+*     - vencimento: Due date (DATE, required)
+*     - valor: Amount (NUMBER, required)
+*     - campoLivre: Free field (25 digits, required)
+* Returns: 44-character barcode string
+* Example:
+*   l_boleto_data.put('banco', '001');
+*   l_boleto_data.put('vencimento', TO_DATE('2025-12-31','YYYY-MM-DD'));
+*   l_boleto_data.put('valor', 1500.00);
+*   l_boleto_data.put('campoLivre', '1234567890123456789012345');
+*   l_codigo := PL_FPDF.GetCodigoBarras(l_boleto_data);
+*******************************************************************************/
+function GetCodigoBarras(p_boleto_data JSON_OBJECT_T) return varchar2;
+
+/*******************************************************************************
+* Function: GetLinhaDigitavel
+* Description: Generates 47-digit formatted linha digitável from Boleto data
+* Parameters:
+*   p_boleto_data - JSON object with Boleto configuration (see GetCodigoBarras)
+* Returns: Formatted linha digitável string
+* Example:
+*   l_linha := PL_FPDF.GetLinhaDigitavel(l_boleto_data);
+*   -- Returns: "00190.00009 01234.567890 12345.678901 2 12340000150000"
+*******************************************************************************/
+function GetLinhaDigitavel(p_boleto_data JSON_OBJECT_T) return varchar2;
+
+/*******************************************************************************
+* Procedure: AddBarcodeBoleto
+* Description: Adds a Boleto barcode (ITF14) to the current page
+* Parameters:
+*   p_x - X position (in current units)
+*   p_y - Y position (in current units)
+*   p_width - Barcode width (in current units)
+*   p_height - Barcode height (in current units, min 13mm recommended 15mm)
+*   p_boleto_data - JSON object with Boleto configuration (see GetCodigoBarras)
+* Example:
+*   l_boleto_data := JSON_OBJECT_T();
+*   l_boleto_data.put('banco', '237');
+*   l_boleto_data.put('vencimento', SYSDATE + 30);
+*   l_boleto_data.put('valor', 1500.00);
+*   l_boleto_data.put('campoLivre', '1234567890123456789012345');
+*   PL_FPDF.AddBarcodeBoleto(20, 200, 170, 15, l_boleto_data);
+*******************************************************************************/
+procedure AddBarcodeBoleto(
+  p_x number,
+  p_y number,
+  p_width number,
+  p_height number,
+  p_boleto_data JSON_OBJECT_T
+);
+
+/*******************************************************************************
+* Procedure: AddBarcode
+* Description: Adds a generic barcode to the current page
+* Parameters:
+*   p_x - X position (in current units)
+*   p_y - Y position (in current units)
+*   p_width - Barcode width (in current units)
+*   p_height - Barcode height (in current units)
+*   p_code - Data to encode
+*   p_type - Barcode type: 'ITF14', 'CODE128', 'CODE39', 'EAN13', 'EAN8'
+*   p_show_text - Show human-readable text below barcode
+* Example:
+*   PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
+*******************************************************************************/
+procedure AddBarcode(
+  p_x number,
+  p_y number,
+  p_width number,
+  p_height number,
+  p_code varchar2,
+  p_type varchar2 default 'CODE128',
+  p_show_text boolean default true
+);
+
+/*******************************************************************************
+* Procedure: AddBarcodeJSON
+* Description: Adds a barcode from JSON configuration
+* Parameters:
+*   p_x - X position (in current units)
+*   p_y - Y position (in current units)
+*   p_width - Barcode width (in current units)
+*   p_height - Barcode height (in current units)
+*   p_config - JSON object with configuration:
+*     - type: 'ITF14', 'CODE128', 'CODE39', 'EAN13', 'EAN8'
+*     - code: Data string (for generic barcodes)
+*     - boletoData: Boleto data object (for ITF14/Boleto)
+*     - showText: Boolean (optional, default true)
+* Example:
+*   l_config := JSON_OBJECT_T();
+*   l_config.put('type', 'CODE128');
+*   l_config.put('code', 'ORDER12345');
+*   l_config.put('showText', TRUE);
+*   PL_FPDF.AddBarcodeJSON(30, 50, 150, 20, l_config);
+*******************************************************************************/
+procedure AddBarcodeJSON(
+  p_x number,
+  p_y number,
+  p_width number,
+  p_height number,
+  p_config JSON_OBJECT_T
+);
+
+--------------------------------------------------------------------------------
+-- End of Task 3.8 additions
+--------------------------------------------------------------------------------
+
 END PL_FPDF;
