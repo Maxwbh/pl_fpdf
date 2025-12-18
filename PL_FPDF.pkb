@@ -3899,9 +3899,11 @@ begin
 
 		-- N = Normal, B = Bold, I = Italic, BI/IB = Bold+Italic
 		-- After removing U, only these are valid (or empty string)
-		if l_clean_style <> '' and l_clean_style <> 'N' and l_clean_style <> 'B' and
-		   l_clean_style <> 'I' and l_clean_style <> 'BI' and l_clean_style <> 'IB' then
-			raise_application_error(-20100, 'Invalid font style: ''' || pstyle || '''. Valid: N, B, I, BI, IB (with optional U)');
+		-- Use nested structure to ensure proper evaluation
+		if length(l_clean_style) > 0 then
+			if l_clean_style not in ('N', 'B', 'I', 'BI', 'IB') then
+				raise_application_error(-20100, 'Invalid font style: ''' || pstyle || '''. Valid: N, B, I, BI, IB (with optional U)');
+			end if;
 		end if;
 	end if;
 
