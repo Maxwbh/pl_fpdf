@@ -126,5 +126,87 @@ FUNCTION ParseLinhaDigitavel(
   p_linha VARCHAR2
 ) RETURN VARCHAR2;
 
+--------------------------------------------------------------------------------
+-- PDF Rendering Procedures (require PL_FPDF package)
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: AddBarcodeBoleto
+* Description: Adds a Boleto barcode (ITF14) to the current PDF page
+* Parameters:
+*   p_x - X position in mm
+*   p_y - Y position in mm
+*   p_width - Barcode width in mm (minimum 100mm)
+*   p_height - Barcode height in mm (minimum 13mm)
+*   p_boleto_data - JSON object with Boleto configuration (see GetCodigoBarras)
+* Requires: PL_FPDF package must be initialized with Init() and AddPage()
+* Raises:
+*   -20803: Negative position
+*   -20804: Barcode dimensions too small
+* Example:
+*   DECLARE
+*     l_boleto JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     PL_FPDF.Init();
+*     PL_FPDF.AddPage();
+*     l_boleto.put('banco', '237');
+*     l_boleto.put('vencimento', TO_DATE('2025-12-31', 'YYYY-MM-DD'));
+*     l_boleto.put('valor', 1500.00);
+*     l_boleto.put('campoLivre', '1234567890123456789012345');
+*     PL_FPDF_BOLETO.AddBarcodeBoleto(10, 100, 180, 13, l_boleto);
+*   END;
+*******************************************************************************/
+PROCEDURE AddBarcodeBoleto(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_boleto_data JSON_OBJECT_T
+);
+
+/*******************************************************************************
+* Procedure: AddBarcodeJSON
+* Description: Adds a barcode to PDF from JSON configuration
+* Parameters:
+*   p_x - X position in mm
+*   p_y - Y position in mm
+*   p_width - Barcode width in mm
+*   p_height - Barcode height in mm
+*   p_config - JSON object with configuration:
+*     Required fields:
+*       - type: 'BOLETO', 'ITF14', 'CODE128', 'CODE39', 'EAN13', 'EAN8'
+*     For BOLETO type:
+*       - boletoData: JSON object (see GetCodigoBarras)
+*     For other types:
+*       - code: Barcode data string
+*     Optional:
+*       - showText: BOOLEAN (default true)
+* Requires: PL_FPDF package must be initialized
+* Raises:
+*   -20805: Missing required field
+* Example:
+*   DECLARE
+*     l_config JSON_OBJECT_T := JSON_OBJECT_T();
+*     l_boleto JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     PL_FPDF.Init();
+*     PL_FPDF.AddPage();
+*     l_boleto.put('banco', '001');
+*     l_boleto.put('vencimento', SYSDATE + 30);
+*     l_boleto.put('valor', 2000.00);
+*     l_boleto.put('campoLivre', '9999999999999999999999999');
+*     l_config.put('type', 'BOLETO');
+*     l_config.put('boletoData', l_boleto);
+*     PL_FPDF_BOLETO.AddBarcodeJSON(10, 150, 180, 13, l_config);
+*   END;
+*******************************************************************************/
+PROCEDURE AddBarcodeJSON(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_config JSON_OBJECT_T
+);
+
 END PL_FPDF_BOLETO;
 /

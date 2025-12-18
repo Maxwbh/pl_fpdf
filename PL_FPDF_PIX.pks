@@ -92,5 +92,84 @@ FUNCTION FormatPixKey(
   p_type VARCHAR2
 ) RETURN VARCHAR2 DETERMINISTIC;
 
+--------------------------------------------------------------------------------
+-- PDF Rendering Procedures (require PL_FPDF package)
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: AddQRCodePIX
+* Description: Adds a PIX QR Code to the current PDF page
+* Parameters:
+*   p_x - X position in mm
+*   p_y - Y position in mm
+*   p_size - QR Code size in mm (minimum 5mm)
+*   p_pix_data - JSON object with PIX configuration (see GetPixPayload)
+* Requires: PL_FPDF package must be initialized with Init() and AddPage()
+* Raises:
+*   -20703: Negative position
+*   -20704: Size too small
+* Example:
+*   DECLARE
+*     l_pix JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     PL_FPDF.Init();
+*     PL_FPDF.AddPage();
+*     l_pix.put('pixKey', 'user@example.com');
+*     l_pix.put('pixKeyType', 'EMAIL');
+*     l_pix.put('merchantName', 'My Store');
+*     l_pix.put('merchantCity', 'Sao Paulo');
+*     l_pix.put('amount', 99.90);
+*     PL_FPDF_PIX.AddQRCodePIX(80, 50, 50, l_pix);
+*   END;
+*******************************************************************************/
+PROCEDURE AddQRCodePIX(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_size NUMBER,
+  p_pix_data JSON_OBJECT_T
+);
+
+/*******************************************************************************
+* Procedure: AddQRCodeJSON
+* Description: Adds a QR Code to PDF from JSON configuration
+* Parameters:
+*   p_x - X position in mm
+*   p_y - Y position in mm
+*   p_size - QR Code size in mm
+*   p_config - JSON object with configuration:
+*     Required fields:
+*       - format: 'PIX', 'TEXT', 'URL', 'VCARD', 'WIFI', 'EMAIL'
+*     For PIX format:
+*       - pixData: JSON object (see GetPixPayload)
+*     For other formats:
+*       - data: String data
+*     Optional:
+*       - errorCorrection: 'L', 'M', 'Q', 'H' (default 'M')
+* Requires: PL_FPDF package must be initialized
+* Raises:
+*   -20706: Missing required field
+* Example:
+*   DECLARE
+*     l_config JSON_OBJECT_T := JSON_OBJECT_T();
+*     l_pix JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     PL_FPDF.Init();
+*     PL_FPDF.AddPage();
+*     l_pix.put('pixKey', '12345678901');
+*     l_pix.put('pixKeyType', 'CPF');
+*     l_pix.put('merchantName', 'Store');
+*     l_pix.put('merchantCity', 'SP');
+*     l_config.put('format', 'PIX');
+*     l_config.put('pixData', l_pix);
+*     PL_FPDF_PIX.AddQRCodeJSON(100, 100, 50, l_config);
+*   END;
+*******************************************************************************/
+PROCEDURE AddQRCodeJSON(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_size NUMBER,
+  p_config JSON_OBJECT_T
+);
+
 END PL_FPDF_PIX;
 /

@@ -409,5 +409,95 @@ EXCEPTION
     END IF;
 END ParseLinhaDigitavel;
 
+--------------------------------------------------------------------------------
+-- PDF Rendering Procedures
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: AddBarcodeBoleto
+* Description: Adds a Boleto barcode (ITF14) to the current PDF page
+*******************************************************************************/
+PROCEDURE AddBarcodeBoleto(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_boleto_data JSON_OBJECT_T
+) IS
+  l_codigo VARCHAR2(44);
+BEGIN
+  -- Validate parameters
+  IF p_x < 0 OR p_y < 0 THEN
+    RAISE_APPLICATION_ERROR(-20803, 'Position cannot be negative');
+  END IF;
+
+  IF p_width < 100 OR p_height < 13 THEN
+    RAISE_APPLICATION_ERROR(-20804,
+      'Boleto barcode dimensions too small (min width=100mm, height=13mm)');
+  END IF;
+
+  -- Generate barcode using internal function
+  l_codigo := GetCodigoBarras(p_boleto_data);
+
+  -- Render using PL_FPDF generic barcode function (ITF14)
+  PL_FPDF.AddBarcode(p_x, p_y, p_width, p_height, l_codigo, 'ITF14', FALSE);
+
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE;
+END AddBarcodeBoleto;
+
+/*******************************************************************************
+* Procedure: AddBarcodeJSON
+* Description: Adds a barcode to PDF from JSON configuration
+*******************************************************************************/
+PROCEDURE AddBarcodeJSON(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_config JSON_OBJECT_T
+) IS
+  l_type VARCHAR2(20);
+  l_code VARCHAR2(4000);
+  l_boleto_data JSON_OBJECT_T;
+  l_show_text BOOLEAN;
+BEGIN
+  -- Get type
+  IF NOT p_config.has('type') THEN
+    RAISE_APPLICATION_ERROR(-20805, 'Barcode type is required (type field)');
+  END IF;
+
+  l_type := UPPER(p_config.get_String('type'));
+
+  -- Get showText (optional, default true)
+  IF p_config.has('showText') THEN
+    l_show_text := p_config.get_Boolean('showText');
+  ELSE
+    l_show_text := TRUE;
+  END IF;
+
+  -- Handle based on type
+  IF l_type = 'BOLETO' THEN
+    IF NOT p_config.has('boletoData') THEN
+      RAISE_APPLICATION_ERROR(-20805, 'Boleto data is required (boletoData field) for BOLETO type');
+    END IF;
+    l_boleto_data := TREAT(p_config.get('boletoData') AS JSON_OBJECT_T);
+    AddBarcodeBoleto(p_x, p_y, p_width, p_height, l_boleto_data);
+  ELSE
+    -- Generic barcode types (ITF14, CODE128, etc.)
+    IF NOT p_config.has('code') THEN
+      RAISE_APPLICATION_ERROR(-20805,
+        'Code is required (code field) for ' || l_type || ' barcode');
+    END IF;
+    l_code := p_config.get_String('code');
+    PL_FPDF.AddBarcode(p_x, p_y, p_width, p_height, l_code, l_type, l_show_text);
+  END IF;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE;
+END AddBarcodeJSON;
+
 END PL_FPDF_BOLETO;
 /

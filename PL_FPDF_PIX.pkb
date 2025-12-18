@@ -318,5 +318,91 @@ EXCEPTION
     RETURN p_key;
 END FormatPixKey;
 
+--------------------------------------------------------------------------------
+-- PDF Rendering Procedures
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: AddQRCodePIX
+* Description: Adds a PIX QR Code to the current PDF page
+*******************************************************************************/
+PROCEDURE AddQRCodePIX(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_size NUMBER,
+  p_pix_data JSON_OBJECT_T
+) IS
+  l_payload VARCHAR2(32767);
+BEGIN
+  -- Validate parameters
+  IF p_x < 0 OR p_y < 0 THEN
+    RAISE_APPLICATION_ERROR(-20703, 'Position cannot be negative');
+  END IF;
+
+  IF p_size < 5 THEN
+    RAISE_APPLICATION_ERROR(-20704, 'QR Code size must be at least 5mm');
+  END IF;
+
+  -- Generate PIX payload using internal function
+  l_payload := GetPixPayload(p_pix_data);
+
+  -- Call PL_FPDF generic QR Code function
+  PL_FPDF.AddQRCode(p_x, p_y, p_size, l_payload, 'PIX', 'M');
+
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE;
+END AddQRCodePIX;
+
+/*******************************************************************************
+* Procedure: AddQRCodeJSON
+* Description: Adds a QR Code to PDF from JSON configuration
+*******************************************************************************/
+PROCEDURE AddQRCodeJSON(
+  p_x NUMBER,
+  p_y NUMBER,
+  p_size NUMBER,
+  p_config JSON_OBJECT_T
+) IS
+  l_format VARCHAR2(20);
+  l_data VARCHAR2(32767);
+  l_pix_data JSON_OBJECT_T;
+  l_error_correction VARCHAR2(1);
+BEGIN
+  -- Get format
+  IF NOT p_config.has('format') THEN
+    RAISE_APPLICATION_ERROR(-20706, 'QR Code format is required (format field)');
+  END IF;
+
+  l_format := UPPER(p_config.get_String('format'));
+
+  -- Get error correction (optional, default 'M')
+  IF p_config.has('errorCorrection') THEN
+    l_error_correction := UPPER(SUBSTR(p_config.get_String('errorCorrection'), 1, 1));
+  ELSE
+    l_error_correction := 'M';
+  END IF;
+
+  -- Handle based on format
+  IF l_format = 'PIX' THEN
+    IF NOT p_config.has('pixData') THEN
+      RAISE_APPLICATION_ERROR(-20706, 'PIX data is required (pixData field) for PIX format');
+    END IF;
+    l_pix_data := TREAT(p_config.get('pixData') AS JSON_OBJECT_T);
+    AddQRCodePIX(p_x, p_y, p_size, l_pix_data);
+  ELSE
+    -- TEXT, URL, VCARD, WIFI, EMAIL formats
+    IF NOT p_config.has('data') THEN
+      RAISE_APPLICATION_ERROR(-20706, 'Data is required (data field) for ' || l_format || ' format');
+    END IF;
+    l_data := p_config.get_String('data');
+    PL_FPDF.AddQRCode(p_x, p_y, p_size, l_data, l_format, l_error_correction);
+  END IF;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE;
+END AddQRCodeJSON;
+
 END PL_FPDF_PIX;
 /
