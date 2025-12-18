@@ -255,12 +255,12 @@ BEGIN
         IF SQLERRM LIKE '%INVALID_UNIT_XYZ%' OR SQLERRM LIKE '%Invalid unit%' THEN
           pass_test;
         ELSE
-          fail_test('Error message missing context: ' || SQLERRM);
+          fail_test('Error message missing context: ' || SUBSTR(SQLERRM, 1, 200));
         END IF;
     END;
   EXCEPTION
     WHEN OTHERS THEN
-      fail_test('Unexpected error: ' || SQLERRM);
+      fail_test('Unexpected error: ' || SUBSTR(SQLERRM, 1, 200));
   END;
 
   -------------------------------------------------------------------------
