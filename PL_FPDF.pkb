@@ -3874,20 +3874,20 @@ end AddFont;
 
 ----------------------------------------------------------------------------------------
 procedure SetFont(pfamily in varchar2, pstyle in varchar2 default '', psize in number default 0) is
-myfamily word := pfamily;
-mystyle	 word := pstyle;
-mysize	 number := psize;
+myfamily word;
+mystyle	 word;
+mysize	 number;
 FontCount number := 0;
 myFontFile word;
 fontkey  word;
 -- tabnull tv4000;
 begin
 	--------------------------------------------------------------------------------
-	-- TASK 2.3: Input Validation
+	-- TASK 2.3: Input Validation - BEFORE any variable assignments
 	--------------------------------------------------------------------------------
-	-- Validate font family
+	-- Validate font family (before assignment to avoid buffer overflow)
 	if pfamily is not null and length(pfamily) > 80 then
-		raise_application_error(-20100, 'Font family name too long (max 80 characters): ' || substr(pfamily, 1, 50));
+		raise_application_error(-20100, 'Font family name too long (max 80 characters)');
 	end if;
 
 	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
@@ -3897,7 +3897,7 @@ begin
 		begin
 			-- N = Normal (same as empty), B = Bold, I = Italic, BI/IB = Bold+Italic
 			if l_clean_style not in ('', 'N', 'B', 'I', 'BI', 'IB') then
-				raise_application_error(-20100, 'Invalid font style: ' || pstyle || '. Use empty, N, B, I, BI, or IB (with optional U for underline)');
+				raise_application_error(-20100, 'Invalid font style: ' || substr(pstyle, 1, 20) || '. Use empty, N, B, I, BI, or IB (with optional U for underline)');
 			end if;
 		end;
 	end if;
@@ -3907,19 +3907,29 @@ begin
 		raise_application_error(-20100, 'Invalid font size: ' || psize || '. Must be 0-999 points');
 	end if;
 
+	-- Now safe to assign to local variables
+	myfamily := pfamily;
+	mystyle := pstyle;
+	mysize := psize;
+
 	-- Select a font; size given in points
 	myfamily:=strtolower(myfamily);
 
 	if myfamily is null then
 		myfamily:=FontFamily;
-	end if; 
-	
+	end if;
+
 	if(myfamily='arial') then
 		myfamily:='helvetica';
 	elsif(myfamily='symbol' or  myfamily='zapfdingbats') then
 		mystyle:='';
-	end if; 
+	end if;
 	mystyle:=strtoupper(mystyle);
+
+	-- Normalize 'N' (Normal) to empty string for font key lookup
+	if mystyle = 'N' then
+		mystyle := '';
+	end if;
 	
 	if(instr(mystyle,'U') > 0) then
 		underline:=true;
