@@ -592,4 +592,25 @@ procedure testHeader;
 --------------------------------------------------------------------------------
 procedure lpc_footer;
 
+--------------------------------------------------------------------------------
+-- TASK 2.5: Enhanced Logging
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-18
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: SetLogLevel
+* Description: Sets the logging level for debugging
+* Parameters:
+*   p_level - Log level (0=OFF, 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG)
+*******************************************************************************/
+procedure SetLogLevel(p_level pls_integer);
+
+/*******************************************************************************
+* Function: GetLogLevel
+* Description: Returns the current logging level
+* Returns: Current log level (0-4)
+*******************************************************************************/
+function GetLogLevel return pls_integer;
+
 END PL_FPDF;

@@ -676,23 +676,78 @@ end fontsExists;
 * Procedure: log_message (Internal helper)
 * Description: Simple logging utility for debugging and monitoring
 *******************************************************************************/
+--------------------------------------------------------------------------------
+-- TASK 2.5: Enhanced Logging
+-- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+-- Date: 2025-12-18
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: log_message (Internal)
+* Description: Enhanced logging with DBMS_APPLICATION_INFO and DBMS_OUTPUT
+*******************************************************************************/
 procedure log_message(
   p_level pls_integer,
   p_message varchar2
 ) is
+  l_log_text varchar2(4000);
+  l_level_name varchar2(10);
 begin
   if p_level <= g_log_level and gb_mode_debug then
-    dbms_output.put_line(
-      to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') || ' [' ||
-      case p_level
-        when 1 then 'ERROR'
-        when 2 then 'WARN'
-        when 3 then 'INFO'
-        when 4 then 'DEBUG'
-      end || '] ' || p_message
-    );
+    l_level_name := case p_level
+      when 1 then 'ERROR'
+      when 2 then 'WARN'
+      when 3 then 'INFO'
+      when 4 then 'DEBUG'
+      else 'UNKNOWN'
+    end;
+
+    l_log_text := to_char(sysdate, 'YYYY-MM-DD HH24:MI:SS') || ' [' ||
+                  l_level_name || '] ' || substr(p_message, 1, 3900);
+
+    -- Output to DBMS_OUTPUT for interactive sessions
+    dbms_output.put_line(l_log_text);
+
+    -- Also log to DBMS_APPLICATION_INFO for monitoring
+    begin
+      dbms_application_info.set_client_info(substr(l_log_text, 1, 64));
+    exception
+      when others then
+        null;  -- Silently ignore if DBMS_APPLICATION_INFO fails
+    end;
   end if;
 end log_message;
+
+/*******************************************************************************
+* Procedure: SetLogLevel
+* Description: Sets the logging level for debugging
+*******************************************************************************/
+procedure SetLogLevel(p_level pls_integer) is
+begin
+  if p_level < 0 or p_level > 4 then
+    raise_application_error(-20100,
+      'Invalid log level: ' || p_level || '. Must be 0-4 (0=OFF, 1=ERROR, 2=WARN, 3=INFO, 4=DEBUG)');
+  end if;
+
+  g_log_level := p_level;
+  log_message(3, 'Log level changed to: ' || p_level || ' (' ||
+    case p_level
+      when 0 then 'OFF'
+      when 1 then 'ERROR'
+      when 2 then 'WARN'
+      when 3 then 'INFO'
+      when 4 then 'DEBUG'
+    end || ')');
+end SetLogLevel;
+
+/*******************************************************************************
+* Function: GetLogLevel
+* Description: Returns the current logging level
+*******************************************************************************/
+function GetLogLevel return pls_integer is
+begin
+  return g_log_level;
+end GetLogLevel;
 
 --------------------------------------------------------------------------------
 -- TASK 1.2: Page format helper functions (needed by Init)
@@ -2552,60 +2607,116 @@ end PageNo;
 ----------------------------------------------------------------------------------------
 procedure SetDrawColor(r in number, g in number default -1, b in number default -1) is
 begin
+	--------------------------------------------------------------------------------
+	-- TASK 2.3: Input Validation
+	--------------------------------------------------------------------------------
+	-- Validate RGB values (0-255 range)
+	if r < 0 or r > 255 then
+		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be 0-255');
+	end if;
+
+	if g <> -1 and (g < 0 or g > 255) then
+		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be 0-255');
+	end if;
+
+	if b <> -1 and (b < 0 or b > 255) then
+		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be 0-255');
+	end if;
+
 	-- Set color for all stroking operations
-	if((r=0 and g=0 and b=0) or g=-1)  then 
+	if((r=0 and g=0 and b=0) or g=-1)  then
 		DrawColor:=tochar(r/255,3)||' G';
 	else
 		DrawColor:=tochar(r/255,3) || ' ' || tochar(g/255,3) || ' ' || tochar(b/255,3) || ' RG';
-	end if; 
+	end if;
 	if(page>0) then
 		p_out(DrawColor);
-	end if; 
+	end if;
 end SetDrawColor;
 
 ----------------------------------------------------------------------------------------
 procedure SetFillColor (r in number, g in number default -1, b in number default -1) is
 begin
+	--------------------------------------------------------------------------------
+	-- TASK 2.3: Input Validation
+	--------------------------------------------------------------------------------
+	-- Validate RGB values (0-255 range)
+	if r < 0 or r > 255 then
+		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be 0-255');
+	end if;
+
+	if g <> -1 and (g < 0 or g > 255) then
+		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be 0-255');
+	end if;
+
+	if b <> -1 and (b < 0 or b > 255) then
+		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be 0-255');
+	end if;
+
 	-- Set color for all filling operations
 	if((r=0 and g=0 and b=0) or g=-1) then
 		FillColor:=tochar(r/255,3) || ' g';
 	else
 		FillColor:=tochar(r/255,3) ||' '|| tochar(g/255,3) ||' '|| tochar(b/255,3) || ' rg';
 	end if;
-	if (FillColor!=TextColor) then 
+	if (FillColor!=TextColor) then
 	  ColorFlag:=true;
 	else
 	  ColorFlag:=false;
-	end if; 
+	end if;
 	if(page>0) then
 		p_out(FillColor);
-	end if; 
+	end if;
 end SetFillColor;
 
 ----------------------------------------------------------------------------------------
 procedure SetTextColor (r in number, g in number default -1, b in number default -1) is
 begin
+	--------------------------------------------------------------------------------
+	-- TASK 2.3: Input Validation
+	--------------------------------------------------------------------------------
+	-- Validate RGB values (0-255 range)
+	if r < 0 or r > 255 then
+		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be 0-255');
+	end if;
+
+	if g <> -1 and (g < 0 or g > 255) then
+		raise_application_error(-20501, 'Invalid green value: ' || g || '. Must be 0-255');
+	end if;
+
+	if b <> -1 and (b < 0 or b > 255) then
+		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be 0-255');
+	end if;
+
 	-- Set color for text
 	if((r=0 and g=0 and b=0) or g=-1) then
 		TextColor:=tochar(r/255,3) || ' g';
 	else
 		TextColor:=tochar(r/255,3) ||' '|| tochar(g/255,3) ||' '|| tochar(b/255,3) || ' rg';
-	end if; 
-	if (FillColor!=TextColor) then 
+	end if;
+	if (FillColor!=TextColor) then
 	  ColorFlag:=true;
 	else
 	  ColorFlag:=false;
-	end if; 
+	end if;
 end SetTextColor;
 
 ----------------------------------------------------------------------------------------
-procedure SetLineWidth(width in number) is 
+procedure SetLineWidth(width in number) is
 begin
+	--------------------------------------------------------------------------------
+	-- TASK 2.3: Input Validation
+	--------------------------------------------------------------------------------
+	-- Validate line width (must be positive)
+	if width <= 0 then
+		raise_application_error(-20502, 'Invalid line width: ' || width || '. Must be positive');
+	end if;
+
 	-- Set line width
 	LineWidth:=width;
-	if(page>0) then 
+	if(page>0) then
 		p_out(tochar(width*k,2) ||' w');
-	end if; 
+	end if;
 end SetLineWidth;
 
 ----------------------------------------------------------------------------------------
@@ -3771,6 +3882,30 @@ myFontFile word;
 fontkey  word;
 -- tabnull tv4000;
 begin
+	--------------------------------------------------------------------------------
+	-- TASK 2.3: Input Validation
+	--------------------------------------------------------------------------------
+	-- Validate font family
+	if pfamily is not null and length(pfamily) > 80 then
+		raise_application_error(-20100, 'Font family name too long (max 80 characters): ' || substr(pfamily, 1, 50));
+	end if;
+
+	-- Validate font style (allow empty, B, I, BI, IB, U or combinations)
+	if pstyle is not null then
+		declare
+			l_clean_style varchar2(10) := upper(str_replace('U', '', pstyle));
+		begin
+			if l_clean_style not in ('', 'B', 'I', 'BI', 'IB') then
+				raise_application_error(-20100, 'Invalid font style: ' || pstyle || '. Use empty, B, I, BI, or IB (with optional U for underline)');
+			end if;
+		end;
+	end if;
+
+	-- Validate font size
+	if psize is not null and (psize < 0 or psize > 999) then
+		raise_application_error(-20100, 'Invalid font size: ' || psize || '. Must be 0-999 points');
+	end if;
+
 	-- Select a font; size given in points
 	myfamily:=strtolower(myfamily);
 
