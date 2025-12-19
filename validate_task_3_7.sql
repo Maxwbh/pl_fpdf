@@ -65,7 +65,7 @@ BEGIN
   -- Test 1: Valid CPF key accepted
   BEGIN
     start_test('ValidatePixKey accepts valid CPF');
-    l_is_valid := PL_FPDF.ValidatePixKey('12345678901', 'CPF');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('12345678901', 'CPF');
 
     IF l_is_valid THEN
       pass_test;
@@ -80,7 +80,7 @@ BEGIN
   -- Test 2: Invalid CPF (wrong length) rejected
   BEGIN
     start_test('ValidatePixKey rejects invalid CPF (wrong length)');
-    l_is_valid := PL_FPDF.ValidatePixKey('123456789', 'CPF');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('123456789', 'CPF');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -95,7 +95,7 @@ BEGIN
   -- Test 3: Invalid CPF (non-numeric) rejected
   BEGIN
     start_test('ValidatePixKey rejects non-numeric CPF');
-    l_is_valid := PL_FPDF.ValidatePixKey('123.456.789-01', 'CPF');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('123.456.789-01', 'CPF');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -116,7 +116,7 @@ BEGIN
   -- Test 4: Valid CNPJ key accepted
   BEGIN
     start_test('ValidatePixKey accepts valid CNPJ');
-    l_is_valid := PL_FPDF.ValidatePixKey('12345678000195', 'CNPJ');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('12345678000195', 'CNPJ');
 
     IF l_is_valid THEN
       pass_test;
@@ -131,7 +131,7 @@ BEGIN
   -- Test 5: Invalid CNPJ (wrong length) rejected
   BEGIN
     start_test('ValidatePixKey rejects invalid CNPJ (wrong length)');
-    l_is_valid := PL_FPDF.ValidatePixKey('12345678000', 'CNPJ');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('12345678000', 'CNPJ');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -152,7 +152,7 @@ BEGIN
   -- Test 6: Valid email key accepted
   BEGIN
     start_test('ValidatePixKey accepts valid email');
-    l_is_valid := PL_FPDF.ValidatePixKey('user@example.com', 'EMAIL');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('user@example.com', 'EMAIL');
 
     IF l_is_valid THEN
       pass_test;
@@ -167,7 +167,7 @@ BEGIN
   -- Test 7: Invalid email (no @) rejected
   BEGIN
     start_test('ValidatePixKey rejects invalid email (no @)');
-    l_is_valid := PL_FPDF.ValidatePixKey('userexample.com', 'EMAIL');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('userexample.com', 'EMAIL');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -182,7 +182,7 @@ BEGIN
   -- Test 8: Invalid email (no domain) rejected
   BEGIN
     start_test('ValidatePixKey rejects invalid email (no domain)');
-    l_is_valid := PL_FPDF.ValidatePixKey('user@', 'EMAIL');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('user@', 'EMAIL');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -203,7 +203,7 @@ BEGIN
   -- Test 9: Valid phone key accepted (with +55)
   BEGIN
     start_test('ValidatePixKey accepts valid phone with +55');
-    l_is_valid := PL_FPDF.ValidatePixKey('+5511987654321', 'PHONE');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('+5511987654321', 'PHONE');
 
     IF l_is_valid THEN
       pass_test;
@@ -218,7 +218,7 @@ BEGIN
   -- Test 10: Valid phone key accepted (digits only)
   BEGIN
     start_test('ValidatePixKey accepts valid phone (digits only)');
-    l_is_valid := PL_FPDF.ValidatePixKey('5511987654321', 'PHONE');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('5511987654321', 'PHONE');
 
     IF l_is_valid THEN
       pass_test;
@@ -233,7 +233,7 @@ BEGIN
   -- Test 11: Invalid phone (too short) rejected
   BEGIN
     start_test('ValidatePixKey rejects phone too short');
-    l_is_valid := PL_FPDF.ValidatePixKey('5511987', 'PHONE');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('5511987', 'PHONE');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -254,7 +254,7 @@ BEGIN
   -- Test 12: Valid random key accepted (UUID format)
   BEGIN
     start_test('ValidatePixKey accepts valid random key (UUID)');
-    l_is_valid := PL_FPDF.ValidatePixKey('123e4567-e89b-12d3-a456-426614174000', 'RANDOM');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('123e4567-e89b-12d3-a456-426614174000', 'RANDOM');
 
     IF l_is_valid THEN
       pass_test;
@@ -269,7 +269,7 @@ BEGIN
   -- Test 13: Invalid random key (too short) rejected
   BEGIN
     start_test('ValidatePixKey rejects random key too short');
-    l_is_valid := PL_FPDF.ValidatePixKey('abc123', 'RANDOM');
+    l_is_valid := PL_FPDF_PIX.ValidatePixKey('abc123', 'RANDOM');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -296,7 +296,7 @@ BEGIN
     l_pix_data.put('merchantName', 'Test Merchant');
     l_pix_data.put('merchantCity', 'Sao Paulo');
 
-    l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+    l_payload := PL_FPDF_PIX.GetPixPayload(l_pix_data);
 
     IF l_payload IS NOT NULL AND LENGTH(l_payload) > 0 THEN
       pass_test;
@@ -317,7 +317,7 @@ BEGIN
     l_pix_data.put('merchantName', 'Test Merchant');
     l_pix_data.put('merchantCity', 'Rio de Janeiro');
 
-    l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+    l_payload := PL_FPDF_PIX.GetPixPayload(l_pix_data);
 
     IF l_payload IS NOT NULL AND LENGTH(l_payload) > 0 THEN
       pass_test;
@@ -339,7 +339,7 @@ BEGIN
     l_pix_data.put('merchantCity', 'Brasilia');
     l_pix_data.put('amount', 123.45);
 
-    l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+    l_payload := PL_FPDF_PIX.GetPixPayload(l_pix_data);
 
     -- Payload should contain amount in EMV format
     IF l_payload IS NOT NULL AND INSTR(l_payload, '123.45') > 0 THEN
@@ -362,7 +362,7 @@ BEGIN
     l_pix_data.put('merchantCity', 'Curitiba');
     l_pix_data.put('txid', '***ABC123XYZ***');
 
-    l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+    l_payload := PL_FPDF_PIX.GetPixPayload(l_pix_data);
 
     IF l_payload IS NOT NULL AND INSTR(l_payload, 'ABC123XYZ') > 0 THEN
       pass_test;
@@ -383,7 +383,7 @@ BEGIN
     l_pix_data.put('merchantCity', 'Sao Paulo');
     -- Missing merchantName
 
-    l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+    l_payload := PL_FPDF_PIX.GetPixPayload(l_pix_data);
     fail_test('Should have raised error for missing merchantName');
   EXCEPTION
     WHEN OTHERS THEN
@@ -403,7 +403,7 @@ BEGIN
     l_pix_data.put('merchantName', 'Test Merchant');
     -- Missing merchantCity
 
-    l_payload := PL_FPDF.GetPixPayload(l_pix_data);
+    l_payload := PL_FPDF_PIX.GetPixPayload(l_pix_data);
     fail_test('Should have raised error for missing merchantCity');
   EXCEPTION
     WHEN OTHERS THEN
@@ -426,7 +426,7 @@ BEGIN
     DECLARE
       l_crc VARCHAR2(4);
     BEGIN
-      l_crc := PL_FPDF.CalculateCRC16('test payload');
+      l_crc := PL_FPDF_PIX.CalculateCRC16('test payload');
 
       -- CRC should be 4 hex characters
       IF LENGTH(l_crc) = 4 AND l_crc = UPPER(l_crc) THEN
@@ -447,8 +447,8 @@ BEGIN
       l_crc1 VARCHAR2(4);
       l_crc2 VARCHAR2(4);
     BEGIN
-      l_crc1 := PL_FPDF.CalculateCRC16('payload1');
-      l_crc2 := PL_FPDF.CalculateCRC16('payload2');
+      l_crc1 := PL_FPDF_PIX.CalculateCRC16('payload1');
+      l_crc2 := PL_FPDF_PIX.CalculateCRC16('payload2');
 
       IF l_crc1 != l_crc2 THEN
         pass_test;
@@ -468,8 +468,8 @@ BEGIN
       l_crc1 VARCHAR2(4);
       l_crc2 VARCHAR2(4);
     BEGIN
-      l_crc1 := PL_FPDF.CalculateCRC16('same payload');
-      l_crc2 := PL_FPDF.CalculateCRC16('same payload');
+      l_crc1 := PL_FPDF_PIX.CalculateCRC16('same payload');
+      l_crc2 := PL_FPDF_PIX.CalculateCRC16('same payload');
 
       IF l_crc1 = l_crc2 THEN
         pass_test;
@@ -500,7 +500,7 @@ BEGIN
     l_pix_data.put('merchantName', 'Test Merchant');
     l_pix_data.put('merchantCity', 'Sao Paulo');
 
-    PL_FPDF.AddQRCodePIX(10, 10, 50, l_pix_data);
+    PL_FPDF_PIX.AddQRCodePIX(10, 10, 50, l_pix_data);
     pass_test;
   EXCEPTION
     WHEN OTHERS THEN
