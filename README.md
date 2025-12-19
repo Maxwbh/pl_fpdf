@@ -2,9 +2,6 @@
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
-![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
-![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)
 
 > **Modern, high-performance PDF generation library for Oracle Database 19c/23c**
 
@@ -56,17 +53,6 @@ sqlplus user/password@database @deploy_all.sql
 SELECT object_name, object_type, status
 FROM user_objects
 WHERE object_name = 'PL_FPDF';
-```
-
-### Optional Extensions
-
-For Brazilian payment systems (PIX and Boleto), see `extensions/brazilian-payments/`
-
-### Performance Optimization (Recommended)
-
-```sql
--- Enable native compilation for 2-3x performance
-@optimize_native_compile.sql
 ```
 
 ---
