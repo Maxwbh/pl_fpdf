@@ -65,7 +65,7 @@ type recImageBlob is record (
 
 -- Global constants
 co_fpdf_version constant varchar2(10) := '1.53';
-PL_co_fpdf_version constant varchar2(10) := '0.9.4';
+co_pl_fpdf_version constant varchar2(10) := '2.0.0';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
@@ -250,7 +250,6 @@ function IsUTF8Enabled return boolean;
 procedure SetUTF8Enabled(p_enabled boolean default true);
 
 --------------------------------------------------------------------------------
--- Task 2.1: UTF-8/Unicode Support additions
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -573,7 +572,7 @@ procedure MyRepetitiveHeader(param1 in varchar2, param2 in varchar2);
 procedure MyRepetitiveFooter;
 procedure testHeader;
 --------------------------------------------------------------------------------
--- Affiche le numéro de page en base de page
+-- Displays page number at the bottom of page
 --------------------------------------------------------------------------------
 procedure lpc_footer;
 
@@ -679,9 +678,7 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Task 3.7: Generic QR Code Generation
 --------------------------------------------------------------------------------
--- NOTE: PIX QR Code rendering is available in PL_FPDF_PIX.AddQRCodePIX()
 --       This package provides only generic QR Code rendering.
 --------------------------------------------------------------------------------
 
@@ -711,9 +708,7 @@ procedure AddQRCode(
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Task 3.8: Generic Barcode Generation
 --------------------------------------------------------------------------------
--- NOTE: Boleto barcode rendering is available in PL_FPDF_BOLETO.AddBarcodeBoleto()
 --       This package provides only generic barcode rendering.
 --------------------------------------------------------------------------------
 
