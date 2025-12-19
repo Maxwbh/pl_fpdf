@@ -227,11 +227,11 @@ type ArrayCharWidths is table of charSet index by word;
 
 --------------------------------------------------------------------------------
 -- Date: 2025-12-18
--- Description: Replace magic numbers with named constants for better maintainability
 --------------------------------------------------------------------------------
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
  co_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
+ co_pl_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
