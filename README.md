@@ -8,7 +8,7 @@
 
 > **Modern, high-performance PDF generation library for Oracle Database 19c/23c**
 
-PL_FPDF is a pure PL/SQL library for generating PDF documents directly from Oracle Database. Originally ported from FPDF PHP library (v1.53), it has been completely modernized for Oracle 19c/23c with native compilation, UTF-8 support, and Brazilian PIX/Boleto payment integration.
+PL_FPDF is a pure PL/SQL library for generating PDF documents directly from Oracle Database. Originally ported from FPDF PHP library (v1.53), it has been completely modernized for Oracle 19c/23c with native compilation, UTF-8 support, and advanced Oracle features.
 
 [**Português (Brasil)**](README_PT_BR.md) | [**API Reference**](API_REFERENCE.md) | [**Migration Guide**](MIGRATION_GUIDE.md)
 
@@ -25,18 +25,6 @@ PL_FPDF is a pure PL/SQL library for generating PDF documents directly from Orac
 - ✅ **Image embedding** (PNG, JPEG) with native parsing
 - ✅ **Text rotation** (0°, 90°, 180°, 270°)
 - ✅ **Custom page formats** (A3, A4, A5, Letter, Legal, custom sizes)
-
-### Brazilian Payment Systems
-- ✅ **PIX QR Codes** (EMV QR Code Merchant-Presented Mode)
-  - All key types: CPF, CNPJ, Email, Phone, Random (EVP)
-  - Static and dynamic PIX
-  - CRC16-CCITT validation
-
-- ✅ **Boleto Bancário** (FEBRABAN standard)
-  - Interbank 2 of 5 (ITF-14) barcode
-  - Linha digitável (47-digit formatted line)
-  - Módulo 11 check digit
-  - Fator de vencimento calculation
 
 ### Modern Oracle Features
 - ✅ **Native compilation** (2-3x performance improvement)
@@ -60,23 +48,19 @@ sqlplus user/password@database @deploy_all.sql
 ### Manual Installation
 
 ```sql
--- 1. Install base package
+-- 1. Install core package
 @PL_FPDF.pks
 @PL_FPDF.pkb
 
--- 2. Install PIX package (optional)
-@PL_FPDF_PIX.pks
-@PL_FPDF_PIX.pkb
-
--- 3. Install Boleto package (optional)
-@PL_FPDF_BOLETO.pks
-@PL_FPDF_BOLETO.pkb
-
--- 4. Verify installation
+-- 2. Verify installation
 SELECT object_name, object_type, status
 FROM user_objects
-WHERE object_name LIKE 'PL_FPDF%';
+WHERE object_name = 'PL_FPDF';
 ```
+
+### Optional Extensions
+
+For Brazilian payment systems (PIX and Boleto), see `extensions/brazilian-payments/`
 
 ### Performance Optimization (Recommended)
 
@@ -150,73 +134,6 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.Cell(0, 10, 'Page ' || i || ' of 100');
   END LOOP;
-
-  l_pdf := PL_FPDF.OutputBlob();
-  PL_FPDF.Reset();
-END;
-/
-```
-
----
-
-## 💳 Brazilian Payment Systems
-
-### PIX QR Code
-
-```sql
-DECLARE
-  l_pix_data JSON_OBJECT_T;
-  l_pdf BLOB;
-BEGIN
-  PL_FPDF.Init();
-  PL_FPDF.AddPage();
-
-  -- Configure PIX data
-  l_pix_data := JSON_OBJECT_T();
-  l_pix_data.put('pixKey', 'payment@mystore.com');
-  l_pix_data.put('pixKeyType', 'EMAIL');
-  l_pix_data.put('merchantName', 'My Store');
-  l_pix_data.put('merchantCity', 'Sao Paulo');
-  l_pix_data.put('amount', 150.00);
-  l_pix_data.put('txid', 'ORDER12345');
-
-  -- Add QR Code to PDF
-  PL_FPDF_PIX.AddQRCodePIX(50, 50, 50, l_pix_data);
-
-  -- Add copy-paste code
-  PL_FPDF.SetFont('Courier', '', 8);
-  PL_FPDF.Text(50, 110, PL_FPDF_PIX.GetPixPayload(l_pix_data));
-
-  l_pdf := PL_FPDF.OutputBlob();
-  PL_FPDF.Reset();
-END;
-/
-```
-
-### Boleto Bancário
-
-```sql
-DECLARE
-  l_boleto_data JSON_OBJECT_T;
-  l_pdf BLOB;
-BEGIN
-  PL_FPDF.Init();
-  PL_FPDF.AddPage();
-
-  -- Configure Boleto data
-  l_boleto_data := JSON_OBJECT_T();
-  l_boleto_data.put('banco', '001');  -- Banco do Brasil
-  l_boleto_data.put('moeda', '9');
-  l_boleto_data.put('vencimento', TO_DATE('2025-12-31', 'YYYY-MM-DD'));
-  l_boleto_data.put('valor', 1500.00);
-  l_boleto_data.put('campoLivre', '1234567890123456789012345');
-
-  -- Add linha digitável
-  PL_FPDF.SetFont('Arial', 'B', 12);
-  PL_FPDF.Text(20, 190, PL_FPDF_BOLETO.GetLinhaDigitavel(l_boleto_data));
-
-  -- Add barcode
-  PL_FPDF_BOLETO.AddBarcodeBoleto(20, 200, 170, 15, l_boleto_data);
 
   l_pdf := PL_FPDF.OutputBlob();
   PL_FPDF.Reset();
@@ -310,18 +227,18 @@ See [PERFORMANCE_TUNING.md](PERFORMANCE_TUNING.md) for complete guide.
 
 ```
 ┌─────────────────────────────────────────────┐
-│            PL_FPDF (Base Package)           │
-│  • PDF generation core                      │
-│  • Generic QRCode/Barcode rendering         │
+│            PL_FPDF (Core Package)           │
+│  • PDF document generation                  │
+│  • Text rendering and fonts                 │
+│  • Image embedding (PNG, JPEG)              │
+│  • Graphics primitives                      │
 │  • UTF-8 support, TrueType fonts            │
-└────────────┬───────────────────────┬────────┘
-             │                       │
-    ┌────────▼────────┐     ┌───────▼────────┐
-    │  PL_FPDF_PIX    │     │ PL_FPDF_BOLETO │
-    │  • PIX QR Codes │     │ • Boleto       │
-    │  • EMV standard │     │ • FEBRABAN     │
-    └─────────────────┘     └────────────────┘
+│  • Multi-page documents                     │
+│  • Generic QRCode/Barcode rendering         │
+└─────────────────────────────────────────────┘
 ```
+
+**Optional Extensions**: Brazilian payment systems (PIX/Boleto) are available as separate extensions in the `extensions/` directory.
 
 ---
 
