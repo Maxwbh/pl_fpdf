@@ -57,17 +57,6 @@ FROM user_objects
 WHERE object_name = 'PL_FPDF';
 ```
 
-### Optional Extensions
-
-For Brazilian payment systems (PIX and Boleto), see `extensions/brazilian-payments/`
-
-### Performance Optimization (Recommended)
-
-```sql
--- Enable native compilation for 2-3x performance
-@optimize_native_compile.sql
-```
-
 ---
 
 ## 🚀 Quick Start
