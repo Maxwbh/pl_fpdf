@@ -72,7 +72,7 @@ BEGIN
     -- Fator base: 07/10/1997 = fator 0
     -- 08/10/1997 = fator 1
     -- Test with a known date: 01/01/2025
-    l_fator := PL_FPDF.CalculateFatorVencimento(TO_DATE('2025-01-01', 'YYYY-MM-DD'));
+    l_fator := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-01-01', 'YYYY-MM-DD'));
 
     -- 2025-01-01 is approximately 9948 days from 1997-10-07
     IF l_fator IS NOT NULL AND LENGTH(l_fator) = 4 THEN
@@ -93,8 +93,8 @@ BEGIN
       l_fator2 VARCHAR2(4);
       l_date DATE := TO_DATE('2025-12-31', 'YYYY-MM-DD');
     BEGIN
-      l_fator1 := PL_FPDF.CalculateFatorVencimento(l_date);
-      l_fator2 := PL_FPDF.CalculateFatorVencimento(l_date);
+      l_fator1 := PL_FPDF_BOLETO.CalculateFatorVencimento(l_date);
+      l_fator2 := PL_FPDF_BOLETO.CalculateFatorVencimento(l_date);
 
       IF l_fator1 = l_fator2 THEN
         pass_test;
@@ -114,8 +114,8 @@ BEGIN
       l_fator1 VARCHAR2(4);
       l_fator2 VARCHAR2(4);
     BEGIN
-      l_fator1 := PL_FPDF.CalculateFatorVencimento(TO_DATE('2025-01-01', 'YYYY-MM-DD'));
-      l_fator2 := PL_FPDF.CalculateFatorVencimento(TO_DATE('2025-12-31', 'YYYY-MM-DD'));
+      l_fator1 := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-01-01', 'YYYY-MM-DD'));
+      l_fator2 := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-12-31', 'YYYY-MM-DD'));
 
       IF TO_NUMBER(l_fator2) > TO_NUMBER(l_fator1) THEN
         pass_test;
@@ -142,7 +142,7 @@ BEGIN
       l_code_without_dv VARCHAR2(43);
     BEGIN
       l_code_without_dv := '00190000000000010000000000000000000000000000';
-      l_dv := PL_FPDF.CalculateDVBoleto(l_code_without_dv);
+      l_dv := PL_FPDF_BOLETO.CalculateDVBoleto(l_code_without_dv);
 
       -- DV should be a single digit (0-9) or '1' for special cases
       IF l_dv IN ('0','1','2','3','4','5','6','7','8','9') THEN
@@ -164,8 +164,8 @@ BEGIN
       l_dv2 CHAR(1);
       l_code VARCHAR2(43) := '00190000000000010000000000000000000000000000';
     BEGIN
-      l_dv1 := PL_FPDF.CalculateDVBoleto(l_code);
-      l_dv2 := PL_FPDF.CalculateDVBoleto(l_code);
+      l_dv1 := PL_FPDF_BOLETO.CalculateDVBoleto(l_code);
+      l_dv2 := PL_FPDF_BOLETO.CalculateDVBoleto(l_code);
 
       IF l_dv1 = l_dv2 THEN
         pass_test;
@@ -185,8 +185,8 @@ BEGIN
       l_dv1 CHAR(1);
       l_dv2 CHAR(1);
     BEGIN
-      l_dv1 := PL_FPDF.CalculateDVBoleto('00190000000000010000000000000000000000000000');
-      l_dv2 := PL_FPDF.CalculateDVBoleto('00190000000000020000000000000000000000000000');
+      l_dv1 := PL_FPDF_BOLETO.CalculateDVBoleto('00190000000000010000000000000000000000000000');
+      l_dv2 := PL_FPDF_BOLETO.CalculateDVBoleto('00190000000000020000000000000000000000000000');
 
       -- Different codes should (usually) produce different DVs
       -- This is not guaranteed but very likely
@@ -217,7 +217,7 @@ BEGIN
     l_boleto_data.put('valor', 1500.00);
     l_boleto_data.put('campoLivre', '1234567890123456789012345');
 
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
 
     IF LENGTH(l_codigo_barras) = 44 THEN
       pass_test;
@@ -239,7 +239,7 @@ BEGIN
     l_boleto_data.put('valor', 1000.00);
     l_boleto_data.put('campoLivre', '1234567890123456789012345');
 
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
 
     IF SUBSTR(l_codigo_barras, 1, 3) = '237' THEN
       pass_test;
@@ -254,7 +254,7 @@ BEGIN
   -- Test 9: Barcode includes currency code
   BEGIN
     start_test('GetCodigoBarras includes currency code (9=Real) at position 4');
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
 
     IF SUBSTR(l_codigo_barras, 4, 1) = '9' THEN
       pass_test;
@@ -269,7 +269,7 @@ BEGIN
   -- Test 10: Barcode includes DV at position 5
   BEGIN
     start_test('GetCodigoBarras includes check digit at position 5');
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
     l_dv := SUBSTR(l_codigo_barras, 5, 1);
 
     IF l_dv IN ('0','1','2','3','4','5','6','7','8','9') THEN
@@ -292,7 +292,7 @@ BEGIN
     l_boleto_data.put('campoLivre', '1234567890123456789012345');
     -- Missing 'banco'
 
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
     fail_test('Should have raised error for missing banco');
   EXCEPTION
     WHEN OTHERS THEN
@@ -313,7 +313,7 @@ BEGIN
     l_boleto_data.put('campoLivre', '1234567890123456789012345');
     -- Missing 'vencimento'
 
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
     fail_test('Should have raised error for missing vencimento');
   EXCEPTION
     WHEN OTHERS THEN
@@ -340,7 +340,7 @@ BEGIN
     l_boleto_data.put('valor', 2500.00);
     l_boleto_data.put('campoLivre', '1234567890123456789012345');
 
-    l_linha_digitavel := PL_FPDF.GetLinhaDigitavel(l_boleto_data);
+    l_linha_digitavel := PL_FPDF_BOLETO.GetLinhaDigitavel(l_boleto_data);
 
     -- Linha digitável has 54 chars (47 digits + 7 spaces/dots)
     IF l_linha_digitavel IS NOT NULL AND LENGTH(l_linha_digitavel) >= 47 THEN
@@ -356,7 +356,7 @@ BEGIN
   -- Test 14: Linha digitável starts with bank code
   BEGIN
     start_test('GetLinhaDigitavel starts with bank code');
-    l_linha_digitavel := PL_FPDF.GetLinhaDigitavel(l_boleto_data);
+    l_linha_digitavel := PL_FPDF_BOLETO.GetLinhaDigitavel(l_boleto_data);
 
     IF SUBSTR(l_linha_digitavel, 1, 3) = '341' THEN
       pass_test;
@@ -385,8 +385,8 @@ BEGIN
     l_boleto_data.put('valor', 1500.00);
     l_boleto_data.put('campoLivre', '1234567890123456789012345');
 
-    l_codigo_barras := PL_FPDF.GetCodigoBarras(l_boleto_data);
-    l_is_valid := PL_FPDF.ValidateCodigoBarras(l_codigo_barras);
+    l_codigo_barras := PL_FPDF_BOLETO.GetCodigoBarras(l_boleto_data);
+    l_is_valid := PL_FPDF_BOLETO.ValidateCodigoBarras(l_codigo_barras);
 
     IF l_is_valid THEN
       pass_test;
@@ -401,7 +401,7 @@ BEGIN
   -- Test 16: Validate rejects wrong length
   BEGIN
     start_test('ValidateCodigoBarras rejects wrong length');
-    l_is_valid := PL_FPDF.ValidateCodigoBarras('12345');  -- Too short
+    l_is_valid := PL_FPDF_BOLETO.ValidateCodigoBarras('12345');  -- Too short
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -416,7 +416,7 @@ BEGIN
   -- Test 17: Validate rejects invalid characters
   BEGIN
     start_test('ValidateCodigoBarras rejects non-numeric code');
-    l_is_valid := PL_FPDF.ValidateCodigoBarras('ABCD567890123456789012345678901234567890WXYZ');
+    l_is_valid := PL_FPDF_BOLETO.ValidateCodigoBarras('ABCD567890123456789012345678901234567890WXYZ');
 
     IF NOT l_is_valid THEN
       pass_test;
@@ -503,8 +503,8 @@ BEGIN
     l_boleto_data.put('campoLivre', '9876543210987654321098765');
 
     PL_FPDF.SetFont('Arial', 'B', 12);
-    PL_FPDF.Text(20, 190, PL_FPDF.GetLinhaDigitavel(l_boleto_data));
-    PL_FPDF.AddBarcodeBoleto(20, 200, 170, 15, l_boleto_data);
+    PL_FPDF.Text(20, 190, PL_FPDF_BOLETO.GetLinhaDigitavel(l_boleto_data));
+    PL_FPDF_BOLETO.AddBarcodeBoleto(20, 200, 170, 15, l_boleto_data);
 
     l_pdf_blob := PL_FPDF.OutputBlob();
 
