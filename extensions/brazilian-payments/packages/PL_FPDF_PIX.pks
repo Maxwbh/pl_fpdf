@@ -2,7 +2,6 @@
 -- Package: PL_FPDF_PIX
 -- Description: PIX (Brazilian Instant Payment) utility functions
 -- Author: Maxwell Oliveira (@maxwbh)
--- Date: 2025-12-18
 -- Version: 1.0.0
 --------------------------------------------------------------------------------
 -- This package provides functions for generating and validating PIX payloads
