@@ -3125,8 +3125,8 @@ begin
   -- 1. VALIDATE PARAMETERS
   -- ========================================================================
 
-  -- Validate orientation
-  l_orientation := upper(substr(p_orientation, 1, 1));
+  -- Validate orientation (handle NULL by using default)
+  l_orientation := upper(substr(nvl(p_orientation, 'P'), 1, 1));
   if l_orientation not in ('P', 'L') then
     raise_application_error(
       -20001,
@@ -3134,17 +3134,17 @@ begin
     );
   end if;
 
-  -- Validate unit (validate BEFORE assignment to avoid buffer overflow)
-  if lower(p_unit) not in ('mm', 'cm', 'in', 'pt') then
+  -- Validate unit (validate BEFORE assignment to avoid buffer overflow, handle NULL)
+  if lower(nvl(p_unit, 'mm')) not in ('mm', 'cm', 'in', 'pt') then
     raise_application_error(
       -20002,
       'Invalid unit: ' || p_unit || '. Must be mm, cm, in, or pt.'
     );
   end if;
-  l_unit := lower(p_unit);
+  l_unit := lower(nvl(p_unit, 'mm'));
 
-  -- Validate encoding
-  if upper(p_encoding) not in ('UTF-8', 'UTF8', 'AL32UTF8', 'ISO-8859-1', 'WINDOWS-1252') then
+  -- Validate encoding (handle NULL by using default)
+  if upper(nvl(p_encoding, 'UTF-8')) not in ('UTF-8', 'UTF8', 'AL32UTF8', 'ISO-8859-1', 'WINDOWS-1252') then
     raise_application_error(
       -20003,
       'Unsupported encoding: ' || p_encoding
@@ -3165,16 +3165,16 @@ begin
   -- ========================================================================
 
   g_default_orientation := l_orientation;
-  g_default_format := get_page_format(upper(p_format));
+  g_default_format := get_page_format(upper(nvl(p_format, 'A4')));
   log_message(4, 'Defaults: orientation=' || g_default_orientation ||
-    ', format=' || upper(p_format) || ' (' ||
+    ', format=' || upper(nvl(p_format, 'A4')) || ' (' ||
     g_default_format.width || 'x' || g_default_format.height || 'mm)');
 
   -- ========================================================================
   -- 4. SET ENCODING
   -- ========================================================================
 
-  g_encoding := upper(p_encoding);
+  g_encoding := upper(nvl(p_encoding, 'UTF-8'));
   log_message(4, 'Encoding set to: ' || g_encoding);
 
   -- ========================================================================
@@ -3299,7 +3299,7 @@ procedure SetPage(p_page_number pls_integer) is
 begin
   -- Validate initialization
   if not g_initialized then
-    raise_application_error(-20105,
+    raise_application_error(-20005,
       'PL_FPDF not initialized. Call Init() first.');
   end if;
 
@@ -3348,7 +3348,7 @@ procedure AddPage(
 begin
   -- Validate initialization
   if not g_initialized then
-    raise_application_error(-20105,
+    raise_application_error(-20005,
       'PL_FPDF not initialized. Call Init() first.');
   end if;
 
@@ -4022,7 +4022,7 @@ begin
 			fonts(fontkey).ut := 50;   
 			fonts(fontkey).cw  := fpdf_charwidths(fontkey);  
 		else
-			Error('Undefined font: ' || myfamily || ' ' || mystyle);
+			raise_application_error(-20201, 'Undefined font: ' || myfamily || ' ' || mystyle);
 		end if; 
 	end if; 
 	-- Select it
@@ -5386,7 +5386,7 @@ procedure AddQRCode(
 begin
   -- Validate parameters
   if not g_initialized then
-    raise_application_error(-20000, 'Document not initialized. Call Init() first.');
+    raise_application_error(-20005, 'Document not initialized. Call Init() first.');
   end if;
 
   if g_current_page = 0 then
@@ -5524,7 +5524,7 @@ procedure AddBarcode(
 begin
   -- Validate parameters
   if not g_initialized then
-    raise_application_error(-20000, 'Document not initialized. Call Init() first.');
+    raise_application_error(-20005, 'Document not initialized. Call Init() first.');
   end if;
 
   if g_current_page = 0 then
