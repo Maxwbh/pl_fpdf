@@ -2,8 +2,6 @@
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
-![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)
 
 > **Modern, high-performance PDF generation library for Oracle Database 19c/23c**
 
