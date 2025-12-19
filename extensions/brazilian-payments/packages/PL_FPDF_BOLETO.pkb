@@ -2,7 +2,6 @@
 -- Package Body: PL_FPDF_BOLETO
 -- Description: Boleto Bancário (Brazilian Bank Slip) utility functions
 -- Author: Maxwell Oliveira (@maxwbh)
--- Date: 2025-12-18
 -- Version: 1.0.0
 --------------------------------------------------------------------------------
 

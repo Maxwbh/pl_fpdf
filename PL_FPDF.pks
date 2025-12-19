@@ -35,8 +35,6 @@ type point is record (x number, y number);
 type tab_points is table of point index by pls_integer;
 
 --------------------------------------------------------------------------------
--- TASK 1.6: Native BLOB-based image handling (replaces deprecated OrdImage)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
@@ -65,14 +63,12 @@ type recImageBlob is record (
   has_transparency boolean
 );
 
--- Constantes globales
-FPDF_VERSION constant varchar2(10) := '1.53';
-PL_FPDF_VERSION constant varchar2(10) := '0.9.4';
+-- Global constants
+co_fpdf_version constant varchar2(10) := '1.53';
+PL_co_fpdf_version constant varchar2(10) := '0.9.4';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
--- TASK 1.1: Modernization - Initialization procedures (Oracle 19c/23c)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 
@@ -120,12 +116,9 @@ function IsInitialized return boolean
   DETERMINISTIC;
 
 --------------------------------------------------------------------------------
--- End of Task 1.1 additions
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 1.2: Modernization - AddPage/SetPage with BLOB streaming (Oracle 19c/23c)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 
@@ -165,12 +158,9 @@ type recPage is record (
 type tPages is table of recPage index by pls_integer;
 
 --------------------------------------------------------------------------------
--- End of Task 1.2 type additions
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 1.3: TrueType/Unicode Font Support (Oracle 19c/23c)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 
@@ -260,13 +250,10 @@ function IsUTF8Enabled return boolean;
 procedure SetUTF8Enabled(p_enabled boolean default true);
 
 --------------------------------------------------------------------------------
--- End of Task 1.3 additions
 -- Task 2.1: UTF-8/Unicode Support additions
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 2.2 & 2.4: Custom Exceptions and Error Handling
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-17
 --------------------------------------------------------------------------------
 
@@ -429,8 +416,6 @@ procedure MultiCell
 procedure Write(pH in varchar2, ptxt in varchar2, plink in varchar2 default null);
 
 --------------------------------------------------------------------------------
--- TASK 1.4: Modern Cell/MultiCell/Write with rotation support
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
@@ -492,7 +477,6 @@ procedure Output(pname in varchar2 default null, pdest in varchar2 default null)
 function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default null) return blob;
 
 --------------------------------------------------------------------------------
--- TASK 1.5: Modern output methods without OWA/HTP dependencies
 --------------------------------------------------------------------------------
 function OutputBlob return blob;
 procedure OutputFile(p_filename varchar2, p_directory varchar2 default 'PDF_DIR');
@@ -501,7 +485,6 @@ procedure OpenPDF;
 procedure ClosePDF;
 
 --------------------------------------------------------------------------------
--- TASK 1.2: Enhanced AddPage with rotation and format support
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
@@ -595,8 +578,6 @@ procedure testHeader;
 procedure lpc_footer;
 
 --------------------------------------------------------------------------------
--- TASK 2.5: Enhanced Logging
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
@@ -617,8 +598,6 @@ function GetLogLevel return pls_integer
   DETERMINISTIC;
 
 --------------------------------------------------------------------------------
--- TASK 3.2: JSON Support - Modern Configuration and Metadata APIs
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
@@ -697,7 +676,6 @@ function GetDocumentMetadata return JSON_OBJECT_T;
 function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_T;
 
 --------------------------------------------------------------------------------
--- End of Task 3.2 additions
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -730,7 +708,6 @@ procedure AddQRCode(
 );
 
 --------------------------------------------------------------------------------
--- End of Task 3.7: Generic QR Code
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -765,7 +742,6 @@ procedure AddBarcode(
 );
 
 --------------------------------------------------------------------------------
--- End of Task 3.8: Generic Barcode
 --------------------------------------------------------------------------------
 
 END PL_FPDF;

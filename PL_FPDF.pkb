@@ -191,8 +191,6 @@ type ArrayCharWidths is table of charSet index by word;
  size2 word;
 
 --------------------------------------------------------------------------------
--- TASK 1.1: New global variables for modernized initialization
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
  g_initialized boolean := false;       -- Initialization state flag
@@ -202,8 +200,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 1.2: New global variables for enhanced page management
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
  type tPageFormats is table of recPageFormat index by varchar2(20);
@@ -217,8 +213,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 1.3: TrueType/Unicode Font Support - Global variables
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
  g_ttf_fonts tTTFFonts;                     -- TrueType font cache
@@ -226,22 +220,18 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 2.1: UTF-8/Unicode Support - Global variables
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-17
 --------------------------------------------------------------------------------
  g_utf8_enabled boolean := true;            -- UTF-8 encoding enabled by default
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 3.1: Modern Code Structure - Constants
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-18
 -- Description: Replace magic numbers with named constants for better maintainability
 --------------------------------------------------------------------------------
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
- c_FPDF_VERSION CONSTANT VARCHAR2(10) := '2.0.0';
+ co_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -736,16 +726,12 @@ end fontsExists;
 */
 
 --------------------------------------------------------------------------------
--- TASK 1.1: Internal logging utility (needed by Task 1.6)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 --------------------------------------------------------------------------------
 /*******************************************************************************
 * Procedure: log_message (Internal helper)
 * Description: Simple logging utility for debugging and monitoring
 *******************************************************************************/
 --------------------------------------------------------------------------------
--- TASK 2.5: Enhanced Logging
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
@@ -820,8 +806,6 @@ begin
 end GetLogLevel;
 
 --------------------------------------------------------------------------------
--- TASK 1.2: Page format helper functions (needed by Init)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 --------------------------------------------------------------------------------
 /*******************************************************************************
 * Procedure: init_page_formats (Internal)
@@ -903,8 +887,6 @@ begin
 end get_page_format;
 
 --------------------------------------------------------------------------------
--- TASK 1.6: Native BLOB-based image handling (replaces OrdImage)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
@@ -1677,7 +1659,7 @@ end p_putresources;
 ----------------------------------------------------------------------------------------
 procedure p_putinfo is
 begin
-	p_out('/Producer ' || p_textstring('PL_FPDF ' || PL_FPDF_VERSION || ' portage pour Laclasse.com par P.G. Levallois de la version '|| FPDF_VERSION ||' de PHP/FPDF d''Olivier Plathey.'));
+	p_out('/Producer ' || p_textstring('PL_FPDF ' || co_pl_fpdf_version || ' portage pour Laclasse.com par P.G. Levallois de la version '|| co_fpdf_version ||' de PHP/FPDF d''Olivier Plathey.'));
 	if(not empty(title)) then
 		p_out('/Title ' || p_textstring(title));
 	end if; 
@@ -3121,8 +3103,6 @@ begin
 end;
 
 --------------------------------------------------------------------------------
--- TASK 1.1: Modernized Initialization Procedures
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 /*******************************************************************************
@@ -3293,12 +3273,9 @@ begin
 end IsInitialized;
 
 --------------------------------------------------------------------------------
--- End of Task 1.1 implementations
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 1.2: AddPage/SetPage with BLOB streaming - Implementations
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 -- NOTE: init_page_formats() and get_page_format() have been moved earlier
@@ -3480,12 +3457,9 @@ exception
 end AddPage;
 
 --------------------------------------------------------------------------------
--- End of Task 1.2 helper implementations
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 1.3: TrueType/Unicode Font Support - Implementations
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 
@@ -3669,12 +3643,9 @@ exception
 end ClearTTFFontCache;
 
 --------------------------------------------------------------------------------
--- End of Task 1.3 implementations
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 2.1: UTF-8/Unicode Support Functions
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-17
 --------------------------------------------------------------------------------
 
@@ -4564,7 +4535,6 @@ exception
 end write;
 
 --------------------------------------------------------------------------------
--- TASK 1.5: Modern Output Functions (OWA-Free)
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
@@ -4684,7 +4654,6 @@ exception
 end OutputFile;
 
 --------------------------------------------------------------------------------
--- End of Task 1.5 implementations
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
@@ -4957,8 +4926,6 @@ begin
 end testHeader;
 
 --------------------------------------------------------------------------------
--- TASK 1.4: Modern Cell/Write with rotation support - Implementations
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
@@ -5064,12 +5031,9 @@ exception
 end WriteRotated;
 
 --------------------------------------------------------------------------------
--- End of Task 1.4 implementations
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- TASK 3.2: JSON Support - Implementations
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
 -- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
@@ -5288,7 +5252,7 @@ begin
 
   -- PDF version
   l_metadata.put('pdfVersion', c_PDF_VERSION);
-  l_metadata.put('fpdfVersion', c_FPDF_VERSION);
+  l_metadata.put('fpdfVersion', co_fpdf_version);
 
   log_message(c_LOG_DEBUG, 'GetDocumentMetadata: Returned metadata for ' || g_current_page || ' pages');
 
@@ -5387,7 +5351,6 @@ exception
 end GetPageInfo;
 
 --------------------------------------------------------------------------------
--- End of Task 3.2 implementations
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
