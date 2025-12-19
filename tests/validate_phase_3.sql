@@ -1,26 +1,3 @@
---------------------------------------------------------------------------------
--- Phase 3 Validation Script: Advanced Modernization
--- PL_FPDF Modernization Project
--- Date: 2025-12-19
---------------------------------------------------------------------------------
--- Tests all Phase 3 functionality:
--- - Modern code structure with constants
--- - JSON configuration and metadata APIs
--- - Performance optimizations
--- - Generic QR Code generation
--- - Generic Barcode generation
---------------------------------------------------------------------------------
-
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK ON
-SET VERIFY OFF
-
-PROMPT
-PROMPT ================================================================================
-PROMPT   Phase 3 Validation: Advanced Modernization
-PROMPT ================================================================================
-PROMPT
-
 DECLARE
   l_test_count PLS_INTEGER := 0;
   l_pass_count PLS_INTEGER := 0;
