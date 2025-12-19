@@ -2,7 +2,6 @@
 
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
-![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
 ![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen.svg)
 ![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)
 
@@ -253,18 +252,11 @@ This is a modernization project of the original PL_FPDF library. Contributions a
 ### Modernization Project
 - **Lead Developer**: Maxwell da Silva Oliveira (@maxwbh)
 - **Company**: M&S do Brasil LTDA
-- **Contact**: maxwbh@gmail.com
+- **Contact**: maxwell@msbrasil.inf.br
 - **LinkedIn**: [linkedin.com/in/maxwbh](https://linkedin.com/in/maxwbh)
 
 ---
 
-## 📄 License
-
-This program is free software; you can redistribute it and/or modify it under the terms of the **GNU General Public License v2** as published by the Free Software Foundation.
-
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
----
 
 ## 🔗 Links
 

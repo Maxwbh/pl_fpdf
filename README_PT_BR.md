@@ -253,16 +253,8 @@ Este é um projeto de modernização da biblioteca original PL_FPDF. Contribuiç
 ### Projeto de Modernização
 - **Desenvolvedor Principal**: Maxwell da Silva Oliveira (@maxwbh)
 - **Empresa**: M&S do Brasil LTDA
-- **Contato**: maxwbh@gmail.com
+- **Contato**: maxwell@msbrasil.inf.br
 - **LinkedIn**: [linkedin.com/in/maxwbh](https://linkedin.com/in/maxwbh)
-
----
-
-## 📄 Licença
-
-Este programa é software livre; você pode redistribuí-lo e/ou modificá-lo sob os termos da **GNU General Public License v2** conforme publicado pela Free Software Foundation.
-
-Este programa é distribuído na esperança de que seja útil, mas SEM QUALQUER GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO.
 
 ---
 
@@ -270,7 +262,7 @@ Este programa é distribuído na esperança de que seja útil, mas SEM QUALQUER 
 
 - **FPDF Original**: http://www.fpdf.org/
 - **Repositório GitHub**: https://github.com/maxwbh/pl_fpdf
-- **Issues**: https://github.com/maxwbh/pl_fpdf/issues
+- **Original Repository**: https://github.com/Pilooz/pl_fpdf
 
 ---
 

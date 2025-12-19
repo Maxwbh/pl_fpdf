@@ -1,27 +1,4 @@
---------------------------------------------------------------------------------
--- Phase 1 Validation Script: Critical Refactoring
--- PL_FPDF Modernization Project
--- Date: 2025-12-19
---------------------------------------------------------------------------------
--- Tests all Phase 1 functionality:
--- - Modern initialization (Init/Reset)
--- - Enhanced page management (AddPage/SetPage)
--- - TrueType/Unicode font support
--- - Text rotation (CellRotated/WriteRotated)
--- - Modern output methods (OutputBlob/OutputFile)
--- - Native BLOB image handling
--- - CLOB buffer support
---------------------------------------------------------------------------------
 
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK ON
-SET VERIFY OFF
-
-PROMPT
-PROMPT ================================================================================
-PROMPT   Phase 1 Validation: Critical Refactoring
-PROMPT ================================================================================
-PROMPT
 
 DECLARE
   l_test_count PLS_INTEGER := 0;

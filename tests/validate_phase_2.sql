@@ -1,168 +1,210 @@
---------------------------------------------------------------------------------
--- Phase 2 Validation Script: Security & Robustness
--- PL_FPDF Modernization Project
--- Date: 2025-12-19
---------------------------------------------------------------------------------
--- Tests all Phase 2 functionality:
--- - UTF-8/Unicode support
--- - Custom exceptions
--- - Input validation
--- - Error handling
--- - Enhanced logging
---------------------------------------------------------------------------------
-
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK ON
-SET VERIFY OFF
-
-PROMPT
-PROMPT ================================================================================
-PROMPT   Phase 2 Validation: Security & Robustness
-PROMPT ================================================================================
-PROMPT
 
 DECLARE
   l_test_count PLS_INTEGER := 0;
   l_pass_count PLS_INTEGER := 0;
   l_fail_count PLS_INTEGER := 0;
 
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE test_result(p_test_name VARCHAR2,
+                        p_passed    BOOLEAN,
+                        p_message   VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_test_count := l_test_count + 1;
     IF p_passed THEN
       l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_test_name);
+      dbms_output.put_line('  [PASS] ' || p_test_name);
     ELSE
       l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name ||
-        CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
+      dbms_output.put_line('  [FAIL] ' || p_test_name || CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
     END IF;
   END test_result;
 
 BEGIN
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('Task 2.1: UTF-8/Unicode Support');
-  DBMS_OUTPUT.PUT_LINE('--------------------------------');
+  dbms_output.put_line('');
+  dbms_output.put_line('Task 2.1: UTF-8/Unicode Support');
+  dbms_output.put_line('--------------------------------');
 
   -- Test 2.1.1: UTF-8 enabled by default
   BEGIN
-    PL_FPDF.Init();
-    test_result('UTF-8 enabled by default', PL_FPDF.IsUTF8Enabled());
-    PL_FPDF.Reset();
-  EXCEPTION WHEN OTHERS THEN
-    test_result('UTF-8 default enabled', FALSE, SQLERRM);
+    pl_fpdf.init();
+    test_result('UTF-8 enabled by default',
+                pl_fpdf.isutf8enabled());
+    pl_fpdf.reset();
+  EXCEPTION
+    WHEN OTHERS THEN
+      test_result('UTF-8 default enabled',
+                  FALSE,
+                  SQLERRM);
   END;
 
   -- Test 2.1.2: SetUTF8Enabled
   BEGIN
-    PL_FPDF.SetUTF8Enabled(FALSE);
-    test_result('SetUTF8Enabled(FALSE)', NOT PL_FPDF.IsUTF8Enabled());
-    PL_FPDF.SetUTF8Enabled(TRUE);
-    test_result('SetUTF8Enabled(TRUE)', PL_FPDF.IsUTF8Enabled());
-  EXCEPTION WHEN OTHERS THEN
-    test_result('SetUTF8Enabled', FALSE, SQLERRM);
+    pl_fpdf.setutf8enabled(FALSE);
+    test_result('SetUTF8Enabled(FALSE)',
+                NOT pl_fpdf.isutf8enabled());
+    pl_fpdf.setutf8enabled(TRUE);
+    test_result('SetUTF8Enabled(TRUE)',
+                pl_fpdf.isutf8enabled());
+  EXCEPTION
+    WHEN OTHERS THEN
+      test_result('SetUTF8Enabled',
+                  FALSE,
+                  SQLERRM);
   END;
 
   -- Test 2.1.3: International characters
   DECLARE
     l_pdf BLOB;
   BEGIN
-    PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Português: São Paulo, Ação');
-    PL_FPDF.Ln(10);
-    PL_FPDF.Cell(0, 10, 'Deutsch: Zürich, Ä Ö Ü');
-    PL_FPDF.Ln(10);
-    PL_FPDF.Cell(0, 10, 'Français: Château, É È');
-    l_pdf := PL_FPDF.OutputBlob();
-    test_result('International characters rendering', DBMS_LOB.GETLENGTH(l_pdf) > 0);
-    PL_FPDF.Reset();
-  EXCEPTION WHEN OTHERS THEN
-    test_result('International characters', FALSE, SQLERRM);
+    pl_fpdf.init('P',
+                 'mm',
+                 'A4',
+                 'UTF-8');
+    pl_fpdf.addpage();
+    pl_fpdf.setfont('Arial',
+                    '',
+                    12);
+    pl_fpdf.cell(0,
+                 10,
+                 'Português: São Paulo, Ação');
+    pl_fpdf.ln(10);
+    pl_fpdf.cell(0,
+                 10,
+                 'Deutsch: Zürich, Ä Ö Ü');
+    pl_fpdf.ln(10);
+    pl_fpdf.cell(0,
+                 10,
+                 'Français: Château, É È');
+    l_pdf := pl_fpdf.outputblob();
+    test_result('International characters rendering',
+                dbms_lob.getlength(l_pdf) > 0);
+    pl_fpdf.reset();
+  EXCEPTION
+    WHEN OTHERS THEN
+      test_result('International characters',
+                  FALSE,
+                  SQLERRM);
   END;
 
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('Task 2.2 & 2.4: Custom Exceptions');
-  DBMS_OUTPUT.PUT_LINE('----------------------------------');
+  dbms_output.put_line('');
+  dbms_output.put_line('Task 2.2 & 2.4: Custom Exceptions');
+  dbms_output.put_line('----------------------------------');
 
   -- Test 2.2.1: exc_invalid_orientation
   BEGIN
-    PL_FPDF.Init('X', 'mm', 'A4');  -- Invalid orientation
-    test_result('exc_invalid_orientation raised', FALSE, 'Should have raised exception');
-    PL_FPDF.Reset();
+    pl_fpdf.init('X',
+                 'mm',
+                 'A4'); -- Invalid orientation
+    test_result('exc_invalid_orientation raised',
+                FALSE,
+                'Should have raised exception');
+    pl_fpdf.reset();
   EXCEPTION
-    WHEN PL_FPDF.exc_invalid_orientation THEN
-      test_result('exc_invalid_orientation (-20001)', TRUE);
+    WHEN pl_fpdf.exc_invalid_orientation THEN
+      test_result('exc_invalid_orientation (-20001)',
+                  TRUE);
     WHEN OTHERS THEN
-      test_result('exc_invalid_orientation', FALSE, 'Wrong exception: ' || SQLERRM);
+      test_result('exc_invalid_orientation',
+                  FALSE,
+                  'Wrong exception: ' || SQLERRM);
   END;
 
   -- Test 2.2.2: exc_invalid_unit
   BEGIN
-    PL_FPDF.Init('P', 'xyz', 'A4');  -- Invalid unit
-    test_result('exc_invalid_unit raised', FALSE, 'Should have raised exception');
-    PL_FPDF.Reset();
+    pl_fpdf.init('P',
+                 'xyz',
+                 'A4'); -- Invalid unit
+    test_result('exc_invalid_unit raised',
+                FALSE,
+                'Should have raised exception');
+    pl_fpdf.reset();
   EXCEPTION
-    WHEN PL_FPDF.exc_invalid_unit THEN
-      test_result('exc_invalid_unit (-20002)', TRUE);
+    WHEN pl_fpdf.exc_invalid_unit THEN
+      test_result('exc_invalid_unit (-20002)',
+                  TRUE);
     WHEN OTHERS THEN
-      test_result('exc_invalid_unit', FALSE, 'Wrong exception: ' || SQLERRM);
+      test_result('exc_invalid_unit',
+                  FALSE,
+                  'Wrong exception: ' || SQLERRM);
   END;
 
   -- Test 2.2.3: exc_not_initialized
   BEGIN
-    PL_FPDF.Reset();  -- Ensure not initialized
-    PL_FPDF.AddPage();  -- Should fail
-    test_result('exc_not_initialized raised', FALSE, 'Should have raised exception');
+    pl_fpdf.reset(); -- Ensure not initialized
+    pl_fpdf.addpage(); -- Should fail
+    test_result('exc_not_initialized raised',
+                FALSE,
+                'Should have raised exception');
   EXCEPTION
-    WHEN PL_FPDF.exc_not_initialized THEN
-      test_result('exc_not_initialized (-20005)', TRUE);
+    WHEN pl_fpdf.exc_not_initialized THEN
+      test_result('exc_not_initialized (-20005)',
+                  TRUE);
     WHEN OTHERS THEN
-      test_result('exc_not_initialized', FALSE, 'Wrong exception: ' || SQLERRM);
+      test_result('exc_not_initialized',
+                  FALSE,
+                  'Wrong exception: ' || SQLERRM);
   END;
 
   -- Test 2.2.4: exc_font_not_found
   BEGIN
-    PL_FPDF.Init();
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('NonExistentFont', '', 12);
-    test_result('exc_font_not_found raised', FALSE, 'Should have raised exception');
-    PL_FPDF.Reset();
+    pl_fpdf.init();
+    pl_fpdf.addpage();
+    pl_fpdf.setfont('NonExistentFont',
+                    '',
+                    12);
+    test_result('exc_font_not_found raised',
+                FALSE,
+                'Should have raised exception');
+    pl_fpdf.reset();
   EXCEPTION
-    WHEN PL_FPDF.exc_font_not_found THEN
-      test_result('exc_font_not_found (-20201)', TRUE);
+    WHEN pl_fpdf.exc_font_not_found THEN
+      test_result('exc_font_not_found (-20201)',
+                  TRUE);
     WHEN OTHERS THEN
-      test_result('exc_font_not_found', FALSE, 'Wrong exception: ' || SQLERRM);
+      test_result('exc_font_not_found',
+                  FALSE,
+                  'Wrong exception: ' || SQLERRM);
   END;
 
   -- Test 2.2.5: exc_page_not_found
   BEGIN
-    PL_FPDF.Init();
-    PL_FPDF.AddPage();
-    PL_FPDF.SetPage(999);  -- Non-existent page
-    test_result('exc_page_not_found raised', FALSE, 'Should have raised exception');
-    PL_FPDF.Reset();
+    pl_fpdf.init();
+    pl_fpdf.addpage();
+    pl_fpdf.setpage(999); -- Non-existent page
+    test_result('exc_page_not_found raised',
+                FALSE,
+                'Should have raised exception');
+    pl_fpdf.reset();
   EXCEPTION
-    WHEN PL_FPDF.exc_page_not_found THEN
-      test_result('exc_page_not_found (-20106)', TRUE);
+    WHEN pl_fpdf.exc_page_not_found THEN
+      test_result('exc_page_not_found (-20106)',
+                  TRUE);
     WHEN OTHERS THEN
-      test_result('exc_page_not_found', FALSE, 'Wrong exception: ' || SQLERRM);
+      test_result('exc_page_not_found',
+                  FALSE,
+                  'Wrong exception: ' || SQLERRM);
   END;
 
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('Task 2.3: Input Validation');
-  DBMS_OUTPUT.PUT_LINE('---------------------------');
+  dbms_output.put_line('');
+  dbms_output.put_line('Task 2.3: Input Validation');
+  dbms_output.put_line('---------------------------');
 
   -- Test 2.3.1: Valid orientation values
   BEGIN
-    PL_FPDF.Init('P', 'mm', 'A4');
-    PL_FPDF.Reset();
-    PL_FPDF.Init('L', 'mm', 'A4');
-    test_result('Valid orientation values (P, L)', TRUE);
-    PL_FPDF.Reset();
-  EXCEPTION WHEN OTHERS THEN
-    test_result('Valid orientation values', FALSE, SQLERRM);
+    pl_fpdf.init('P',
+                 'mm',
+                 'A4');
+    pl_fpdf.reset();
+    pl_fpdf.init('L',
+                 'mm',
+                 'A4');
+    test_result('Valid orientation values (P, L)',
+                TRUE);
+    pl_fpdf.reset();
+  EXCEPTION
+    WHEN OTHERS THEN
+      test_result('Valid orientation values',
+                  FALSE,
+                  SQLERRM);
   END;
 
   -- Test 2.3.2: Valid unit values
