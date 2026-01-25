@@ -231,7 +231,7 @@ type ArrayCharWidths is table of charSet index by word;
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
  co_fpdf_version CONSTANT VARCHAR2(10) := '1.53';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-alpha';
+ co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-a.2';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -316,6 +316,18 @@ g_xref_table xref_table_type;
 -- Object cache
 TYPE object_cache_type IS TABLE OF CLOB INDEX BY PLS_INTEGER;
 g_object_cache object_cache_type;
+
+-- Page information
+TYPE page_info_rec IS RECORD (
+  page_obj_id PLS_INTEGER,
+  media_box VARCHAR2(100),
+  crop_box VARCHAR2(100),
+  rotate NUMBER,
+  resources_id PLS_INTEGER,
+  contents_id PLS_INTEGER
+);
+TYPE page_info_table IS TABLE OF page_info_rec INDEX BY PLS_INTEGER;
+g_page_info_table page_info_table;
 
 --------------------------------------------------------------------------------
 
@@ -5895,6 +5907,134 @@ BEGIN
   RETURN l_count;
 END count_pages;
 
+--------------------------------------------------------------------------------
+-- parse_page_tree: Parse page tree and populate page info table
+--------------------------------------------------------------------------------
+PROCEDURE parse_page_tree IS
+  l_catalog CLOB;
+  l_pages_id PLS_INTEGER;
+  l_pages_obj CLOB;
+  l_kids_array VARCHAR2(4000);
+  l_page_obj_id PLS_INTEGER;
+  l_page_num PLS_INTEGER := 1;
+  l_pos PLS_INTEGER;
+  l_end_pos PLS_INTEGER;
+BEGIN
+  g_page_info_table.DELETE;
+
+  -- Get Catalog
+  l_catalog := get_pdf_object(g_root_obj_id);
+
+  -- Extract Pages object ID
+  l_pages_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  IF l_pages_id IS NULL THEN
+    raise_application_error(-20810, 'Pages not found in Catalog');
+  END IF;
+
+  -- Get Pages object
+  l_pages_obj := get_pdf_object(l_pages_id);
+
+  -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
+  l_kids_array := REGEXP_SUBSTR(l_pages_obj, '/Kids\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+
+  IF l_kids_array IS NULL THEN
+    raise_application_error(-20811, 'Kids array not found in Pages object');
+  END IF;
+
+  -- Parse each page object reference
+  l_pos := 1;
+  LOOP
+    -- Find next number in Kids array
+    l_page_obj_id := TO_NUMBER(
+      REGEXP_SUBSTR(l_kids_array, '([0-9]+)\s+0\s+R', 1, l_pos, NULL, 1)
+    );
+
+    EXIT WHEN l_page_obj_id IS NULL;
+
+    -- Store page object ID
+    g_page_info_table(l_page_num).page_obj_id := l_page_obj_id;
+
+    l_page_num := l_page_num + 1;
+    l_pos := l_pos + 1;
+  END LOOP;
+
+  log_message(3, 'Parsed page tree: ' || g_page_info_table.COUNT || ' pages');
+END parse_page_tree;
+
+--------------------------------------------------------------------------------
+-- get_page_object_id: Get object ID for specific page number
+--------------------------------------------------------------------------------
+FUNCTION get_page_object_id(p_page_number PLS_INTEGER) RETURN PLS_INTEGER IS
+BEGIN
+  -- Ensure page tree is parsed
+  IF g_page_info_table.COUNT = 0 THEN
+    parse_page_tree();
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_page_info_table.COUNT THEN
+    raise_application_error(-20812,
+      'Invalid page number: ' || p_page_number ||
+      '. Valid range: 1-' || g_page_info_table.COUNT);
+  END IF;
+
+  RETURN g_page_info_table(p_page_number).page_obj_id;
+END get_page_object_id;
+
+--------------------------------------------------------------------------------
+-- extract_page_info: Extract detailed page information
+--------------------------------------------------------------------------------
+PROCEDURE extract_page_info(p_page_number PLS_INTEGER) IS
+  l_page_obj_id PLS_INTEGER;
+  l_page_obj CLOB;
+  l_media_box VARCHAR2(100);
+  l_rotate NUMBER;
+  l_resources_id PLS_INTEGER;
+  l_contents_id PLS_INTEGER;
+BEGIN
+  l_page_obj_id := get_page_object_id(p_page_number);
+
+  -- Check if already parsed
+  IF g_page_info_table(p_page_number).media_box IS NOT NULL THEN
+    RETURN;  -- Already parsed
+  END IF;
+
+  -- Get page object
+  l_page_obj := get_pdf_object(l_page_obj_id);
+
+  -- Extract MediaBox: /MediaBox [0 0 612 792]
+  l_media_box := REGEXP_SUBSTR(l_page_obj, '/MediaBox\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+
+  -- Extract Rotate: /Rotate 90
+  l_rotate := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Rotate\s+([0-9]+)', 1, 1, NULL, 1)
+  );
+  IF l_rotate IS NULL THEN
+    l_rotate := 0;  -- Default: no rotation
+  END IF;
+
+  -- Extract Resources object ID: /Resources 7 0 R
+  l_resources_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Resources\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  -- Extract Contents object ID: /Contents 8 0 R
+  l_contents_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Contents\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  -- Store extracted info
+  g_page_info_table(p_page_number).media_box := l_media_box;
+  g_page_info_table(p_page_number).rotate := l_rotate;
+  g_page_info_table(p_page_number).resources_id := l_resources_id;
+  g_page_info_table(p_page_number).contents_id := l_contents_id;
+
+  log_message(3, 'Extracted page ' || p_page_number || ' info: MediaBox=' || l_media_box);
+END extract_page_info;
+
 /*******************************************************************************
  * PUBLIC APIs - PHASE 4
  ******************************************************************************/
@@ -5932,6 +6072,9 @@ BEGIN
 
   -- Count pages
   g_loaded_page_count := count_pages();
+
+  -- Parse page tree
+  parse_page_tree();
 
   log_message(2, 'PDF loaded successfully: ' || g_loaded_page_count || ' pages, version ' || g_pdf_version);
 
@@ -5973,6 +6116,58 @@ BEGIN
 END GetPDFInfo;
 
 --------------------------------------------------------------------------------
+-- GetPageInfo: Get information about specific page
+--------------------------------------------------------------------------------
+FUNCTION GetPageInfo(p_page_number PLS_INTEGER) RETURN JSON_OBJECT_T IS
+  l_info JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Extract page info if not already done
+  extract_page_info(p_page_number);
+
+  -- Build JSON response
+  l_info.put('pageNumber', p_page_number);
+  l_info.put('pageObjectId', g_page_info_table(p_page_number).page_obj_id);
+  l_info.put('mediaBox', g_page_info_table(p_page_number).media_box);
+  l_info.put('rotation', g_page_info_table(p_page_number).rotate);
+  l_info.put('resourcesObjectId', g_page_info_table(p_page_number).resources_id);
+  l_info.put('contentsObjectId', g_page_info_table(p_page_number).contents_id);
+
+  RETURN l_info;
+END GetPageInfo;
+
+--------------------------------------------------------------------------------
+-- RotatePage: Rotate a specific page
+--------------------------------------------------------------------------------
+PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER) IS
+  l_valid_rotations VARCHAR2(20) := '0,90,180,270';
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate rotation value
+  IF INSTR(l_valid_rotations, TO_CHAR(p_rotation)) = 0 THEN
+    raise_application_error(-20813,
+      'Invalid rotation: ' || p_rotation || '. Valid values: 0, 90, 180, 270');
+  END IF;
+
+  -- Extract page info if not already done
+  extract_page_info(p_page_number);
+
+  -- Update rotation in cache
+  g_page_info_table(p_page_number).rotate := p_rotation;
+
+  log_message(3, 'Page ' || p_page_number || ' rotation set to ' || p_rotation || ' degrees');
+
+  -- Note: Actual PDF modification will be implemented in Phase 4.2
+  -- For now, we just update the in-memory cache
+END RotatePage;
+
+--------------------------------------------------------------------------------
 -- ClearPDFCache: Clear loaded PDF and free memory
 --------------------------------------------------------------------------------
 PROCEDURE ClearPDFCache IS
@@ -5980,6 +6175,7 @@ BEGIN
   g_loaded_pdf := NULL;
   g_object_cache.DELETE;
   g_xref_table.DELETE;
+  g_page_info_table.DELETE;
   g_pdf_version := NULL;
   g_xref_offset := NULL;
   g_root_obj_id := NULL;

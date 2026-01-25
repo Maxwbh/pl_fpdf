@@ -65,7 +65,7 @@ type recImageBlob is record (
 
 -- Global constants
 co_fpdf_version constant varchar2(10) := '1.53';
-co_pl_fpdf_version constant varchar2(10) := '3.0.0-alpha';
+co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.2';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
@@ -799,6 +799,45 @@ FUNCTION GetPageCount RETURN PLS_INTEGER;
 *   END;
 *******************************************************************************/
 FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
+
+/*******************************************************************************
+* Function: GetPageInfo
+* Description: Get detailed information about a specific page
+* Parameters:
+*   p_page_number - Page number (1-based index)
+* Returns: JSON_OBJECT_T with page details:
+*   - pageNumber: Page number
+*   - pageObjectId: PDF object ID for the page
+*   - mediaBox: Page dimensions (e.g., "0 0 612 792")
+*   - rotation: Page rotation in degrees (0, 90, 180, 270)
+*   - resourcesObjectId: Object ID for page resources
+*   - contentsObjectId: Object ID for page contents
+* Example:
+*   DECLARE
+*     l_info JSON_OBJECT_T;
+*   BEGIN
+*     PL_FPDF.LoadPDF(l_pdf);
+*     l_info := PL_FPDF.GetPageInfo(1);
+*     DBMS_OUTPUT.PUT_LINE('MediaBox: ' || l_info.get_string('mediaBox'));
+*     DBMS_OUTPUT.PUT_LINE('Rotation: ' || l_info.get_number('rotation'));
+*   END;
+*******************************************************************************/
+FUNCTION GetPageInfo(p_page_number PLS_INTEGER) RETURN JSON_OBJECT_T;
+
+/*******************************************************************************
+* Procedure: RotatePage
+* Description: Rotate a specific page (modifies in-memory cache)
+* Parameters:
+*   p_page_number - Page number to rotate (1-based index)
+*   p_rotation - Rotation angle in degrees (0, 90, 180, 270)
+* Note: Changes are stored in memory cache. Use OutputModifiedPDF() to generate
+*       the modified PDF with rotated pages (Phase 4.2)
+* Example:
+*   PL_FPDF.LoadPDF(l_pdf);
+*   PL_FPDF.RotatePage(1, 90);    -- Rotate first page 90 degrees clockwise
+*   PL_FPDF.RotatePage(2, 180);   -- Rotate second page 180 degrees
+*******************************************************************************/
+PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER);
 
 /*******************************************************************************
 * Procedure: ClearPDFCache
