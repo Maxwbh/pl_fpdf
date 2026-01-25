@@ -1,8 +1,9 @@
-# Phase 5 Implementation Plan - PDF Merging, Splitting & Advanced Page Operations
-# Plano de Implementação Fase 5 - Mesclagem, Divisão e Operações Avançadas de PDF
+# Phase 5 Implementation Plan - Advanced Page Operations & Automation
+# Plano de Implementação Fase 5 - Operações Avançadas de Páginas e Automação
 
 **Version / Versão:** 3.1.0 (Phase 5)
 **Status:** Planning / Planejamento 📋
+**Dependencies:** Phase 4.6 (Merge/Split) must be complete
 **Start Date / Data Início:** 2026-01-25
 
 [🇬🇧 English](#english) | [🇧🇷 Português](#português)
@@ -13,44 +14,46 @@
 
 ### 🎯 Phase 5 Overview
 
-Phase 5 extends PL_FPDF with powerful multi-document PDF operations, enabling users to:
-- **Merge multiple PDFs** into a single document
-- **Split PDFs** into multiple separate files
-- **Extract specific pages** to create new PDFs
-- **Insert pages** from one PDF into another
-- **Reorder pages** within and between documents
-- **Copy pages** between PDFs with resources
+Phase 5 builds on Phase 4.6 (basic merge/split) with advanced page manipulation and automation features:
+- **Insert pages** from one PDF into another at specific positions
+- **Reorder pages** within documents with flexible operations
+- **Replace pages** by swapping content
+- **Duplicate pages** within or across documents
+- **Batch operations** for processing multiple PDFs
+- **Smart bookmarks** management across operations
 
-This phase completes the PDF manipulation capabilities, making PL_FPDF a comprehensive solution for both PDF generation and document management workflows.
+**Note:** Basic merge and split operations are in Phase 4.6. This phase focuses on advanced manipulation and automation workflows.
 
 ### ✨ Key Features
 
 | Feature | Description | Version |
 |---------|-------------|---------|
-| **MergePDF** | Combine 2+ PDFs into single document | 3.1.0-a.1 |
-| **SplitPDF** | Split PDF into multiple files by page ranges | 3.1.0-a.2 |
-| **ExtractPages** | Create new PDF from specific page range | 3.1.0-a.3 |
-| **InsertPagesFrom** | Insert pages from another PDF at position | 3.1.0-a.4 |
-| **ReorderPages** | Rearrange page order within PDF | 3.1.0-a.5 |
-| **CopyPageResources** | Copy fonts, images, and resources between PDFs | 3.1.0-a.6 |
+| **InsertPagesFrom** | Insert pages from another PDF at position | 3.1.0-a.1 |
+| **ReorderPages** | Rearrange page order with multiple operations | 3.1.0-a.2 |
+| **ReplacePage** | Replace page content from another PDF | 3.1.0-a.3 |
+| **DuplicatePage** | Copy page within or across PDFs | 3.1.0-a.4 |
+| **BatchProcess** | Process multiple PDFs with same operations | 3.1.0-a.5 |
+| **SmartBookmarks** | Automatic bookmark management | 3.1.0-a.6 |
 
 ### 🏗️ Architecture
 
-Phase 5 builds on Phase 4's PDF parsing and manipulation infrastructure:
+Phase 5 builds on Phase 4.6's multi-document infrastructure:
 
 ```
-Phase 4 Foundation:
-├── LoadPDF() - Load and parse PDF
-├── GetPageInfo() - Extract page details
-├── OutputModifiedPDF() - Generate modified PDF
-└── Internal structures (g_pdf_pages, g_pdf_objects)
+Phase 4.6 Foundation:
+├── LoadPDFWithID() - Multi-document loading
+├── MergePDFs() - Basic PDF merging
+├── SplitPDF() - PDF splitting
+├── ExtractPages() - Page extraction
+└── Multi-document structures (g_loaded_pdfs)
 
 Phase 5 Extensions:
-├── Multi-document management
-├── Page copying with resource tracking
-├── Cross-reference table merging
-├── Object renumbering and conflict resolution
-└── Resource consolidation
+├── Advanced page insertion (at any position)
+├── Page reordering operations (move, swap, reverse)
+├── Page replacement and duplication
+├── Batch processing automation
+├── Bookmark management and synchronization
+└── Template-based operations
 ```
 
 ### 📋 Implementation Sub-Phases

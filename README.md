@@ -30,7 +30,7 @@
 - Page rotation and custom formats
 - Trivadis PL/SQL Cop compliant
 
-#### ✅ Phase 4: PDF Reading and Manipulation (v3.0.0)
+#### ✅ Phase 4.1-4.4: PDF Reading and Manipulation (v3.0.0)
 - **Load and Parse PDFs** - Read existing PDF files (PDF 1.4+)
 - **Page Information** - Extract page details (dimensions, rotation, resources)
 - **Page Rotation** - Rotate individual pages (0°, 90°, 180°, 270°)
@@ -38,13 +38,26 @@
 - **Watermarks** - Add customizable text watermarks to pages
 - **Output Modified PDF** - Generate new PDF with all modifications applied
 
-#### 🚧 Phase 5: PDF Merging & Splitting (v3.1.0 - In Planning)
+#### 🚧 Phase 4.5: Text & Image Overlay (v3.0.0-a.6 - In Planning)
+- **Text Overlay** - Add formatted text at specific x,y coordinates
+- **Image Overlay** - Add images at specific positions with sizing
+- **Precise Positioning** - Full control over position, size, opacity, rotation
+- **Multiple Overlays** - Layer multiple text/image overlays per page
+- **Form Filling** - Dynamically fill form fields with data
+
+#### 🚧 Phase 4.6: PDF Merge & Split (v3.0.0-a.7 - In Planning)
 - **Merge PDFs** - Combine multiple PDF documents into one
 - **Split PDFs** - Divide PDF into multiple files by page ranges
 - **Extract Pages** - Create new PDF from specific page selection
-- **Insert Pages** - Insert pages from one PDF into another
-- **Reorder Pages** - Rearrange page order within documents
+- **Multi-Document** - Load and manage multiple PDFs simultaneously
 - **Resource Management** - Smart handling of fonts, images across documents
+
+#### 🚧 Phase 5: Advanced Operations (v3.1.0 - In Planning)
+- **Insert Pages** - Insert pages from one PDF into another at any position
+- **Reorder Pages** - Rearrange page order with move, swap, reverse operations
+- **Replace Pages** - Replace page content from another PDF
+- **Duplicate Pages** - Copy pages within or across documents
+- **Batch Processing** - Process multiple PDFs with automated workflows
 
 ### 🚀 Quick Start
 
@@ -124,7 +137,9 @@ END;
 
 - 📘 [Complete API Reference](docs/api/API_REFERENCE.md)
 - 📗 [Phase 4 Guide - PDF Manipulation](docs/guides/PHASE_4_GUIDE.md)
-- 🚧 [Phase 5 Implementation Plan - PDF Merging & Splitting](PHASE_5_IMPLEMENTATION_PLAN.md)
+- 🚧 [Phase 4.5 Plan - Text & Image Overlay](PHASE_4_5_OVERLAY_PLAN.md)
+- 🚧 [Phase 4.6 Plan - PDF Merge & Split](PHASE_4_6_MERGE_SPLIT_PLAN.md)
+- 🚧 [Phase 5 Plan - Advanced Operations](PHASE_5_IMPLEMENTATION_PLAN.md)
 - 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
 - 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
 - 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
