@@ -231,7 +231,7 @@ type ArrayCharWidths is table of charSet index by word;
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
  co_fpdf_version CONSTANT VARCHAR2(10) := '1.53';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-a.3';
+ co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-a.4';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -333,6 +333,20 @@ g_page_info_table page_info_table;
 g_pdf_modified BOOLEAN := FALSE;
 TYPE page_removal_list IS TABLE OF BOOLEAN INDEX BY PLS_INTEGER;
 g_removed_pages page_removal_list;
+
+-- Watermark tracking
+TYPE watermark_rec IS RECORD (
+  text VARCHAR2(200),
+  opacity NUMBER,
+  rotation NUMBER,
+  page_range VARCHAR2(100),
+  font_name VARCHAR2(50),
+  font_size NUMBER,
+  color VARCHAR2(20)
+);
+TYPE watermark_list IS TABLE OF watermark_rec INDEX BY PLS_INTEGER;
+g_watermarks watermark_list;
+g_watermark_count PLS_INTEGER := 0;
 
 --------------------------------------------------------------------------------
 
@@ -6241,6 +6255,174 @@ BEGIN
 END IsPDFModified;
 
 --------------------------------------------------------------------------------
+-- parse_page_range: Parse page range string to determine applicable pages
+--------------------------------------------------------------------------------
+FUNCTION parse_page_range(
+  p_range VARCHAR2,
+  p_total_pages PLS_INTEGER
+) RETURN VARCHAR2 IS
+  l_result VARCHAR2(4000);
+  l_range VARCHAR2(100);
+  l_parts apex_t_varchar2;
+  l_item VARCHAR2(50);
+  l_from PLS_INTEGER;
+  l_to PLS_INTEGER;
+  l_dash_pos PLS_INTEGER;
+BEGIN
+  l_range := UPPER(TRIM(p_range));
+
+  -- Handle 'ALL'
+  IF l_range = 'ALL' THEN
+    FOR i IN 1..p_total_pages LOOP
+      l_result := l_result || i || ',';
+    END LOOP;
+    RETURN RTRIM(l_result, ',');
+  END IF;
+
+  -- Handle comma-separated list: '1,3,5' or ranges '1-5,7,9-12'
+  l_parts := apex_string.split(l_range, ',');
+
+  FOR i IN 1..l_parts.COUNT LOOP
+    l_item := TRIM(l_parts(i));
+    l_dash_pos := INSTR(l_item, '-');
+
+    IF l_dash_pos > 0 THEN
+      -- Range: '1-5'
+      l_from := TO_NUMBER(SUBSTR(l_item, 1, l_dash_pos - 1));
+      l_to := TO_NUMBER(SUBSTR(l_item, l_dash_pos + 1));
+
+      -- Validate range
+      IF l_from < 1 OR l_to > p_total_pages OR l_from > l_to THEN
+        raise_application_error(-20815,
+          'Invalid page range: ' || l_item || '. Valid pages: 1-' || p_total_pages);
+      END IF;
+
+      -- Add all pages in range
+      FOR j IN l_from..l_to LOOP
+        l_result := l_result || j || ',';
+      END LOOP;
+    ELSE
+      -- Single page: '3'
+      l_from := TO_NUMBER(l_item);
+
+      IF l_from < 1 OR l_from > p_total_pages THEN
+        raise_application_error(-20815,
+          'Invalid page number: ' || l_from || '. Valid pages: 1-' || p_total_pages);
+      END IF;
+
+      l_result := l_result || l_from || ',';
+    END IF;
+  END LOOP;
+
+  RETURN RTRIM(l_result, ',');
+EXCEPTION
+  WHEN VALUE_ERROR THEN
+    raise_application_error(-20815,
+      'Invalid page range format: ' || p_range);
+END parse_page_range;
+
+--------------------------------------------------------------------------------
+-- is_page_in_range: Check if page is in parsed range
+--------------------------------------------------------------------------------
+FUNCTION is_page_in_range(
+  p_page_number PLS_INTEGER,
+  p_parsed_range VARCHAR2
+) RETURN BOOLEAN IS
+  l_page_str VARCHAR2(20);
+BEGIN
+  l_page_str := ',' || p_parsed_range || ',';
+  RETURN INSTR(l_page_str, ',' || p_page_number || ',') > 0;
+END is_page_in_range;
+
+--------------------------------------------------------------------------------
+-- AddWatermark: Add watermark to specified pages
+--------------------------------------------------------------------------------
+PROCEDURE AddWatermark(
+  p_text VARCHAR2,
+  p_opacity NUMBER DEFAULT 0.3,
+  p_rotation NUMBER DEFAULT 45,
+  p_pages VARCHAR2 DEFAULT 'ALL',
+  p_font VARCHAR2 DEFAULT 'Helvetica',
+  p_size NUMBER DEFAULT 48,
+  p_color VARCHAR2 DEFAULT 'gray'
+) IS
+  l_watermark watermark_rec;
+  l_parsed_range VARCHAR2(4000);
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate parameters
+  IF p_text IS NULL OR LENGTH(TRIM(p_text)) = 0 THEN
+    raise_application_error(-20816, 'Watermark text cannot be empty');
+  END IF;
+
+  IF p_opacity < 0 OR p_opacity > 1 THEN
+    raise_application_error(-20817,
+      'Opacity must be between 0 and 1. Got: ' || p_opacity);
+  END IF;
+
+  IF p_rotation NOT IN (0, 45, 90, 135, 180, 225, 270, 315) THEN
+    raise_application_error(-20818,
+      'Rotation must be 0, 45, 90, 135, 180, 225, 270, or 315 degrees');
+  END IF;
+
+  -- Parse page range
+  l_parsed_range := parse_page_range(p_pages, g_loaded_page_count);
+
+  -- Create watermark record
+  g_watermark_count := g_watermark_count + 1;
+  l_watermark.text := p_text;
+  l_watermark.opacity := p_opacity;
+  l_watermark.rotation := p_rotation;
+  l_watermark.page_range := l_parsed_range;
+  l_watermark.font_name := p_font;
+  l_watermark.font_size := p_size;
+  l_watermark.color := p_color;
+
+  -- Store watermark
+  g_watermarks(g_watermark_count) := l_watermark;
+
+  -- Mark PDF as modified
+  g_pdf_modified := TRUE;
+
+  log_message(3, 'Watermark added: "' || p_text || '" on pages: ' || p_pages);
+END AddWatermark;
+
+--------------------------------------------------------------------------------
+-- GetWatermarks: Get list of applied watermarks as JSON
+--------------------------------------------------------------------------------
+FUNCTION GetWatermarks RETURN JSON_ARRAY_T IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_watermark JSON_OBJECT_T;
+  l_idx PLS_INTEGER;
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Build JSON array of watermarks
+  l_idx := g_watermarks.FIRST;
+  WHILE l_idx IS NOT NULL LOOP
+    l_watermark := JSON_OBJECT_T();
+    l_watermark.put('id', l_idx);
+    l_watermark.put('text', g_watermarks(l_idx).text);
+    l_watermark.put('opacity', g_watermarks(l_idx).opacity);
+    l_watermark.put('rotation', g_watermarks(l_idx).rotation);
+    l_watermark.put('pageRange', g_watermarks(l_idx).page_range);
+    l_watermark.put('font', g_watermarks(l_idx).font_name);
+    l_watermark.put('fontSize', g_watermarks(l_idx).font_size);
+    l_watermark.put('color', g_watermarks(l_idx).color);
+
+    l_result.append(l_watermark);
+    l_idx := g_watermarks.NEXT(l_idx);
+  END LOOP;
+
+  RETURN l_result;
+END GetWatermarks;
+
+--------------------------------------------------------------------------------
 -- ClearPDFCache: Clear loaded PDF and free memory
 --------------------------------------------------------------------------------
 PROCEDURE ClearPDFCache IS
@@ -6250,10 +6432,12 @@ BEGIN
   g_xref_table.DELETE;
   g_page_info_table.DELETE;
   g_removed_pages.DELETE;
+  g_watermarks.DELETE;
   g_pdf_version := NULL;
   g_xref_offset := NULL;
   g_root_obj_id := NULL;
   g_loaded_page_count := 0;
+  g_watermark_count := 0;
   g_pdf_modified := FALSE;
 
   log_message(3, 'PDF cache cleared');
