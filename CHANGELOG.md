@@ -7,6 +7,148 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.1.0] - TBD (In Planning 🚧)
+
+### 🎯 Phase 5: PDF Merging, Splitting & Advanced Page Operations
+
+**Status:** Planning stage - Implementation not yet started
+**Planning Document:** [PHASE_5_IMPLEMENTATION_PLAN.md](PHASE_5_IMPLEMENTATION_PLAN.md)
+
+Phase 5 will extend PL_FPDF with powerful multi-document PDF operations.
+
+### Planned Features
+
+#### Phase 5.1: Multi-Document Loading (v3.1.0-a.1)
+- `LoadPDFWithID()` - Load multiple PDFs with identifiers
+- `GetLoadedPDFs()` - Get list of loaded PDF IDs
+- `UnloadPDF()` - Unload specific PDF from memory
+- `IsPDFLoaded()` - Check if PDF is loaded
+
+#### Phase 5.2: PDF Merging (v3.1.0-a.2)
+- `MergePDFs()` - Combine multiple PDFs into single document
+- `MergePDFBlobs()` - Convenience method for direct BLOB merging
+- Support for bookmarks, metadata preservation
+- Smart resource consolidation (fonts, images)
+
+#### Phase 5.3: PDF Splitting (v3.1.0-a.3)
+- `SplitPDF()` - Split PDF by page ranges
+- `SplitPDFByPages()` - Split into individual page files
+- `SplitPDFByChunkSize()` - Split into N-page chunks
+
+#### Phase 5.4: Page Extraction (v3.1.0-a.4)
+- `ExtractPages()` - Extract specific pages to new PDF
+- `ExtractPagesExcept()` - Extract all pages except specified
+- Preserve bookmarks and metadata options
+
+#### Phase 5.5: Page Insertion (v3.1.0-a.5)
+- `InsertPagesFrom()` - Insert pages from source PDF
+- `PrependPages()` - Insert pages at beginning
+- `AppendPages()` - Insert pages at end
+- Smart object renumbering and resource management
+
+#### Phase 5.6: Page Reordering (v3.1.0-a.6)
+- `ReorderPages()` - Reorder pages by new sequence
+- `MovePage()` - Move single page to new position
+- `SwapPages()` - Swap two pages
+- `ReversePages()` - Reverse page order
+
+### Technical Improvements
+
+- Multi-document memory management
+- Object renumbering and conflict resolution
+- Cross-reference table merging
+- Resource deduplication (fonts, images)
+- Bookmark preservation and merging
+- Enhanced error handling (15 new error codes: -20901 to -20915)
+
+### Use Cases
+
+- **Document Consolidation** - Merge monthly reports into annual report
+- **Document Distribution** - Split contracts into sections for parties
+- **Invoice Assembly** - Combine cover letter, invoice, terms
+- **Print Preparation** - Reorder pages for booklet printing
+- **Archive Management** - Extract and reorganize document sections
+
+---
+
+## [3.0.0] - 2026-01-25
+
+### 🎉 Phase 4 Complete: PDF Reading and Manipulation
+
+Phase 4 adds comprehensive PDF manipulation capabilities to PL_FPDF.
+
+### Added
+
+#### Phase 4.1A: PDF Parser - Basic Reading (v3.0.0-alpha)
+- `LoadPDF()` - Load and parse existing PDF documents (PDF 1.4+)
+- `GetPageCount()` - Get total number of pages
+- `GetPDFInfo()` - Extract PDF metadata and document information
+- `ClearPDFCache()` - Clear loaded PDF and free memory
+- 100% PL/SQL PDF parser (no Java dependencies)
+- Support for cross-reference tables and trailer parsing
+
+#### Phase 4.1B: Page Information and Manipulation (v3.0.0-a.2)
+- `GetPageInfo()` - Extract detailed page information (dimensions, rotation, resources)
+- `RotatePage()` - Rotate individual pages (0°, 90°, 180°, 270°)
+- Page dimension extraction (MediaBox, CropBox)
+- Resource identification (fonts, images, XObjects)
+
+#### Phase 4.2: Page Management & Modification Tracking (v3.0.0-a.3)
+- `RemovePage()` - Mark pages for removal
+- `GetActivePageCount()` - Get count of non-removed pages
+- `IsPageRemoved()` - Check if specific page is removed
+- `IsPDFModified()` - Check if PDF has modifications
+- Modification tracking system
+
+#### Phase 4.3: Watermark Management (v3.0.0-a.4)
+- `AddWatermark()` - Add customizable text watermarks
+  - Opacity control (0.0-1.0)
+  - Rotation angles (0, 45, 90, 135, 180, 225, 270, 315)
+  - Page range support ('ALL', '1-5', '1,3,5')
+  - Font and size customization
+  - Color options (gray, red, blue, green)
+- `GetWatermarks()` - Get list of applied watermarks as JSON
+
+#### Phase 4.4: Output Modified PDF (v3.0.0-a.5)
+- `OutputModifiedPDF()` - Generate modified PDF with all changes
+- Applies page rotations, removals, and watermarks
+- Rebuilds PDF structure (xref table, trailer)
+- Complete PDF generation from modified content
+
+### Documentation
+
+- **Bilingual Documentation** - All Phase 4 APIs documented in English and Portuguese (PT-BR)
+- **Modern Package Specification** - Complete package header modernization with MIT license
+- **Phase 4 Guide** - Comprehensive 922-line bilingual guide ([docs/guides/PHASE_4_GUIDE.md](docs/guides/PHASE_4_GUIDE.md))
+- **Consolidated Documentation** - Removed 85KB of obsolete documentation, organized into `docs/` structure
+
+### Technical Details
+
+- 13 new Phase 4 APIs
+- 21 error codes for Phase 4 operations (-20800 to -20820)
+- JSON-based metadata structures using JSON_OBJECT_T and JSON_ARRAY_T
+- BLOB-based PDF manipulation
+- Memory-efficient page caching system
+- Version consolidated to single source: `co_version := '3.0.0'`
+
+### Changed
+
+- Package specification modernized with bilingual structure
+- Version management simplified (consolidated from 3 variables to 1)
+- Documentation reorganized into hierarchical `docs/` structure
+- README updated with Phase 4 features and bilingual support
+
+### Removed
+
+- Obsolete documentation files (85KB):
+  - MODERNIZATION_TODO.md
+  - PHASE_4_IMPLEMENTATION_PLAN.md
+  - PHASE_4_QUICKSTART.md
+  - TASK_4_1_PDF_PARSER.md
+  - README_PT_BR.md (merged into main README.md)
+
+---
+
 ## [2.0.0] - 2025-12-19
 
 ### 🎉 Major Release - Complete Modernization for Oracle 19c/23c
