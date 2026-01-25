@@ -65,7 +65,7 @@ type recImageBlob is record (
 
 -- Global constants
 co_fpdf_version constant varchar2(10) := '1.53';
-co_pl_fpdf_version constant varchar2(10) := '2.0.0';
+co_pl_fpdf_version constant varchar2(10) := '3.0.0-alpha';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
@@ -735,6 +735,81 @@ procedure AddBarcode(
   p_type varchar2 default 'CODE128',
   p_show_text boolean default true
 );
+
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- PHASE 4: PDF PARSER AND EDITOR - v3.0.0-alpha
+--------------------------------------------------------------------------------
+-- APIs for reading and modifying existing PDF documents
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: LoadPDF
+* Description: Load an existing PDF document into memory for reading/modification
+* Parameters:
+*   p_pdf_blob - PDF document as BLOB
+* Raises:
+*   -20800: Invalid PDF (NULL or too small)
+*   -20801: Invalid PDF header
+*   -20802: startxref not found
+*   -20803: Invalid xref table
+*   -20804: Root object not found in trailer
+* Example:
+*   DECLARE
+*     l_pdf BLOB;
+*   BEGIN
+*     SELECT pdf_content INTO l_pdf FROM documents WHERE id = 123;
+*     PL_FPDF.LoadPDF(l_pdf);
+*     DBMS_OUTPUT.PUT_LINE('Pages: ' || PL_FPDF.GetPageCount());
+*   END;
+*******************************************************************************/
+PROCEDURE LoadPDF(p_pdf_blob BLOB);
+
+/*******************************************************************************
+* Function: GetPageCount
+* Description: Get the number of pages in the loaded PDF document
+* Returns: Number of pages (PLS_INTEGER)
+* Raises:
+*   -20809: No PDF loaded (call LoadPDF first)
+* Example:
+*   l_pages := PL_FPDF.GetPageCount();
+*******************************************************************************/
+FUNCTION GetPageCount RETURN PLS_INTEGER;
+
+/*******************************************************************************
+* Function: GetPDFInfo
+* Description: Get metadata and information about the loaded PDF
+* Returns: JSON object with PDF information
+*   - version: PDF version (e.g., "1.7")
+*   - pageCount: Number of pages
+*   - fileSize: Size in bytes
+*   - objectCount: Number of objects in xref table
+*   - rootObjectId: Catalog object ID
+* Raises:
+*   -20809: No PDF loaded (call LoadPDF first)
+* Example:
+*   DECLARE
+*     l_info JSON_OBJECT_T;
+*   BEGIN
+*     l_info := PL_FPDF.GetPDFInfo();
+*     DBMS_OUTPUT.PUT_LINE('Version: ' || l_info.get_string('version'));
+*     DBMS_OUTPUT.PUT_LINE('Pages: ' || l_info.get_number('pageCount'));
+*   END;
+*******************************************************************************/
+FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
+
+/*******************************************************************************
+* Procedure: ClearPDFCache
+* Description: Clear loaded PDF and free memory
+* Note: Call this after processing a PDF to free memory resources
+* Example:
+*   PL_FPDF.LoadPDF(l_pdf);
+*   -- ... process PDF ...
+*   PL_FPDF.ClearPDFCache();
+*******************************************************************************/
+PROCEDURE ClearPDFCache;
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
