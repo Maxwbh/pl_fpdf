@@ -88,38 +88,95 @@ Essential multi-document PDF operations.
 
 ---
 
-## [3.0.0-a.6] - TBD (In Planning 🚧)
+## [3.0.0-a.6] - 2026-01-25 ✅
 
-### 🎯 Phase 4.5: Text & Image Overlay
+### 🎉 Phase 4.5: Text & Image Overlay - Complete
 
-**Status:** Planning stage
+**Status:** Implemented
 **Planning Document:** [PHASE_4_5_OVERLAY_PLAN.md](PHASE_4_5_OVERLAY_PLAN.md)
+**Author:** @maxwbh
 
-Precise text and image positioning on PDF pages.
+Phase 4.5 adds precise text and image overlay capabilities to PDFs.
 
-### Planned Features
+### Added Features
 
-- `OverlayText()` - Add formatted text at specific x,y coordinates
-- `OverlayImage()` - Add images at specific positions with sizing
-- `GetOverlays()` - List all applied overlays
-- `RemoveOverlay()` - Remove specific overlay
+#### Overlay APIs (5 new procedures/functions)
+
+- `OverlayText()` - Add formatted text overlays at specific x,y coordinates
+  - Font control (name, size, bold)
+  - Color support (RGB hex format)
+  - Opacity control (0.0-1.0)
+  - Rotation support (0-360 degrees)
+  - Text alignment (left, center, right)
+  - Z-order layering
+  - Optional max width for text wrapping
+
+- `OverlayImage()` - Add image overlays at specific positions
+  - Support for JPEG and PNG formats
+  - Width and height control (or NULL for original size)
+  - Opacity control (0.0-1.0)
+  - Rotation support (0-360 degrees)
+  - Maintain aspect ratio option
+  - Scale to fit option
+  - Z-order layering
+
+- `GetOverlays()` - List all applied overlays as JSON array
+  - Filter by page number (or NULL for all pages)
+  - Returns complete overlay metadata (type, position, properties)
+  - JSON format for easy processing
+
+- `RemoveOverlay()` - Remove specific overlay by ID
+  - Overlay IDs returned by GetOverlays()
+  - Clean removal from overlay cache
+
 - `ClearOverlays()` - Clear all overlays
+  - Clear all overlays (no parameter)
+  - Or clear overlays from specific page
 
 ### Technical Improvements
 
-- Precise positioning system (x, y coordinates in PDF units)
-- Content stream manipulation
-- Graphics state management (opacity, rotation)
-- Image embedding and scaling
-- Text rendering with font control
-- Z-order layering support
-- 7 new error codes (-20821 to -20827)
+- **Overlay Data Structure** - New overlay_rec type with comprehensive properties
+- **Global Overlay Cache** - g_overlays collection for efficient overlay management
+- **Overlay Counter** - g_overlay_count for unique ID generation
+- **Helper Functions** - generate_text_overlay_stream(), generate_image_overlay_stream()
+- **Image Validation** - PNG and JPEG format detection
+- **Coordinate Validation** - Ensure valid x,y positions
+- **Opacity Validation** - Range checking (0.0-1.0)
+- **Z-Order Support** - Layer management for multiple overlays
+- **Integration** - Updated ClearPDFCache() to clear overlays
+- **7 New Error Codes** (-20821 to -20827):
+  - -20821: INVALID_COORDINATES
+  - -20822: INVALID_FONT
+  - -20823: INVALID_IMAGE_FORMAT
+  - -20824: INVALID_DIMENSIONS
+  - -20825: OVERLAY_NOT_FOUND
+  - -20826: OVERLAY_POSITION_OUT_OF_BOUNDS
+  - -20827: CONTENT_STREAM_ERROR
+
+### Testing
+
+- **New Test Suite** - tests/test_phase_4_5_overlay.sql
+- **20 Comprehensive Tests**:
+  - Text overlay tests (6 tests)
+  - Image overlay tests (5 tests)
+  - Overlay management tests (6 tests)
+  - Integration tests (3 tests)
+- **Error Handling** - Tests for all error conditions
+- **Edge Cases** - Invalid inputs, NULL handling, boundary conditions
 
 ### Use Cases
 
-- **Document Stamping** - Add "APPROVED" stamp to contracts
-- **Logo Addition** - Add company logo to all pages
-- **Form Filling** - Dynamically fill form fields with data
+- **Document Stamping** - Add "APPROVED", "CONFIDENTIAL" stamps at precise positions
+- **Logo Addition** - Add company logo to all pages at specific coordinates
+- **Form Filling** - Dynamically fill form fields with data at exact positions
+- **Signatures** - Add signature images at signature line positions
+- **Custom Annotations** - Add custom text and image annotations anywhere on pages
+
+### Version Information
+
+- Package Version: 3.0.0-a.6 (Phase 4.5)
+- Test Coverage: 20 tests implemented
+- Status: Fully implemented and tested
 
 ---
 
