@@ -1239,6 +1239,210 @@ FUNCTION OutputModifiedPDF RETURN BLOB;
 PROCEDURE ClearPDFCache;
 
 --------------------------------------------------------------------------------
+-- PHASE 4.5: TEXT & IMAGE OVERLAY (v3.0.0-a.6)
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: OverlayText / Sobrepor Texto
+*
+* Description / Descrição:
+*   EN: Add text overlay at specific position on PDF page with full formatting control
+*   PT: Adicionar sobreposição de texto em posição específica com controle completo de formatação
+*
+* Parameters / Parâmetros:
+*   p_page_number - Page number (1-based) / Número da página (base 1)
+*   p_text - Text content / Conteúdo do texto
+*   p_x - X position in PDF points (1 point = 1/72 inch, from left) / Posição X
+*   p_y - Y position in PDF points (from bottom) / Posição Y (de baixo)
+*   p_options - JSON configuration (optional) / Configuração JSON (opcional)
+*
+* Options (JSON_OBJECT_T) / Opções:
+*   {
+*     "font": "Helvetica",           // Font name / Nome da fonte
+*     "fontSize": 12,                // Font size in points / Tamanho da fonte
+*     "color": "000000",             // RGB hex color / Cor RGB hexadecimal
+*     "opacity": 1.0,                // 0.0 to 1.0 / Opacidade 0.0 a 1.0
+*     "rotation": 0,                 // Rotation angle (0-360) / Ângulo de rotação
+*     "align": "left",               // left, center, right / esquerda, centro, direita
+*     "width": null,                 // Max width (auto-wrap) / Largura máxima
+*     "bold": false,                 // Bold text / Texto em negrito
+*     "zOrder": 100                  // Layer order (higher on top) / Ordem da camada
+*   }
+*
+* Raises / Erros:
+*   -20809: No PDF loaded / Nenhum PDF carregado
+*   -20810: Invalid page number / Número de página inválido
+*   -20821: Invalid position coordinates / Coordenadas de posição inválidas
+*   -20822: Invalid font specification / Especificação de fonte inválida
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_options JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     PL_FPDF.LoadPDF(l_pdf);
+*
+*     -- Simple text overlay / Sobreposição simples
+*     PL_FPDF.OverlayText(1, 'APPROVED', 100, 700, NULL);
+*
+*     -- Formatted text / Texto formatado
+*     l_options.put('font', 'Helvetica-Bold');
+*     l_options.put('fontSize', 24);
+*     l_options.put('color', 'FF0000');  -- Red / Vermelho
+*     l_options.put('opacity', 0.8);
+*     l_options.put('rotation', 45);
+*     PL_FPDF.OverlayText(1, 'CONFIDENTIAL', 200, 400, l_options);
+*
+*     l_modified := PL_FPDF.OutputModifiedPDF();
+*   END;
+*******************************************************************************/
+PROCEDURE OverlayText(
+  p_page_number IN PLS_INTEGER,
+  p_text IN VARCHAR2,
+  p_x IN NUMBER,
+  p_y IN NUMBER,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+);
+
+/*******************************************************************************
+* Procedure: OverlayImage / Sobrepor Imagem
+*
+* Description / Descrição:
+*   EN: Add image overlay at specific position on PDF page with sizing control
+*   PT: Adicionar sobreposição de imagem em posição específica com controle de tamanho
+*
+* Parameters / Parâmetros:
+*   p_page_number - Page number (1-based) / Número da página (base 1)
+*   p_image_blob - Image data (JPEG or PNG) / Dados da imagem (JPEG ou PNG)
+*   p_x - X position in PDF points / Posição X em pontos PDF
+*   p_y - Y position in PDF points (from bottom) / Posição Y (de baixo)
+*   p_width - Image width in points (NULL = original) / Largura em pontos
+*   p_height - Image height in points (NULL = original) / Altura em pontos
+*   p_options - JSON configuration (optional) / Configuração JSON (opcional)
+*
+* Options (JSON_OBJECT_T) / Opções:
+*   {
+*     "opacity": 1.0,                // 0.0 to 1.0 / Opacidade 0.0 a 1.0
+*     "rotation": 0,                 // Rotation angle / Ângulo de rotação
+*     "maintainAspect": true,        // Keep aspect ratio / Manter proporção
+*     "scaleToFit": false,           // Scale to fit in width/height / Escalar para caber
+*     "zOrder": 100                  // Layer order / Ordem da camada
+*   }
+*
+* Raises / Erros:
+*   -20809: No PDF loaded / Nenhum PDF carregado
+*   -20810: Invalid page number / Número de página inválido
+*   -20821: Invalid position coordinates / Coordenadas de posição inválidas
+*   -20823: Invalid image format (must be JPEG or PNG) / Formato de imagem inválido
+*   -20824: Image dimensions invalid / Dimensões da imagem inválidas
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_logo BLOB;
+*     l_options JSON_OBJECT_T := JSON_OBJECT_T();
+*   BEGIN
+*     SELECT logo_blob INTO l_logo FROM company_assets WHERE id = 1;
+*     PL_FPDF.LoadPDF(l_pdf);
+*
+*     -- Add logo at top-right / Adicionar logo no canto superior direito
+*     PL_FPDF.OverlayImage(1, l_logo, 450, 750, 100, 50, NULL);
+*
+*     -- Watermark image with transparency / Marca d'água com transparência
+*     l_options.put('opacity', 0.3);
+*     l_options.put('rotation', 45);
+*     PL_FPDF.OverlayImage(1, l_watermark, 200, 400, 300, NULL, l_options);
+*
+*     l_modified := PL_FPDF.OutputModifiedPDF();
+*   END;
+*******************************************************************************/
+PROCEDURE OverlayImage(
+  p_page_number IN PLS_INTEGER,
+  p_image_blob IN BLOB,
+  p_x IN NUMBER,
+  p_y IN NUMBER,
+  p_width IN NUMBER DEFAULT NULL,
+  p_height IN NUMBER DEFAULT NULL,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+);
+
+/*******************************************************************************
+* Function: GetOverlays / Obter Sobreposições
+*
+* Description / Descrição:
+*   EN: Get list of all applied overlays as JSON array for specific page or all pages
+*   PT: Obter lista de todas as sobreposições aplicadas como array JSON
+*
+* Parameters / Parâmetros:
+*   p_page_number - Filter by page (NULL = all pages) / Filtrar por página
+*
+* Returns / Retorna:
+*   JSON_ARRAY_T - Array of overlay objects / Array de objetos de sobreposição
+*     [{
+*       "overlayId": "OVL_001",
+*       "overlayType": "TEXT" | "IMAGE",
+*       "pageNumber": 1,
+*       "x": 100, "y": 700,
+*       "content": "APPROVED",     // For text overlays
+*       "opacity": 0.8,
+*       "rotation": 45,
+*       "zOrder": 100
+*     }, ...]
+*
+* Raises / Erros:
+*   -20809: No PDF loaded / Nenhum PDF carregado
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_overlays JSON_ARRAY_T;
+*     l_overlay JSON_OBJECT_T;
+*   BEGIN
+*     l_overlays := PL_FPDF.GetOverlays(1);  -- Page 1 overlays
+*     FOR i IN 0..l_overlays.get_size() - 1 LOOP
+*       l_overlay := TREAT(l_overlays.get(i) AS JSON_OBJECT_T);
+*       DBMS_OUTPUT.PUT_LINE('Type: ' || l_overlay.get_string('overlayType'));
+*     END LOOP;
+*   END;
+*******************************************************************************/
+FUNCTION GetOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL)
+  RETURN JSON_ARRAY_T;
+
+/*******************************************************************************
+* Procedure: RemoveOverlay / Remover Sobreposição
+*
+* Description / Descrição:
+*   EN: Remove specific overlay by ID
+*   PT: Remover sobreposição específica por ID
+*
+* Parameters / Parâmetros:
+*   p_overlay_id - Overlay ID from GetOverlays() / ID da sobreposição
+*
+* Raises / Erros:
+*   -20825: Overlay not found / Sobreposição não encontrada
+*
+* Example / Exemplo:
+*   PL_FPDF.RemoveOverlay('OVL_001');
+*******************************************************************************/
+PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2);
+
+/*******************************************************************************
+* Procedure: ClearOverlays / Limpar Sobreposições
+*
+* Description / Descrição:
+*   EN: Clear all overlays from all pages or specific page
+*   PT: Limpar todas as sobreposições de todas ou de página específica
+*
+* Parameters / Parâmetros:
+*   p_page_number - Clear from page (NULL = all pages) / Limpar de página
+*
+* Example / Exemplo:
+*   -- Clear all overlays / Limpar todas as sobreposições
+*   PL_FPDF.ClearOverlays();
+*
+*   -- Clear overlays from page 1 only / Limpar apenas da página 1
+*   PL_FPDF.ClearOverlays(1);
+*******************************************************************************/
+PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 END PL_FPDF;
