@@ -65,7 +65,7 @@ type recImageBlob is record (
 
 -- Global constants
 co_fpdf_version constant varchar2(10) := '1.53';
-co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.2';
+co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.3';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
@@ -838,6 +838,59 @@ FUNCTION GetPageInfo(p_page_number PLS_INTEGER) RETURN JSON_OBJECT_T;
 *   PL_FPDF.RotatePage(2, 180);   -- Rotate second page 180 degrees
 *******************************************************************************/
 PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER);
+
+/*******************************************************************************
+* Procedure: RemovePage
+* Description: Mark a page for removal from the PDF
+* Parameters:
+*   p_page_number - Page number to remove (1-based index)
+* Note: Page is marked for removal but not physically deleted until
+*       OutputModifiedPDF() is called (Phase 4.3)
+* Example:
+*   PL_FPDF.LoadPDF(l_pdf);
+*   PL_FPDF.RemovePage(2);    -- Remove page 2
+*   PL_FPDF.RemovePage(5);    -- Remove page 5
+*   -- l_modified_pdf := PL_FPDF.OutputModifiedPDF();  -- Future: Phase 4.3
+*******************************************************************************/
+PROCEDURE RemovePage(p_page_number PLS_INTEGER);
+
+/*******************************************************************************
+* Function: GetActivePageCount
+* Description: Get count of pages not marked for removal
+* Returns: Number of active (non-removed) pages
+* Note: This differs from GetPageCount() which returns the original page count
+* Example:
+*   PL_FPDF.LoadPDF(l_pdf);
+*   DBMS_OUTPUT.PUT_LINE('Total pages: ' || PL_FPDF.GetPageCount());
+*   PL_FPDF.RemovePage(2);
+*   DBMS_OUTPUT.PUT_LINE('Active pages: ' || PL_FPDF.GetActivePageCount());
+*******************************************************************************/
+FUNCTION GetActivePageCount RETURN PLS_INTEGER;
+
+/*******************************************************************************
+* Function: IsPageRemoved
+* Description: Check if a page is marked for removal
+* Parameters:
+*   p_page_number - Page number to check (1-based index)
+* Returns: TRUE if page is marked for removal, FALSE otherwise
+* Example:
+*   IF PL_FPDF.IsPageRemoved(2) THEN
+*     DBMS_OUTPUT.PUT_LINE('Page 2 is marked for removal');
+*   END IF;
+*******************************************************************************/
+FUNCTION IsPageRemoved(p_page_number PLS_INTEGER) RETURN BOOLEAN;
+
+/*******************************************************************************
+* Function: IsPDFModified
+* Description: Check if the loaded PDF has been modified
+* Returns: TRUE if PDF has been modified (rotated, pages removed, etc.)
+* Note: Use this to determine if OutputModifiedPDF() needs to be called
+* Example:
+*   IF PL_FPDF.IsPDFModified() THEN
+*     l_modified_pdf := PL_FPDF.OutputModifiedPDF();  -- Future: Phase 4.3
+*   END IF;
+*******************************************************************************/
+FUNCTION IsPDFModified RETURN BOOLEAN;
 
 /*******************************************************************************
 * Procedure: ClearPDFCache
