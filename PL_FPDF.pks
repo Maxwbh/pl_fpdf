@@ -65,7 +65,7 @@ type recImageBlob is record (
 
 -- Global constants
 co_fpdf_version constant varchar2(10) := '1.53';
-co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.4';
+co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.5';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
@@ -951,6 +951,47 @@ PROCEDURE AddWatermark(
 *   END;
 *******************************************************************************/
 FUNCTION GetWatermarks RETURN JSON_ARRAY_T;
+
+/*******************************************************************************
+* Function: OutputModifiedPDF
+* Description: Generate modified PDF with all changes applied
+* Returns: BLOB containing the modified PDF
+* Note: Applies all modifications: page rotations, removed pages, watermarks
+* Raises:
+*   -20809: No PDF loaded
+*   -20819: PDF has not been modified (no changes to apply)
+*   -20820: All pages have been removed (cannot generate empty PDF)
+* Process:
+*   1. Validates PDF is loaded and modified
+*   2. Builds list of active (non-removed) pages
+*   3. Generates new PDF structure with modified pages
+*   4. Applies rotations to pages
+*   5. Rebuilds page tree excluding removed pages
+*   6. Generates new xref table and trailer
+* Example:
+*   DECLARE
+*     l_pdf BLOB;
+*     l_modified_pdf BLOB;
+*   BEGIN
+*     -- Load PDF
+*     SELECT pdf_blob INTO l_pdf FROM docs WHERE id = 1;
+*     PL_FPDF.LoadPDF(l_pdf);
+*
+*     -- Apply modifications
+*     PL_FPDF.RotatePage(1, 90);
+*     PL_FPDF.RemovePage(3);
+*     PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
+*
+*     -- Generate modified PDF
+*     l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+*
+*     -- Save modified PDF
+*     UPDATE docs SET pdf_blob = l_modified_pdf WHERE id = 1;
+*
+*     PL_FPDF.ClearPDFCache();
+*   END;
+*******************************************************************************/
+FUNCTION OutputModifiedPDF RETURN BLOB;
 
 /*******************************************************************************
 * Procedure: ClearPDFCache
