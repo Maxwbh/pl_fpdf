@@ -64,12 +64,11 @@ type recImageBlob is record (
 );
 
 -- Global constants
-co_fpdf_version constant varchar2(10) := '1.53';
-co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.5';
+co_version constant varchar2(10) := '3.0.0';  -- PL_FPDF Version
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-15
+-- Date: 2026-01-25
 --------------------------------------------------------------------------------
 
 /*******************************************************************************

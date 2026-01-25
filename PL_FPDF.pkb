@@ -226,12 +226,13 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-18
+-- Date: 2025-01-25
 --------------------------------------------------------------------------------
+ -- Version Information
+ co_version CONSTANT VARCHAR2(10) := '3.0.0';  -- PL_FPDF Version
+
  -- PDF Specification Constants
- c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
- co_fpdf_version CONSTANT VARCHAR2(10) := '1.53';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-a.5';
+ c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4'; -- PDF output version
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
