@@ -65,7 +65,7 @@ type recImageBlob is record (
 
 -- Global constants
 co_fpdf_version constant varchar2(10) := '1.53';
-co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.3';
+co_pl_fpdf_version constant varchar2(10) := '3.0.0-a.4';
 noParam tv4000a;
 
 --------------------------------------------------------------------------------
@@ -891,6 +891,66 @@ FUNCTION IsPageRemoved(p_page_number PLS_INTEGER) RETURN BOOLEAN;
 *   END IF;
 *******************************************************************************/
 FUNCTION IsPDFModified RETURN BOOLEAN;
+
+/*******************************************************************************
+* Procedure: AddWatermark
+* Description: Add watermark text to specified pages
+* Parameters:
+*   p_text - Watermark text to display
+*   p_opacity - Opacity (0.0 to 1.0), default 0.3
+*   p_rotation - Rotation angle (0, 45, 90, 135, 180, 225, 270, 315), default 45
+*   p_pages - Page range: 'ALL', '1-5', '1,3,5', '1-3,5,7-10', default 'ALL'
+*   p_font - Font name, default 'Helvetica'
+*   p_size - Font size in points, default 48
+*   p_color - Color name ('gray', 'red', 'blue', etc.), default 'gray'
+* Note: Watermarks are stored in memory. Use OutputModifiedPDF() to generate
+*       the modified PDF with watermarks applied (Phase 4.4)
+* Example:
+*   PL_FPDF.LoadPDF(l_pdf);
+*   -- Add watermark to all pages
+*   PL_FPDF.AddWatermark('CONFIDENTIAL', 0.2, 45, 'ALL');
+*   -- Add watermark to specific pages
+*   PL_FPDF.AddWatermark('DRAFT', 0.3, 45, '1-5,10');
+*   -- Add multiple watermarks
+*   PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '1', 'Helvetica', 72, 'green');
+*******************************************************************************/
+PROCEDURE AddWatermark(
+  p_text VARCHAR2,
+  p_opacity NUMBER DEFAULT 0.3,
+  p_rotation NUMBER DEFAULT 45,
+  p_pages VARCHAR2 DEFAULT 'ALL',
+  p_font VARCHAR2 DEFAULT 'Helvetica',
+  p_size NUMBER DEFAULT 48,
+  p_color VARCHAR2 DEFAULT 'gray'
+);
+
+/*******************************************************************************
+* Function: GetWatermarks
+* Description: Get list of all applied watermarks as JSON array
+* Returns: JSON_ARRAY_T containing watermark objects with properties:
+*   - id: Watermark ID
+*   - text: Watermark text
+*   - opacity: Opacity value (0.0-1.0)
+*   - rotation: Rotation angle in degrees
+*   - pageRange: Parsed page range (comma-separated list)
+*   - font: Font name
+*   - fontSize: Font size in points
+*   - color: Color name
+* Example:
+*   DECLARE
+*     l_watermarks JSON_ARRAY_T;
+*     l_watermark JSON_OBJECT_T;
+*   BEGIN
+*     PL_FPDF.LoadPDF(l_pdf);
+*     PL_FPDF.AddWatermark('CONFIDENTIAL', 0.2, 45, 'ALL');
+*     l_watermarks := PL_FPDF.GetWatermarks();
+*     FOR i IN 0..l_watermarks.get_size() - 1 LOOP
+*       l_watermark := TREAT(l_watermarks.get(i) AS JSON_OBJECT_T);
+*       DBMS_OUTPUT.PUT_LINE('Watermark: ' || l_watermark.get_string('text'));
+*     END LOOP;
+*   END;
+*******************************************************************************/
+FUNCTION GetWatermarks RETURN JSON_ARRAY_T;
 
 /*******************************************************************************
 * Procedure: ClearPDFCache
