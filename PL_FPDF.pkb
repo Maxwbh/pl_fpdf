@@ -231,7 +231,7 @@ type ArrayCharWidths is table of charSet index by word;
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
  co_fpdf_version CONSTANT VARCHAR2(10) := '1.53';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-a.2';
+ co_pl_fpdf_version CONSTANT VARCHAR2(10) := '3.0.0-a.3';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -328,6 +328,11 @@ TYPE page_info_rec IS RECORD (
 );
 TYPE page_info_table IS TABLE OF page_info_rec INDEX BY PLS_INTEGER;
 g_page_info_table page_info_table;
+
+-- PDF modification tracking
+g_pdf_modified BOOLEAN := FALSE;
+TYPE page_removal_list IS TABLE OF BOOLEAN INDEX BY PLS_INTEGER;
+g_removed_pages page_removal_list;
 
 --------------------------------------------------------------------------------
 
@@ -6163,9 +6168,77 @@ BEGIN
 
   log_message(3, 'Page ' || p_page_number || ' rotation set to ' || p_rotation || ' degrees');
 
-  -- Note: Actual PDF modification will be implemented in Phase 4.2
-  -- For now, we just update the in-memory cache
+  -- Mark PDF as modified
+  g_pdf_modified := TRUE;
 END RotatePage;
+
+--------------------------------------------------------------------------------
+-- RemovePage: Mark a page for removal
+--------------------------------------------------------------------------------
+PROCEDURE RemovePage(p_page_number PLS_INTEGER) IS
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
+    raise_application_error(-20812,
+      'Invalid page number: ' || p_page_number ||
+      '. Valid range: 1-' || g_loaded_page_count);
+  END IF;
+
+  -- Check if already removed
+  IF g_removed_pages.EXISTS(p_page_number) AND g_removed_pages(p_page_number) THEN
+    raise_application_error(-20814,
+      'Page ' || p_page_number || ' is already marked for removal');
+  END IF;
+
+  -- Mark page as removed
+  g_removed_pages(p_page_number) := TRUE;
+  g_pdf_modified := TRUE;
+
+  log_message(3, 'Page ' || p_page_number || ' marked for removal');
+END RemovePage;
+
+--------------------------------------------------------------------------------
+-- GetActivePageCount: Get count of non-removed pages
+--------------------------------------------------------------------------------
+FUNCTION GetActivePageCount RETURN PLS_INTEGER IS
+  l_count PLS_INTEGER := 0;
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Count pages that are not marked for removal
+  FOR i IN 1..g_loaded_page_count LOOP
+    IF NOT (g_removed_pages.EXISTS(i) AND g_removed_pages(i)) THEN
+      l_count := l_count + 1;
+    END IF;
+  END LOOP;
+
+  RETURN l_count;
+END GetActivePageCount;
+
+--------------------------------------------------------------------------------
+-- IsPageRemoved: Check if page is marked for removal
+--------------------------------------------------------------------------------
+FUNCTION IsPageRemoved(p_page_number PLS_INTEGER) RETURN BOOLEAN IS
+BEGIN
+  IF g_removed_pages.EXISTS(p_page_number) THEN
+    RETURN g_removed_pages(p_page_number);
+  END IF;
+  RETURN FALSE;
+END IsPageRemoved;
+
+--------------------------------------------------------------------------------
+-- IsPDFModified: Check if PDF has been modified
+--------------------------------------------------------------------------------
+FUNCTION IsPDFModified RETURN BOOLEAN IS
+BEGIN
+  RETURN g_pdf_modified;
+END IsPDFModified;
 
 --------------------------------------------------------------------------------
 -- ClearPDFCache: Clear loaded PDF and free memory
@@ -6176,10 +6249,12 @@ BEGIN
   g_object_cache.DELETE;
   g_xref_table.DELETE;
   g_page_info_table.DELETE;
+  g_removed_pages.DELETE;
   g_pdf_version := NULL;
   g_xref_offset := NULL;
   g_root_obj_id := NULL;
   g_loaded_page_count := 0;
+  g_pdf_modified := FALSE;
 
   log_message(3, 'PDF cache cleared');
 END ClearPDFCache;
