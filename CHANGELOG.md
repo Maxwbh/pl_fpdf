@@ -9,65 +9,117 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [3.1.0] - TBD (In Planning 🚧)
 
-### 🎯 Phase 5: PDF Merging, Splitting & Advanced Page Operations
+### 🎯 Phase 5: Advanced Page Operations & Automation
 
-**Status:** Planning stage - Implementation not yet started
+**Status:** Planning stage - Depends on Phase 4.6 completion
 **Planning Document:** [PHASE_5_IMPLEMENTATION_PLAN.md](PHASE_5_IMPLEMENTATION_PLAN.md)
 
-Phase 5 will extend PL_FPDF with powerful multi-document PDF operations.
+Phase 5 focuses on advanced page manipulation and automation workflows.
 
 ### Planned Features
 
-#### Phase 5.1: Multi-Document Loading (v3.1.0-a.1)
-- `LoadPDFWithID()` - Load multiple PDFs with identifiers
-- `GetLoadedPDFs()` - Get list of loaded PDF IDs
-- `UnloadPDF()` - Unload specific PDF from memory
-- `IsPDFLoaded()` - Check if PDF is loaded
-
-#### Phase 5.2: PDF Merging (v3.1.0-a.2)
-- `MergePDFs()` - Combine multiple PDFs into single document
-- `MergePDFBlobs()` - Convenience method for direct BLOB merging
-- Support for bookmarks, metadata preservation
-- Smart resource consolidation (fonts, images)
-
-#### Phase 5.3: PDF Splitting (v3.1.0-a.3)
-- `SplitPDF()` - Split PDF by page ranges
-- `SplitPDFByPages()` - Split into individual page files
-- `SplitPDFByChunkSize()` - Split into N-page chunks
-
-#### Phase 5.4: Page Extraction (v3.1.0-a.4)
-- `ExtractPages()` - Extract specific pages to new PDF
-- `ExtractPagesExcept()` - Extract all pages except specified
-- Preserve bookmarks and metadata options
-
-#### Phase 5.5: Page Insertion (v3.1.0-a.5)
-- `InsertPagesFrom()` - Insert pages from source PDF
+#### Phase 5.1: Page Insertion (v3.1.0-a.1)
+- `InsertPagesFrom()` - Insert pages from another PDF at specific position
 - `PrependPages()` - Insert pages at beginning
 - `AppendPages()` - Insert pages at end
-- Smart object renumbering and resource management
 
-#### Phase 5.6: Page Reordering (v3.1.0-a.6)
+#### Phase 5.2: Page Reordering (v3.1.0-a.2)
 - `ReorderPages()` - Reorder pages by new sequence
 - `MovePage()` - Move single page to new position
 - `SwapPages()` - Swap two pages
 - `ReversePages()` - Reverse page order
 
+#### Phase 5.3: Page Replacement (v3.1.0-a.3)
+- `ReplacePage()` - Replace page content from another PDF
+- `ReplacePageRange()` - Replace multiple pages
+
+#### Phase 5.4: Page Duplication (v3.1.0-a.4)
+- `DuplicatePage()` - Copy page within or across documents
+- `DuplicatePageRange()` - Copy multiple pages
+
+#### Phase 5.5: Batch Processing (v3.1.0-a.5)
+- `BatchProcess()` - Apply same operations to multiple PDFs
+- Template-based processing workflows
+
+#### Phase 5.6: Smart Bookmarks (v3.1.0-a.6)
+- Automatic bookmark management across operations
+- Bookmark synchronization after page changes
+
+### Use Cases
+
+- **Print Preparation** - Reorder pages for booklet printing
+- **Template Processing** - Apply same modifications to multiple documents
+- **Page Replacement** - Update specific pages across document versions
+- **Document Assembly** - Build documents from page templates
+
+---
+
+## [3.0.0-a.7] - TBD (In Planning 🚧)
+
+### 🎯 Phase 4.6: PDF Merge & Split
+
+**Status:** Planning stage
+**Planning Document:** [PHASE_4_6_MERGE_SPLIT_PLAN.md](PHASE_4_6_MERGE_SPLIT_PLAN.md)
+
+Essential multi-document PDF operations.
+
+### Planned Features
+
+- `LoadPDFWithID()` - Load multiple PDFs with identifiers
+- `GetLoadedPDFs()` - List all loaded PDF IDs
+- `UnloadPDF()` - Unload specific PDF from memory
+- `MergePDFs()` - Combine multiple PDFs into single document
+- `SplitPDF()` - Split PDF into multiple files by page ranges
+- `ExtractPages()` - Create new PDF from specific page range
+
 ### Technical Improvements
 
-- Multi-document memory management
+- Multi-document memory management (up to 10 PDFs)
 - Object renumbering and conflict resolution
 - Cross-reference table merging
-- Resource deduplication (fonts, images)
-- Bookmark preservation and merging
-- Enhanced error handling (15 new error codes: -20901 to -20915)
+- Resource consolidation (fonts, images)
+- 12 new error codes (-20828 to -20839)
 
 ### Use Cases
 
 - **Document Consolidation** - Merge monthly reports into annual report
 - **Document Distribution** - Split contracts into sections for parties
-- **Invoice Assembly** - Combine cover letter, invoice, terms
-- **Print Preparation** - Reorder pages for booklet printing
-- **Archive Management** - Extract and reorganize document sections
+- **Selective Extraction** - Extract executive summary from full report
+
+---
+
+## [3.0.0-a.6] - TBD (In Planning 🚧)
+
+### 🎯 Phase 4.5: Text & Image Overlay
+
+**Status:** Planning stage
+**Planning Document:** [PHASE_4_5_OVERLAY_PLAN.md](PHASE_4_5_OVERLAY_PLAN.md)
+
+Precise text and image positioning on PDF pages.
+
+### Planned Features
+
+- `OverlayText()` - Add formatted text at specific x,y coordinates
+- `OverlayImage()` - Add images at specific positions with sizing
+- `GetOverlays()` - List all applied overlays
+- `RemoveOverlay()` - Remove specific overlay
+- `ClearOverlays()` - Clear all overlays
+
+### Technical Improvements
+
+- Precise positioning system (x, y coordinates in PDF units)
+- Content stream manipulation
+- Graphics state management (opacity, rotation)
+- Image embedding and scaling
+- Text rendering with font control
+- Z-order layering support
+- 7 new error codes (-20821 to -20827)
+
+### Use Cases
+
+- **Document Stamping** - Add "APPROVED" stamp to contracts
+- **Logo Addition** - Add company logo to all pages
+- **Form Filling** - Dynamically fill form fields with data
 
 ---
 
