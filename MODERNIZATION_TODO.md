@@ -1100,15 +1100,406 @@ GitHub: [maxwbh/pl_fpdf](https://github.com/maxwbh/pl_fpdf)
 
 ---
 
-**Última Atualização:** 2025-12-19
-**Versão do Documento:** 2.0 FINAL
-**Status:** 🎉 **MODERNIZAÇÃO COMPLETA - PROJETO FINALIZADO**
+### **FASE 4: PDF Parser e Editor (Prioridade P3-P4)** 🆕 **PLANEJADA**
+Funcionalidades avançadas de leitura e modificação de PDFs existentes
 
-**Progresso Geral:** ✅ 100% (Fase 1: 100% | Fase 2: 100% | Fase 3: 100%)
+**Status:** 📋 Planejada (0% concluída)
 
 ---
 
-## 🎉 PROJETO FINALIZADO
+#### 🆕 Task 4.1: PDF Parser - Leitura de PDFs Existentes
+**Prioridade:** P3 (Desejável)
+**Esforço:** Muito Alto (6-8 semanas)
+**Impacto:** Permite modificação de PDFs existentes
+
+**Descrição:**
+Implementar um parser completo de PDF em PL/SQL que permita:
+- Ler arquivos PDF existentes (BLOB)
+- Extrair estrutura do documento (páginas, fontes, imagens, texto)
+- Mapear objetos PDF para estruturas internas do PL_FPDF
+- Permitir modificações incrementais
+- Gerar PDF modificado preservando elementos originais
+
+**Desafios Técnicos:**
+
+1. **Estrutura PDF Complexa**
+   - PDF é formato binário com múltiplas versões (1.0 a 2.0)
+   - Cross-reference table (xref) para localizar objetos
+   - Objetos indiretos com referências complexas
+   - Streams comprimidos (FlateDecode, LZWDecode, etc.)
+   - Fontes embarcadas (Type1, TrueType, CFF)
+
+2. **Parsing Necessário**
+   - Header parsing (versão PDF)
+   - Cross-reference table parsing
+   - Trailer parsing
+   - Object stream parsing
+   - Page tree parsing
+   - Content stream parsing
+   - Font descriptor parsing
+   - Image XObject parsing
+
+3. **Descompressão**
+   - FlateDecode (zlib) - usar UTL_COMPRESS
+   - LZWDecode - implementar algoritmo
+   - ASCIIHexDecode - conversão hexadecimal
+   - ASCII85Decode - conversão base85
+   - RunLengthDecode - RLE decompression
+
+**API Proposta:**
+
+```sql
+-- Carregar PDF existente
+PROCEDURE LoadPDF(p_pdf_blob BLOB);
+
+-- Carregar PDF de arquivo
+PROCEDURE LoadPDFFromFile(
+  p_directory VARCHAR2,
+  p_filename VARCHAR2
+);
+
+-- Obter informações do PDF carregado
+FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
+
+-- Obter número de páginas
+FUNCTION GetPageCount RETURN PLS_INTEGER;
+
+-- Extrair página específica
+FUNCTION ExtractPage(p_page_number PLS_INTEGER) RETURN BLOB;
+
+-- Remover página
+PROCEDURE RemovePage(p_page_number PLS_INTEGER);
+
+-- Inserir página em branco
+PROCEDURE InsertBlankPage(
+  p_position PLS_INTEGER,
+  p_format VARCHAR2 DEFAULT 'A4',
+  p_orientation VARCHAR2 DEFAULT 'P'
+);
+
+-- Inserir página de outro PDF
+PROCEDURE InsertPageFromPDF(
+  p_position PLS_INTEGER,
+  p_source_pdf BLOB,
+  p_source_page PLS_INTEGER
+);
+
+-- Adicionar texto sobre página existente (overlay)
+PROCEDURE OverlayText(
+  p_page_number PLS_INTEGER,
+  p_x NUMBER,
+  p_y NUMBER,
+  p_text VARCHAR2,
+  p_font VARCHAR2 DEFAULT 'Arial',
+  p_size NUMBER DEFAULT 12
+);
+
+-- Adicionar imagem sobre página existente
+PROCEDURE OverlayImage(
+  p_page_number PLS_INTEGER,
+  p_x NUMBER,
+  p_y NUMBER,
+  p_width NUMBER,
+  p_height NUMBER,
+  p_image BLOB
+);
+
+-- Adicionar marca d'água
+PROCEDURE AddWatermark(
+  p_text VARCHAR2,
+  p_opacity NUMBER DEFAULT 0.3,
+  p_rotation NUMBER DEFAULT 45,
+  p_pages VARCHAR2 DEFAULT 'ALL'  -- 'ALL', '1-5', '1,3,5'
+);
+
+-- Mesclar múltiplos PDFs
+PROCEDURE MergePDFs(p_pdf_list pdf_blob_array);
+
+-- Dividir PDF em múltiplos arquivos
+FUNCTION SplitPDF(
+  p_pages_per_file PLS_INTEGER
+) RETURN pdf_blob_array;
+
+-- Extrair texto de página
+FUNCTION ExtractText(
+  p_page_number PLS_INTEGER
+) RETURN CLOB;
+
+-- Extrair todas as imagens de uma página
+FUNCTION ExtractImages(
+  p_page_number PLS_INTEGER
+) RETURN image_blob_array;
+
+-- Obter fontes utilizadas no PDF
+FUNCTION GetFontsUsed RETURN JSON_ARRAY_T;
+
+-- Rotacionar página
+PROCEDURE RotatePage(
+  p_page_number PLS_INTEGER,
+  p_rotation NUMBER  -- 90, 180, 270
+);
+
+-- Redimensionar página
+PROCEDURE ResizePage(
+  p_page_number PLS_INTEGER,
+  p_new_format VARCHAR2
+);
+
+-- Gerar PDF modificado
+FUNCTION OutputModifiedPDF RETURN BLOB;
+```
+
+**Tipos Customizados:**
+
+```sql
+-- Array de BLOBs para múltiplos PDFs
+TYPE pdf_blob_array IS TABLE OF BLOB INDEX BY PLS_INTEGER;
+
+-- Array de imagens
+TYPE image_blob_array IS TABLE OF recImageBlob INDEX BY PLS_INTEGER;
+
+-- Estrutura de objeto PDF
+TYPE pdf_object_rec IS RECORD (
+  obj_number PLS_INTEGER,
+  generation PLS_INTEGER,
+  obj_type VARCHAR2(50),
+  obj_data CLOB,
+  stream_data BLOB
+);
+
+-- Estrutura de página PDF
+TYPE pdf_page_rec IS RECORD (
+  page_number PLS_INTEGER,
+  width NUMBER,
+  height NUMBER,
+  rotation NUMBER,
+  media_box VARCHAR2(100),
+  crop_box VARCHAR2(100),
+  resources_obj PLS_INTEGER,
+  contents_obj pdf_object_array,
+  annotations pdf_object_array
+);
+```
+
+**Exemplo 1: Adicionar Marca d'Água**
+
+```sql
+DECLARE
+  l_pdf_original BLOB;
+  l_pdf_modificado BLOB;
+BEGIN
+  -- Carregar PDF existente
+  SELECT pdf_blob INTO l_pdf_original
+  FROM documentos
+  WHERE id = 123;
+
+  -- Inicializar com PDF existente
+  PL_FPDF.LoadPDF(l_pdf_original);
+
+  -- Adicionar marca d'água em todas as páginas
+  PL_FPDF.AddWatermark(
+    p_text => 'CONFIDENCIAL',
+    p_opacity => 0.2,
+    p_rotation => 45,
+    p_pages => 'ALL'
+  );
+
+  -- Gerar PDF modificado
+  l_pdf_modificado := PL_FPDF.OutputModifiedPDF();
+
+  -- Salvar resultado
+  UPDATE documentos
+  SET pdf_blob = l_pdf_modificado
+  WHERE id = 123;
+END;
+```
+
+**Exemplo 2: Mesclar PDFs**
+
+```sql
+DECLARE
+  l_pdfs pdf_blob_array;
+  l_pdf_final BLOB;
+BEGIN
+  -- Carregar múltiplos PDFs
+  SELECT pdf_blob BULK COLLECT INTO l_pdfs
+  FROM documentos
+  WHERE tipo = 'CONTRATO'
+  ORDER BY sequencia;
+
+  -- Inicializar PL_FPDF
+  PL_FPDF.Init();
+
+  -- Mesclar todos os PDFs
+  PL_FPDF.MergePDFs(l_pdfs);
+
+  -- Gerar PDF final
+  l_pdf_final := PL_FPDF.OutputModifiedPDF();
+
+  -- Salvar documento mesclado
+  INSERT INTO documentos (tipo, pdf_blob)
+  VALUES ('CONTRATO_COMPLETO', l_pdf_final);
+END;
+```
+
+**Exemplo 3: Adicionar Assinatura Digital em Posição Específica**
+
+```sql
+DECLARE
+  l_pdf_original BLOB;
+  l_assinatura_img BLOB;
+  l_pdf_assinado BLOB;
+BEGIN
+  -- Carregar PDF e imagem da assinatura
+  SELECT pdf_blob INTO l_pdf_original FROM contratos WHERE id = 456;
+  SELECT img_blob INTO l_assinatura_img FROM assinaturas WHERE usuario_id = 789;
+
+  -- Carregar PDF
+  PL_FPDF.LoadPDF(l_pdf_original);
+
+  -- Adicionar assinatura na última página
+  DECLARE
+    l_total_pages PLS_INTEGER;
+  BEGIN
+    l_total_pages := PL_FPDF.GetPageCount();
+
+    -- Overlay da imagem de assinatura
+    PL_FPDF.OverlayImage(
+      p_page_number => l_total_pages,
+      p_x => 150,
+      p_y => 250,
+      p_width => 50,
+      p_height => 20,
+      p_image => l_assinatura_img
+    );
+
+    -- Adicionar texto "Assinado digitalmente"
+    PL_FPDF.OverlayText(
+      p_page_number => l_total_pages,
+      p_x => 150,
+      p_y => 272,
+      p_text => 'Assinado digitalmente em ' || TO_CHAR(SYSDATE, 'DD/MM/YYYY HH24:MI'),
+      p_font => 'Arial',
+      p_size => 8
+    );
+  END;
+
+  -- Gerar PDF assinado
+  l_pdf_assinado := PL_FPDF.OutputModifiedPDF();
+
+  -- Atualizar contrato
+  UPDATE contratos
+  SET pdf_blob = l_pdf_assinado,
+      status = 'ASSINADO',
+      data_assinatura = SYSDATE
+  WHERE id = 456;
+END;
+```
+
+**Exemplo 4: Extrair Texto de PDF para Indexação**
+
+```sql
+DECLARE
+  l_pdf BLOB;
+  l_texto_completo CLOB;
+  l_total_pages PLS_INTEGER;
+  l_texto_pagina CLOB;
+BEGIN
+  -- Carregar PDF
+  SELECT pdf_blob INTO l_pdf FROM documentos WHERE id = 999;
+
+  PL_FPDF.LoadPDF(l_pdf);
+  l_total_pages := PL_FPDF.GetPageCount();
+
+  -- Extrair texto de todas as páginas
+  DBMS_LOB.CREATETEMPORARY(l_texto_completo, TRUE);
+
+  FOR i IN 1..l_total_pages LOOP
+    l_texto_pagina := PL_FPDF.ExtractText(i);
+    DBMS_LOB.APPEND(l_texto_completo, l_texto_pagina || CHR(10));
+  END LOOP;
+
+  -- Salvar texto extraído para busca full-text
+  UPDATE documentos
+  SET texto_indexado = l_texto_completo
+  WHERE id = 999;
+
+  DBMS_LOB.FREETEMPORARY(l_texto_completo);
+END;
+```
+
+**Estrutura de Implementação:**
+
+```sql
+-- Novas funções privadas no package body
+
+-- Parser principal
+FUNCTION parse_pdf_header(p_pdf BLOB) RETURN VARCHAR2;
+FUNCTION parse_xref_table(p_pdf BLOB, p_offset NUMBER) RETURN xref_table_rec;
+FUNCTION parse_trailer(p_pdf BLOB, p_offset NUMBER) RETURN trailer_rec;
+FUNCTION parse_object(p_pdf BLOB, p_offset NUMBER) RETURN pdf_object_rec;
+
+-- Decompressão
+FUNCTION decompress_flate(p_stream BLOB) RETURN BLOB;
+FUNCTION decompress_lzw(p_stream BLOB) RETURN BLOB;
+FUNCTION decode_ascii_hex(p_stream BLOB) RETURN BLOB;
+FUNCTION decode_ascii85(p_stream BLOB) RETURN BLOB;
+
+-- Parsing de estruturas
+FUNCTION parse_page_tree(p_pdf BLOB, p_pages_obj PLS_INTEGER) RETURN page_array;
+FUNCTION parse_content_stream(p_stream BLOB) RETURN content_array;
+FUNCTION parse_font_descriptor(p_obj pdf_object_rec) RETURN font_rec;
+
+-- Extração
+FUNCTION extract_text_from_content(p_content BLOB) RETURN CLOB;
+FUNCTION extract_images_from_resources(p_resources pdf_object_rec) RETURN image_array;
+
+-- Modificação
+PROCEDURE update_xref_table;
+PROCEDURE add_object_to_pdf(p_obj pdf_object_rec);
+PROCEDURE modify_page_content(p_page PLS_INTEGER, p_new_content BLOB);
+```
+
+**Referências Técnicas:**
+
+- [PDF Reference 1.7 (ISO 32000-1)](https://opensource.adobe.com/dc-acrobat-sdk-docs/pdfstandards/PDF32000_2008.pdf)
+- [PDF Explained - O'Reilly](https://www.oreilly.com/library/view/pdf-explained/9781449321581/)
+- [QPDF Library](https://github.com/qpdf/qpdf) - Referência de implementação
+- [PyPDF2](https://github.com/py-pdf/pypdf) - Implementação Python para referência
+
+**Complexidade:**
+
+Esta é a task mais complexa do projeto:
+- **Esforço estimado:** 6-8 semanas de desenvolvimento
+- **Linhas de código:** ~5.000-8.000 linhas adicionais
+- **Risco:** Alto (formato PDF muito complexo)
+- **Benefício:** Muito alto (funcionalidade única em PL/SQL)
+
+**Alternativas a Considerar:**
+
+1. **Java Stored Procedures** - Usar bibliotecas Java existentes (iText, PDFBox)
+2. **Integração Externa** - Chamar API REST externa via UTL_HTTP
+3. **Implementação Incremental** - Começar apenas com operações simples (merge, split)
+
+**Arquivos Afetados:**
+- `PL_FPDF.pks` - Novas declarações públicas
+- `PL_FPDF.pkb` - Parser completo de PDF
+- `PL_FPDF_TYPES.sql` - Novos tipos customizados (novo)
+- `tests/validate_pdf_parser.sql` - Testes de validação (novo)
+
+---
+
+**Última Atualização:** 2025-12-29
+**Versão do Documento:** 2.1 - FASE 4 ADICIONADA
+**Status:** 🎯 **FASE 4 PLANEJADA - v2.0.0 PRONTO PARA PRODUÇÃO**
+
+**Progresso Geral:**
+- Fases 1-3: ✅ 100% COMPLETO
+- Fase 4: 📋 0% (Planejada)
+
+---
+
+## 🎉 PL_FPDF v2.0.0 - PRODUÇÃO
 
 **PL_FPDF v2.0.0 está PRONTO para PRODUÇÃO!**
 
@@ -1119,3 +1510,10 @@ GitHub: [maxwbh/pl_fpdf](https://github.com/maxwbh/pl_fpdf)
 - ✅ PIX e Boleto integrados
 - ✅ Zero dependências legacy
 - ✅ Oracle 19c/23c nativo
+
+## 🚀 Roadmap Futuro - v3.0.0
+
+**Fase 4: PDF Parser e Editor** (Planejada)
+- 📋 Task 4.1: Leitura e modificação de PDFs existentes
+- 📋 Funcionalidades: Merge, Split, Watermark, Text Overlay, Extract Text
+- 📋 Estimativa: 6-8 semanas de desenvolvimento
