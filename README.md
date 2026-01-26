@@ -143,9 +143,10 @@ END;
 - 🚧 [Phase 4.6 Plan - PDF Merge & Split](PHASE_4_6_MERGE_SPLIT_PLAN.md)
 - 🚧 [Phase 5 Plan - Advanced Operations](PHASE_5_IMPLEMENTATION_PLAN.md)
 - 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
+- 🗺️ [Migration Roadmap - Future Versions](MIGRATION_ROADMAP.md)
+- 🔮 [Oracle 26ai & APEX 24.2 Modernization](MODERNIZATION_ORACLE_26_APEX_24_2.md)
 - 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
 - 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
-- 🔮 [Oracle 26ai & APEX 24.2 Modernization](MODERNIZATION_ORACLE_26_APEX_24_2.md)
 
 ### 📋 Requirements
 
