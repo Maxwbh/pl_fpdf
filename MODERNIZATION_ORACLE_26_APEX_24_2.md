@@ -22,6 +22,16 @@ This document outlines strategic modernization opportunities for PL_FPDF leverag
 
 See [ORACLE_19C_COMPATIBILITY_STRATEGY.md](ORACLE_19C_COMPATIBILITY_STRATEGY.md) for details.
 
+**🔴 CRITICAL: Package-Only Architecture**
+
+**NO external tables, types, or objects will be created.** All examples showing `CREATE TABLE` or `CREATE TYPE` are for **illustration of Oracle 23ai features ONLY**. PL_FPDF implementation will:
+- ✅ Use **package collections** for caching/storage
+- ✅ Define **all types within package specification/body**
+- ✅ Remain **100% self-contained** (2 files: .pks + .pkb)
+- ✅ Require **ZERO external dependencies**
+
+See [PACKAGE_ONLY_ARCHITECTURE.md](PACKAGE_ONLY_ARCHITECTURE.md) for implementation patterns.
+
 **Priority Levels:**
 - 🔴 **HIGH**: Significant impact, recommended for Phase 5 (optional on 23ai/26ai)
 - 🟡 **MEDIUM**: Valuable improvements, consider for Phase 5.x (optional)

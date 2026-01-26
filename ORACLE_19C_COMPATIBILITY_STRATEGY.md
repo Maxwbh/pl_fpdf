@@ -20,6 +20,16 @@ All Oracle 23ai/26ai features are **OPTIONAL** and detected at runtime. The pack
 - ✅ Zero performance penalty on Oracle 19c
 - ✅ Same API surface across all Oracle versions
 
+**🔴 CRITICAL: Package-Only Architecture**
+
+**PL_FPDF is 100% self-contained.** Examples in this document showing `CREATE TABLE` or `CREATE TYPE` are for illustration of **Oracle 23ai features ONLY**. The actual PL_FPDF implementation:
+- ✅ Uses **package collections** instead of tables
+- ✅ Defines **types within package** (not schema-level)
+- ✅ Deploys with **2 files only** (.pks + .pkb)
+- ✅ Has **ZERO external dependencies**
+
+See [PACKAGE_ONLY_ARCHITECTURE.md](PACKAGE_ONLY_ARCHITECTURE.md) for details.
+
 ---
 
 ## 🎯 Compatibility Requirements
