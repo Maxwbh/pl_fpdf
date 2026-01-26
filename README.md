@@ -137,18 +137,24 @@ END;
 
 ### 📚 Documentation
 
+**User Guides:**
 - 📘 [Complete API Reference](docs/api/API_REFERENCE.md)
 - 📗 [Phase 4 Guide - PDF Manipulation](docs/guides/PHASE_4_GUIDE.md)
+- 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
+- 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
+
+**Implementation Plans:**
 - 🚧 [Phase 4.5 Plan - Text & Image Overlay](PHASE_4_5_OVERLAY_PLAN.md)
 - 🚧 [Phase 4.6 Plan - PDF Merge & Split](PHASE_4_6_MERGE_SPLIT_PLAN.md)
 - 🚧 [Phase 5 Plan - Advanced Operations](PHASE_5_IMPLEMENTATION_PLAN.md)
-- 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
+
+**Strategic Documentation:**
+- 🚀 [Future Improvements Roadmap](FUTURE_IMPROVEMENTS_ROADMAP.md) ⭐ **NEW**
 - 🗺️ [Migration Roadmap - Future Versions](MIGRATION_ROADMAP.md)
+- 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
 - 🏗️ [Package-Only Architecture](PACKAGE_ONLY_ARCHITECTURE.md)
 - 🔒 [Oracle 19c Compatibility Strategy](ORACLE_19C_COMPATIBILITY_STRATEGY.md)
 - 🔮 [Oracle 26ai & APEX 24.2 Modernization](MODERNIZATION_ORACLE_26_APEX_24_2.md)
-- 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
-- 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
 
 ### 📋 Requirements
 
