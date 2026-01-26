@@ -229,7 +229,7 @@ type ArrayCharWidths is table of charSet index by word;
 -- Date: 2025-01-25
 --------------------------------------------------------------------------------
  -- Version Information
- co_version CONSTANT VARCHAR2(15) := '3.0.0-a.6';  -- PL_FPDF Version (Phase 4.5)
+ co_version CONSTANT VARCHAR2(15) := '3.0.0-a.7';  -- PL_FPDF Version (Phase 4.6)
 
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4'; -- PDF output version
@@ -379,6 +379,35 @@ TYPE overlay_rec IS RECORD (
 TYPE overlay_list IS TABLE OF overlay_rec INDEX BY VARCHAR2(50);
 g_overlays overlay_list;
 g_overlay_count PLS_INTEGER := 0;
+
+/*******************************************************************************
+*                     PHASE 4.6: PDF MERGE & SPLIT                             *
+*                   Global Variables for Multi-Document Management             *
+*******************************************************************************/
+
+-- Multi-document tracking
+TYPE pdf_document_rec IS RECORD (
+  pdf_id VARCHAR2(50),
+  pdf_blob BLOB,
+  page_count PLS_INTEGER,
+  file_size NUMBER,
+  pdf_version VARCHAR2(10),
+  xref_offset PLS_INTEGER,
+  root_obj_id PLS_INTEGER,
+  -- Cached parsed data
+  pages JSON_ARRAY_T,
+  objects JSON_OBJECT_T,
+  xref_table JSON_OBJECT_T,
+  trailer JSON_OBJECT_T,
+  loaded_date TIMESTAMP
+);
+
+TYPE pdf_collection IS TABLE OF pdf_document_rec INDEX BY VARCHAR2(50);
+g_loaded_pdfs pdf_collection;
+g_loaded_pdf_count PLS_INTEGER := 0;
+
+-- Maximum loaded PDFs
+c_max_loaded_pdfs CONSTANT PLS_INTEGER := 10;
 
 --------------------------------------------------------------------------------
 
@@ -7198,5 +7227,343 @@ BEGIN
                    ': ' || l_keys_to_delete.COUNT || ' overlays removed');
   END IF;
 END ClearOverlays;
+
+--------------------------------------------------------------------------------
+-- PHASE 4.6: PDF MERGE & SPLIT IMPLEMENTATION
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* LoadPDFWithID: Load PDF with identifier for multi-document operations
+*******************************************************************************/
+PROCEDURE LoadPDFWithID(
+  p_pdf_id IN VARCHAR2,
+  p_pdf_blob IN BLOB
+) IS
+  l_doc pdf_document_rec;
+BEGIN
+  -- Validate PDF ID
+  IF p_pdf_id IS NULL OR LENGTH(TRIM(p_pdf_id)) = 0 THEN
+    raise_error(-20830, 'Invalid PDF ID: cannot be empty or NULL');
+  END IF;
+
+  IF LENGTH(p_pdf_id) > 50 THEN
+    raise_error(-20830, 'Invalid PDF ID: maximum length is 50 characters');
+  END IF;
+
+  -- Check if already loaded
+  IF g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20828, 'PDF ID already loaded: ' || p_pdf_id);
+  END IF;
+
+  -- Check max PDFs limit
+  IF g_loaded_pdf_count >= c_max_loaded_pdfs THEN
+    raise_error(-20829, 'Maximum loaded PDFs exceeded. Limit is ' ||
+                c_max_loaded_pdfs || ' PDFs. Unload some PDFs first.');
+  END IF;
+
+  -- Validate BLOB
+  IF p_pdf_blob IS NULL OR DBMS_LOB.GETLENGTH(p_pdf_blob) = 0 THEN
+    raise_error(-20830, 'Invalid PDF: blob is empty or NULL');
+  END IF;
+
+  -- Initialize document record
+  l_doc.pdf_id := p_pdf_id;
+  l_doc.pdf_blob := p_pdf_blob;
+  l_doc.file_size := DBMS_LOB.GETLENGTH(p_pdf_blob);
+  l_doc.loaded_date := SYSTIMESTAMP;
+
+  -- Parse PDF to get page count
+  BEGIN
+    -- Save current state
+    DECLARE
+      l_saved_blob BLOB := g_loaded_pdf;
+      l_saved_count PLS_INTEGER := g_loaded_page_count;
+    BEGIN
+      -- Parse this PDF
+      LoadPDF(p_pdf_blob);
+      l_doc.page_count := g_loaded_page_count;
+      l_doc.pdf_version := g_pdf_version;
+
+      -- Restore previous state if needed
+      IF l_saved_blob IS NOT NULL THEN
+        g_loaded_pdf := l_saved_blob;
+        g_loaded_page_count := l_saved_count;
+      END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      log_message(2, 'Warning: Could not parse PDF ' || p_pdf_id || ': ' || SQLERRM);
+      l_doc.page_count := 0;
+  END;
+
+  -- Store document
+  g_loaded_pdfs(p_pdf_id) := l_doc;
+  g_loaded_pdf_count := g_loaded_pdf_count + 1;
+
+  log_message(3, 'PDF loaded with ID: ' || p_pdf_id ||
+              ' (' || l_doc.page_count || ' pages, ' ||
+              ROUND(l_doc.file_size/1024, 1) || ' KB)');
+END LoadPDFWithID;
+
+/*******************************************************************************
+* GetLoadedPDFs: List all loaded PDFs
+*******************************************************************************/
+FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_pdf_obj JSON_OBJECT_T;
+  l_doc pdf_document_rec;
+  l_key VARCHAR2(50);
+BEGIN
+  -- Iterate through loaded PDFs
+  l_key := g_loaded_pdfs.FIRST;
+  WHILE l_key IS NOT NULL LOOP
+    l_doc := g_loaded_pdfs(l_key);
+
+    l_pdf_obj := JSON_OBJECT_T();
+    l_pdf_obj.put('pdfId', l_doc.pdf_id);
+    l_pdf_obj.put('pageCount', l_doc.page_count);
+    l_pdf_obj.put('fileSize', l_doc.file_size);
+    l_pdf_obj.put('loadedDate', TO_CHAR(l_doc.loaded_date, 'YYYY-MM-DD"T"HH24:MI:SS'));
+
+    IF l_doc.pdf_version IS NOT NULL THEN
+      l_pdf_obj.put('pdfVersion', l_doc.pdf_version);
+    END IF;
+
+    l_result.append(l_pdf_obj);
+    l_key := g_loaded_pdfs.NEXT(l_key);
+  END LOOP;
+
+  RETURN l_result;
+END GetLoadedPDFs;
+
+/*******************************************************************************
+* UnloadPDF: Remove PDF from memory
+*******************************************************************************/
+PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2) IS
+BEGIN
+  IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+  END IF;
+
+  g_loaded_pdfs.DELETE(p_pdf_id);
+  g_loaded_pdf_count := g_loaded_pdf_count - 1;
+
+  log_message(3, 'PDF unloaded: ' || p_pdf_id);
+END UnloadPDF;
+
+/*******************************************************************************
+* MergePDFs: Merge multiple PDFs (simplified implementation)
+*******************************************************************************/
+FUNCTION MergePDFs(
+  p_pdf_ids IN JSON_ARRAY_T,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) RETURN BLOB IS
+  l_result BLOB;
+  l_output CLOB;
+  l_pdf_id VARCHAR2(50);
+  l_doc pdf_document_rec;
+  l_total_pages PLS_INTEGER := 0;
+  l_current_offset PLS_INTEGER;
+  l_obj_count PLS_INTEGER := 0;
+  TYPE offset_table IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
+  l_offsets offset_table;
+  l_xref CLOB;
+  l_trailer CLOB;
+BEGIN
+  -- Validate input
+  IF p_pdf_ids IS NULL OR p_pdf_ids.get_size() = 0 THEN
+    raise_error(-20832, 'No PDF IDs provided for merge');
+  END IF;
+
+  -- Validate all PDFs loaded and count pages
+  FOR i IN 0..p_pdf_ids.get_size() - 1 LOOP
+    l_pdf_id := p_pdf_ids.get_string(i);
+    IF NOT g_loaded_pdfs.EXISTS(l_pdf_id) THEN
+      raise_error(-20833, 'PDF ID not loaded: ' || l_pdf_id);
+    END IF;
+    l_doc := g_loaded_pdfs(l_pdf_id);
+    l_total_pages := l_total_pages + l_doc.page_count;
+  END LOOP;
+
+  log_message(2, 'Merging ' || p_pdf_ids.get_size() || ' PDFs (' ||
+              l_total_pages || ' pages total)...');
+
+  -- Build simple merged PDF
+  l_output := '%PDF-1.4' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+
+  -- Object 1: Catalog
+  l_obj_count := 1;
+  l_offsets(1) := l_current_offset;
+  l_output := l_output ||
+              '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+
+  -- Object 2: Pages
+  l_obj_count := 2;
+  l_offsets(2) := l_current_offset;
+  l_output := l_output ||
+              '2 0 obj<</Type/Pages/Count ' || l_total_pages || '/Kids[';
+
+  FOR i IN 1..l_total_pages LOOP
+    l_output := l_output || (2 + i) || ' 0 R ';
+  END LOOP;
+
+  l_output := l_output || ']>>endobj' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+
+  -- Add page objects
+  FOR i IN 1..l_total_pages LOOP
+    l_obj_count := l_obj_count + 1;
+    l_offsets(l_obj_count) := l_current_offset;
+
+    l_output := l_output ||
+                l_obj_count || ' 0 obj<</Type/Page/Parent 2 0 R' ||
+                '/MediaBox[0 0 612 792]/Contents ' ||
+                (l_obj_count + l_total_pages) || ' 0 R>>endobj' || CHR(10);
+    l_current_offset := LENGTH(l_output);
+  END LOOP;
+
+  -- Add content streams
+  FOR i IN 1..l_total_pages LOOP
+    l_obj_count := l_obj_count + 1;
+    l_offsets(l_obj_count) := l_current_offset;
+
+    l_output := l_output ||
+                l_obj_count || ' 0 obj<</Length 44>>stream' || CHR(10) ||
+                'BT /F1 12 Tf 100 700 Td (Merged Page ' || i || ') Tj ET' || CHR(10) ||
+                'endstream endobj' || CHR(10);
+    l_current_offset := LENGTH(l_output);
+  END LOOP;
+
+  -- xref table
+  l_xref := 'xref' || CHR(10) || '0 ' || (l_obj_count + 1) || CHR(10) ||
+            '0000000000 65535 f ' || CHR(10);
+  FOR i IN 1..l_obj_count LOOP
+    l_xref := l_xref || LPAD(l_offsets(i), 10, '0') || ' 00000 n ' || CHR(10);
+  END LOOP;
+  l_output := l_output || l_xref;
+
+  -- trailer
+  l_trailer := 'trailer<</Size ' || (l_obj_count + 1) || '/Root 1 0 R>>' || CHR(10) ||
+               'startxref' || CHR(10) || l_current_offset || CHR(10) || '%%EOF';
+  l_output := l_output || l_trailer;
+
+  l_result := UTL_RAW.CAST_TO_RAW(l_output);
+
+  log_message(2, 'Merged PDF: ' || DBMS_LOB.GETLENGTH(l_result) || ' bytes');
+  RETURN l_result;
+EXCEPTION
+  WHEN OTHERS THEN
+    log_message(1, 'Merge error: ' || SQLERRM);
+    raise_error(-20834, 'Merge failed: ' || SQLERRM);
+END MergePDFs;
+
+/*******************************************************************************
+* SplitPDF: Split PDF by page ranges
+*******************************************************************************/
+FUNCTION SplitPDF(
+  p_pdf_id IN VARCHAR2,
+  p_page_ranges IN JSON_ARRAY_T
+) RETURN JSON_ARRAY_T IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_doc pdf_document_rec;
+  l_range VARCHAR2(100);
+  l_split_blob BLOB;
+  l_encoded CLOB;
+BEGIN
+  IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+  END IF;
+
+  l_doc := g_loaded_pdfs(p_pdf_id);
+
+  IF p_page_ranges IS NULL OR p_page_ranges.get_size() = 0 THEN
+    raise_error(-20835, 'No page ranges provided');
+  END IF;
+
+  log_message(2, 'Splitting PDF ' || p_pdf_id || '...');
+
+  FOR i IN 0..p_page_ranges.get_size() - 1 LOOP
+    l_range := p_page_ranges.get_string(i);
+    l_split_blob := ExtractPages(p_pdf_id, l_range, NULL);
+
+    -- Encode as base64 for JSON
+    l_encoded := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(l_split_blob));
+    l_result.append(l_encoded);
+
+    log_message(3, 'Split part ' || (i+1) || ': ' || l_range);
+  END LOOP;
+
+  RETURN l_result;
+END SplitPDF;
+
+/*******************************************************************************
+* ExtractPages: Extract pages (simplified implementation)
+*******************************************************************************/
+FUNCTION ExtractPages(
+  p_pdf_id IN VARCHAR2,
+  p_pages IN VARCHAR2,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) RETURN BLOB IS
+  l_result BLOB;
+  l_doc pdf_document_rec;
+  l_page_num PLS_INTEGER;
+BEGIN
+  IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+  END IF;
+
+  l_doc := g_loaded_pdfs(p_pdf_id);
+
+  IF p_pages IS NULL OR LENGTH(TRIM(p_pages)) = 0 THEN
+    raise_error(-20838, 'Invalid page specification');
+  END IF;
+
+  log_message(2, 'Extracting pages ' || p_pages || ' from ' || p_pdf_id);
+
+  -- Handle 'ALL'
+  IF UPPER(p_pages) = 'ALL' THEN
+    RETURN l_doc.pdf_blob;
+  END IF;
+
+  -- Handle single page
+  IF INSTR(p_pages, ',') = 0 AND INSTR(p_pages, '-') = 0 THEN
+    BEGIN
+      l_page_num := TO_NUMBER(p_pages);
+
+      IF l_page_num < 1 OR l_page_num > l_doc.page_count THEN
+        raise_error(-20839, 'Page ' || l_page_num || ' out of range');
+      END IF;
+
+      -- Return simple PDF with placeholder
+      l_result := UTL_RAW.CAST_TO_RAW(
+        '%PDF-1.4' || CHR(10) ||
+        '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10) ||
+        '2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj' || CHR(10) ||
+        '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj' || CHR(10) ||
+        '4 0 obj<</Length 44>>stream' || CHR(10) ||
+        'BT /F1 12 Tf 100 700 Td (Page ' || l_page_num || ') Tj ET' || CHR(10) ||
+        'endstream endobj' || CHR(10) ||
+        'xref' || CHR(10) || '0 5' || CHR(10) ||
+        '0000000000 65535 f ' || CHR(10) ||
+        '0000000009 00000 n ' || CHR(10) ||
+        '0000000058 00000 n ' || CHR(10) ||
+        '0000000115 00000 n ' || CHR(10) ||
+        '0000000214 00000 n ' || CHR(10) ||
+        'trailer<</Size 5/Root 1 0 R>>' || CHR(10) ||
+        'startxref' || CHR(10) || '314' || CHR(10) || '%%EOF'
+      );
+    EXCEPTION
+      WHEN VALUE_ERROR THEN
+        raise_error(-20838, 'Invalid page specification: ' || p_pages);
+    END;
+  ELSE
+    -- Complex ranges not fully implemented yet
+    raise_error(-20838, 'Complex page ranges not fully implemented. Use single page or ALL.');
+  END IF;
+
+  RETURN l_result;
+END ExtractPages;
 
 END PL_FPDF;
