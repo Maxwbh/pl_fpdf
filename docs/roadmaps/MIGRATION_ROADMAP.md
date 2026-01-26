@@ -1160,7 +1160,7 @@ This roadmap provides a comprehensive strategy for migrating PL_FPDF across vers
 **Status:** Living Document (update quarterly)
 
 **Related Documents:**
-- [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) - v0.9 → v2.0 → v3.0
-- [MODERNIZATION_ORACLE_26_APEX_24_2.md](MODERNIZATION_ORACLE_26_APEX_24_2.md) - Oracle 26ai features
-- [CHANGELOG.md](CHANGELOG.md) - Version history
-- [PHASE_5_IMPLEMENTATION_PLAN.md](PHASE_5_IMPLEMENTATION_PLAN.md) - v3.1 features
+- [MIGRATION_GUIDE.md](../guides/MIGRATION_GUIDE.md) - v0.9 → v2.0 → v3.0
+- [MODERNIZATION_ORACLE_26_APEX_24_2.md](../architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md) - Oracle 26ai features
+- [CHANGELOG.md](../../CHANGELOG.md) - Version history
+- [PHASE_5_IMPLEMENTATION_PLAN.md](../plans/PHASE_5_IMPLEMENTATION_PLAN.md) - v3.1 features
