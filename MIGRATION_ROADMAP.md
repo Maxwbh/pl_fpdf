@@ -209,61 +209,64 @@ v3.0.0 (2026-01)
 
 ### Version 4.0.0 (Q1 2027)
 
-**Goal:** Next-Generation Architecture (Oracle 26ai Native)
+**Goal:** Next-Generation Architecture with Enhanced Features
 
 **Timeline:** 16-20 weeks
 
+**Oracle Compatibility:** 🔴 **Oracle 19c+ (UNCHANGED)**
+
 **Major Changes:**
 
-#### 1. SQL Domains Mandatory
+#### 1. SQL Domains (Optional Enhancement)
 ```sql
--- v3.x (optional)
+-- v3.x and v4.0 on Oracle 19c
 TYPE watermark_rec IS RECORD (
-  opacity NUMBER  -- Any number
+  opacity NUMBER  -- Manual validation
 );
 
--- v4.0 (mandatory)
+-- v4.0 on Oracle 23ai+ (Optional)
 TYPE watermark_rec IS RECORD (
-  opacity pdf_opacity_domain  -- Validated 0.0-1.0
+  opacity pdf_opacity_domain  -- Automatic validation
 );
 ```
 
-**Migration:** Automatic validation on upgrade, errors if invalid data
+**Implementation:** Runtime detection, graceful fallback to manual validation on 19c
 
-#### 2. Native BOOLEAN Type
+#### 2. BOOLEAN Type (Optional Enhancement)
 ```sql
--- v3.x
-g_pdf_modified VARCHAR2(1) := 'N';  -- 'Y'/'N'
+-- v4.0 on Oracle 19c
+g_pdf_modified VARCHAR2(1) := 'N';  -- 'Y'/'N' (unchanged)
 
--- v4.0
-g_pdf_modified BOOLEAN := FALSE;    -- TRUE/FALSE
+-- v4.0 on Oracle 23ai+ (Optional)
+g_pdf_modified BOOLEAN := FALSE;    -- Native BOOLEAN
 ```
 
-**Migration:** Automated conversion script provided
+**Implementation:** Compatibility layer, same API across all versions
 
 #### 3. Unified Exception Framework
 ```sql
 -- v3.x (multiple ranges)
 -20801 to -20839  -- Various errors
 
--- v4.0 (unified)
+-- v4.0 (unified, all Oracle versions)
 -29000 to -29999  -- All PL_FPDF errors
 ```
 
-**Migration:** Exception mapping table, compatibility layer
+**Migration:** Exception mapping table, compatibility layer (no breaking changes)
 
-#### 4. Oracle 26ai Features Required
-- Minimum version: Oracle 23ai (26ai recommended)
-- JavaScript MLE support
-- Enhanced JSON features
-- Annotations and domains
+#### 4. Enhanced Oracle 23ai/26ai Features (All Optional)
+- SQL Domains with annotations
+- JavaScript MLE support (fallback to PL/SQL on 19c)
+- Enhanced JSON features (standard JSON on 19c)
+- Native BOOLEAN type (VARCHAR2 fallback on 19c)
 
 **Breaking Changes:**
-- 🔴 Oracle 26ai minimum (drops 11g, 19c support)
-- 🔴 SQL Domains required
-- 🔴 BOOLEAN type in tables
-- 🔴 New exception number range
-- 🔴 Removed deprecated functions
+- 🟡 New exception number range (-29000 series)
+- 🟡 Removed long-deprecated functions (announced in v3.2.0)
+- ✅ **NO** Oracle version requirement change
+- ✅ **NO** mandatory SQL Domains
+- ✅ **NO** mandatory BOOLEAN types
+- ✅ **100% compatible with Oracle 19c**
 
 **Migration Path:**
 - Step 1: Upgrade Oracle to 23ai/26ai
@@ -414,12 +417,15 @@ END IF;
 | v2.0.0          | ⚠️        | ✅        | ✅         | ✅         | 11g limited features |
 | v3.0.0          | ⚠️        | ✅        | ✅         | ✅         | 11g limited features |
 | v3.2.0          | ❌        | ✅        | ✅         | ✅         | 19c minimum |
-| v4.0.0          | ❌        | ❌        | ✅         | ✅         | 23ai minimum |
+| **v4.0.0**      | ❌        | **✅**    | **✅+**    | **✅+**    | **19c full support, 23ai/26ai enhanced** |
 
 **Legend:**
-- ✅ Full support
+- ✅ Full support (all features work)
+- ✅+ Full support + optional enhancements
 - ⚠️ Limited support (degraded features)
 - ❌ Not supported
+
+**IMPORTANT:** v4.0.0 maintains full Oracle 19c compatibility. Enhanced features (Domains, Annotations) are optional on 23ai/26ai.
 
 ---
 
