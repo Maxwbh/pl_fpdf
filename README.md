@@ -144,17 +144,17 @@ END;
 - 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
 
 **Implementation Plans:**
-- 🚧 [Phase 4.5 Plan - Text & Image Overlay](PHASE_4_5_OVERLAY_PLAN.md)
-- 🚧 [Phase 4.6 Plan - PDF Merge & Split](PHASE_4_6_MERGE_SPLIT_PLAN.md)
-- 🚧 [Phase 5 Plan - Advanced Operations](PHASE_5_IMPLEMENTATION_PLAN.md)
+- 🚧 [Phase 4.5 Plan - Text & Image Overlay](docs/plans/PHASE_4_5_OVERLAY_PLAN.md)
+- 🚧 [Phase 4.6 Plan - PDF Merge & Split](docs/plans/PHASE_4_6_MERGE_SPLIT_PLAN.md)
+- 🚧 [Phase 5 Plan - Advanced Operations](docs/plans/PHASE_5_IMPLEMENTATION_PLAN.md)
 
 **Strategic Documentation:**
-- 🚀 [Future Improvements Roadmap](FUTURE_IMPROVEMENTS_ROADMAP.md) ⭐ **NEW**
-- 🗺️ [Migration Roadmap - Future Versions](MIGRATION_ROADMAP.md)
-- 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
-- 🏗️ [Package-Only Architecture](PACKAGE_ONLY_ARCHITECTURE.md)
-- 🔒 [Oracle 19c Compatibility Strategy](ORACLE_19C_COMPATIBILITY_STRATEGY.md)
-- 🔮 [Oracle 26ai & APEX 24.2 Modernization](MODERNIZATION_ORACLE_26_APEX_24_2.md)
+- 🚀 [Future Improvements Roadmap](docs/roadmaps/FUTURE_IMPROVEMENTS_ROADMAP.md) ⭐ **NEW**
+- 🗺️ [Migration Roadmap - Future Versions](docs/roadmaps/MIGRATION_ROADMAP.md)
+- 📙 [Migration Guide v0.9 → v3.0](docs/guides/MIGRATION_GUIDE.md)
+- 🏗️ [Package-Only Architecture](docs/architecture/PACKAGE_ONLY_ARCHITECTURE.md)
+- 🔒 [Oracle 19c Compatibility Strategy](docs/architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md)
+- 🔮 [Oracle 26ai & APEX 24.2 Modernization](docs/architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md)
 
 ### 📋 Requirements
 
@@ -178,18 +178,45 @@ END;
 
 ```
 pl_fpdf/
-├── PL_FPDF.pks              # Package specification
-├── PL_FPDF.pkb              # Package body
-├── docs/                    # Documentation
-│   ├── api/                # API references
-│   ├── guides/             # User guides
-│   ├── pt-br/              # Portuguese documentation
-│   └── en/                 # English documentation
-├── tests/                   # Test scripts
-│   ├── validate_phase_*.sql # Phase 1-3 validation tests
-│   └── test_phase_4_*.sql   # Phase 4 tests
-└── extensions/              # Optional extensions
-    └── brazilian-payments/  # PIX/Boleto support
+├── README.md                  # This file
+├── CHANGELOG.md               # Version history
+├── PL_FPDF.pks                # Package specification (main file)
+├── PL_FPDF.pkb                # Package body (main file)
+├── deploy_all.sql             # Quick deployment script
+├── docs/                      # 📚 Documentation
+│   ├── api/                  # API references
+│   │   └── API_REFERENCE.md
+│   ├── architecture/         # Architecture & strategy docs
+│   │   ├── PACKAGE_ONLY_ARCHITECTURE.md
+│   │   ├── ORACLE_19C_COMPATIBILITY_STRATEGY.md
+│   │   └── MODERNIZATION_ORACLE_26_APEX_24_2.md
+│   ├── guides/               # User guides
+│   │   ├── PHASE_4_GUIDE.md
+│   │   ├── MIGRATION_GUIDE.md
+│   │   ├── PERFORMANCE_TUNING.md
+│   │   └── VALIDATION_GUIDE.md
+│   ├── plans/                # Implementation plans
+│   │   ├── PHASE_4_5_OVERLAY_PLAN.md
+│   │   ├── PHASE_4_6_MERGE_SPLIT_PLAN.md
+│   │   └── PHASE_5_IMPLEMENTATION_PLAN.md
+│   ├── roadmaps/             # Strategic roadmaps
+│   │   ├── FUTURE_IMPROVEMENTS_ROADMAP.md
+│   │   └── MIGRATION_ROADMAP.md
+│   ├── pt-br/                # Portuguese documentation
+│   └── en/                   # English documentation
+├── scripts/                   # 🔧 Utility scripts
+│   ├── optimize_native_compile.sql
+│   ├── recompile_package.sql
+│   ├── phase_4_parser_starter.sql
+│   ├── phase_4_types.sql
+│   └── task_1_3_implementations.sql
+├── tests/                     # ✅ Test & validation scripts
+│   ├── test_runner.sql       # Main test runner
+│   ├── run_all_validations.sql
+│   ├── validate_phase_*.sql  # Phase 1-4 validation
+│   └── test_phase_4_*.sql    # Phase 4 unit tests
+└── extensions/                # 🔌 Optional extensions
+    └── brazilian-payments/   # PIX/Boleto support
 ```
 
 ### 🤝 Contributing
@@ -328,11 +355,24 @@ END;
 
 ### 📚 Documentação
 
-- 📘 [Referência Completa da API](docs/pt-br/REFERENCIA_API.md)
-- 📗 [Guia Fase 4 - Manipulação de PDF](docs/pt-br/GUIA_FASE_4.md)
-- 📙 [Guia de Migração v0.9 → v3.0](docs/pt-br/GUIA_MIGRACAO.md)
-- 📕 [Otimização de Performance](docs/pt-br/OTIMIZACAO_PERFORMANCE.md)
-- 📔 [Guia de Validação e Testes](docs/pt-br/GUIA_VALIDACAO.md)
+**Guias do Usuário:**
+- 📘 [Referência Completa da API](docs/api/API_REFERENCE.md)
+- 📗 [Guia Fase 4 - Manipulação de PDF](docs/guides/PHASE_4_GUIDE.md)
+- 📕 [Otimização de Performance](docs/guides/PERFORMANCE_TUNING.md)
+- 📔 [Guia de Validação e Testes](docs/guides/VALIDATION_GUIDE.md)
+
+**Planos de Implementação:**
+- 🚧 [Plano Fase 4.5 - Text & Image Overlay](docs/plans/PHASE_4_5_OVERLAY_PLAN.md)
+- 🚧 [Plano Fase 4.6 - PDF Merge & Split](docs/plans/PHASE_4_6_MERGE_SPLIT_PLAN.md)
+- 🚧 [Plano Fase 5 - Operações Avançadas](docs/plans/PHASE_5_IMPLEMENTATION_PLAN.md)
+
+**Documentação Estratégica:**
+- 🚀 [Roadmap de Melhorias Futuras](docs/roadmaps/FUTURE_IMPROVEMENTS_ROADMAP.md) ⭐ **NOVO**
+- 🗺️ [Roadmap de Migração - Versões Futuras](docs/roadmaps/MIGRATION_ROADMAP.md)
+- 📙 [Guia de Migração v0.9 → v3.0](docs/guides/MIGRATION_GUIDE.md)
+- 🏗️ [Arquitetura Package-Only](docs/architecture/PACKAGE_ONLY_ARCHITECTURE.md)
+- 🔒 [Estratégia Compatibilidade Oracle 19c](docs/architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md)
+- 🔮 [Modernização Oracle 26ai & APEX 24.2](docs/architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md)
 
 ### 📋 Requisitos
 
@@ -344,18 +384,30 @@ END;
 
 ```
 pl_fpdf/
-├── PL_FPDF.pks              # Especificação do pacote
-├── PL_FPDF.pkb              # Corpo do pacote
-├── docs/                    # Documentação
-│   ├── api/                # Referências da API
-│   ├── guides/             # Guias do usuário
-│   ├── pt-br/              # Documentação em português
-│   └── en/                 # Documentação em inglês
-├── tests/                   # Scripts de teste
-│   ├── validate_phase_*.sql # Testes de validação Fases 1-3
-│   └── test_phase_4_*.sql   # Testes Fase 4
-└── extensions/              # Extensões opcionais
-    └── brazilian-payments/  # Suporte PIX/Boleto
+├── README.md                  # Este arquivo
+├── CHANGELOG.md               # Histórico de versões
+├── PL_FPDF.pks                # Especificação do pacote (arquivo principal)
+├── PL_FPDF.pkb                # Corpo do pacote (arquivo principal)
+├── deploy_all.sql             # Script de deploy rápido
+├── docs/                      # 📚 Documentação
+│   ├── api/                  # Referências da API
+│   ├── architecture/         # Docs de arquitetura & estratégia
+│   ├── guides/               # Guias do usuário
+│   ├── plans/                # Planos de implementação
+│   ├── roadmaps/             # Roadmaps estratégicos
+│   ├── pt-br/                # Documentação em português
+│   └── en/                   # Documentação em inglês
+├── scripts/                   # 🔧 Scripts utilitários
+│   ├── optimize_native_compile.sql
+│   ├── recompile_package.sql
+│   └── ...
+├── tests/                     # ✅ Scripts de teste & validação
+│   ├── test_runner.sql       # Executor principal de testes
+│   ├── run_all_validations.sql
+│   ├── validate_phase_*.sql  # Validação Fases 1-4
+│   └── test_phase_4_*.sql    # Testes unitários Fase 4
+└── extensions/                # 🔌 Extensões opcionais
+    └── brazilian-payments/   # Suporte PIX/Boleto
 ```
 
 ### 🤝 Contribuindo

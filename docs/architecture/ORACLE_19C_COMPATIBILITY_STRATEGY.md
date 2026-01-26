@@ -773,6 +773,6 @@ For Oracle 19c compatibility issues:
 **Status:** Living Document
 
 **Related Documents:**
-- [MIGRATION_ROADMAP.md](MIGRATION_ROADMAP.md)
+- [MIGRATION_ROADMAP.md](../roadmaps/MIGRATION_ROADMAP.md)
 - [MODERNIZATION_ORACLE_26_APEX_24_2.md](MODERNIZATION_ORACLE_26_APEX_24_2.md)
-- [README.md](README.md)
+- [README.md](../../README.md)

@@ -693,17 +693,17 @@ GET  /pdf/info/{id}
 ## 📚 Documentos Relacionados
 
 ### Arquitetura
-- [PACKAGE_ONLY_ARCHITECTURE.md](PACKAGE_ONLY_ARCHITECTURE.md) - Padrões arquiteturais
-- [ORACLE_19C_COMPATIBILITY_STRATEGY.md](ORACLE_19C_COMPATIBILITY_STRATEGY.md) - Compatibilidade
+- [PACKAGE_ONLY_ARCHITECTURE.md](../architecture/PACKAGE_ONLY_ARCHITECTURE.md) - Padrões arquiteturais
+- [ORACLE_19C_COMPATIBILITY_STRATEGY.md](../architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md) - Compatibilidade
 
 ### Planejamento
 - [MIGRATION_ROADMAP.md](MIGRATION_ROADMAP.md) - Roadmap de migração de versões
-- [MODERNIZATION_ORACLE_26_APEX_24_2.md](MODERNIZATION_ORACLE_26_APEX_24_2.md) - Features Oracle 26ai
+- [MODERNIZATION_ORACLE_26_APEX_24_2.md](../architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md) - Features Oracle 26ai
 
 ### Implementação
-- [PHASE_5_IMPLEMENTATION_PLAN.md](PHASE_5_IMPLEMENTATION_PLAN.md) - Detalhes Phase 5
-- [PHASE_4_5_OVERLAY_PLAN.md](PHASE_4_5_OVERLAY_PLAN.md) - Detalhes Phase 4.5
-- [PHASE_4_6_MERGE_SPLIT_PLAN.md](PHASE_4_6_MERGE_SPLIT_PLAN.md) - Detalhes Phase 4.6
+- [PHASE_5_IMPLEMENTATION_PLAN.md](../plans/PHASE_5_IMPLEMENTATION_PLAN.md) - Detalhes Phase 5
+- [PHASE_4_5_OVERLAY_PLAN.md](../plans/PHASE_4_5_OVERLAY_PLAN.md) - Detalhes Phase 4.5
+- [PHASE_4_6_MERGE_SPLIT_PLAN.md](../plans/PHASE_4_6_MERGE_SPLIT_PLAN.md) - Detalhes Phase 4.6
 
 ---
 
