@@ -145,6 +145,7 @@ END;
 - 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
 - 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
 - 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
+- 🔮 [Oracle 26ai & APEX 24.2 Modernization](MODERNIZATION_ORACLE_26_APEX_24_2.md)
 
 ### 📋 Requirements
 
