@@ -229,7 +229,7 @@ type ArrayCharWidths is table of charSet index by word;
 -- Date: 2025-01-25
 --------------------------------------------------------------------------------
  -- Version Information
- co_version CONSTANT VARCHAR2(15) := '3.0.0-a.7';  -- PL_FPDF Version (Phase 4.6)
+ co_version CONSTANT VARCHAR2(15) := '3.0.0-b.2';  -- PL_FPDF Version (Phase 4.6 Beta - Not Validated)
 
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4'; -- PDF output version

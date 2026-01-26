@@ -1,10 +1,16 @@
 --------------------------------------------------------------------------------
--- PL_FPDF Complete Test Suite Runner
+-- PL_FPDF Complete Test Suite Runner (Legacy - utPLSQL)
 -- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
--- Date: 2025-12-19
--- Task: 3.4 - Unit Tests with utPLSQL
+-- Date: 2025-12 (Updated: 2026-01)
+-- Version: 3.0.0-b.2
 --
--- Description: Runs all PL_FPDF test suites using utPLSQL framework
+-- Description: Legacy test runner using utPLSQL framework
+--
+-- IMPORTANT: For the new organized test runner, use:
+--   @tests/test_runner.sql  (Recommended - Phases 1-4 comprehensive tests)
+--
+-- This file uses utPLSQL (if installed) for legacy test compatibility.
+-- For modern phase-based testing without utPLSQL dependency, use test_runner.sql
 --
 -- Usage:
 --   sqlplus user/pass@db @run_all_tests.sql
@@ -19,7 +25,11 @@ SET PAGESIZE 5000
 
 PROMPT
 PROMPT ================================================================================
-PROMPT   PL_FPDF Complete Test Suite
+PROMPT   PL_FPDF Complete Test Suite (Legacy - utPLSQL)
+PROMPT   Version: 3.0.0-b.2
+PROMPT ================================================================================
+PROMPT   NOTICE: This is the legacy test runner using utPLSQL.
+PROMPT   For modern phase-based testing, use: @tests/test_runner.sql
 PROMPT ================================================================================
 PROMPT   Running all test packages with utPLSQL framework
 PROMPT ================================================================================
@@ -37,8 +47,13 @@ BEGIN
 
   IF l_count = 0 THEN
     DBMS_OUTPUT.PUT_LINE('ERROR: utPLSQL is not installed.');
-    DBMS_OUTPUT.PUT_LINE('Please install utPLSQL or use simple test runners:');
-    DBMS_OUTPUT.PUT_LINE('  - @run_init_tests_simple.sql');
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Please use the modern test runner instead (no utPLSQL required):');
+    DBMS_OUTPUT.PUT_LINE('  @tests/test_runner.sql        - Comprehensive test suite (RECOMMENDED)');
+    DBMS_OUTPUT.PUT_LINE('  @tests/validate_phases_1_3.sql    - Phase 1-3 validation');
+    DBMS_OUTPUT.PUT_LINE('  @tests/validate_phase_4_complete.sql - Phase 4 validation');
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Or install utPLSQL: https://utplsql.org/');
     RAISE_APPLICATION_ERROR(-20000, 'utPLSQL not found');
   END IF;
 END;
@@ -73,8 +88,12 @@ PROMPT
 PROMPT ================================================================================
 PROMPT   Complete Test Suite - Summary
 PROMPT ================================================================================
-PROMPT   All test suites executed.
+PROMPT   All legacy utPLSQL test suites executed.
 PROMPT   Check output above for detailed results.
+PROMPT ================================================================================
+PROMPT
+PROMPT   Note: These are legacy tests. For comprehensive Phase 1-4 testing:
+PROMPT   @tests/test_runner.sql
 PROMPT ================================================================================
 PROMPT
 

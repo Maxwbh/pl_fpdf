@@ -1,6 +1,6 @@
 # PL_FPDF - Oracle PL/SQL PDF Generator
 
-[![Version](https://img.shields.io/badge/version-3.0.0--a.7-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.0.0--b.2-blue.svg)](CHANGELOG.md)
 [![Oracle](https://img.shields.io/badge/oracle-11g%2B-red.svg)](https://www.oracle.com/database/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-66%20passing-brightgreen.svg)](tests/)
@@ -15,7 +15,7 @@
 
 **PL_FPDF** is a powerful, pure PL/SQL library for **generating and manipulating PDF documents** directly in Oracle Database. No external dependencies, Java, or additional services required.
 
-**Current Version:** 3.0.0-alpha.5 ✨ (Phase 4 Complete)
+**Current Version:** 3.0.0-beta.2 ✨ (Phase 4.6 Complete - Not Validated)
 
 ### ✨ Key Features
 
@@ -38,7 +38,7 @@
 - **Watermarks** - Add customizable text watermarks to pages
 - **Output Modified PDF** - Generate new PDF with all modifications applied
 
-#### ✅ Phase 4.5: Text & Image Overlay (v3.0.0-a.6)
+#### ✅ Phase 4.5: Text & Image Overlay (v3.0.0-b.1)
 - **Text Overlay** - Add formatted text at specific x,y coordinates
 - **Image Overlay** - Add images (JPEG/PNG) at specific positions with sizing
 - **Precise Positioning** - Full control over position, size, opacity, rotation
@@ -46,7 +46,7 @@
 - **Z-Order Management** - Control layering with z-order values
 - **Overlay Management** - List, remove, and clear overlays
 
-#### ✅ Phase 4.6: PDF Merge & Split (v3.0.0-a.7)
+#### ✅ Phase 4.6: PDF Merge & Split (v3.0.0-b.2)
 - **LoadPDFWithID** - Load multiple PDFs with unique identifiers (max 10)
 - **Merge PDFs** - Combine multiple PDF documents into one
 - **Split PDFs** - Divide PDF into multiple files by page ranges
@@ -74,7 +74,7 @@
 
 -- 3. Verify installation
 SELECT PL_FPDF.GetVersion() FROM DUAL;
--- Expected output: 3.0.0-a.5
+-- Expected output: 3.0.0-b.2
 ```
 
 #### Create Your First PDF

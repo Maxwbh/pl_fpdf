@@ -54,11 +54,11 @@ Phase 5 focuses on advanced page manipulation and automation workflows.
 
 ---
 
-## [3.0.0-a.7] - 2026-01-25 ✅
+## [3.0.0-b.2] - 2026-01 ✅
 
-### 🎉 Phase 4.6: PDF Merge & Split - Complete
+### 🎉 Phase 4.6: PDF Merge & Split - Complete (Beta)
 
-**Status:** Implemented (Simplified)
+**Status:** Implemented (Not Validated)
 **Planning Document:** [PHASE_4_6_MERGE_SPLIT_PLAN.md](PHASE_4_6_MERGE_SPLIT_PLAN.md)
 **Author:** @maxwbh
 
@@ -147,17 +147,17 @@ as foundation for Phase 5 advanced features.
 
 ### Version Information
 
-- Package Version: 3.0.0-a.7 (Phase 4.6)
+- Package Version: 3.0.0-b.2 (Phase 4.6 Beta)
 - Implementation Status: Simplified/Foundation
 - Next Phase: 5.0 will enhance merge/split with full content extraction
 
 ---
 
-## [3.0.0-a.6] - 2026-01-25 ✅
+## [3.0.0-b.1] - 2026-01 ✅
 
-### 🎉 Phase 4.5: Text & Image Overlay - Complete
+### 🎉 Phase 4.5: Text & Image Overlay - Complete (Beta)
 
-**Status:** Implemented
+**Status:** Implemented (Not Validated)
 **Planning Document:** [PHASE_4_5_OVERLAY_PLAN.md](PHASE_4_5_OVERLAY_PLAN.md)
 **Author:** @maxwbh
 
@@ -245,7 +245,7 @@ Phase 4.5 adds precise text and image overlay capabilities to PDFs.
 
 ---
 
-## [3.0.0] - 2026-01-25
+## [3.0.0] - 2026-01
 
 ### 🎉 Phase 4 Complete: PDF Reading and Manipulation
 
@@ -323,7 +323,7 @@ Phase 4 adds comprehensive PDF manipulation capabilities to PL_FPDF.
 
 ---
 
-## [2.0.0] - 2025-12-19
+## [2.0.0] - 2025-12
 
 ### 🎉 Major Release - Complete Modernization for Oracle 19c/23c
 
@@ -499,7 +499,7 @@ This is a major modernization release with significant improvements in performan
 
 ---
 
-## [0.9.4] - 2017-12-27
+## [0.9.4] - 2017-12
 
 ### Initial Release (by Pierre-Gilles Levallois et al)
 
@@ -516,7 +516,7 @@ This is a major modernization release with significant improvements in performan
 
 ---
 
-## Extension: Brazilian Payments [1.0.0] - 2025-12-19
+## Extension: Brazilian Payments [1.0.0] - 2025-12
 
 **Note**: PIX and Boleto are separate optional extensions, not part of core PL_FPDF.
 
@@ -554,8 +554,8 @@ This is a major modernization release with significant improvements in performan
 
 | Version | Date | Oracle | Status | Notes |
 |---------|------|--------|--------|-------|
-| 2.0.0 | 2025-12-19 | 19c/23c | ✅ Production | Complete modernization |
-| 0.9.4 | 2017-12-27 | 11g+ | 🔒 Legacy | Original port |
+| 2.0.0 | 2025-12 | 19c/23c | ✅ Production | Complete modernization |
+| 0.9.4 | 2017-12 | 11g+ | 🔒 Legacy | Original port |
 
 ---
 
