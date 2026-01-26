@@ -1,6 +1,6 @@
 # PL_FPDF - Oracle PL/SQL PDF Generator
 
-[![Version](https://img.shields.io/badge/version-3.0.0--a.6-blue.svg)](CHANGELOG.md)
+[![Version](https://img.shields.io/badge/version-3.0.0--a.7-blue.svg)](CHANGELOG.md)
 [![Oracle](https://img.shields.io/badge/oracle-11g%2B-red.svg)](https://www.oracle.com/database/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-66%20passing-brightgreen.svg)](tests/)
@@ -46,12 +46,13 @@
 - **Z-Order Management** - Control layering with z-order values
 - **Overlay Management** - List, remove, and clear overlays
 
-#### 🚧 Phase 4.6: PDF Merge & Split (v3.0.0-a.7 - In Planning)
+#### ✅ Phase 4.6: PDF Merge & Split (v3.0.0-a.7)
+- **LoadPDFWithID** - Load multiple PDFs with unique identifiers (max 10)
 - **Merge PDFs** - Combine multiple PDF documents into one
 - **Split PDFs** - Divide PDF into multiple files by page ranges
 - **Extract Pages** - Create new PDF from specific page selection
-- **Multi-Document** - Load and manage multiple PDFs simultaneously
-- **Resource Management** - Smart handling of fonts, images across documents
+- **Multi-Document Management** - GetLoadedPDFs(), UnloadPDF()
+- **Simplified Implementation** - Foundation for Phase 5 advanced operations
 
 #### 🚧 Phase 5: Advanced Operations (v3.1.0 - In Planning)
 - **Insert Pages** - Insert pages from one PDF into another at any position

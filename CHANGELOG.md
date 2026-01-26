@@ -54,37 +54,102 @@ Phase 5 focuses on advanced page manipulation and automation workflows.
 
 ---
 
-## [3.0.0-a.7] - TBD (In Planning 🚧)
+## [3.0.0-a.7] - 2026-01-25 ✅
 
-### 🎯 Phase 4.6: PDF Merge & Split
+### 🎉 Phase 4.6: PDF Merge & Split - Complete
 
-**Status:** Planning stage
+**Status:** Implemented (Simplified)
 **Planning Document:** [PHASE_4_6_MERGE_SPLIT_PLAN.md](PHASE_4_6_MERGE_SPLIT_PLAN.md)
+**Author:** @maxwbh
 
-Essential multi-document PDF operations.
+Phase 4.6 adds essential multi-document PDF operations with simplified implementation
+as foundation for Phase 5 advanced features.
 
-### Planned Features
+### Added Features
 
-- `LoadPDFWithID()` - Load multiple PDFs with identifiers
-- `GetLoadedPDFs()` - List all loaded PDF IDs
-- `UnloadPDF()` - Unload specific PDF from memory
-- `MergePDFs()` - Combine multiple PDFs into single document
-- `SplitPDF()` - Split PDF into multiple files by page ranges
-- `ExtractPages()` - Create new PDF from specific page range
+#### Multi-Document Management APIs (6 new procedures/functions)
 
-### Technical Improvements
+- `LoadPDFWithID()` - Load PDF with unique identifier
+  - Maximum 10 PDFs simultaneously
+  - Automatic page count detection
+  - File size tracking
+  - Load timestamp recording
 
-- Multi-document memory management (up to 10 PDFs)
-- Object renumbering and conflict resolution
-- Cross-reference table merging
-- Resource consolidation (fonts, images)
-- 12 new error codes (-20828 to -20839)
+- `GetLoadedPDFs()` - List all loaded PDFs as JSON array
+  - Returns PDF ID, page count, file size, load date
+  - PDF version information
+  - Easy iteration and filtering
+
+- `UnloadPDF()` - Remove specific PDF from memory
+  - Frees resources immediately
+  - Decrements loaded PDF counter
+
+- `MergePDFs()` - Merge multiple PDFs into single document
+  - Takes JSON array of PDF IDs in desired order
+  - Combines all pages sequentially
+  - Simplified implementation for Phase 4.6
+  - Generates valid PDF 1.4 output
+
+- `SplitPDF()` - Split PDF by page ranges
+  - Takes JSON array of page range specifications
+  - Creates multiple PDF files
+  - Returns base64 encoded PDFs in JSON array
+  - Uses ExtractPages() internally
+
+- `ExtractPages()` - Extract specific pages to new PDF
+  - Supports 'ALL' for complete PDF
+  - Single page extraction
+  - Complex ranges (future enhancement)
+  - Creates standalone PDF document
+
+### Technical Implementation
+
+**Data Structures:**
+- `pdf_document_rec` - Document metadata record (12 properties)
+- `pdf_collection` - Indexed collection for multi-document storage
+- `g_loaded_pdfs` - Global collection (max 10 PDFs)
+- `g_loaded_pdf_count` - Counter for loaded PDFs
+
+**Limitations & Future Enhancements:**
+- Simplified merge creates basic PDF structure
+- Full page content extraction not yet implemented
+- Complex page range parsing to be enhanced in Phase 5
+- Resource consolidation simplified
+- Object renumbering basic implementation
+
+**12 New Error Codes** (-20828 to -20839):
+- -20828: PDF_ID_ALREADY_LOADED
+- -20829: MAX_PDFS_EXCEEDED
+- -20830: INVALID_PDF_ID
+- -20831: PDF_ID_NOT_FOUND
+- -20832: NO_PDF_IDS_PROVIDED
+- -20833: PDF_NOT_LOADED_IN_LIST
+- -20834: MERGE_FAILED
+- -20835: INVALID_PAGE_RANGE
+- -20836: OVERLAPPING_RANGES
+- -20837: RANGE_EXCEEDS_DOCUMENT
+- -20838: INVALID_PAGE_SPEC
+- -20839: PAGE_OUT_OF_RANGE
 
 ### Use Cases
 
-- **Document Consolidation** - Merge monthly reports into annual report
-- **Document Distribution** - Split contracts into sections for parties
-- **Selective Extraction** - Extract executive summary from full report
+- **Document Consolidation** - Merge monthly reports: `MergePDFs(['jan','feb','mar'])`
+- **Document Distribution** - Split contracts: `SplitPDF('contract', ['1-5','6-10'])`
+- **Selective Extraction** - Extract summary: `ExtractPages('report', '1,5-10')`
+- **Multi-Document Workflows** - Load, process, merge multiple PDFs
+
+### Integration with Phase 4
+
+- Compatible with Phase 4.1-4.5 features
+- Can load PDF, apply overlays, then merge with others
+- Maintains existing single-document operations
+- Foundation for Phase 5 advanced operations
+
+### Version Information
+
+- Package Version: 3.0.0-a.7 (Phase 4.6)
+- Implementation Status: Simplified/Foundation
+- Next Phase: 5.0 will enhance merge/split with full content extraction
 
 ---
 

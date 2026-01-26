@@ -1443,6 +1443,212 @@ PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2);
 PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
 
 --------------------------------------------------------------------------------
+-- PHASE 4.6: PDF MERGE & SPLIT (v3.0.0-a.7)
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Procedure: LoadPDFWithID / Carregar PDF com Identificador
+*
+* Description / Descrição:
+*   EN: Load PDF into memory with unique identifier for multi-document operations
+*   PT: Carregar PDF em memória com identificador único para operações multi-documento
+*
+* Parameters / Parâmetros:
+*   p_pdf_id - Unique identifier (max 50 chars) / Identificador único
+*   p_pdf_blob - PDF document as BLOB / Documento PDF como BLOB
+*
+* Notes / Notas:
+*   EN: Maximum 10 PDFs can be loaded simultaneously
+*   PT: Máximo de 10 PDFs podem ser carregados simultaneamente
+*
+* Raises / Erros:
+*   -20828: PDF ID already loaded / ID do PDF já carregado
+*   -20829: Maximum PDFs exceeded (10 max) / Máximo de PDFs excedido
+*   -20830: Invalid PDF ID (empty or too long) / ID de PDF inválido
+*
+* Example / Exemplo:
+*   BEGIN
+*     PL_FPDF.LoadPDFWithID('report_jan', l_jan_pdf);
+*     PL_FPDF.LoadPDFWithID('report_feb', l_feb_pdf);
+*     PL_FPDF.LoadPDFWithID('report_mar', l_mar_pdf);
+*   END;
+*******************************************************************************/
+PROCEDURE LoadPDFWithID(
+  p_pdf_id IN VARCHAR2,
+  p_pdf_blob IN BLOB
+);
+
+/*******************************************************************************
+* Function: GetLoadedPDFs / Obter PDFs Carregados
+*
+* Description / Descrição:
+*   EN: Get list of all loaded PDF IDs and their metadata as JSON array
+*   PT: Obter lista de todos os IDs de PDF carregados e seus metadados
+*
+* Returns / Retorna:
+*   JSON_ARRAY_T - Array of PDF objects / Array de objetos PDF
+*     [{
+*       "pdfId": "report_jan",
+*       "pageCount": 5,
+*       "fileSize": 125678,
+*       "loadedDate": "2026-01-25T10:30:00"
+*     }, ...]
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_pdfs JSON_ARRAY_T;
+*     l_pdf JSON_OBJECT_T;
+*   BEGIN
+*     l_pdfs := PL_FPDF.GetLoadedPDFs();
+*     FOR i IN 0..l_pdfs.get_size() - 1 LOOP
+*       l_pdf := TREAT(l_pdfs.get(i) AS JSON_OBJECT_T);
+*       DBMS_OUTPUT.PUT_LINE('PDF: ' || l_pdf.get_string('pdfId'));
+*     END LOOP;
+*   END;
+*******************************************************************************/
+FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T;
+
+/*******************************************************************************
+* Procedure: UnloadPDF / Descarregar PDF
+*
+* Description / Descrição:
+*   EN: Remove specific PDF from memory to free resources
+*   PT: Remover PDF específico da memória para liberar recursos
+*
+* Parameters / Parâmetros:
+*   p_pdf_id - PDF identifier to unload / Identificador do PDF
+*
+* Raises / Erros:
+*   -20831: PDF ID not found / ID do PDF não encontrado
+*
+* Example / Exemplo:
+*   PL_FPDF.UnloadPDF('report_jan');
+*******************************************************************************/
+PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2);
+
+/*******************************************************************************
+* Function: MergePDFs / Mesclar PDFs
+*
+* Description / Descrição:
+*   EN: Merge multiple loaded PDFs into single document in specified order
+*   PT: Mesclar múltiplos PDFs carregados em único documento na ordem especificada
+*
+* Parameters / Parâmetros:
+*   p_pdf_ids - JSON array of PDF IDs to merge / Array JSON de IDs de PDF
+*               Example: JSON_ARRAY_T('["pdf1","pdf2","pdf3"]')
+*   p_options - Optional configuration / Configuração opcional (future use)
+*
+* Returns / Retorna:
+*   BLOB - Merged PDF document / Documento PDF mesclado
+*
+* Raises / Erros:
+*   -20832: No PDF IDs provided / Nenhum ID de PDF fornecido
+*   -20833: PDF ID in list not loaded / ID de PDF na lista não carregado
+*   -20834: Merge failed / Mesclagem falhou
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_merged BLOB;
+*   BEGIN
+*     PL_FPDF.LoadPDFWithID('jan', l_jan_pdf);
+*     PL_FPDF.LoadPDFWithID('feb', l_feb_pdf);
+*     PL_FPDF.LoadPDFWithID('mar', l_mar_pdf);
+*
+*     l_merged := PL_FPDF.MergePDFs(
+*       JSON_ARRAY_T('["jan","feb","mar"]'),
+*       NULL
+*     );
+*
+*     INSERT INTO reports VALUES ('Q1_2026', l_merged);
+*   END;
+*******************************************************************************/
+FUNCTION MergePDFs(
+  p_pdf_ids IN JSON_ARRAY_T,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) RETURN BLOB;
+
+/*******************************************************************************
+* Function: SplitPDF / Dividir PDF
+*
+* Description / Descrição:
+*   EN: Split loaded PDF into multiple documents by page ranges
+*   PT: Dividir PDF carregado em múltiplos documentos por intervalos de páginas
+*
+* Parameters / Parâmetros:
+*   p_pdf_id - PDF identifier to split / Identificador do PDF
+*   p_page_ranges - JSON array of page range strings / Array de intervalos
+*                   Examples: '1-5', '6-10', '11', 'ALL'
+*
+* Returns / Retorna:
+*   JSON_ARRAY_T - Array with base64 encoded PDFs / Array com PDFs em base64
+*
+* Raises / Erros:
+*   -20831: PDF ID not found / ID do PDF não encontrado
+*   -20835: Invalid page range / Intervalo de páginas inválido
+*   -20836: Overlapping page ranges / Intervalos sobrepostos
+*   -20837: Page range exceeds document / Intervalo excede documento
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_split_pdfs JSON_ARRAY_T;
+*     l_part CLOB;
+*   BEGIN
+*     PL_FPDF.LoadPDFWithID('contract', l_contract_pdf);
+*
+*     l_split_pdfs := PL_FPDF.SplitPDF('contract',
+*       JSON_ARRAY_T('["1-5", "6-10", "11-15"]')
+*     );
+*
+*     FOR i IN 0..l_split_pdfs.get_size() - 1 LOOP
+*       l_part := l_split_pdfs.get_string(i);
+*       -- Process each part / Processar cada parte
+*     END LOOP;
+*   END;
+*******************************************************************************/
+FUNCTION SplitPDF(
+  p_pdf_id IN VARCHAR2,
+  p_page_ranges IN JSON_ARRAY_T
+) RETURN JSON_ARRAY_T;
+
+/*******************************************************************************
+* Function: ExtractPages / Extrair Páginas
+*
+* Description / Descrição:
+*   EN: Extract specific pages from loaded PDF to create new document
+*   PT: Extrair páginas específicas do PDF carregado para criar novo documento
+*
+* Parameters / Parâmetros:
+*   p_pdf_id - PDF identifier / Identificador do PDF
+*   p_pages - Page specification: '1,3,5-7,10' or 'ALL' / Especificação
+*   p_options - Optional configuration / Configuração opcional (future use)
+*
+* Returns / Retorna:
+*   BLOB - New PDF with extracted pages / Novo PDF com páginas extraídas
+*
+* Raises / Erros:
+*   -20831: PDF ID not found / ID do PDF não encontrado
+*   -20838: Invalid page specification / Especificação de páginas inválida
+*   -20839: Page number out of range / Número de página fora do intervalo
+*
+* Example / Exemplo:
+*   DECLARE
+*     l_extracted BLOB;
+*   BEGIN
+*     PL_FPDF.LoadPDFWithID('manual', l_manual_pdf);
+*
+*     -- Extract pages 1, 5-10, and 15 / Extrair páginas 1, 5-10 e 15
+*     l_extracted := PL_FPDF.ExtractPages('manual', '1,5-10,15', NULL);
+*
+*     INSERT INTO documents VALUES ('Summary', l_extracted);
+*   END;
+*******************************************************************************/
+FUNCTION ExtractPages(
+  p_pdf_id IN VARCHAR2,
+  p_pages IN VARCHAR2,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) RETURN BLOB;
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 END PL_FPDF;
