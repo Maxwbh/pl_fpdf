@@ -12,10 +12,20 @@
 
 This document outlines strategic modernization opportunities for PL_FPDF leveraging Oracle AI Database 26ai and Oracle APEX 24.2 features. Implementation of these recommendations will improve type safety, performance, maintainability, and APEX integration.
 
+**🔴 CRITICAL: Oracle 19c Compatibility**
+
+**ALL features in this document are OPTIONAL enhancements.** PL_FPDF maintains full Oracle 19c compatibility indefinitely. Features requiring Oracle 23ai/26ai will:
+- ✅ Be detected at runtime
+- ✅ Provide Oracle 19c fallbacks
+- ✅ Never break existing functionality
+- ✅ Be clearly marked as "Optional Enhancement"
+
+See [ORACLE_19C_COMPATIBILITY_STRATEGY.md](ORACLE_19C_COMPATIBILITY_STRATEGY.md) for details.
+
 **Priority Levels:**
-- 🔴 **HIGH**: Significant impact, recommended for Phase 5
-- 🟡 **MEDIUM**: Valuable improvements, consider for Phase 5.x
-- 🟢 **LOW**: Nice to have, future consideration
+- 🔴 **HIGH**: Significant impact, recommended for Phase 5 (optional on 23ai/26ai)
+- 🟡 **MEDIUM**: Valuable improvements, consider for Phase 5.x (optional)
+- 🟢 **LOW**: Nice to have, future consideration (optional)
 
 ---
 

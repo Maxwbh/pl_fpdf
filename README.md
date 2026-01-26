@@ -144,15 +144,21 @@ END;
 - 🚧 [Phase 5 Plan - Advanced Operations](PHASE_5_IMPLEMENTATION_PLAN.md)
 - 📙 [Migration Guide v0.9 → v3.0](MIGRATION_GUIDE.md)
 - 🗺️ [Migration Roadmap - Future Versions](MIGRATION_ROADMAP.md)
+- 🔒 [Oracle 19c Compatibility Strategy](ORACLE_19C_COMPATIBILITY_STRATEGY.md)
 - 🔮 [Oracle 26ai & APEX 24.2 Modernization](MODERNIZATION_ORACLE_26_APEX_24_2.md)
 - 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
 - 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
 
 ### 📋 Requirements
 
-- **Oracle Database:** 11g or higher (19c+ recommended)
+- **Oracle Database:** 🔴 **19c or higher** (19c fully supported indefinitely)
 - **Privileges:** CREATE PROCEDURE, EXECUTE
-- **Optional:** APEX 19.1+ for `apex_string` utilities (Phase 4 page ranges)
+- **Optional Enhancements:**
+  - Oracle 23ai/26ai: SQL Domains, Annotations, enhanced JSON
+  - APEX 19.1+: `apex_string` utilities (Phase 4 page ranges)
+  - APEX 24.2+: Document Generator integration
+
+**Compatibility Guarantee:** All PL_FPDF versions (v3.x, v4.x, future) will maintain full Oracle 19c compatibility.
 
 ### 📂 Project Structure
 
