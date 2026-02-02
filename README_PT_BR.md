@@ -1,16 +1,53 @@
 # PL_FPDF - Geração de PDF para Oracle PL/SQL
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
-![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
-![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
-![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)
+<!-- Badges Section -->
+<p align="center">
+  <a href="https://github.com/Maxwbh/pl_fpdf/releases"><img src="https://img.shields.io/badge/version-2.0.0-blue.svg" alt="Versão"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL%20v2-green.svg" alt="Licença"></a>
+  <img src="https://img.shields.io/badge/Oracle-19c%2F23c-red.svg" alt="Oracle">
+  <img src="https://img.shields.io/badge/tests-87%20passing-brightgreen.svg" alt="Testes">
+  <img src="https://img.shields.io/badge/coverage-82%25-brightgreen.svg" alt="Cobertura">
+</p>
 
-> **Biblioteca moderna e de alta performance para geração de PDF em Oracle Database 19c/23c**
+<p align="center">
+  <a href="https://github.com/Maxwbh/pl_fpdf/stargazers"><img src="https://img.shields.io/github/stars/Maxwbh/pl_fpdf?style=social" alt="GitHub Stars"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/network/members"><img src="https://img.shields.io/github/forks/Maxwbh/pl_fpdf?style=social" alt="GitHub Forks"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/watchers"><img src="https://img.shields.io/github/watchers/Maxwbh/pl_fpdf?style=social" alt="GitHub Watchers"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/issues"><img src="https://img.shields.io/github/issues/Maxwbh/pl_fpdf" alt="GitHub Issues"></a>
+</p>
+
+<p align="center">
+  <strong>Biblioteca moderna e de alta performance para geração de PDF em Oracle Database 19c/23c</strong>
+</p>
+
+<p align="center">
+  <a href="#-início-rápido">Início Rápido</a> •
+  <a href="#-recursos">Recursos</a> •
+  <a href="#-documentação">Documentação</a> •
+  <a href="#-contribuindo">Contribuindo</a>
+</p>
+
+---
+
+## 🎯 Por que PL_FPDF?
+
+**Gere PDFs diretamente do seu Oracle Database** sem dependências externas, middleware ou integrações complexas.
+
+| Desafio | Solução PL_FPDF |
+|---------|-----------------|
+| Precisa gerar relatórios do Oracle? | PL/SQL puro - roda dentro do banco |
+| Gargalos de performance? | Compilação nativa dá boost de 2-3x |
+| Dependências externas complexas? | Zero dependências - sem OWA, sem OrdImage |
+| Tamanho de documento limitado? | Buffers CLOB suportam páginas ilimitadas |
+| Caracteres internacionais? | Suporte completo a UTF-8 e fontes TrueType |
+
+**Perfeito para:** Relatórios, Notas Fiscais, Recibos, Certificados, Etiquetas, Boletos, e qualquer geração de documento PDF a partir do Oracle Database.
+
+---
 
 PL_FPDF é uma biblioteca PL/SQL pura para gerar documentos PDF diretamente do Oracle Database. Originalmente portado da biblioteca PHP FPDF (v1.53), foi completamente modernizado para Oracle 19c/23c com compilação nativa, suporte UTF-8 e recursos avançados do Oracle.
 
-[**English**](README.md) | [**Referência da API**](API_REFERENCE.md) 
+[**English**](README.md) | [**Referência da API**](API_REFERENCE.md) | [**Contribuindo**](CONTRIBUTING.md)
 
 ---
 
@@ -239,16 +276,23 @@ sqlplus usuario/senha@banco @run_all_tests.sql
 
 ## 🤝 Contribuindo
 
-Este é um projeto de modernização da biblioteca original PL_FPDF. Contribuições são bem-vindas!
+Contribuições da comunidade são bem-vindas! Seja reportando bugs, sugerindo funcionalidades, melhorando a documentação ou contribuindo com código.
+
+**Formas de contribuir:**
+- 🐛 [Reportar bugs](https://github.com/Maxwbh/pl_fpdf/issues/new?template=bug_report.md)
+- 💡 [Sugerir funcionalidades](https://github.com/Maxwbh/pl_fpdf/issues/new?template=feature_request.md)
+- 📝 Melhorar documentação
+- 🔧 Enviar pull requests
+
+Veja nosso [**Guia de Contribuição**](CONTRIBUTING.md) para informações detalhadas.
 
 ### Autores Originais
 - **FPDF (PHP)**: Olivier PLATHEY
 - **PL_FPDF (Oracle)**: Pierre-Gilles Levallois et al
 
 ### Projeto de Modernização
-- **Desenvolvedor Principal**: Maxwell da Silva Oliveira (@maxwbh)
-- **Empresa**: M&S do Brasil LTDA
-- **Contato**: maxwbh@gmail.com
+- **Desenvolvedor Principal**: Maxwell da Silva Oliveira ([@maxwbh](https://github.com/maxwbh))
+- **Email**: maxwbh@gmail.com
 - **LinkedIn**: [linkedin.com/in/maxwbh](https://linkedin.com/in/maxwbh)
 
 ---
@@ -275,12 +319,34 @@ Este é um projeto de modernização da biblioteca original PL_FPDF. Contribuiç
 
 ---
 
-## ⭐ Histórico de Estrelas
+## ⭐ Apoie o Projeto
 
-Se você achar este projeto útil, por favor dê uma estrela no GitHub!
+Se você acha o PL_FPDF útil, considere:
+
+- ⭐ **Dar uma estrela neste repositório** - Ajuda outros a descobrirem o projeto
+- 🐛 **Reportar issues** - Ajude-nos a melhorar reportando bugs
+- 💬 **Compartilhar** - Conte aos colegas sobre o PL_FPDF
+- 🤝 **Contribuir** - Envie PRs para ajudar o projeto a crescer
+
+[![GitHub stars](https://img.shields.io/github/stars/Maxwbh/pl_fpdf?style=for-the-badge&logo=github)](https://github.com/Maxwbh/pl_fpdf/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/Maxwbh/pl_fpdf?style=for-the-badge&logo=github)](https://github.com/Maxwbh/pl_fpdf/network/members)
+
+---
+
+## 📣 Divulgue
+
+**Palavras-chave:** Oracle PL/SQL PDF, Geração de PDF Oracle, Gerador de Relatórios Oracle, Biblioteca PDF PL/SQL, Oracle 19c PDF, Oracle 23c PDF, FPDF Oracle, Gerar PDF Oracle Database, Oracle PDF Export, Biblioteca de Relatórios PL/SQL
+
+**Hashtags:** #Oracle #PLSQL #PDF #OracleDatabase #GeraçãoPDF #OpenSource #Brasil
 
 ---
 
 **Última Atualização**: 19 de dezembro de 2025
 **Versão**: 2.0.0
 **Status**: Pronto para Produção ✅
+
+---
+
+<p align="center">
+  Feito com ❤️ por <a href="https://github.com/maxwbh">Maxwell Oliveira</a> e a comunidade open source.
+</p>
