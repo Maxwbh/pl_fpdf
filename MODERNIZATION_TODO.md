@@ -1119,3 +1119,66 @@ GitHub: [maxwbh/pl_fpdf](https://github.com/maxwbh/pl_fpdf)
 - ✅ PIX e Boleto integrados
 - ✅ Zero dependências legacy
 - ✅ Oracle 19c/23c nativo
+
+---
+
+## 🚀 FASE 4: Roadmap Futuro (Backlog)
+
+Features planejadas para versões futuras:
+
+### 🔐 Task 4.1: PDF com Proteção por Senha
+**Prioridade:** Alta
+**Status:** ⏳ TODO
+**Versão Alvo:** v2.1.0
+
+**Descrição:**
+Implementar proteção de PDF com senha, permitindo:
+- Senha de usuário (para abrir o documento)
+- Senha de proprietário (para editar/imprimir)
+- Níveis de permissão configuráveis
+
+**Requisitos Técnicos:**
+- Criptografia RC4 40-bit (PDF 1.3) ou AES 128/256-bit (PDF 1.5+)
+- Suporte a permissões: impressão, cópia, edição, anotações
+- API simples: `SetProtection(p_user_password, p_owner_password, p_permissions)`
+
+**Exemplo de Uso:**
+```sql
+BEGIN
+  PL_FPDF.Init();
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Documento Confidencial');
+
+  -- Proteger com senha
+  PL_FPDF.SetProtection(
+    p_user_password  => 'senha123',      -- Senha para abrir
+    p_owner_password => 'admin456',      -- Senha do proprietário
+    p_permissions    => 'print'          -- Permitir apenas impressão
+  );
+
+  PL_FPDF.OutputFile('DOCS_DIR', 'confidencial.pdf');
+  PL_FPDF.Reset();
+END;
+```
+
+**Referências:**
+- [PDF Reference 1.7 - Encryption](https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/pdf_reference_1-7.pdf)
+- [FPDF Protection Extension](http://www.fpdf.org/en/script/script37.php)
+
+---
+
+### 📋 Outras Features Futuras (Backlog)
+
+| Feature | Prioridade | Status |
+|---------|------------|--------|
+| PDF com Senha | Alta | ⏳ TODO |
+| Assinatura Digital | Média | 📋 Backlog |
+| PDF/A Compliance | Média | 📋 Backlog |
+| Bookmarks/Outline | Baixa | 📋 Backlog |
+| Hyperlinks | Baixa | 📋 Backlog |
+| Watermarks | Baixa | 📋 Backlog |
+
+---
+
+**Contribuições são bem-vindas!** Veja [CONTRIBUTING.md](CONTRIBUTING.md)
