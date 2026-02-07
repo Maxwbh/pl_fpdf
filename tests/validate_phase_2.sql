@@ -209,183 +209,129 @@ BEGIN
 
   -- Test 2.3.2: Valid unit values
   BEGIN
-    pl_fpdf.init('P',
-                 'mm',
-                 'A4');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'cm',
-                 'A4');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'in',
-                 'A4');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'pt',
-                 'A4');
-    test_result('Valid unit values (mm, cm, in, pt)',
-                TRUE);
-    pl_fpdf.reset();
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_result('Valid unit values',
-                  FALSE,
-                  SQLERRM);
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'cm', 'A4');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'in', 'A4');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'pt', 'A4');
+    test_result('Valid unit values (mm, cm, in, pt)', TRUE);
+    PL_FPDF.Reset();
+  EXCEPTION WHEN OTHERS THEN
+    test_result('Valid unit values', FALSE, SQLERRM);
   END;
 
   -- Test 2.3.3: Valid page formats
   BEGIN
-    pl_fpdf.init('P',
-                 'mm',
-                 'A3');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'mm',
-                 'A4');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'mm',
-                 'A5');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'mm',
-                 'Letter');
-    pl_fpdf.reset();
-    pl_fpdf.init('P',
-                 'mm',
-                 'Legal');
-    test_result('Valid page formats (A3, A4, A5, Letter, Legal)',
-                TRUE);
-    pl_fpdf.reset();
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_result('Valid page formats',
-                  FALSE,
-                  SQLERRM);
+    PL_FPDF.Init('P', 'mm', 'A3');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'mm', 'A5');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.Reset();
+    PL_FPDF.Init('P', 'mm', 'Legal');
+    test_result('Valid page formats (A3, A4, A5, Letter, Legal)', TRUE);
+    PL_FPDF.Reset();
+  EXCEPTION WHEN OTHERS THEN
+    test_result('Valid page formats', FALSE, SQLERRM);
   END;
 
   -- Test 2.3.4: Parameter validation
   DECLARE
     l_passed BOOLEAN := TRUE;
   BEGIN
-    BEGIN
-      -- Test NULL handling
-      pl_fpdf.init(NULL,
-                   'mm',
-                   'A4'); -- Should use default
-      pl_fpdf.reset();
-    EXCEPTION
-      WHEN OTHERS THEN
-        test_result('NULL parameter handling',
-                    FALSE,
-                    SQLERRM);
-        l_passed := FALSE;
-    END;
-    IF l_passed THEN
-      test_result('NULL parameter handling (uses defaults)',
-                  TRUE);
-    END IF;
+    -- Test NULL handling
+    PL_FPDF.Init(NULL, 'mm', 'A4');  -- Should use default
+    PL_FPDF.Reset();
+  EXCEPTION WHEN OTHERS THEN
+    test_result('NULL parameter handling', FALSE, SQLERRM);
+    l_passed := FALSE;
   END;
-  dbms_output.put_line('');
-  dbms_output.put_line('Task 2.5: Enhanced Logging');
-  dbms_output.put_line('---------------------------');
+  IF l_passed THEN
+    test_result('NULL parameter handling (uses defaults)', TRUE);
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('Task 2.5: Enhanced Logging');
+  DBMS_OUTPUT.PUT_LINE('---------------------------');
 
   -- Test 2.5.1: SetLogLevel
   DECLARE
     l_initial_level PLS_INTEGER;
   BEGIN
-    l_initial_level := pl_fpdf.getloglevel();
-    pl_fpdf.setloglevel(4); -- DEBUG
-    test_result('SetLogLevel(4)',
-                pl_fpdf.getloglevel() = 4);
-    pl_fpdf.setloglevel(0); -- OFF
-    test_result('SetLogLevel(0)',
-                pl_fpdf.getloglevel() = 0);
+    l_initial_level := PL_FPDF.GetLogLevel();
+    PL_FPDF.SetLogLevel(4);  -- DEBUG
+    test_result('SetLogLevel(4)', PL_FPDF.GetLogLevel() = 4);
+    PL_FPDF.SetLogLevel(0);  -- OFF
+    test_result('SetLogLevel(0)', PL_FPDF.GetLogLevel() = 0);
     -- Restore
-    pl_fpdf.setloglevel(l_initial_level);
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_result('SetLogLevel',
-                  FALSE,
-                  SQLERRM);
+    PL_FPDF.SetLogLevel(l_initial_level);
+  EXCEPTION WHEN OTHERS THEN
+    test_result('SetLogLevel', FALSE, SQLERRM);
   END;
 
   -- Test 2.5.2: GetLogLevel
   BEGIN
-    pl_fpdf.setloglevel(3);
-    test_result('GetLogLevel returns correct value',
-                pl_fpdf.getloglevel() = 3);
-    pl_fpdf.setloglevel(2); -- Restore default
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_result('GetLogLevel',
-                  FALSE,
-                  SQLERRM);
+    PL_FPDF.SetLogLevel(3);
+    test_result('GetLogLevel returns correct value', PL_FPDF.GetLogLevel() = 3);
+    PL_FPDF.SetLogLevel(2);  -- Restore default
+  EXCEPTION WHEN OTHERS THEN
+    test_result('GetLogLevel', FALSE, SQLERRM);
   END;
 
   -- Test 2.5.3: Log levels 0-4
   DECLARE
     l_valid BOOLEAN := TRUE;
   BEGIN
-    FOR i IN 0 .. 4 LOOP
-      pl_fpdf.setloglevel(i);
-      IF pl_fpdf.getloglevel() != i THEN
+    FOR i IN 0..4 LOOP
+      PL_FPDF.SetLogLevel(i);
+      IF PL_FPDF.GetLogLevel() != i THEN
         l_valid := FALSE;
       END IF;
     END LOOP;
-    test_result('All log levels (0-4) valid',
-                l_valid);
-    pl_fpdf.setloglevel(2); -- Restore default
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_result('Log levels 0-4',
-                  FALSE,
-                  SQLERRM);
+    test_result('All log levels (0-4) valid', l_valid);
+    PL_FPDF.SetLogLevel(2);  -- Restore default
+  EXCEPTION WHEN OTHERS THEN
+    test_result('Log levels 0-4', FALSE, SQLERRM);
   END;
 
   -- Test 2.5.4: Logging integration with operations
   DECLARE
     l_pdf BLOB;
   BEGIN
-    pl_fpdf.setloglevel(4); -- DEBUG - most verbose
-    pl_fpdf.init();
-    pl_fpdf.addpage();
-    pl_fpdf.setfont('Arial',
-                    'B',
-                    16);
-    pl_fpdf.cell(0,
-                 10,
-                 'Logging Test');
-    l_pdf := pl_fpdf.outputblob();
-    test_result('Logging with DEBUG level',
-                dbms_lob.getlength(l_pdf) > 0);
-    pl_fpdf.reset();
-    pl_fpdf.setloglevel(2); -- Restore default
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_result('Logging integration',
-                  FALSE,
-                  SQLERRM);
+    PL_FPDF.SetLogLevel(4);  -- DEBUG - most verbose
+    PL_FPDF.Init();
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', 'B', 16);
+    PL_FPDF.Cell(0, 10, 'Logging Test');
+    l_pdf := PL_FPDF.OutputBlob();
+    test_result('Logging with DEBUG level', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    PL_FPDF.Reset();
+    PL_FPDF.SetLogLevel(2);  -- Restore default
+  EXCEPTION WHEN OTHERS THEN
+    test_result('Logging integration', FALSE, SQLERRM);
   END;
 
   -- Summary
-  dbms_output.put_line('');
-  dbms_output.put_line('================================================================================');
-  dbms_output.put_line('Phase 2 Validation Summary');
-  dbms_output.put_line('================================================================================');
-  dbms_output.put_line('Total Tests: ' || l_test_count);
-  dbms_output.put_line('Passed:      ' || l_pass_count || ' (' || round(l_pass_count * 100 / l_test_count,
-                                                                        1) || '%)');
-  dbms_output.put_line('Failed:      ' || l_fail_count);
-  dbms_output.put_line('');
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('Phase 2 Validation Summary');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('Total Tests: ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Passed:      ' || l_pass_count || ' (' ||
+    ROUND(l_pass_count * 100 / l_test_count, 1) || '%)');
+  DBMS_OUTPUT.PUT_LINE('Failed:      ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('');
 
   IF l_fail_count = 0 THEN
-    dbms_output.put_line('*** PHASE 2: ALL TESTS PASSED ***');
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 2: ALL TESTS PASSED ***');
   ELSE
-    dbms_output.put_line('*** PHASE 2: SOME TESTS FAILED - REVIEW REQUIRED ***');
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 2: SOME TESTS FAILED - REVIEW REQUIRED ***');
   END IF;
-  dbms_output.put_line('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
 
 END;
 /

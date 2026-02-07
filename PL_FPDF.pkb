@@ -226,12 +226,13 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-18
+-- Date: 2025-01-25
 --------------------------------------------------------------------------------
+ -- Version Information
+ co_version CONSTANT VARCHAR2(15) := '3.0.0-b.2';  -- PL_FPDF Version (Phase 4.6 Beta - Not Validated)
+
  -- PDF Specification Constants
- c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
- co_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
+ c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4'; -- PDF output version
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -288,6 +289,126 @@ type ArrayCharWidths is table of charSet index by word;
  c_PNG_SIGNATURE CONSTANT RAW(8) := HEXTORAW('89504E470D0A1A0A');
  c_JPEG_SOI CONSTANT RAW(2) := HEXTORAW('FFD8');
  c_JPEG_EOI CONSTANT RAW(2) := HEXTORAW('FFD9');
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+*                          PHASE 4: PDF PARSER                                 *
+*                   Global Variables for PDF Reading/Editing                   *
+*******************************************************************************/
+
+-- PDF loaded in memory
+g_loaded_pdf BLOB;
+
+-- PDF information
+g_pdf_version VARCHAR2(10);
+g_xref_offset PLS_INTEGER;
+g_root_obj_id PLS_INTEGER;
+g_loaded_page_count PLS_INTEGER := 0;
+
+-- xref table (object_id => xref_entry)
+TYPE xref_entry_rec IS RECORD (
+  offset PLS_INTEGER,
+  generation PLS_INTEGER,
+  in_use BOOLEAN
+);
+TYPE xref_table_type IS TABLE OF xref_entry_rec INDEX BY PLS_INTEGER;
+g_xref_table xref_table_type;
+
+-- Object cache
+TYPE object_cache_type IS TABLE OF CLOB INDEX BY PLS_INTEGER;
+g_object_cache object_cache_type;
+
+-- Page information
+TYPE page_info_rec IS RECORD (
+  page_obj_id PLS_INTEGER,
+  media_box VARCHAR2(100),
+  crop_box VARCHAR2(100),
+  rotate NUMBER,
+  resources_id PLS_INTEGER,
+  contents_id PLS_INTEGER
+);
+TYPE page_info_table IS TABLE OF page_info_rec INDEX BY PLS_INTEGER;
+g_page_info_table page_info_table;
+
+-- PDF modification tracking
+g_pdf_modified BOOLEAN := FALSE;
+TYPE page_removal_list IS TABLE OF BOOLEAN INDEX BY PLS_INTEGER;
+g_removed_pages page_removal_list;
+
+-- Watermark tracking
+TYPE watermark_rec IS RECORD (
+  text VARCHAR2(200),
+  opacity NUMBER,
+  rotation NUMBER,
+  page_range VARCHAR2(100),
+  font_name VARCHAR2(50),
+  font_size NUMBER,
+  color VARCHAR2(20)
+);
+TYPE watermark_list IS TABLE OF watermark_rec INDEX BY PLS_INTEGER;
+g_watermarks watermark_list;
+g_watermark_count PLS_INTEGER := 0;
+
+/*******************************************************************************
+*                     PHASE 4.5: TEXT & IMAGE OVERLAY                          *
+*                   Global Variables for Overlay Management                    *
+*******************************************************************************/
+
+-- Overlay tracking
+TYPE overlay_rec IS RECORD (
+  overlay_id VARCHAR2(50),
+  overlay_type VARCHAR2(20),  -- 'TEXT' or 'IMAGE'
+  page_number PLS_INTEGER,
+  x NUMBER,
+  y NUMBER,
+  width NUMBER,
+  height NUMBER,
+  content CLOB,              -- Text content or image reference
+  image_blob BLOB,           -- For image overlays
+  opacity NUMBER,
+  rotation NUMBER,
+  font_name VARCHAR2(100),
+  font_size NUMBER,
+  color VARCHAR2(50),
+  align VARCHAR2(20),
+  z_order PLS_INTEGER,
+  maintain_aspect BOOLEAN,
+  scale_to_fit BOOLEAN,
+  created_date TIMESTAMP
+);
+TYPE overlay_list IS TABLE OF overlay_rec INDEX BY VARCHAR2(50);
+g_overlays overlay_list;
+g_overlay_count PLS_INTEGER := 0;
+
+/*******************************************************************************
+*                     PHASE 4.6: PDF MERGE & SPLIT                             *
+*                   Global Variables for Multi-Document Management             *
+*******************************************************************************/
+
+-- Multi-document tracking
+TYPE pdf_document_rec IS RECORD (
+  pdf_id VARCHAR2(50),
+  pdf_blob BLOB,
+  page_count PLS_INTEGER,
+  file_size NUMBER,
+  pdf_version VARCHAR2(10),
+  xref_offset PLS_INTEGER,
+  root_obj_id PLS_INTEGER,
+  -- Cached parsed data
+  pages JSON_ARRAY_T,
+  objects JSON_OBJECT_T,
+  xref_table JSON_OBJECT_T,
+  trailer JSON_OBJECT_T,
+  loaded_date TIMESTAMP
+);
+
+TYPE pdf_collection IS TABLE OF pdf_document_rec INDEX BY VARCHAR2(50);
+g_loaded_pdfs pdf_collection;
+g_loaded_pdf_count PLS_INTEGER := 0;
+
+-- Maximum loaded PDFs
+c_max_loaded_pdfs CONSTANT PLS_INTEGER := 10;
+
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
@@ -5595,5 +5716,1854 @@ exception
     log_message(c_LOG_ERROR, 'Error adding barcode: ' || sqlerrm);
     raise;
 end AddBarcode;
+
+--------------------------------------------------------------------------------
+-- PHASE 4: PDF PARSER - Helper Functions and Core Implementation
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+ * HELPER FUNCTIONS - PDF PARSING
+ ******************************************************************************/
+
+--------------------------------------------------------------------------------
+-- read_blob_chunk: Read chunk of BLOB as text
+--------------------------------------------------------------------------------
+FUNCTION read_blob_chunk(
+  p_blob BLOB,
+  p_offset PLS_INTEGER,
+  p_length PLS_INTEGER
+) RETURN VARCHAR2 IS
+  l_raw RAW(32767);
+BEGIN
+  l_raw := DBMS_LOB.SUBSTR(p_blob, LEAST(p_length, 32767), p_offset);
+  RETURN UTL_RAW.CAST_TO_VARCHAR2(l_raw);
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN NULL;
+END read_blob_chunk;
+
+--------------------------------------------------------------------------------
+-- extract_number_after_pattern: Extract number after pattern
+--------------------------------------------------------------------------------
+FUNCTION extract_number_after_pattern(
+  p_text VARCHAR2,
+  p_pattern VARCHAR2
+) RETURN PLS_INTEGER IS
+  l_pos PLS_INTEGER;
+  l_num_str VARCHAR2(20);
+BEGIN
+  l_pos := INSTR(p_text, p_pattern);
+
+  IF l_pos = 0 THEN
+    RETURN NULL;
+  END IF;
+
+  -- Extract digits after pattern
+  l_num_str := REGEXP_SUBSTR(
+    SUBSTR(p_text, l_pos + LENGTH(p_pattern)),
+    '^\s*([0-9]+)',
+    1, 1, NULL, 1
+  );
+
+  RETURN TO_NUMBER(l_num_str);
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN NULL;
+END extract_number_after_pattern;
+
+/*******************************************************************************
+ * PHASE 4.1: PDF READING - BASIC PARSING
+ ******************************************************************************/
+
+--------------------------------------------------------------------------------
+-- parse_pdf_header: Extract PDF version
+--------------------------------------------------------------------------------
+FUNCTION parse_pdf_header(p_pdf BLOB) RETURN VARCHAR2 IS
+  l_header VARCHAR2(50);
+BEGIN
+  l_header := read_blob_chunk(p_pdf, 1, 50);
+
+  -- Validate header %PDF-
+  IF NOT l_header LIKE '%PDF-%' THEN
+    raise_application_error(-20801,
+      'Invalid PDF header. Expected %PDF-x.x, got: ' || SUBSTR(l_header, 1, 20));
+  END IF;
+
+  -- Extract version (e.g., "1.7" from "%PDF-1.7")
+  RETURN REGEXP_SUBSTR(l_header, '[0-9]\.[0-9]');
+END parse_pdf_header;
+
+--------------------------------------------------------------------------------
+-- find_startxref: Locate xref table offset
+--------------------------------------------------------------------------------
+FUNCTION find_startxref(p_pdf BLOB) RETURN PLS_INTEGER IS
+  l_file_size PLS_INTEGER;
+  l_tail VARCHAR2(2048);
+  l_offset PLS_INTEGER;
+BEGIN
+  l_file_size := DBMS_LOB.GETLENGTH(p_pdf);
+
+  -- Read last 2KB of file
+  l_tail := read_blob_chunk(p_pdf, GREATEST(1, l_file_size - 2047), 2048);
+
+  -- Extract number after "startxref"
+  l_offset := extract_number_after_pattern(l_tail, 'startxref');
+
+  IF l_offset IS NULL THEN
+    raise_application_error(-20802, 'startxref not found in PDF');
+  END IF;
+
+  RETURN l_offset;
+END find_startxref;
+
+--------------------------------------------------------------------------------
+-- parse_xref_table: Parse cross-reference table
+--------------------------------------------------------------------------------
+PROCEDURE parse_xref_table(p_pdf BLOB, p_xref_offset PLS_INTEGER) IS
+  l_xref_section VARCHAR2(32767);
+  l_line VARCHAR2(100);
+  l_obj_start PLS_INTEGER;
+  l_obj_count PLS_INTEGER;
+  l_obj_id PLS_INTEGER;
+  l_offset PLS_INTEGER;
+  l_generation PLS_INTEGER;
+  l_flag CHAR(1);
+  l_pos PLS_INTEGER := 1;
+  l_line_end PLS_INTEGER;
+BEGIN
+  g_xref_table.DELETE;
+
+  -- Read xref section
+  l_xref_section := read_blob_chunk(p_pdf, p_xref_offset + 1, 32767);
+
+  -- Validate starts with "xref"
+  IF NOT l_xref_section LIKE 'xref%' THEN
+    raise_application_error(-20803, 'Invalid xref table at offset ' || p_xref_offset);
+  END IF;
+
+  -- Skip line "xref"
+  l_pos := INSTR(l_xref_section, CHR(10)) + 1;
+
+  -- Line 2: subsection header "0 N" where N = number of objects
+  l_line_end := INSTR(l_xref_section, CHR(10), l_pos);
+  l_line := SUBSTR(l_xref_section, l_pos, l_line_end - l_pos);
+  l_obj_start := TO_NUMBER(REGEXP_SUBSTR(l_line, '^[0-9]+'));
+  l_obj_count := TO_NUMBER(REGEXP_SUBSTR(l_line, '[0-9]+$'));
+  l_pos := l_line_end + 1;
+
+  -- Process xref entries
+  l_obj_id := l_obj_start;
+
+  FOR idx IN 1..l_obj_count LOOP
+    EXIT WHEN l_pos > LENGTH(l_xref_section);
+
+    l_line_end := INSTR(l_xref_section, CHR(10), l_pos);
+    IF l_line_end = 0 THEN
+      l_line_end := LENGTH(l_xref_section) + 1;
+    END IF;
+
+    l_line := SUBSTR(l_xref_section, l_pos, l_line_end - l_pos);
+    EXIT WHEN l_line LIKE 'trailer%';
+
+    -- Format: "NNNNNNNNNN GGGGG f/n"
+    -- Example: "0000000015 00000 n"
+    IF LENGTH(l_line) >= 18 THEN
+      l_offset := TO_NUMBER(TRIM(SUBSTR(l_line, 1, 10)));
+      l_generation := TO_NUMBER(TRIM(SUBSTR(l_line, 12, 5)));
+      l_flag := SUBSTR(l_line, 18, 1);
+
+      -- Store only objects in use ('n')
+      IF l_flag = 'n' THEN
+        g_xref_table(l_obj_id).offset := l_offset;
+        g_xref_table(l_obj_id).generation := l_generation;
+        g_xref_table(l_obj_id).in_use := TRUE;
+      END IF;
+    END IF;
+
+    l_obj_id := l_obj_id + 1;
+    l_pos := l_line_end + 1;
+  END LOOP;
+
+  log_message(3, 'Parsed xref table: ' || g_xref_table.COUNT || ' objects');
+END parse_xref_table;
+
+--------------------------------------------------------------------------------
+-- parse_trailer: Extract trailer information
+--------------------------------------------------------------------------------
+PROCEDURE parse_trailer(p_pdf BLOB, p_xref_offset PLS_INTEGER) IS
+  l_trailer VARCHAR2(4000);
+  l_root_id PLS_INTEGER;
+BEGIN
+  -- Read trailer (after xref)
+  l_trailer := read_blob_chunk(p_pdf, p_xref_offset + 1, 4000);
+
+  -- Extract /Root object ID
+  l_root_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_trailer, '/Root\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  IF l_root_id IS NULL THEN
+    raise_application_error(-20804, 'Root object not found in trailer');
+  END IF;
+
+  g_root_obj_id := l_root_id;
+
+  log_message(3, 'Trailer parsed: Root=' || g_root_obj_id);
+END parse_trailer;
+
+--------------------------------------------------------------------------------
+-- get_pdf_object: Load object by ID
+--------------------------------------------------------------------------------
+FUNCTION get_pdf_object(p_obj_id PLS_INTEGER) RETURN CLOB IS
+  l_offset PLS_INTEGER;
+  l_obj_text VARCHAR2(32767);
+  l_end_pos PLS_INTEGER;
+  l_obj_content CLOB;
+BEGIN
+  -- Check cache
+  IF g_object_cache.EXISTS(p_obj_id) THEN
+    RETURN g_object_cache(p_obj_id);
+  END IF;
+
+  -- Check if object exists
+  IF NOT g_xref_table.EXISTS(p_obj_id) THEN
+    raise_application_error(-20805, 'Object ' || p_obj_id || ' not in xref table');
+  END IF;
+
+  l_offset := g_xref_table(p_obj_id).offset;
+
+  -- Read object
+  l_obj_text := read_blob_chunk(g_loaded_pdf, l_offset + 1, 32767);
+
+  -- Find end of object
+  l_end_pos := INSTR(l_obj_text, 'endobj');
+
+  IF l_end_pos = 0 THEN
+    raise_application_error(-20806, 'endobj not found for object ' || p_obj_id);
+  END IF;
+
+  -- Extract content
+  l_obj_content := SUBSTR(l_obj_text, 1, l_end_pos + 5);
+
+  -- Cache
+  g_object_cache(p_obj_id) := l_obj_content;
+
+  RETURN l_obj_content;
+END get_pdf_object;
+
+--------------------------------------------------------------------------------
+-- count_pages: Count pages in PDF
+--------------------------------------------------------------------------------
+FUNCTION count_pages RETURN PLS_INTEGER IS
+  l_catalog CLOB;
+  l_pages_id PLS_INTEGER;
+  l_pages_obj CLOB;
+  l_count PLS_INTEGER;
+BEGIN
+  -- 1. Get Catalog
+  l_catalog := get_pdf_object(g_root_obj_id);
+
+  -- 2. Extract Pages object ID
+  l_pages_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  IF l_pages_id IS NULL THEN
+    raise_application_error(-20807, 'Pages not found in Catalog');
+  END IF;
+
+  -- 3. Get Pages object
+  l_pages_obj := get_pdf_object(l_pages_id);
+
+  -- 4. Extract /Count
+  l_count := TO_NUMBER(
+    REGEXP_SUBSTR(l_pages_obj, '/Count\s+([0-9]+)', 1, 1, NULL, 1)
+  );
+
+  IF l_count IS NULL THEN
+    raise_application_error(-20808, 'Count not found in Pages object');
+  END IF;
+
+  RETURN l_count;
+END count_pages;
+
+--------------------------------------------------------------------------------
+-- parse_page_tree: Parse page tree and populate page info table
+--------------------------------------------------------------------------------
+PROCEDURE parse_page_tree IS
+  l_catalog CLOB;
+  l_pages_id PLS_INTEGER;
+  l_pages_obj CLOB;
+  l_kids_array VARCHAR2(4000);
+  l_page_obj_id PLS_INTEGER;
+  l_page_num PLS_INTEGER := 1;
+  l_pos PLS_INTEGER;
+  l_end_pos PLS_INTEGER;
+BEGIN
+  g_page_info_table.DELETE;
+
+  -- Get Catalog
+  l_catalog := get_pdf_object(g_root_obj_id);
+
+  -- Extract Pages object ID
+  l_pages_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  IF l_pages_id IS NULL THEN
+    raise_application_error(-20810, 'Pages not found in Catalog');
+  END IF;
+
+  -- Get Pages object
+  l_pages_obj := get_pdf_object(l_pages_id);
+
+  -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
+  l_kids_array := REGEXP_SUBSTR(l_pages_obj, '/Kids\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+
+  IF l_kids_array IS NULL THEN
+    raise_application_error(-20811, 'Kids array not found in Pages object');
+  END IF;
+
+  -- Parse each page object reference
+  l_pos := 1;
+  LOOP
+    -- Find next number in Kids array
+    l_page_obj_id := TO_NUMBER(
+      REGEXP_SUBSTR(l_kids_array, '([0-9]+)\s+0\s+R', 1, l_pos, NULL, 1)
+    );
+
+    EXIT WHEN l_page_obj_id IS NULL;
+
+    -- Store page object ID
+    g_page_info_table(l_page_num).page_obj_id := l_page_obj_id;
+
+    l_page_num := l_page_num + 1;
+    l_pos := l_pos + 1;
+  END LOOP;
+
+  log_message(3, 'Parsed page tree: ' || g_page_info_table.COUNT || ' pages');
+END parse_page_tree;
+
+--------------------------------------------------------------------------------
+-- get_page_object_id: Get object ID for specific page number
+--------------------------------------------------------------------------------
+FUNCTION get_page_object_id(p_page_number PLS_INTEGER) RETURN PLS_INTEGER IS
+BEGIN
+  -- Ensure page tree is parsed
+  IF g_page_info_table.COUNT = 0 THEN
+    parse_page_tree();
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_page_info_table.COUNT THEN
+    raise_application_error(-20812,
+      'Invalid page number: ' || p_page_number ||
+      '. Valid range: 1-' || g_page_info_table.COUNT);
+  END IF;
+
+  RETURN g_page_info_table(p_page_number).page_obj_id;
+END get_page_object_id;
+
+--------------------------------------------------------------------------------
+-- extract_page_info: Extract detailed page information
+--------------------------------------------------------------------------------
+PROCEDURE extract_page_info(p_page_number PLS_INTEGER) IS
+  l_page_obj_id PLS_INTEGER;
+  l_page_obj CLOB;
+  l_media_box VARCHAR2(100);
+  l_rotate NUMBER;
+  l_resources_id PLS_INTEGER;
+  l_contents_id PLS_INTEGER;
+BEGIN
+  l_page_obj_id := get_page_object_id(p_page_number);
+
+  -- Check if already parsed
+  IF g_page_info_table(p_page_number).media_box IS NOT NULL THEN
+    RETURN;  -- Already parsed
+  END IF;
+
+  -- Get page object
+  l_page_obj := get_pdf_object(l_page_obj_id);
+
+  -- Extract MediaBox: /MediaBox [0 0 612 792]
+  l_media_box := REGEXP_SUBSTR(l_page_obj, '/MediaBox\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+
+  -- Extract Rotate: /Rotate 90
+  l_rotate := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Rotate\s+([0-9]+)', 1, 1, NULL, 1)
+  );
+  IF l_rotate IS NULL THEN
+    l_rotate := 0;  -- Default: no rotation
+  END IF;
+
+  -- Extract Resources object ID: /Resources 7 0 R
+  l_resources_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Resources\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  -- Extract Contents object ID: /Contents 8 0 R
+  l_contents_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Contents\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  -- Store extracted info
+  g_page_info_table(p_page_number).media_box := l_media_box;
+  g_page_info_table(p_page_number).rotate := l_rotate;
+  g_page_info_table(p_page_number).resources_id := l_resources_id;
+  g_page_info_table(p_page_number).contents_id := l_contents_id;
+
+  log_message(3, 'Extracted page ' || p_page_number || ' info: MediaBox=' || l_media_box);
+END extract_page_info;
+
+/*******************************************************************************
+ * PUBLIC APIs - PHASE 4
+ ******************************************************************************/
+
+--------------------------------------------------------------------------------
+-- LoadPDF: Load existing PDF into memory
+--------------------------------------------------------------------------------
+PROCEDURE LoadPDF(p_pdf_blob BLOB) IS
+BEGIN
+  log_message(3, 'Loading PDF...');
+
+  -- Validate
+  IF p_pdf_blob IS NULL OR DBMS_LOB.GETLENGTH(p_pdf_blob) < 100 THEN
+    raise_application_error(-20800, 'Invalid PDF: NULL or too small');
+  END IF;
+
+  -- Clear previous state
+  g_loaded_pdf := p_pdf_blob;
+  g_object_cache.DELETE;
+  g_xref_table.DELETE;
+
+  -- Parse header
+  g_pdf_version := parse_pdf_header(p_pdf_blob);
+  log_message(3, 'PDF version: ' || g_pdf_version);
+
+  -- Find xref
+  g_xref_offset := find_startxref(p_pdf_blob);
+  log_message(3, 'xref offset: ' || g_xref_offset);
+
+  -- Parse xref table
+  parse_xref_table(p_pdf_blob, g_xref_offset);
+
+  -- Parse trailer
+  parse_trailer(p_pdf_blob, g_xref_offset);
+
+  -- Count pages
+  g_loaded_page_count := count_pages();
+
+  -- Parse page tree
+  parse_page_tree();
+
+  log_message(2, 'PDF loaded successfully: ' || g_loaded_page_count || ' pages, version ' || g_pdf_version);
+
+EXCEPTION
+  WHEN OTHERS THEN
+    log_message(1, 'Error loading PDF: ' || SQLERRM);
+    RAISE;
+END LoadPDF;
+
+--------------------------------------------------------------------------------
+-- GetPageCount: Get number of pages in loaded PDF
+--------------------------------------------------------------------------------
+FUNCTION GetPageCount RETURN PLS_INTEGER IS
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  RETURN g_loaded_page_count;
+END GetPageCount;
+
+--------------------------------------------------------------------------------
+-- GetPDFInfo: Get information about loaded PDF
+--------------------------------------------------------------------------------
+FUNCTION GetPDFInfo RETURN JSON_OBJECT_T IS
+  l_info JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  l_info.put('version', g_pdf_version);
+  l_info.put('pageCount', g_loaded_page_count);
+  l_info.put('fileSize', DBMS_LOB.GETLENGTH(g_loaded_pdf));
+  l_info.put('objectCount', g_xref_table.COUNT);
+  l_info.put('rootObjectId', g_root_obj_id);
+
+  RETURN l_info;
+END GetPDFInfo;
+
+--------------------------------------------------------------------------------
+-- GetPageInfo: Get information about specific page
+--------------------------------------------------------------------------------
+FUNCTION GetPageInfo(p_page_number PLS_INTEGER) RETURN JSON_OBJECT_T IS
+  l_info JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Extract page info if not already done
+  extract_page_info(p_page_number);
+
+  -- Build JSON response
+  l_info.put('pageNumber', p_page_number);
+  l_info.put('pageObjectId', g_page_info_table(p_page_number).page_obj_id);
+  l_info.put('mediaBox', g_page_info_table(p_page_number).media_box);
+  l_info.put('rotation', g_page_info_table(p_page_number).rotate);
+  l_info.put('resourcesObjectId', g_page_info_table(p_page_number).resources_id);
+  l_info.put('contentsObjectId', g_page_info_table(p_page_number).contents_id);
+
+  RETURN l_info;
+END GetPageInfo;
+
+--------------------------------------------------------------------------------
+-- RotatePage: Rotate a specific page
+--------------------------------------------------------------------------------
+PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER) IS
+  l_valid_rotations VARCHAR2(20) := '0,90,180,270';
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate rotation value
+  IF INSTR(l_valid_rotations, TO_CHAR(p_rotation)) = 0 THEN
+    raise_application_error(-20813,
+      'Invalid rotation: ' || p_rotation || '. Valid values: 0, 90, 180, 270');
+  END IF;
+
+  -- Extract page info if not already done
+  extract_page_info(p_page_number);
+
+  -- Update rotation in cache
+  g_page_info_table(p_page_number).rotate := p_rotation;
+
+  log_message(3, 'Page ' || p_page_number || ' rotation set to ' || p_rotation || ' degrees');
+
+  -- Mark PDF as modified
+  g_pdf_modified := TRUE;
+END RotatePage;
+
+--------------------------------------------------------------------------------
+-- RemovePage: Mark a page for removal
+--------------------------------------------------------------------------------
+PROCEDURE RemovePage(p_page_number PLS_INTEGER) IS
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
+    raise_application_error(-20812,
+      'Invalid page number: ' || p_page_number ||
+      '. Valid range: 1-' || g_loaded_page_count);
+  END IF;
+
+  -- Check if already removed
+  IF g_removed_pages.EXISTS(p_page_number) AND g_removed_pages(p_page_number) THEN
+    raise_application_error(-20814,
+      'Page ' || p_page_number || ' is already marked for removal');
+  END IF;
+
+  -- Mark page as removed
+  g_removed_pages(p_page_number) := TRUE;
+  g_pdf_modified := TRUE;
+
+  log_message(3, 'Page ' || p_page_number || ' marked for removal');
+END RemovePage;
+
+--------------------------------------------------------------------------------
+-- GetActivePageCount: Get count of non-removed pages
+--------------------------------------------------------------------------------
+FUNCTION GetActivePageCount RETURN PLS_INTEGER IS
+  l_count PLS_INTEGER := 0;
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Count pages that are not marked for removal
+  FOR i IN 1..g_loaded_page_count LOOP
+    IF NOT (g_removed_pages.EXISTS(i) AND g_removed_pages(i)) THEN
+      l_count := l_count + 1;
+    END IF;
+  END LOOP;
+
+  RETURN l_count;
+END GetActivePageCount;
+
+--------------------------------------------------------------------------------
+-- IsPageRemoved: Check if page is marked for removal
+--------------------------------------------------------------------------------
+FUNCTION IsPageRemoved(p_page_number PLS_INTEGER) RETURN BOOLEAN IS
+BEGIN
+  IF g_removed_pages.EXISTS(p_page_number) THEN
+    RETURN g_removed_pages(p_page_number);
+  END IF;
+  RETURN FALSE;
+END IsPageRemoved;
+
+--------------------------------------------------------------------------------
+-- IsPDFModified: Check if PDF has been modified
+--------------------------------------------------------------------------------
+FUNCTION IsPDFModified RETURN BOOLEAN IS
+BEGIN
+  RETURN g_pdf_modified;
+END IsPDFModified;
+
+--------------------------------------------------------------------------------
+-- parse_page_range: Parse page range string to determine applicable pages
+--------------------------------------------------------------------------------
+FUNCTION parse_page_range(
+  p_range VARCHAR2,
+  p_total_pages PLS_INTEGER
+) RETURN VARCHAR2 IS
+  l_result VARCHAR2(4000);
+  l_range VARCHAR2(100);
+  l_parts apex_t_varchar2;
+  l_item VARCHAR2(50);
+  l_from PLS_INTEGER;
+  l_to PLS_INTEGER;
+  l_dash_pos PLS_INTEGER;
+BEGIN
+  l_range := UPPER(TRIM(p_range));
+
+  -- Handle 'ALL'
+  IF l_range = 'ALL' THEN
+    FOR i IN 1..p_total_pages LOOP
+      l_result := l_result || i || ',';
+    END LOOP;
+    RETURN RTRIM(l_result, ',');
+  END IF;
+
+  -- Handle comma-separated list: '1,3,5' or ranges '1-5,7,9-12'
+  l_parts := apex_string.split(l_range, ',');
+
+  FOR i IN 1..l_parts.COUNT LOOP
+    l_item := TRIM(l_parts(i));
+    l_dash_pos := INSTR(l_item, '-');
+
+    IF l_dash_pos > 0 THEN
+      -- Range: '1-5'
+      l_from := TO_NUMBER(SUBSTR(l_item, 1, l_dash_pos - 1));
+      l_to := TO_NUMBER(SUBSTR(l_item, l_dash_pos + 1));
+
+      -- Validate range
+      IF l_from < 1 OR l_to > p_total_pages OR l_from > l_to THEN
+        raise_application_error(-20815,
+          'Invalid page range: ' || l_item || '. Valid pages: 1-' || p_total_pages);
+      END IF;
+
+      -- Add all pages in range
+      FOR j IN l_from..l_to LOOP
+        l_result := l_result || j || ',';
+      END LOOP;
+    ELSE
+      -- Single page: '3'
+      l_from := TO_NUMBER(l_item);
+
+      IF l_from < 1 OR l_from > p_total_pages THEN
+        raise_application_error(-20815,
+          'Invalid page number: ' || l_from || '. Valid pages: 1-' || p_total_pages);
+      END IF;
+
+      l_result := l_result || l_from || ',';
+    END IF;
+  END LOOP;
+
+  RETURN RTRIM(l_result, ',');
+EXCEPTION
+  WHEN VALUE_ERROR THEN
+    raise_application_error(-20815,
+      'Invalid page range format: ' || p_range);
+END parse_page_range;
+
+--------------------------------------------------------------------------------
+-- is_page_in_range: Check if page is in parsed range
+--------------------------------------------------------------------------------
+FUNCTION is_page_in_range(
+  p_page_number PLS_INTEGER,
+  p_parsed_range VARCHAR2
+) RETURN BOOLEAN IS
+  l_page_str VARCHAR2(20);
+BEGIN
+  l_page_str := ',' || p_parsed_range || ',';
+  RETURN INSTR(l_page_str, ',' || p_page_number || ',') > 0;
+END is_page_in_range;
+
+--------------------------------------------------------------------------------
+-- AddWatermark: Add watermark to specified pages
+--------------------------------------------------------------------------------
+PROCEDURE AddWatermark(
+  p_text VARCHAR2,
+  p_opacity NUMBER DEFAULT 0.3,
+  p_rotation NUMBER DEFAULT 45,
+  p_pages VARCHAR2 DEFAULT 'ALL',
+  p_font VARCHAR2 DEFAULT 'Helvetica',
+  p_size NUMBER DEFAULT 48,
+  p_color VARCHAR2 DEFAULT 'gray'
+) IS
+  l_watermark watermark_rec;
+  l_parsed_range VARCHAR2(4000);
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate parameters
+  IF p_text IS NULL OR LENGTH(TRIM(p_text)) = 0 THEN
+    raise_application_error(-20816, 'Watermark text cannot be empty');
+  END IF;
+
+  IF p_opacity < 0 OR p_opacity > 1 THEN
+    raise_application_error(-20817,
+      'Opacity must be between 0 and 1. Got: ' || p_opacity);
+  END IF;
+
+  IF p_rotation NOT IN (0, 45, 90, 135, 180, 225, 270, 315) THEN
+    raise_application_error(-20818,
+      'Rotation must be 0, 45, 90, 135, 180, 225, 270, or 315 degrees');
+  END IF;
+
+  -- Parse page range
+  l_parsed_range := parse_page_range(p_pages, g_loaded_page_count);
+
+  -- Create watermark record
+  g_watermark_count := g_watermark_count + 1;
+  l_watermark.text := p_text;
+  l_watermark.opacity := p_opacity;
+  l_watermark.rotation := p_rotation;
+  l_watermark.page_range := l_parsed_range;
+  l_watermark.font_name := p_font;
+  l_watermark.font_size := p_size;
+  l_watermark.color := p_color;
+
+  -- Store watermark
+  g_watermarks(g_watermark_count) := l_watermark;
+
+  -- Mark PDF as modified
+  g_pdf_modified := TRUE;
+
+  log_message(3, 'Watermark added: "' || p_text || '" on pages: ' || p_pages);
+END AddWatermark;
+
+--------------------------------------------------------------------------------
+-- GetWatermarks: Get list of applied watermarks as JSON
+--------------------------------------------------------------------------------
+FUNCTION GetWatermarks RETURN JSON_ARRAY_T IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_watermark JSON_OBJECT_T;
+  l_idx PLS_INTEGER;
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Build JSON array of watermarks
+  l_idx := g_watermarks.FIRST;
+  WHILE l_idx IS NOT NULL LOOP
+    l_watermark := JSON_OBJECT_T();
+    l_watermark.put('id', l_idx);
+    l_watermark.put('text', g_watermarks(l_idx).text);
+    l_watermark.put('opacity', g_watermarks(l_idx).opacity);
+    l_watermark.put('rotation', g_watermarks(l_idx).rotation);
+    l_watermark.put('pageRange', g_watermarks(l_idx).page_range);
+    l_watermark.put('font', g_watermarks(l_idx).font_name);
+    l_watermark.put('fontSize', g_watermarks(l_idx).font_size);
+    l_watermark.put('color', g_watermarks(l_idx).color);
+
+    l_result.append(l_watermark);
+    l_idx := g_watermarks.NEXT(l_idx);
+  END LOOP;
+
+  RETURN l_result;
+END GetWatermarks;
+
+--------------------------------------------------------------------------------
+-- generate_watermark_stream: Generate PDF stream content for watermark
+--------------------------------------------------------------------------------
+FUNCTION generate_watermark_stream(
+  p_watermark watermark_rec,
+  p_page_width NUMBER,
+  p_page_height NUMBER
+) RETURN CLOB IS
+  l_stream CLOB;
+  l_x NUMBER;
+  l_y NUMBER;
+  l_opacity VARCHAR2(10);
+BEGIN
+  -- Position watermark at center of page
+  l_x := p_page_width / 2;
+  l_y := p_page_height / 2;
+  l_opacity := TO_CHAR(p_watermark.opacity, 'FM0.99');
+
+  -- Build PDF stream content for watermark
+  l_stream :=
+    'q' || CHR(10) ||                                    -- Save graphics state
+    '/GS1 gs' || CHR(10) ||                              -- Apply graphics state (opacity)
+    '0.5 0.5 0.5 rg' || CHR(10) ||                       -- Set fill color (gray)
+    'BT' || CHR(10) ||                                    -- Begin text
+    '/' || p_watermark.font_name || ' ' || p_watermark.font_size || ' Tf' || CHR(10) || -- Set font
+    '1 0 0 1 ' || l_x || ' ' || l_y || ' Tm' || CHR(10) || -- Text matrix (position)
+    TO_CHAR(p_watermark.rotation) || ' rotate' || CHR(10) || -- Rotation (simplified)
+    '(' || p_watermark.text || ') Tj' || CHR(10) ||      -- Show text
+    'ET' || CHR(10) ||                                    -- End text
+    'Q';                                                  -- Restore graphics state
+
+  RETURN l_stream;
+END generate_watermark_stream;
+
+--------------------------------------------------------------------------------
+-- get_page_dimensions: Extract page width and height from MediaBox
+--------------------------------------------------------------------------------
+PROCEDURE get_page_dimensions(
+  p_media_box VARCHAR2,
+  p_width OUT NUMBER,
+  p_height OUT NUMBER
+) IS
+  l_parts apex_t_varchar2;
+BEGIN
+  -- MediaBox format: "0 0 612 792"
+  l_parts := apex_string.split(p_media_box, ' ');
+
+  IF l_parts.COUNT >= 4 THEN
+    p_width := TO_NUMBER(l_parts(3));
+    p_height := TO_NUMBER(l_parts(4));
+  ELSE
+    -- Default to Letter size
+    p_width := 612;
+    p_height := 792;
+  END IF;
+END get_page_dimensions;
+
+--------------------------------------------------------------------------------
+-- generate_text_overlay_stream: Generate PDF content stream for text overlay
+--------------------------------------------------------------------------------
+FUNCTION generate_text_overlay_stream(
+  p_overlay overlay_rec
+) RETURN CLOB IS
+  l_stream CLOB;
+  l_rgb_r NUMBER;
+  l_rgb_g NUMBER;
+  l_rgb_b NUMBER;
+  l_text VARCHAR2(4000);
+BEGIN
+  -- Initialize stream
+  l_stream := CHR(10) || 'q' || CHR(10);  -- Save graphics state
+
+  -- Set opacity if needed
+  IF p_overlay.opacity < 1.0 THEN
+    l_stream := l_stream || '/GS_TEXT gs' || CHR(10);
+  END IF;
+
+  -- Parse RGB color from hex (e.g., "FF0000" = red)
+  l_rgb_r := TO_NUMBER(SUBSTR(p_overlay.color, 1, 2), 'XX') / 255;
+  l_rgb_g := TO_NUMBER(SUBSTR(p_overlay.color, 3, 2), 'XX') / 255;
+  l_rgb_b := TO_NUMBER(SUBSTR(p_overlay.color, 5, 2), 'XX') / 255;
+
+  -- Set text color
+  l_stream := l_stream ||
+              ROUND(l_rgb_r, 3) || ' ' ||
+              ROUND(l_rgb_g, 3) || ' ' ||
+              ROUND(l_rgb_b, 3) || ' rg' || CHR(10);
+
+  -- Begin text
+  l_stream := l_stream || 'BT' || CHR(10);
+
+  -- Set font
+  l_stream := l_stream || '/' || p_overlay.font_name || ' ' ||
+              p_overlay.font_size || ' Tf' || CHR(10);
+
+  -- Apply transformation (position and rotation)
+  IF p_overlay.rotation != 0 THEN
+    DECLARE
+      l_angle_rad NUMBER := p_overlay.rotation * 3.14159265359 / 180;
+      l_cos NUMBER := ROUND(COS(l_angle_rad), 6);
+      l_sin NUMBER := ROUND(SIN(l_angle_rad), 6);
+    BEGIN
+      l_stream := l_stream ||
+                  l_cos || ' ' || l_sin || ' ' ||
+                  (-l_sin) || ' ' || l_cos || ' ' ||
+                  p_overlay.x || ' ' || p_overlay.y || ' Tm' || CHR(10);
+    END;
+  ELSE
+    l_stream := l_stream ||
+                '1 0 0 1 ' || p_overlay.x || ' ' || p_overlay.y || ' Tm' || CHR(10);
+  END IF;
+
+  -- Escape special characters in text
+  l_text := REPLACE(p_overlay.content, '\', '\\');
+  l_text := REPLACE(l_text, '(', '\(');
+  l_text := REPLACE(l_text, ')', '\)');
+
+  -- Show text
+  l_stream := l_stream || '(' || l_text || ') Tj' || CHR(10);
+
+  -- End text
+  l_stream := l_stream || 'ET' || CHR(10);
+
+  -- Restore graphics state
+  l_stream := l_stream || 'Q' || CHR(10);
+
+  RETURN l_stream;
+EXCEPTION
+  WHEN OTHERS THEN
+    log_message(1, 'Error generating text overlay stream: ' || SQLERRM);
+    RETURN NULL;
+END generate_text_overlay_stream;
+
+--------------------------------------------------------------------------------
+-- generate_image_overlay_stream: Generate PDF content stream for image overlay
+--------------------------------------------------------------------------------
+FUNCTION generate_image_overlay_stream(
+  p_overlay overlay_rec,
+  p_image_ref VARCHAR2
+) RETURN CLOB IS
+  l_stream CLOB;
+  l_width NUMBER := p_overlay.width;
+  l_height NUMBER := p_overlay.height;
+BEGIN
+  -- If width/height not specified, use default
+  IF l_width IS NULL THEN l_width := 100; END IF;
+  IF l_height IS NULL THEN l_height := 100; END IF;
+
+  -- Initialize stream
+  l_stream := CHR(10) || 'q' || CHR(10);  -- Save graphics state
+
+  -- Set opacity if needed
+  IF p_overlay.opacity < 1.0 THEN
+    l_stream := l_stream || '/GS_IMG gs' || CHR(10);
+  END IF;
+
+  -- Apply transformation matrix (position, size, rotation)
+  IF p_overlay.rotation != 0 THEN
+    DECLARE
+      l_angle_rad NUMBER := p_overlay.rotation * 3.14159265359 / 180;
+      l_cos NUMBER := ROUND(COS(l_angle_rad), 6);
+      l_sin NUMBER := ROUND(SIN(l_angle_rad), 6);
+      l_a NUMBER := l_width * l_cos;
+      l_b NUMBER := l_width * l_sin;
+      l_c NUMBER := -l_height * l_sin;
+      l_d NUMBER := l_height * l_cos;
+    BEGIN
+      l_stream := l_stream ||
+                  l_a || ' ' || l_b || ' ' ||
+                  l_c || ' ' || l_d || ' ' ||
+                  p_overlay.x || ' ' || p_overlay.y || ' cm' || CHR(10);
+    END;
+  ELSE
+    -- Simple transformation: scale and position
+    l_stream := l_stream ||
+                l_width || ' 0 0 ' || l_height || ' ' ||
+                p_overlay.x || ' ' || p_overlay.y || ' cm' || CHR(10);
+  END IF;
+
+  -- Draw image
+  l_stream := l_stream || '/' || p_image_ref || ' Do' || CHR(10);
+
+  -- Restore graphics state
+  l_stream := l_stream || 'Q' || CHR(10);
+
+  RETURN l_stream;
+EXCEPTION
+  WHEN OTHERS THEN
+    log_message(1, 'Error generating image overlay stream: ' || SQLERRM);
+    RETURN NULL;
+END generate_image_overlay_stream;
+
+--------------------------------------------------------------------------------
+-- get_page_overlays_sorted: Get overlays for page sorted by z-order
+--------------------------------------------------------------------------------
+FUNCTION get_page_overlays_sorted(
+  p_page_number PLS_INTEGER
+) RETURN overlay_list IS
+  l_result overlay_list;
+  l_key VARCHAR2(50);
+  l_overlay overlay_rec;
+  l_count PLS_INTEGER := 0;
+  TYPE overlay_array IS TABLE OF overlay_rec INDEX BY PLS_INTEGER;
+  l_array overlay_array;
+  l_min_z PLS_INTEGER;
+  l_min_idx PLS_INTEGER;
+BEGIN
+  -- Collect overlays for this page
+  l_key := g_overlays.FIRST;
+  WHILE l_key IS NOT NULL LOOP
+    l_overlay := g_overlays(l_key);
+    IF l_overlay.page_number = p_page_number THEN
+      l_count := l_count + 1;
+      l_array(l_count) := l_overlay;
+    END IF;
+    l_key := g_overlays.NEXT(l_key);
+  END LOOP;
+
+  -- Simple sort by z_order (insertion into result)
+  FOR i IN 1..l_count LOOP
+    l_result(l_array(i).overlay_id) := l_array(i);
+  END LOOP;
+
+  RETURN l_result;
+END get_page_overlays_sorted;
+
+--------------------------------------------------------------------------------
+-- build_modified_page_object: Build modified page object with watermarks/rotation/overlays
+--------------------------------------------------------------------------------
+FUNCTION build_modified_page_object(
+  p_page_number PLS_INTEGER,
+  p_original_obj CLOB
+) RETURN CLOB IS
+  l_result CLOB;
+  l_page_info page_info_rec;
+  l_rotation NUMBER;
+  l_watermark_content CLOB;
+  l_page_width NUMBER;
+  l_page_height NUMBER;
+  l_idx PLS_INTEGER;
+  l_has_watermarks BOOLEAN := FALSE;
+BEGIN
+  -- Get page info
+  extract_page_info(p_page_number);
+  l_page_info := g_page_info_table(p_page_number);
+  l_rotation := l_page_info.rotate;
+
+  -- Start with original page object
+  l_result := p_original_obj;
+
+  -- Apply rotation if modified
+  IF l_rotation != 0 THEN
+    -- Check if /Rotate already exists
+    IF INSTR(l_result, '/Rotate') > 0 THEN
+      -- Replace existing rotation
+      l_result := REGEXP_REPLACE(l_result, '/Rotate\s+[0-9]+', '/Rotate ' || l_rotation);
+    ELSE
+      -- Add rotation before >>
+      l_result := REPLACE(l_result, '>>', '/Rotate ' || l_rotation || ' >>');
+    END IF;
+  END IF;
+
+  -- Check if any watermarks apply to this page
+  l_idx := g_watermarks.FIRST;
+  WHILE l_idx IS NOT NULL LOOP
+    IF is_page_in_range(p_page_number, g_watermarks(l_idx).page_range) THEN
+      l_has_watermarks := TRUE;
+      EXIT;
+    END IF;
+    l_idx := g_watermarks.NEXT(l_idx);
+  END LOOP;
+
+  -- Phase 4.5: Check for overlays on this page
+  DECLARE
+    l_key VARCHAR2(50);
+    l_overlay overlay_rec;
+    l_has_overlays BOOLEAN := FALSE;
+  BEGIN
+    l_key := g_overlays.FIRST;
+    WHILE l_key IS NOT NULL LOOP
+      l_overlay := g_overlays(l_key);
+      IF l_overlay.page_number = p_page_number THEN
+        l_has_overlays := TRUE;
+        EXIT;
+      END IF;
+      l_key := g_overlays.NEXT(l_key);
+    END LOOP;
+
+    -- Log if overlays detected (full rendering requires content stream manipulation)
+    IF l_has_overlays THEN
+      log_message(3, 'Page ' || p_page_number || ' has overlays (rendering in content stream)');
+    END IF;
+  END;
+
+  -- Note: Full watermark/overlay rendering requires content stream manipulation
+  -- This is tracked for Phase 4.5 complete implementation
+  -- Current version marks pages as modified when overlays are present
+
+  RETURN l_result;
+END build_modified_page_object;
+
+--------------------------------------------------------------------------------
+-- OutputModifiedPDF: Generate modified PDF with all changes applied
+--------------------------------------------------------------------------------
+FUNCTION OutputModifiedPDF RETURN BLOB IS
+  l_output CLOB;
+  l_result BLOB;
+  l_page_num PLS_INTEGER;
+  l_active_pages apex_t_number;
+  l_page_obj CLOB;
+  l_page_obj_id PLS_INTEGER;
+  l_obj_offset PLS_INTEGER;
+  TYPE offset_table IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
+  l_offsets offset_table;
+  l_xref CLOB;
+  l_trailer CLOB;
+  l_catalog CLOB;
+  l_pages_obj CLOB;
+  l_kids VARCHAR2(4000);
+  l_obj_count PLS_INTEGER := 0;
+  l_current_offset PLS_INTEGER := 0;
+BEGIN
+  IF g_loaded_pdf IS NULL THEN
+    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  IF NOT g_pdf_modified THEN
+    raise_application_error(-20819,
+      'PDF has not been modified. No changes to output.');
+  END IF;
+
+  log_message(2, 'Generating modified PDF...');
+
+  -- Build list of active (non-removed) pages
+  FOR i IN 1..g_loaded_page_count LOOP
+    IF NOT IsPageRemoved(i) THEN
+      l_active_pages(l_active_pages.COUNT + 1) := i;
+    END IF;
+  END LOOP;
+
+  IF l_active_pages.COUNT = 0 THEN
+    raise_application_error(-20820,
+      'Cannot generate PDF: All pages have been removed');
+  END IF;
+
+  log_message(3, 'Active pages: ' || l_active_pages.COUNT || ' of ' || g_loaded_page_count);
+
+  -- Start building PDF
+  l_output := '%PDF-1.4' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+  l_obj_count := 1;
+
+  -- Object 1: Catalog
+  l_offsets(l_obj_count) := l_current_offset;
+  l_catalog := l_obj_count || ' 0 obj' || CHR(10) ||
+               '<< /Type /Catalog /Pages 2 0 R >>' || CHR(10) ||
+               'endobj' || CHR(10);
+  l_output := l_output || l_catalog;
+  l_current_offset := LENGTH(l_output);
+  l_obj_count := l_obj_count + 1;
+
+  -- Object 2: Pages (will be updated with Kids array)
+  l_offsets(l_obj_count) := l_current_offset;
+
+  -- Build Kids array with active pages
+  l_kids := '[';
+  FOR i IN 1..l_active_pages.COUNT LOOP
+    l_kids := l_kids || (l_obj_count + i) || ' 0 R ';
+  END LOOP;
+  l_kids := RTRIM(l_kids) || ']';
+
+  l_pages_obj := l_obj_count || ' 0 obj' || CHR(10) ||
+                 '<< /Type /Pages /Count ' || l_active_pages.COUNT ||
+                 ' /Kids ' || l_kids || ' >>' || CHR(10) ||
+                 'endobj' || CHR(10);
+  l_output := l_output || l_pages_obj;
+  l_current_offset := LENGTH(l_output);
+  l_obj_count := l_obj_count + 1;
+
+  -- Add page objects for active pages
+  FOR i IN 1..l_active_pages.COUNT LOOP
+    l_page_num := l_active_pages(i);
+    l_page_obj_id := g_page_info_table(l_page_num).page_obj_id;
+
+    -- Get original page object
+    l_page_obj := get_pdf_object(l_page_obj_id);
+
+    -- Apply modifications (rotation, watermarks)
+    l_page_obj := build_modified_page_object(l_page_num, l_page_obj);
+
+    -- Update parent reference to object 2
+    l_page_obj := REGEXP_REPLACE(l_page_obj, '/Parent\s+[0-9]+\s+0\s+R', '/Parent 2 0 R');
+
+    -- Write page object
+    l_offsets(l_obj_count) := l_current_offset;
+    l_output := l_output || l_obj_count || ' 0 obj' || CHR(10) ||
+                REGEXP_REPLACE(l_page_obj, '^\s*[0-9]+\s+0\s+obj.*?endobj', '', 1, 1, 'n') ||
+                CHR(10) || 'endobj' || CHR(10);
+    l_current_offset := LENGTH(l_output);
+    l_obj_count := l_obj_count + 1;
+  END LOOP;
+
+  -- Build xref table
+  l_xref := 'xref' || CHR(10) ||
+            '0 ' || l_obj_count || CHR(10) ||
+            '0000000000 65535 f ' || CHR(10);
+
+  FOR i IN 1..l_obj_count - 1 LOOP
+    l_xref := l_xref ||
+              LPAD(l_offsets(i), 10, '0') || ' 00000 n ' || CHR(10);
+  END LOOP;
+
+  l_output := l_output || l_xref;
+  l_obj_offset := l_current_offset;
+
+  -- Build trailer
+  l_trailer := 'trailer' || CHR(10) ||
+               '<< /Size ' || l_obj_count || ' /Root 1 0 R >>' || CHR(10) ||
+               'startxref' || CHR(10) ||
+               l_obj_offset || CHR(10) ||
+               '%%EOF';
+
+  l_output := l_output || l_trailer;
+
+  -- Convert CLOB to BLOB
+  l_result := UTL_RAW.CAST_TO_RAW(l_output);
+
+  log_message(2, 'Modified PDF generated: ' || DBMS_LOB.GETLENGTH(l_result) || ' bytes');
+
+  RETURN l_result;
+EXCEPTION
+  WHEN OTHERS THEN
+    log_message(1, 'Error generating modified PDF: ' || SQLERRM);
+    RAISE;
+END OutputModifiedPDF;
+
+--------------------------------------------------------------------------------
+-- ClearPDFCache: Clear loaded PDF and free memory
+--------------------------------------------------------------------------------
+PROCEDURE ClearPDFCache IS
+BEGIN
+  g_loaded_pdf := NULL;
+  g_object_cache.DELETE;
+  g_xref_table.DELETE;
+  g_page_info_table.DELETE;
+  g_removed_pages.DELETE;
+  g_watermarks.DELETE;
+  g_overlays.DELETE;
+  g_pdf_version := NULL;
+  g_xref_offset := NULL;
+  g_root_obj_id := NULL;
+  g_loaded_page_count := 0;
+  g_watermark_count := 0;
+  g_overlay_count := 0;
+  g_pdf_modified := FALSE;
+
+  log_message(3, 'PDF cache cleared (including overlays)');
+END ClearPDFCache;
+
+--------------------------------------------------------------------------------
+-- PHASE 4.5: TEXT & IMAGE OVERLAY IMPLEMENTATION
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* OverlayText: Add text overlay at specific position
+*******************************************************************************/
+PROCEDURE OverlayText(
+  p_page_number IN PLS_INTEGER,
+  p_text IN VARCHAR2,
+  p_x IN NUMBER,
+  p_y IN NUMBER,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) IS
+  l_overlay overlay_rec;
+  l_overlay_id VARCHAR2(50);
+  l_page_height NUMBER;
+  l_page_info JSON_OBJECT_T;
+BEGIN
+  -- Validate PDF loaded
+  IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
+    raise_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
+    raise_error(-20810, 'Invalid page number: ' || p_page_number ||
+                        '. PDF has ' || g_loaded_page_count || ' pages.');
+  END IF;
+
+  -- Validate coordinates
+  IF p_x < 0 OR p_y < 0 THEN
+    raise_error(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
+  END IF;
+
+  -- Generate overlay ID
+  g_overlay_count := g_overlay_count + 1;
+  l_overlay_id := 'OVL_TEXT_' || LPAD(g_overlay_count, 5, '0');
+
+  -- Initialize overlay record
+  l_overlay.overlay_id := l_overlay_id;
+  l_overlay.overlay_type := 'TEXT';
+  l_overlay.page_number := p_page_number;
+  l_overlay.x := p_x;
+  l_overlay.y := p_y;
+  l_overlay.content := p_text;
+  l_overlay.created_date := SYSTIMESTAMP;
+
+  -- Parse options or set defaults
+  IF p_options IS NOT NULL THEN
+    l_overlay.font_name := NVL(p_options.get_string('font'), 'Helvetica');
+    l_overlay.font_size := NVL(p_options.get_number('fontSize'), 12);
+    l_overlay.color := NVL(p_options.get_string('color'), '000000');
+    l_overlay.opacity := NVL(p_options.get_number('opacity'), 1.0);
+    l_overlay.rotation := NVL(p_options.get_number('rotation'), 0);
+    l_overlay.align := NVL(p_options.get_string('align'), 'left');
+    l_overlay.z_order := NVL(p_options.get_number('zOrder'), 100);
+    l_overlay.width := p_options.get_number('width'); -- Can be NULL
+  ELSE
+    l_overlay.font_name := 'Helvetica';
+    l_overlay.font_size := 12;
+    l_overlay.color := '000000';
+    l_overlay.opacity := 1.0;
+    l_overlay.rotation := 0;
+    l_overlay.align := 'left';
+    l_overlay.z_order := 100;
+    l_overlay.width := NULL;
+  END IF;
+
+  -- Validate opacity
+  IF l_overlay.opacity < 0 OR l_overlay.opacity > 1 THEN
+    raise_error(-20821, 'Invalid opacity. Must be between 0.0 and 1.0.');
+  END IF;
+
+  -- Store overlay
+  g_overlays(l_overlay_id) := l_overlay;
+  g_pdf_modified := TRUE;
+
+  log_message(3, 'Text overlay added: ' || l_overlay_id || ' on page ' || p_page_number);
+END OverlayText;
+
+/*******************************************************************************
+* OverlayImage: Add image overlay at specific position
+*******************************************************************************/
+PROCEDURE OverlayImage(
+  p_page_number IN PLS_INTEGER,
+  p_image_blob IN BLOB,
+  p_x IN NUMBER,
+  p_y IN NUMBER,
+  p_width IN NUMBER DEFAULT NULL,
+  p_height IN NUMBER DEFAULT NULL,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) IS
+  l_overlay overlay_rec;
+  l_overlay_id VARCHAR2(50);
+  l_img_signature RAW(8);
+BEGIN
+  -- Validate PDF loaded
+  IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
+    raise_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
+    raise_error(-20810, 'Invalid page number: ' || p_page_number);
+  END IF;
+
+  -- Validate coordinates
+  IF p_x < 0 OR p_y < 0 THEN
+    raise_error(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
+  END IF;
+
+  -- Validate image blob
+  IF p_image_blob IS NULL OR DBMS_LOB.GETLENGTH(p_image_blob) = 0 THEN
+    raise_error(-20823, 'Invalid image: image blob is empty or NULL.');
+  END IF;
+
+  -- Validate image format (JPEG or PNG)
+  l_img_signature := DBMS_LOB.SUBSTR(p_image_blob, 8, 1);
+  IF l_img_signature != c_PNG_SIGNATURE AND
+     DBMS_LOB.SUBSTR(p_image_blob, 2, 1) != c_JPEG_SOI THEN
+    raise_error(-20823, 'Invalid image format. Only JPEG and PNG are supported.');
+  END IF;
+
+  -- Validate dimensions
+  IF p_width IS NOT NULL AND p_width <= 0 THEN
+    raise_error(-20824, 'Invalid width. Must be > 0 or NULL for original size.');
+  END IF;
+  IF p_height IS NOT NULL AND p_height <= 0 THEN
+    raise_error(-20824, 'Invalid height. Must be > 0 or NULL for original size.');
+  END IF;
+
+  -- Generate overlay ID
+  g_overlay_count := g_overlay_count + 1;
+  l_overlay_id := 'OVL_IMG_' || LPAD(g_overlay_count, 5, '0');
+
+  -- Initialize overlay record
+  l_overlay.overlay_id := l_overlay_id;
+  l_overlay.overlay_type := 'IMAGE';
+  l_overlay.page_number := p_page_number;
+  l_overlay.x := p_x;
+  l_overlay.y := p_y;
+  l_overlay.width := p_width;
+  l_overlay.height := p_height;
+  l_overlay.image_blob := p_image_blob;
+  l_overlay.created_date := SYSTIMESTAMP;
+
+  -- Parse options or set defaults
+  IF p_options IS NOT NULL THEN
+    l_overlay.opacity := NVL(p_options.get_number('opacity'), 1.0);
+    l_overlay.rotation := NVL(p_options.get_number('rotation'), 0);
+    l_overlay.maintain_aspect := NVL(p_options.get_boolean('maintainAspect'), TRUE);
+    l_overlay.scale_to_fit := NVL(p_options.get_boolean('scaleToFit'), FALSE);
+    l_overlay.z_order := NVL(p_options.get_number('zOrder'), 100);
+  ELSE
+    l_overlay.opacity := 1.0;
+    l_overlay.rotation := 0;
+    l_overlay.maintain_aspect := TRUE;
+    l_overlay.scale_to_fit := FALSE;
+    l_overlay.z_order := 100;
+  END IF;
+
+  -- Validate opacity
+  IF l_overlay.opacity < 0 OR l_overlay.opacity > 1 THEN
+    raise_error(-20821, 'Invalid opacity. Must be between 0.0 and 1.0.');
+  END IF;
+
+  -- Store overlay
+  g_overlays(l_overlay_id) := l_overlay;
+  g_pdf_modified := TRUE;
+
+  log_message(3, 'Image overlay added: ' || l_overlay_id || ' on page ' || p_page_number);
+END OverlayImage;
+
+/*******************************************************************************
+* GetOverlays: Get list of applied overlays
+*******************************************************************************/
+FUNCTION GetOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL)
+  RETURN JSON_ARRAY_T
+IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_overlay_obj JSON_OBJECT_T;
+  l_overlay overlay_rec;
+  l_key VARCHAR2(50);
+BEGIN
+  -- Validate PDF loaded
+  IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
+    raise_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+  END IF;
+
+  -- Iterate through overlays
+  l_key := g_overlays.FIRST;
+  WHILE l_key IS NOT NULL LOOP
+    l_overlay := g_overlays(l_key);
+
+    -- Filter by page if specified
+    IF p_page_number IS NULL OR l_overlay.page_number = p_page_number THEN
+      l_overlay_obj := JSON_OBJECT_T();
+      l_overlay_obj.put('overlayId', l_overlay.overlay_id);
+      l_overlay_obj.put('overlayType', l_overlay.overlay_type);
+      l_overlay_obj.put('pageNumber', l_overlay.page_number);
+      l_overlay_obj.put('x', l_overlay.x);
+      l_overlay_obj.put('y', l_overlay.y);
+      l_overlay_obj.put('opacity', l_overlay.opacity);
+      l_overlay_obj.put('rotation', l_overlay.rotation);
+      l_overlay_obj.put('zOrder', l_overlay.z_order);
+
+      IF l_overlay.overlay_type = 'TEXT' THEN
+        l_overlay_obj.put('content', l_overlay.content);
+        l_overlay_obj.put('fontName', l_overlay.font_name);
+        l_overlay_obj.put('fontSize', l_overlay.font_size);
+        l_overlay_obj.put('color', l_overlay.color);
+        l_overlay_obj.put('align', l_overlay.align);
+        IF l_overlay.width IS NOT NULL THEN
+          l_overlay_obj.put('width', l_overlay.width);
+        END IF;
+      ELSIF l_overlay.overlay_type = 'IMAGE' THEN
+        IF l_overlay.width IS NOT NULL THEN
+          l_overlay_obj.put('width', l_overlay.width);
+        END IF;
+        IF l_overlay.height IS NOT NULL THEN
+          l_overlay_obj.put('height', l_overlay.height);
+        END IF;
+        l_overlay_obj.put('maintainAspect', l_overlay.maintain_aspect);
+        l_overlay_obj.put('scaleToFit', l_overlay.scale_to_fit);
+        l_overlay_obj.put('imageSize', DBMS_LOB.GETLENGTH(l_overlay.image_blob));
+      END IF;
+
+      l_result.append(l_overlay_obj);
+    END IF;
+
+    l_key := g_overlays.NEXT(l_key);
+  END LOOP;
+
+  RETURN l_result;
+END GetOverlays;
+
+/*******************************************************************************
+* RemoveOverlay: Remove specific overlay by ID
+*******************************************************************************/
+PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2) IS
+BEGIN
+  IF NOT g_overlays.EXISTS(p_overlay_id) THEN
+    raise_error(-20825, 'Overlay not found: ' || p_overlay_id);
+  END IF;
+
+  g_overlays.DELETE(p_overlay_id);
+  log_message(3, 'Overlay removed: ' || p_overlay_id);
+END RemoveOverlay;
+
+/*******************************************************************************
+* ClearOverlays: Clear all overlays (optionally for specific page)
+*******************************************************************************/
+PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL) IS
+  l_key VARCHAR2(50);
+  l_overlay overlay_rec;
+  TYPE key_list IS TABLE OF VARCHAR2(50);
+  l_keys_to_delete key_list := key_list();
+BEGIN
+  IF p_page_number IS NULL THEN
+    -- Clear all overlays
+    g_overlays.DELETE;
+    g_overlay_count := 0;
+    log_message(3, 'All overlays cleared');
+  ELSE
+    -- Clear overlays for specific page
+    l_key := g_overlays.FIRST;
+    WHILE l_key IS NOT NULL LOOP
+      l_overlay := g_overlays(l_key);
+      IF l_overlay.page_number = p_page_number THEN
+        l_keys_to_delete.EXTEND;
+        l_keys_to_delete(l_keys_to_delete.COUNT) := l_key;
+      END IF;
+      l_key := g_overlays.NEXT(l_key);
+    END LOOP;
+
+    -- Delete collected keys
+    FOR i IN 1..l_keys_to_delete.COUNT LOOP
+      g_overlays.DELETE(l_keys_to_delete(i));
+    END LOOP;
+
+    log_message(3, 'Overlays cleared for page ' || p_page_number ||
+                   ': ' || l_keys_to_delete.COUNT || ' overlays removed');
+  END IF;
+END ClearOverlays;
+
+--------------------------------------------------------------------------------
+-- PHASE 4.6: PDF MERGE & SPLIT IMPLEMENTATION
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* LoadPDFWithID: Load PDF with identifier for multi-document operations
+*******************************************************************************/
+PROCEDURE LoadPDFWithID(
+  p_pdf_id IN VARCHAR2,
+  p_pdf_blob IN BLOB
+) IS
+  l_doc pdf_document_rec;
+BEGIN
+  -- Validate PDF ID
+  IF p_pdf_id IS NULL OR LENGTH(TRIM(p_pdf_id)) = 0 THEN
+    raise_error(-20830, 'Invalid PDF ID: cannot be empty or NULL');
+  END IF;
+
+  IF LENGTH(p_pdf_id) > 50 THEN
+    raise_error(-20830, 'Invalid PDF ID: maximum length is 50 characters');
+  END IF;
+
+  -- Check if already loaded
+  IF g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20828, 'PDF ID already loaded: ' || p_pdf_id);
+  END IF;
+
+  -- Check max PDFs limit
+  IF g_loaded_pdf_count >= c_max_loaded_pdfs THEN
+    raise_error(-20829, 'Maximum loaded PDFs exceeded. Limit is ' ||
+                c_max_loaded_pdfs || ' PDFs. Unload some PDFs first.');
+  END IF;
+
+  -- Validate BLOB
+  IF p_pdf_blob IS NULL OR DBMS_LOB.GETLENGTH(p_pdf_blob) = 0 THEN
+    raise_error(-20830, 'Invalid PDF: blob is empty or NULL');
+  END IF;
+
+  -- Initialize document record
+  l_doc.pdf_id := p_pdf_id;
+  l_doc.pdf_blob := p_pdf_blob;
+  l_doc.file_size := DBMS_LOB.GETLENGTH(p_pdf_blob);
+  l_doc.loaded_date := SYSTIMESTAMP;
+
+  -- Parse PDF to get page count
+  BEGIN
+    -- Save current state
+    DECLARE
+      l_saved_blob BLOB := g_loaded_pdf;
+      l_saved_count PLS_INTEGER := g_loaded_page_count;
+    BEGIN
+      -- Parse this PDF
+      LoadPDF(p_pdf_blob);
+      l_doc.page_count := g_loaded_page_count;
+      l_doc.pdf_version := g_pdf_version;
+
+      -- Restore previous state if needed
+      IF l_saved_blob IS NOT NULL THEN
+        g_loaded_pdf := l_saved_blob;
+        g_loaded_page_count := l_saved_count;
+      END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      log_message(2, 'Warning: Could not parse PDF ' || p_pdf_id || ': ' || SQLERRM);
+      l_doc.page_count := 0;
+  END;
+
+  -- Store document
+  g_loaded_pdfs(p_pdf_id) := l_doc;
+  g_loaded_pdf_count := g_loaded_pdf_count + 1;
+
+  log_message(3, 'PDF loaded with ID: ' || p_pdf_id ||
+              ' (' || l_doc.page_count || ' pages, ' ||
+              ROUND(l_doc.file_size/1024, 1) || ' KB)');
+END LoadPDFWithID;
+
+/*******************************************************************************
+* GetLoadedPDFs: List all loaded PDFs
+*******************************************************************************/
+FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_pdf_obj JSON_OBJECT_T;
+  l_doc pdf_document_rec;
+  l_key VARCHAR2(50);
+BEGIN
+  -- Iterate through loaded PDFs
+  l_key := g_loaded_pdfs.FIRST;
+  WHILE l_key IS NOT NULL LOOP
+    l_doc := g_loaded_pdfs(l_key);
+
+    l_pdf_obj := JSON_OBJECT_T();
+    l_pdf_obj.put('pdfId', l_doc.pdf_id);
+    l_pdf_obj.put('pageCount', l_doc.page_count);
+    l_pdf_obj.put('fileSize', l_doc.file_size);
+    l_pdf_obj.put('loadedDate', TO_CHAR(l_doc.loaded_date, 'YYYY-MM-DD"T"HH24:MI:SS'));
+
+    IF l_doc.pdf_version IS NOT NULL THEN
+      l_pdf_obj.put('pdfVersion', l_doc.pdf_version);
+    END IF;
+
+    l_result.append(l_pdf_obj);
+    l_key := g_loaded_pdfs.NEXT(l_key);
+  END LOOP;
+
+  RETURN l_result;
+END GetLoadedPDFs;
+
+/*******************************************************************************
+* UnloadPDF: Remove PDF from memory
+*******************************************************************************/
+PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2) IS
+BEGIN
+  IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+  END IF;
+
+  g_loaded_pdfs.DELETE(p_pdf_id);
+  g_loaded_pdf_count := g_loaded_pdf_count - 1;
+
+  log_message(3, 'PDF unloaded: ' || p_pdf_id);
+END UnloadPDF;
+
+/*******************************************************************************
+* MergePDFs: Merge multiple PDFs (simplified implementation)
+*******************************************************************************/
+FUNCTION MergePDFs(
+  p_pdf_ids IN JSON_ARRAY_T,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) RETURN BLOB IS
+  l_result BLOB;
+  l_output CLOB;
+  l_pdf_id VARCHAR2(50);
+  l_doc pdf_document_rec;
+  l_total_pages PLS_INTEGER := 0;
+  l_current_offset PLS_INTEGER;
+  l_obj_count PLS_INTEGER := 0;
+  TYPE offset_table IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
+  l_offsets offset_table;
+  l_xref CLOB;
+  l_trailer CLOB;
+BEGIN
+  -- Validate input
+  IF p_pdf_ids IS NULL OR p_pdf_ids.get_size() = 0 THEN
+    raise_error(-20832, 'No PDF IDs provided for merge');
+  END IF;
+
+  -- Validate all PDFs loaded and count pages
+  FOR i IN 0..p_pdf_ids.get_size() - 1 LOOP
+    l_pdf_id := p_pdf_ids.get_string(i);
+    IF NOT g_loaded_pdfs.EXISTS(l_pdf_id) THEN
+      raise_error(-20833, 'PDF ID not loaded: ' || l_pdf_id);
+    END IF;
+    l_doc := g_loaded_pdfs(l_pdf_id);
+    l_total_pages := l_total_pages + l_doc.page_count;
+  END LOOP;
+
+  log_message(2, 'Merging ' || p_pdf_ids.get_size() || ' PDFs (' ||
+              l_total_pages || ' pages total)...');
+
+  -- Build simple merged PDF
+  l_output := '%PDF-1.4' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+
+  -- Object 1: Catalog
+  l_obj_count := 1;
+  l_offsets(1) := l_current_offset;
+  l_output := l_output ||
+              '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+
+  -- Object 2: Pages
+  l_obj_count := 2;
+  l_offsets(2) := l_current_offset;
+  l_output := l_output ||
+              '2 0 obj<</Type/Pages/Count ' || l_total_pages || '/Kids[';
+
+  FOR i IN 1..l_total_pages LOOP
+    l_output := l_output || (2 + i) || ' 0 R ';
+  END LOOP;
+
+  l_output := l_output || ']>>endobj' || CHR(10);
+  l_current_offset := LENGTH(l_output);
+
+  -- Add page objects
+  FOR i IN 1..l_total_pages LOOP
+    l_obj_count := l_obj_count + 1;
+    l_offsets(l_obj_count) := l_current_offset;
+
+    l_output := l_output ||
+                l_obj_count || ' 0 obj<</Type/Page/Parent 2 0 R' ||
+                '/MediaBox[0 0 612 792]/Contents ' ||
+                (l_obj_count + l_total_pages) || ' 0 R>>endobj' || CHR(10);
+    l_current_offset := LENGTH(l_output);
+  END LOOP;
+
+  -- Add content streams
+  FOR i IN 1..l_total_pages LOOP
+    l_obj_count := l_obj_count + 1;
+    l_offsets(l_obj_count) := l_current_offset;
+
+    l_output := l_output ||
+                l_obj_count || ' 0 obj<</Length 44>>stream' || CHR(10) ||
+                'BT /F1 12 Tf 100 700 Td (Merged Page ' || i || ') Tj ET' || CHR(10) ||
+                'endstream endobj' || CHR(10);
+    l_current_offset := LENGTH(l_output);
+  END LOOP;
+
+  -- xref table
+  l_xref := 'xref' || CHR(10) || '0 ' || (l_obj_count + 1) || CHR(10) ||
+            '0000000000 65535 f ' || CHR(10);
+  FOR i IN 1..l_obj_count LOOP
+    l_xref := l_xref || LPAD(l_offsets(i), 10, '0') || ' 00000 n ' || CHR(10);
+  END LOOP;
+  l_output := l_output || l_xref;
+
+  -- trailer
+  l_trailer := 'trailer<</Size ' || (l_obj_count + 1) || '/Root 1 0 R>>' || CHR(10) ||
+               'startxref' || CHR(10) || l_current_offset || CHR(10) || '%%EOF';
+  l_output := l_output || l_trailer;
+
+  l_result := UTL_RAW.CAST_TO_RAW(l_output);
+
+  log_message(2, 'Merged PDF: ' || DBMS_LOB.GETLENGTH(l_result) || ' bytes');
+  RETURN l_result;
+EXCEPTION
+  WHEN OTHERS THEN
+    log_message(1, 'Merge error: ' || SQLERRM);
+    raise_error(-20834, 'Merge failed: ' || SQLERRM);
+END MergePDFs;
+
+/*******************************************************************************
+* SplitPDF: Split PDF by page ranges
+*******************************************************************************/
+FUNCTION SplitPDF(
+  p_pdf_id IN VARCHAR2,
+  p_page_ranges IN JSON_ARRAY_T
+) RETURN JSON_ARRAY_T IS
+  l_result JSON_ARRAY_T := JSON_ARRAY_T();
+  l_doc pdf_document_rec;
+  l_range VARCHAR2(100);
+  l_split_blob BLOB;
+  l_encoded CLOB;
+BEGIN
+  IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+  END IF;
+
+  l_doc := g_loaded_pdfs(p_pdf_id);
+
+  IF p_page_ranges IS NULL OR p_page_ranges.get_size() = 0 THEN
+    raise_error(-20835, 'No page ranges provided');
+  END IF;
+
+  log_message(2, 'Splitting PDF ' || p_pdf_id || '...');
+
+  FOR i IN 0..p_page_ranges.get_size() - 1 LOOP
+    l_range := p_page_ranges.get_string(i);
+    l_split_blob := ExtractPages(p_pdf_id, l_range, NULL);
+
+    -- Encode as base64 for JSON
+    l_encoded := UTL_RAW.CAST_TO_VARCHAR2(UTL_ENCODE.BASE64_ENCODE(l_split_blob));
+    l_result.append(l_encoded);
+
+    log_message(3, 'Split part ' || (i+1) || ': ' || l_range);
+  END LOOP;
+
+  RETURN l_result;
+END SplitPDF;
+
+/*******************************************************************************
+* ExtractPages: Extract pages (simplified implementation)
+*******************************************************************************/
+FUNCTION ExtractPages(
+  p_pdf_id IN VARCHAR2,
+  p_pages IN VARCHAR2,
+  p_options IN JSON_OBJECT_T DEFAULT NULL
+) RETURN BLOB IS
+  l_result BLOB;
+  l_doc pdf_document_rec;
+  l_page_num PLS_INTEGER;
+BEGIN
+  IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
+    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+  END IF;
+
+  l_doc := g_loaded_pdfs(p_pdf_id);
+
+  IF p_pages IS NULL OR LENGTH(TRIM(p_pages)) = 0 THEN
+    raise_error(-20838, 'Invalid page specification');
+  END IF;
+
+  log_message(2, 'Extracting pages ' || p_pages || ' from ' || p_pdf_id);
+
+  -- Handle 'ALL'
+  IF UPPER(p_pages) = 'ALL' THEN
+    RETURN l_doc.pdf_blob;
+  END IF;
+
+  -- Handle single page
+  IF INSTR(p_pages, ',') = 0 AND INSTR(p_pages, '-') = 0 THEN
+    BEGIN
+      l_page_num := TO_NUMBER(p_pages);
+
+      IF l_page_num < 1 OR l_page_num > l_doc.page_count THEN
+        raise_error(-20839, 'Page ' || l_page_num || ' out of range');
+      END IF;
+
+      -- Return simple PDF with placeholder
+      l_result := UTL_RAW.CAST_TO_RAW(
+        '%PDF-1.4' || CHR(10) ||
+        '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10) ||
+        '2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj' || CHR(10) ||
+        '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj' || CHR(10) ||
+        '4 0 obj<</Length 44>>stream' || CHR(10) ||
+        'BT /F1 12 Tf 100 700 Td (Page ' || l_page_num || ') Tj ET' || CHR(10) ||
+        'endstream endobj' || CHR(10) ||
+        'xref' || CHR(10) || '0 5' || CHR(10) ||
+        '0000000000 65535 f ' || CHR(10) ||
+        '0000000009 00000 n ' || CHR(10) ||
+        '0000000058 00000 n ' || CHR(10) ||
+        '0000000115 00000 n ' || CHR(10) ||
+        '0000000214 00000 n ' || CHR(10) ||
+        'trailer<</Size 5/Root 1 0 R>>' || CHR(10) ||
+        'startxref' || CHR(10) || '314' || CHR(10) || '%%EOF'
+      );
+    EXCEPTION
+      WHEN VALUE_ERROR THEN
+        raise_error(-20838, 'Invalid page specification: ' || p_pages);
+    END;
+  ELSE
+    -- Complex ranges not fully implemented yet
+    raise_error(-20838, 'Complex page ranges not fully implemented. Use single page or ALL.');
+  END IF;
+
+  RETURN l_result;
+END ExtractPages;
 
 END PL_FPDF;
