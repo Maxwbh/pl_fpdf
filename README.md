@@ -47,7 +47,7 @@
 
 PL_FPDF is a pure PL/SQL library for generating PDF documents directly from Oracle Database. Originally ported from FPDF PHP library (v1.53), it has been completely modernized for Oracle 19c/23c with native compilation, UTF-8 support, and advanced Oracle features.
 
-[**Português (Brasil)**](README_PT_BR.md) | [**API Reference**](API_REFERENCE.md) | [**Contributing**](CONTRIBUTING.md)
+[**Português (Brasil)**](README_PT_BR.md) | [**API Reference**](docs/API_REFERENCE.md) | [**Contributing**](CONTRIBUTING.md)
 
 ---
 
@@ -174,7 +174,7 @@ END;
 | Document | Description |
 |----------|-------------|
 | [README_PT_BR.md](README_PT_BR.md) | Complete documentation in Portuguese |
-| [API_REFERENCE.md](API_REFERENCE.md) | Complete API reference with all functions |
+| [API_REFERENCE.md](docs/API_REFERENCE.md) | Complete API reference with all functions |
 
 
 ---
