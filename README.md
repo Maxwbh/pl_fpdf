@@ -1,105 +1,83 @@
-# PL_FPDF - PDF Generation for Oracle PL/SQL
+# PL_FPDF - Oracle PL/SQL PDF Generator
 
-<!-- Badges Section -->
-<p align="center">
-  <a href="https://github.com/Maxwbh/pl_fpdf/releases"><img src="https://img.shields.io/badge/version-2.0.0-blue.svg" alt="Version"></a>
-  <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-GPL%20v2-green.svg" alt="License"></a>
-  <img src="https://img.shields.io/badge/Oracle-19c%2F23c-red.svg" alt="Oracle">
-  <img src="https://img.shields.io/badge/tests-87%20passing-brightgreen.svg" alt="Tests">
-  <img src="https://img.shields.io/badge/coverage-82%25-brightgreen.svg" alt="Coverage">
-</p>
+[![Version](https://img.shields.io/badge/version-3.0.0--b.2-blue.svg)](CHANGELOG.md)
+[![Oracle](https://img.shields.io/badge/oracle-11g%2B-red.svg)](https://www.oracle.com/database/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![Tests](https://img.shields.io/badge/tests-66%20passing-brightgreen.svg)](tests/)
 
-<p align="center">
-  <a href="https://github.com/Maxwbh/pl_fpdf/stargazers"><img src="https://img.shields.io/github/stars/Maxwbh/pl_fpdf?style=social" alt="GitHub Stars"></a>
-  <a href="https://github.com/Maxwbh/pl_fpdf/network/members"><img src="https://img.shields.io/github/forks/Maxwbh/pl_fpdf?style=social" alt="GitHub Forks"></a>
-  <a href="https://github.com/Maxwbh/pl_fpdf/watchers"><img src="https://img.shields.io/github/watchers/Maxwbh/pl_fpdf?style=social" alt="GitHub Watchers"></a>
-  <a href="https://github.com/Maxwbh/pl_fpdf/issues"><img src="https://img.shields.io/github/issues/Maxwbh/pl_fpdf" alt="GitHub Issues"></a>
-</p>
-
-<p align="center">
-  <strong>Modern, high-performance PDF generation library for Oracle Database 19c/23c</strong>
-</p>
-
-<p align="center">
-  <a href="#-quick-start">Quick Start</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-documentation">Documentation</a> •
-  <a href="#-contributing">Contributing</a>
-</p>
+[🇬🇧 English](#english) | [🇧🇷 Português](#português)
 
 ---
 
-## 🎯 Why PL_FPDF?
+## English
 
-**Generate PDFs directly from your Oracle Database** without external dependencies, middleware, or complex integrations.
+### 📖 Overview
 
-| Challenge | PL_FPDF Solution |
-|-----------|-----------------|
-| Need to generate reports from Oracle? | Pure PL/SQL - runs inside the database |
-| Performance bottlenecks? | Native compilation gives 2-3x speed boost |
-| Complex external dependencies? | Zero dependencies - no OWA, no OrdImage |
-| Limited document sizes? | CLOB buffers support unlimited pages |
-| International characters? | Full UTF-8 and TrueType font support |
+**PL_FPDF** is a powerful, pure PL/SQL library for **generating and manipulating PDF documents** directly in Oracle Database. No external dependencies, Java, or additional services required.
 
-**Perfect for:** Reports, Invoices, Receipts, Certificates, Labels, Tickets, and any PDF document generation from Oracle Database.
+**Current Version:** 3.0.0-beta.2 ✨ (Phase 4.6 Complete - Not Validated)
 
----
+### ✨ Key Features
 
-PL_FPDF is a pure PL/SQL library for generating PDF documents directly from Oracle Database. Originally ported from FPDF PHP library (v1.53), it has been completely modernized for Oracle 19c/23c with native compilation, UTF-8 support, and advanced Oracle features.
+#### ✅ Phase 1-3: PDF Generation (v2.0.0)
+- Create PDF documents from scratch
+- Text, shapes, images (JPEG, PNG)
+- Fonts: Standard, TrueType, Unicode support
+- Barcodes: Code 39, Code 128, EAN-13, QR Code
+- Tables with auto-pagination
+- Headers and footers
+- Multi-page support with unlimited pages
+- Page rotation and custom formats
+- Trivadis PL/SQL Cop compliant
 
-[**Português (Brasil)**](README_PT_BR.md) | [**API Reference**](docs/API_REFERENCE.md) | [**Contributing**](CONTRIBUTING.md)
+#### ✅ Phase 4.1-4.4: PDF Reading and Manipulation (v3.0.0)
+- **Load and Parse PDFs** - Read existing PDF files (PDF 1.4+)
+- **Page Information** - Extract page details (dimensions, rotation, resources)
+- **Page Rotation** - Rotate individual pages (0°, 90°, 180°, 270°)
+- **Page Removal** - Remove unwanted pages from PDFs
+- **Watermarks** - Add customizable text watermarks to pages
+- **Output Modified PDF** - Generate new PDF with all modifications applied
 
----
+#### ✅ Phase 4.5: Text & Image Overlay (v3.0.0-b.1)
+- **Text Overlay** - Add formatted text at specific x,y coordinates
+- **Image Overlay** - Add images (JPEG/PNG) at specific positions with sizing
+- **Precise Positioning** - Full control over position, size, opacity, rotation
+- **Multiple Overlays** - Layer multiple text/image overlays per page
+- **Z-Order Management** - Control layering with z-order values
+- **Overlay Management** - List, remove, and clear overlays
 
-## ✨ Features
+#### ✅ Phase 4.6: PDF Merge & Split (v3.0.0-b.2)
+- **LoadPDFWithID** - Load multiple PDFs with unique identifiers (max 10)
+- **Merge PDFs** - Combine multiple PDF documents into one
+- **Split PDFs** - Divide PDF into multiple files by page ranges
+- **Extract Pages** - Create new PDF from specific page selection
+- **Multi-Document Management** - GetLoadedPDFs(), UnloadPDF()
+- **Simplified Implementation** - Foundation for Phase 5 advanced operations
 
-### Core PDF Generation
-- ✅ **Multi-page documents** with unlimited pages
-- ✅ **Text rendering** with multiple fonts (Arial, Courier, Times, Helvetica)
-- ✅ **TrueType/OpenType fonts** with full embedding support
-- ✅ **UTF-8 encoding** for international characters
-- ✅ **Graphics primitives** (lines, rectangles, circles, polygons)
-- ✅ **Image embedding** (PNG, JPEG) with native parsing
-- ✅ **Text rotation** (0°, 90°, 180°, 270°)
-- ✅ **Custom page formats** (A3, A4, A5, Letter, Legal, custom sizes)
+#### 🚧 Phase 5: Advanced Operations (v3.1.0 - In Planning)
+- **Insert Pages** - Insert pages from one PDF into another at any position
+- **Reorder Pages** - Rearrange page order with move, swap, reverse operations
+- **Replace Pages** - Replace page content from another PDF
+- **Duplicate Pages** - Copy pages within or across documents
+- **Batch Processing** - Process multiple PDFs with automated workflows
 
-### Modern Oracle Features
-- ✅ **Native compilation** (2-3x performance improvement)
-- ✅ **CLOB buffers** for unlimited document size
-- ✅ **JSON configuration** (Oracle 19c+ JSON_OBJECT_T)
-- ✅ **Structured logging** with DBMS_APPLICATION_INFO
-- ✅ **Custom exceptions** with meaningful error codes
-- ✅ **Result cache** for font metrics
-- ✅ **Zero external dependencies** (no OWA, no OrdImage)
+### 🚀 Quick Start
 
----
-
-## 📦 Installation
-
-### Quick Install
+#### Installation
 
 ```sql
-sqlplus user/password@database @deploy_all.sql
-```
-
-### Manual Installation
-
-```sql
--- 1. Install core package
+-- 1. Compile package specification
 @PL_FPDF.pks
+
+-- 2. Compile package body
 @PL_FPDF.pkb
 
--- 2. Verify installation
-SELECT object_name, object_type, status
-FROM user_objects
-WHERE object_name = 'PL_FPDF';
+-- 3. Verify installation
+SELECT PL_FPDF.GetVersion() FROM DUAL;
+-- Expected output: 3.0.0-b.2
 ```
 
----
-
-## 🚀 Quick Start
-
-### Hello World
+#### Create Your First PDF
 
 ```sql
 DECLARE
@@ -107,234 +85,364 @@ DECLARE
 BEGIN
   -- Initialize PDF
   PL_FPDF.Init('P', 'mm', 'A4');
-
-  -- Add page
   PL_FPDF.AddPage();
 
-  -- Set font
+  -- Add content
   PL_FPDF.SetFont('Arial', 'B', 16);
+  PL_FPDF.Cell(0, 10, 'Hello World!', '0', 1, 'C');
 
-  -- Add text
-  PL_FPDF.Cell(0, 10, 'Hello World!');
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.MultiCell(0, 5, 'This is my first PDF created with PL_FPDF!');
 
   -- Generate PDF
-  l_pdf := PL_FPDF.OutputBlob();
+  l_pdf := PL_FPDF.Output_Blob();
 
-  -- Cleanup
-  PL_FPDF.Reset();
+  -- Save to table
+  INSERT INTO my_documents (id, pdf_blob, created_date)
+  VALUES (1, l_pdf, SYSDATE);
 
-  -- Save to file or send to client
-  -- ... (see examples below)
+  COMMIT;
 END;
 /
 ```
 
-### Save PDF to File
+#### Modify Existing PDF (Phase 4) 🆕
 
 ```sql
+DECLARE
+  l_original_pdf BLOB;
+  l_modified_pdf BLOB;
 BEGIN
-  PL_FPDF.Init();
-  PL_FPDF.AddPage();
-  PL_FPDF.SetFont('Arial', '', 12);
-  PL_FPDF.Cell(0, 10, 'Sample PDF');
+  -- Load existing PDF
+  SELECT pdf_blob INTO l_original_pdf FROM my_documents WHERE id = 1;
 
-  -- Save to Oracle directory
-  PL_FPDF.OutputFile('MY_DIRECTORY', 'sample.pdf');
+  PL_FPDF.LoadPDF(l_original_pdf);
 
-  PL_FPDF.Reset();
+  -- Apply modifications
+  PL_FPDF.RotatePage(1, 90);                           -- Rotate page 1
+  PL_FPDF.RemovePage(3);                                -- Remove page 3
+  PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL'); -- Add watermark
+
+  -- Generate modified PDF
+  l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+
+  -- Save modified PDF
+  UPDATE my_documents SET pdf_blob = l_modified_pdf WHERE id = 1;
+  COMMIT;
+
+  PL_FPDF.ClearPDFCache();
 END;
 /
 ```
 
-### Multi-Page Document
+### 📚 Documentation
+
+**User Guides:**
+- 📘 [Complete API Reference](docs/api/API_REFERENCE.md)
+- 📗 [Phase 4 Guide - PDF Manipulation](docs/guides/PHASE_4_GUIDE.md)
+- 📕 [Performance Tuning](docs/guides/PERFORMANCE_TUNING.md)
+- 📔 [Validation & Testing Guide](docs/guides/VALIDATION_GUIDE.md)
+
+**Implementation Plans:**
+- 🚧 [Phase 4.5 Plan - Text & Image Overlay](docs/plans/PHASE_4_5_OVERLAY_PLAN.md)
+- 🚧 [Phase 4.6 Plan - PDF Merge & Split](docs/plans/PHASE_4_6_MERGE_SPLIT_PLAN.md)
+- 🚧 [Phase 5 Plan - Advanced Operations](docs/plans/PHASE_5_IMPLEMENTATION_PLAN.md)
+
+**Strategic Documentation:**
+- 🚀 [Future Improvements Roadmap](docs/roadmaps/FUTURE_IMPROVEMENTS_ROADMAP.md) ⭐ **NEW**
+- 🗺️ [Migration Roadmap - Future Versions](docs/roadmaps/MIGRATION_ROADMAP.md)
+- 📙 [Migration Guide v0.9 → v3.0](docs/guides/MIGRATION_GUIDE.md)
+- 🏗️ [Package-Only Architecture](docs/architecture/PACKAGE_ONLY_ARCHITECTURE.md)
+- 🔒 [Oracle 19c Compatibility Strategy](docs/architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md)
+- 🔮 [Oracle 26ai & APEX 24.2 Modernization](docs/architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md)
+
+### 📋 Requirements
+
+- **Oracle Database:** 🔴 **19c or higher** (19c fully supported indefinitely)
+- **Privileges:** CREATE PROCEDURE, EXECUTE only
+- **External Dependencies:** **NONE** - 100% self-contained package
+- **Schema Objects:** **NONE** - No tables, types, sequences, or views required
+- **Deployment:** 2 files only (PL_FPDF.pks + PL_FPDF.pkb)
+
+**Optional Enhancements:**
+  - Oracle 23ai/26ai: SQL Domains, Annotations, enhanced JSON (detected at runtime)
+  - APEX 19.1+: `apex_string` utilities (Phase 4 page ranges)
+  - APEX 24.2+: Document Generator integration
+
+**Compatibility Guarantees:**
+- ✅ All PL_FPDF versions (v3.x, v4.x, future) maintain full Oracle 19c compatibility
+- ✅ Package-only architecture with zero external dependencies
+- ✅ Simple deployment and uninstall (DROP PACKAGE)
+
+### 📂 Project Structure
+
+```
+pl_fpdf/
+├── README.md                  # This file
+├── CHANGELOG.md               # Version history
+├── PL_FPDF.pks                # Package specification (main file)
+├── PL_FPDF.pkb                # Package body (main file)
+├── deploy_all.sql             # Quick deployment script
+├── docs/                      # 📚 Documentation
+│   ├── api/                  # API references
+│   │   └── API_REFERENCE.md
+│   ├── architecture/         # Architecture & strategy docs
+│   │   ├── PACKAGE_ONLY_ARCHITECTURE.md
+│   │   ├── ORACLE_19C_COMPATIBILITY_STRATEGY.md
+│   │   └── MODERNIZATION_ORACLE_26_APEX_24_2.md
+│   ├── guides/               # User guides
+│   │   ├── PHASE_4_GUIDE.md
+│   │   ├── MIGRATION_GUIDE.md
+│   │   ├── PERFORMANCE_TUNING.md
+│   │   └── VALIDATION_GUIDE.md
+│   ├── plans/                # Implementation plans
+│   │   ├── PHASE_4_5_OVERLAY_PLAN.md
+│   │   ├── PHASE_4_6_MERGE_SPLIT_PLAN.md
+│   │   └── PHASE_5_IMPLEMENTATION_PLAN.md
+│   ├── roadmaps/             # Strategic roadmaps
+│   │   ├── FUTURE_IMPROVEMENTS_ROADMAP.md
+│   │   └── MIGRATION_ROADMAP.md
+│   ├── pt-br/                # Portuguese documentation
+│   └── en/                   # English documentation
+├── scripts/                   # 🔧 Utility scripts
+│   ├── optimize_native_compile.sql
+│   ├── recompile_package.sql
+│   ├── phase_4_parser_starter.sql
+│   ├── phase_4_types.sql
+│   └── task_1_3_implementations.sql
+├── tests/                     # ✅ Test & validation scripts
+│   ├── test_runner.sql       # Main test runner
+│   ├── run_all_validations.sql
+│   ├── validate_phase_*.sql  # Phase 1-4 validation
+│   └── test_phase_4_*.sql    # Phase 4 unit tests
+└── extensions/                # 🔌 Optional extensions
+    └── brazilian-payments/   # PIX/Boleto support
+```
+
+### 🤝 Contributing
+
+Contributions are welcome! Please:
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Follow Trivadis PL/SQL Cop standards
+4. Add tests for new features
+5. Update documentation
+6. Commit your changes (`git commit -m 'Add AmazingFeature'`)
+7. Push to the branch (`git push origin feature/AmazingFeature`)
+8. Open a Pull Request
+
+### 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+### 👥 Credits
+
+- **Original FPDF (PHP):** Olivier PLATHEY
+- **PHP FPDF Port:** Multiple contributors
+- **PL/SQL Port:** Anton Scheffer, Marcel Amman, Pierre-Gilles Levallois
+- **Phase 4 Implementation:** Maxwell Oliveira ([@maxwbh](https://github.com/maxwbh))
+
+### 📞 Support
+
+- 🐛 [Report Issues](https://github.com/Maxwbh/pl_fpdf/issues)
+- 💬 [Discussions](https://github.com/Maxwbh/pl_fpdf/discussions)
+- 📧 Email: maxwell@msbrasil.inf.br
+
+---
+
+## Português
+
+### 📖 Visão Geral
+
+**PL_FPDF** é uma poderosa biblioteca PL/SQL pura para **gerar e manipular documentos PDF** diretamente no Oracle Database. Sem dependências externas, Java ou serviços adicionais necessários.
+
+**Versão Atual:** 3.0.0-alpha.5 ✨ (Fase 4 Completa)
+
+### ✨ Recursos Principais
+
+#### ✅ Fase 1-3: Geração de PDF (v2.0.0)
+- Criar documentos PDF do zero
+- Texto, formas, imagens (JPEG, PNG)
+- Fontes: Padrão, TrueType, suporte Unicode
+- Códigos de barras: Code 39, Code 128, EAN-13, QR Code
+- Tabelas com auto-paginação
+- Cabeçalhos e rodapés
+- Suporte multi-página com páginas ilimitadas
+- Rotação e formatos personalizados de página
+- Compatível com Trivadis PL/SQL Cop
+
+#### 🆕 Fase 4: Leitura e Manipulação de PDF (v3.0.0-alpha.5)
+- **Carregar e Parsear PDFs** - Ler arquivos PDF existentes (PDF 1.4+)
+- **Informações de Página** - Extrair detalhes (dimensões, rotação, recursos)
+- **Rotação de Páginas** - Rotacionar páginas individuais (0°, 90°, 180°, 270°)
+- **Remoção de Páginas** - Remover páginas indesejadas de PDFs
+- **Marcas d'Água** - Adicionar marcas d'água de texto personalizáveis
+- **Gerar PDF Modificado** - Gerar novo PDF com todas as modificações aplicadas
+
+### 🚀 Início Rápido
+
+#### Instalação
+
+```sql
+-- 1. Compilar especificação do pacote
+@PL_FPDF.pks
+
+-- 2. Compilar corpo do pacote
+@PL_FPDF.pkb
+
+-- 3. Verificar instalação
+SELECT PL_FPDF.GetVersion() FROM DUAL;
+-- Saída esperada: 3.0.0-a.5
+```
+
+#### Criar Seu Primeiro PDF
 
 ```sql
 DECLARE
   l_pdf BLOB;
 BEGIN
-  PL_FPDF.Init();
+  -- Inicializar PDF
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage();
+
+  -- Adicionar conteúdo
+  PL_FPDF.SetFont('Arial', 'B', 16);
+  PL_FPDF.Cell(0, 10, 'Olá Mundo!', '0', 1, 'C');
+
   PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.MultiCell(0, 5, 'Este é meu primeiro PDF criado com PL_FPDF!');
 
-  -- Generate 100 pages
-  FOR i IN 1..100 LOOP
-    PL_FPDF.AddPage();
-    PL_FPDF.Cell(0, 10, 'Page ' || i || ' of 100');
-  END LOOP;
+  -- Gerar PDF
+  l_pdf := PL_FPDF.Output_Blob();
 
-  l_pdf := PL_FPDF.OutputBlob();
-  PL_FPDF.Reset();
+  -- Salvar na tabela
+  INSERT INTO meus_documentos (id, pdf_blob, data_criacao)
+  VALUES (1, l_pdf, SYSDATE);
+
+  COMMIT;
 END;
 /
 ```
 
----
+#### Modificar PDF Existente (Fase 4) 🆕
 
-## 📚 Documentation
+```sql
+DECLARE
+  l_pdf_original BLOB;
+  l_pdf_modificado BLOB;
+BEGIN
+  -- Carregar PDF existente
+  SELECT pdf_blob INTO l_pdf_original FROM meus_documentos WHERE id = 1;
 
-| Document | Description |
-|----------|-------------|
-| [README_PT_BR.md](README_PT_BR.md) | Complete documentation in Portuguese |
-| [API_REFERENCE.md](docs/API_REFERENCE.md) | Complete API reference with all functions |
+  PL_FPDF.LoadPDF(l_pdf_original);
 
+  -- Aplicar modificações
+  PL_FPDF.RotatePage(1, 90);                           -- Rotacionar página 1
+  PL_FPDF.RemovePage(3);                                -- Remover página 3
+  PL_FPDF.AddWatermark('CONFIDENCIAL', 0.3, 45, 'ALL'); -- Adicionar marca d'água
 
----
+  -- Gerar PDF modificado
+  l_pdf_modificado := PL_FPDF.OutputModifiedPDF();
 
-## 🧪 Testing
+  -- Salvar PDF modificado
+  UPDATE meus_documentos SET pdf_blob = l_pdf_modificado WHERE id = 1;
+  COMMIT;
 
-### Run All Tests
-
-```bash
-cd tests
-sqlplus user/pass@db @run_all_tests.sql
+  PL_FPDF.ClearPDFCache();
+END;
+/
 ```
 
-### Test Coverage
+### 📚 Documentação
 
-| Module | Tests | Coverage |
-|--------|-------|----------|
-| Initialization | 43 | >90% |
-| Fonts | 18 | >85% |
-| Images | 14 | >80% |
-| Output | 7 | >90% |
-| Performance | 5 | 100% |
-| **Total** | **87** | **>82%** |
+**Guias do Usuário:**
+- 📘 [Referência Completa da API](docs/api/API_REFERENCE.md)
+- 📗 [Guia Fase 4 - Manipulação de PDF](docs/guides/PHASE_4_GUIDE.md)
+- 📕 [Otimização de Performance](docs/guides/PERFORMANCE_TUNING.md)
+- 📔 [Guia de Validação e Testes](docs/guides/VALIDATION_GUIDE.md)
 
----
+**Planos de Implementação:**
+- 🚧 [Plano Fase 4.5 - Text & Image Overlay](docs/plans/PHASE_4_5_OVERLAY_PLAN.md)
+- 🚧 [Plano Fase 4.6 - PDF Merge & Split](docs/plans/PHASE_4_6_MERGE_SPLIT_PLAN.md)
+- 🚧 [Plano Fase 5 - Operações Avançadas](docs/plans/PHASE_5_IMPLEMENTATION_PLAN.md)
 
-## ⚡ Performance
+**Documentação Estratégica:**
+- 🚀 [Roadmap de Melhorias Futuras](docs/roadmaps/FUTURE_IMPROVEMENTS_ROADMAP.md) ⭐ **NOVO**
+- 🗺️ [Roadmap de Migração - Versões Futuras](docs/roadmaps/MIGRATION_ROADMAP.md)
+- 📙 [Guia de Migração v0.9 → v3.0](docs/guides/MIGRATION_GUIDE.md)
+- 🏗️ [Arquitetura Package-Only](docs/architecture/PACKAGE_ONLY_ARCHITECTURE.md)
+- 🔒 [Estratégia Compatibilidade Oracle 19c](docs/architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md)
+- 🔮 [Modernização Oracle 26ai & APEX 24.2](docs/architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md)
 
-### Benchmarks (Oracle 19c, Native Compilation)
+### 📋 Requisitos
 
-| Operation | Time | Throughput |
-|-----------|------|------------|
-| Init() | 15-30ms | - |
-| 100-page document | 1.2-1.8s | 55-83 pages/sec |
-| 1000-page document | 8-12s | 83-125 pages/sec |
-| OutputBlob (50 pages) | 150-250ms | - |
+- **Oracle Database:** 11g ou superior (19c+ recomendado)
+- **Privilégios:** CREATE PROCEDURE, EXECUTE
+- **Opcional:** APEX 19.1+ para utilitários `apex_string` (ranges de páginas Fase 4)
 
-### Optimization Tips
-
-1. **Enable native compilation** (2-3x faster)
-   ```sql
-   @optimize_native_compile.sql
-   ```
-
-2. **Reuse Init/Reset** instead of creating new instances
-   ```sql
-   PL_FPDF.Init();
-   -- Generate PDF #1
-   PL_FPDF.Reset();
-   PL_FPDF.Init();
-   -- Generate PDF #2
-   ```
-
-3. **Disable logging in production**
-   ```sql
-   PL_FPDF.SetLogLevel(0);
-   ```
-
-
----
-
-## 📋 Requirements
-
-- Oracle Database 19c or higher (23c recommended)
-- PL/SQL Developer or SQL*Plus
-- Permissions: CREATE PROCEDURE, EXECUTE
-- Optional: utPLSQL v3+ for running tests
-
----
-
-## 🏗️ Architecture
+### 📂 Estrutura do Projeto
 
 ```
-┌─────────────────────────────────────────────┐
-│            PL_FPDF (Core Package)           │
-│  • PDF document generation                  │
-│  • Text rendering and fonts                 │
-│  • Image embedding (PNG, JPEG)              │
-│  • Graphics primitives                      │
-│  • UTF-8 support, TrueType fonts            │
-│  • Multi-page documents                     │
-│  • Generic QRCode/Barcode rendering         │
-└─────────────────────────────────────────────┘
+pl_fpdf/
+├── README.md                  # Este arquivo
+├── CHANGELOG.md               # Histórico de versões
+├── PL_FPDF.pks                # Especificação do pacote (arquivo principal)
+├── PL_FPDF.pkb                # Corpo do pacote (arquivo principal)
+├── deploy_all.sql             # Script de deploy rápido
+├── docs/                      # 📚 Documentação
+│   ├── api/                  # Referências da API
+│   ├── architecture/         # Docs de arquitetura & estratégia
+│   ├── guides/               # Guias do usuário
+│   ├── plans/                # Planos de implementação
+│   ├── roadmaps/             # Roadmaps estratégicos
+│   ├── pt-br/                # Documentação em português
+│   └── en/                   # Documentação em inglês
+├── scripts/                   # 🔧 Scripts utilitários
+│   ├── optimize_native_compile.sql
+│   ├── recompile_package.sql
+│   └── ...
+├── tests/                     # ✅ Scripts de teste & validação
+│   ├── test_runner.sql       # Executor principal de testes
+│   ├── run_all_validations.sql
+│   ├── validate_phase_*.sql  # Validação Fases 1-4
+│   └── test_phase_4_*.sql    # Testes unitários Fase 4
+└── extensions/                # 🔌 Extensões opcionais
+    └── brazilian-payments/   # Suporte PIX/Boleto
 ```
 
----
+### 🤝 Contribuindo
 
-## 🤝 Contributing
+Contribuições são bem-vindas! Por favor:
+1. Faça fork do repositório
+2. Crie uma branch para feature (`git checkout -b feature/RecursoIncrivel`)
+3. Siga os padrões Trivadis PL/SQL Cop
+4. Adicione testes para novos recursos
+5. Atualize a documentação
+6. Commit suas mudanças (`git commit -m 'Adiciona RecursoIncrivel'`)
+7. Push para a branch (`git push origin feature/RecursoIncrivel`)
+8. Abra um Pull Request
 
-We welcome contributions from the community! Whether it's bug reports, feature requests, documentation improvements, or code contributions.
+### 📄 Licença
 
-**Ways to contribute:**
-- 🐛 [Report bugs](https://github.com/Maxwbh/pl_fpdf/issues/new?template=bug_report.md)
-- 💡 [Request features](https://github.com/Maxwbh/pl_fpdf/issues/new?template=feature_request.md)
-- 📝 Improve documentation
-- 🔧 Submit pull requests
+Este projeto está licenciado sob a Licença MIT - veja o arquivo [LICENSE](LICENSE) para detalhes.
 
-See our [**Contributing Guide**](CONTRIBUTING.md) for detailed information.
+### 👥 Créditos
 
-### Original Authors
-- **FPDF (PHP)**: Olivier PLATHEY
-- **PL_FPDF (Oracle)**: Pierre-Gilles Levallois et al
+- **FPDF Original (PHP):** Olivier PLATHEY
+- **Port PHP FPDF:** Múltiplos contribuidores
+- **Port PL/SQL:** Anton Scheffer, Marcel Amman, Pierre-Gilles Levallois
+- **Implementação Fase 4:** Maxwell Oliveira ([@maxwbh](https://github.com/maxwbh))
 
-### Modernization Project
-- **Lead Developer**: Maxwell da Silva Oliveira ([@maxwbh](https://github.com/maxwbh))
-- **Email**: maxwbh@gmail.com
-- **LinkedIn**: [linkedin.com/in/maxwbh](https://linkedin.com/in/maxwbh)
+### 📞 Suporte
 
----
-
-
-## 🔗 Links
-
-- **Original FPDF**: http://www.fpdf.org/
-- **Original Repository**: https://github.com/Pilooz/pl_fpdf
+- 🐛 [Reportar Problemas](https://github.com/Maxwbh/pl_fpdf/issues)
+- 💬 [Discussões](https://github.com/Maxwbh/pl_fpdf/discussions)
+- 📧 Email: maxwell@msbrasil.inf.br
 
 ---
 
-## 📊 Project Status
+**Made with ❤️ in Brazil** 🇧🇷
 
-✅ **v2.0.0 Released** - December 2025
-
-| Phase | Status | Completion |
-|-------|--------|------------|
-| Phase 1: Critical Refactoring | ✅ Complete | 100% |
-| Phase 2: Security & Robustness | ✅ Complete | 100% |
-| Phase 3: Advanced Modernization | ✅ Complete | 100% |
-
-**Modernization complete: 100%**
-
----
-
-## ⭐ Support the Project
-
-If you find PL_FPDF useful, please consider:
-
-- ⭐ **Star this repository** - It helps others discover the project
-- 🐛 **Report issues** - Help us improve by reporting bugs
-- 💬 **Share** - Tell your colleagues about PL_FPDF
-- 🤝 **Contribute** - Submit PRs to help the project grow
-
-[![GitHub stars](https://img.shields.io/github/stars/Maxwbh/pl_fpdf?style=for-the-badge&logo=github)](https://github.com/Maxwbh/pl_fpdf/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/Maxwbh/pl_fpdf?style=for-the-badge&logo=github)](https://github.com/Maxwbh/pl_fpdf/network/members)
-
----
-
-## 📣 Spread the Word
-
-**Keywords:** Oracle PL/SQL PDF, PDF Generation Oracle, Oracle Report Generator, PL/SQL PDF Library, Oracle 19c PDF, Oracle 23c PDF, FPDF Oracle, Generate PDF Oracle Database, Oracle PDF Export, PL/SQL Report Library
-
-**Hashtags:** #Oracle #PLSQL #PDF #OracleDatabase #PDFGeneration #OpenSource
-
----
-
-**Last Updated**: December 19, 2025
-**Version**: 2.0.0
-**Status**: Production Ready ✅
-
----
-
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/maxwbh">Maxwell Oliveira</a> and the open source community.
-</p>
+**Last Updated:** January 2026
+**Version:** 3.0.0-alpha.5
+**Status:** Phase 4 Complete ✅

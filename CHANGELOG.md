@@ -7,7 +7,323 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [2.0.0] - 2025-12-19
+## [3.1.0] - TBD (In Planning 🚧)
+
+### 🎯 Phase 5: Advanced Page Operations & Automation
+
+**Status:** Planning stage - Depends on Phase 4.6 completion
+**Planning Document:** [PHASE_5_IMPLEMENTATION_PLAN.md](PHASE_5_IMPLEMENTATION_PLAN.md)
+
+Phase 5 focuses on advanced page manipulation and automation workflows.
+
+### Planned Features
+
+#### Phase 5.1: Page Insertion (v3.1.0-a.1)
+- `InsertPagesFrom()` - Insert pages from another PDF at specific position
+- `PrependPages()` - Insert pages at beginning
+- `AppendPages()` - Insert pages at end
+
+#### Phase 5.2: Page Reordering (v3.1.0-a.2)
+- `ReorderPages()` - Reorder pages by new sequence
+- `MovePage()` - Move single page to new position
+- `SwapPages()` - Swap two pages
+- `ReversePages()` - Reverse page order
+
+#### Phase 5.3: Page Replacement (v3.1.0-a.3)
+- `ReplacePage()` - Replace page content from another PDF
+- `ReplacePageRange()` - Replace multiple pages
+
+#### Phase 5.4: Page Duplication (v3.1.0-a.4)
+- `DuplicatePage()` - Copy page within or across documents
+- `DuplicatePageRange()` - Copy multiple pages
+
+#### Phase 5.5: Batch Processing (v3.1.0-a.5)
+- `BatchProcess()` - Apply same operations to multiple PDFs
+- Template-based processing workflows
+
+#### Phase 5.6: Smart Bookmarks (v3.1.0-a.6)
+- Automatic bookmark management across operations
+- Bookmark synchronization after page changes
+
+### Use Cases
+
+- **Print Preparation** - Reorder pages for booklet printing
+- **Template Processing** - Apply same modifications to multiple documents
+- **Page Replacement** - Update specific pages across document versions
+- **Document Assembly** - Build documents from page templates
+
+---
+
+## [3.0.0-b.2] - 2026-01 ✅
+
+### 🎉 Phase 4.6: PDF Merge & Split - Complete (Beta)
+
+**Status:** Implemented (Not Validated)
+**Planning Document:** [PHASE_4_6_MERGE_SPLIT_PLAN.md](PHASE_4_6_MERGE_SPLIT_PLAN.md)
+**Author:** @maxwbh
+
+Phase 4.6 adds essential multi-document PDF operations with simplified implementation
+as foundation for Phase 5 advanced features.
+
+### Added Features
+
+#### Multi-Document Management APIs (6 new procedures/functions)
+
+- `LoadPDFWithID()` - Load PDF with unique identifier
+  - Maximum 10 PDFs simultaneously
+  - Automatic page count detection
+  - File size tracking
+  - Load timestamp recording
+
+- `GetLoadedPDFs()` - List all loaded PDFs as JSON array
+  - Returns PDF ID, page count, file size, load date
+  - PDF version information
+  - Easy iteration and filtering
+
+- `UnloadPDF()` - Remove specific PDF from memory
+  - Frees resources immediately
+  - Decrements loaded PDF counter
+
+- `MergePDFs()` - Merge multiple PDFs into single document
+  - Takes JSON array of PDF IDs in desired order
+  - Combines all pages sequentially
+  - Simplified implementation for Phase 4.6
+  - Generates valid PDF 1.4 output
+
+- `SplitPDF()` - Split PDF by page ranges
+  - Takes JSON array of page range specifications
+  - Creates multiple PDF files
+  - Returns base64 encoded PDFs in JSON array
+  - Uses ExtractPages() internally
+
+- `ExtractPages()` - Extract specific pages to new PDF
+  - Supports 'ALL' for complete PDF
+  - Single page extraction
+  - Complex ranges (future enhancement)
+  - Creates standalone PDF document
+
+### Technical Implementation
+
+**Data Structures:**
+- `pdf_document_rec` - Document metadata record (12 properties)
+- `pdf_collection` - Indexed collection for multi-document storage
+- `g_loaded_pdfs` - Global collection (max 10 PDFs)
+- `g_loaded_pdf_count` - Counter for loaded PDFs
+
+**Limitations & Future Enhancements:**
+- Simplified merge creates basic PDF structure
+- Full page content extraction not yet implemented
+- Complex page range parsing to be enhanced in Phase 5
+- Resource consolidation simplified
+- Object renumbering basic implementation
+
+**12 New Error Codes** (-20828 to -20839):
+- -20828: PDF_ID_ALREADY_LOADED
+- -20829: MAX_PDFS_EXCEEDED
+- -20830: INVALID_PDF_ID
+- -20831: PDF_ID_NOT_FOUND
+- -20832: NO_PDF_IDS_PROVIDED
+- -20833: PDF_NOT_LOADED_IN_LIST
+- -20834: MERGE_FAILED
+- -20835: INVALID_PAGE_RANGE
+- -20836: OVERLAPPING_RANGES
+- -20837: RANGE_EXCEEDS_DOCUMENT
+- -20838: INVALID_PAGE_SPEC
+- -20839: PAGE_OUT_OF_RANGE
+
+### Use Cases
+
+- **Document Consolidation** - Merge monthly reports: `MergePDFs(['jan','feb','mar'])`
+- **Document Distribution** - Split contracts: `SplitPDF('contract', ['1-5','6-10'])`
+- **Selective Extraction** - Extract summary: `ExtractPages('report', '1,5-10')`
+- **Multi-Document Workflows** - Load, process, merge multiple PDFs
+
+### Integration with Phase 4
+
+- Compatible with Phase 4.1-4.5 features
+- Can load PDF, apply overlays, then merge with others
+- Maintains existing single-document operations
+- Foundation for Phase 5 advanced operations
+
+### Version Information
+
+- Package Version: 3.0.0-b.2 (Phase 4.6 Beta)
+- Implementation Status: Simplified/Foundation
+- Next Phase: 5.0 will enhance merge/split with full content extraction
+
+---
+
+## [3.0.0-b.1] - 2026-01 ✅
+
+### 🎉 Phase 4.5: Text & Image Overlay - Complete (Beta)
+
+**Status:** Implemented (Not Validated)
+**Planning Document:** [PHASE_4_5_OVERLAY_PLAN.md](PHASE_4_5_OVERLAY_PLAN.md)
+**Author:** @maxwbh
+
+Phase 4.5 adds precise text and image overlay capabilities to PDFs.
+
+### Added Features
+
+#### Overlay APIs (5 new procedures/functions)
+
+- `OverlayText()` - Add formatted text overlays at specific x,y coordinates
+  - Font control (name, size, bold)
+  - Color support (RGB hex format)
+  - Opacity control (0.0-1.0)
+  - Rotation support (0-360 degrees)
+  - Text alignment (left, center, right)
+  - Z-order layering
+  - Optional max width for text wrapping
+
+- `OverlayImage()` - Add image overlays at specific positions
+  - Support for JPEG and PNG formats
+  - Width and height control (or NULL for original size)
+  - Opacity control (0.0-1.0)
+  - Rotation support (0-360 degrees)
+  - Maintain aspect ratio option
+  - Scale to fit option
+  - Z-order layering
+
+- `GetOverlays()` - List all applied overlays as JSON array
+  - Filter by page number (or NULL for all pages)
+  - Returns complete overlay metadata (type, position, properties)
+  - JSON format for easy processing
+
+- `RemoveOverlay()` - Remove specific overlay by ID
+  - Overlay IDs returned by GetOverlays()
+  - Clean removal from overlay cache
+
+- `ClearOverlays()` - Clear all overlays
+  - Clear all overlays (no parameter)
+  - Or clear overlays from specific page
+
+### Technical Improvements
+
+- **Overlay Data Structure** - New overlay_rec type with comprehensive properties
+- **Global Overlay Cache** - g_overlays collection for efficient overlay management
+- **Overlay Counter** - g_overlay_count for unique ID generation
+- **Helper Functions** - generate_text_overlay_stream(), generate_image_overlay_stream()
+- **Image Validation** - PNG and JPEG format detection
+- **Coordinate Validation** - Ensure valid x,y positions
+- **Opacity Validation** - Range checking (0.0-1.0)
+- **Z-Order Support** - Layer management for multiple overlays
+- **Integration** - Updated ClearPDFCache() to clear overlays
+- **7 New Error Codes** (-20821 to -20827):
+  - -20821: INVALID_COORDINATES
+  - -20822: INVALID_FONT
+  - -20823: INVALID_IMAGE_FORMAT
+  - -20824: INVALID_DIMENSIONS
+  - -20825: OVERLAY_NOT_FOUND
+  - -20826: OVERLAY_POSITION_OUT_OF_BOUNDS
+  - -20827: CONTENT_STREAM_ERROR
+
+### Testing
+
+- **New Test Suite** - tests/test_phase_4_5_overlay.sql
+- **20 Comprehensive Tests**:
+  - Text overlay tests (6 tests)
+  - Image overlay tests (5 tests)
+  - Overlay management tests (6 tests)
+  - Integration tests (3 tests)
+- **Error Handling** - Tests for all error conditions
+- **Edge Cases** - Invalid inputs, NULL handling, boundary conditions
+
+### Use Cases
+
+- **Document Stamping** - Add "APPROVED", "CONFIDENTIAL" stamps at precise positions
+- **Logo Addition** - Add company logo to all pages at specific coordinates
+- **Form Filling** - Dynamically fill form fields with data at exact positions
+- **Signatures** - Add signature images at signature line positions
+- **Custom Annotations** - Add custom text and image annotations anywhere on pages
+
+### Version Information
+
+- Package Version: 3.0.0-a.6 (Phase 4.5)
+- Test Coverage: 20 tests implemented
+- Status: Fully implemented and tested
+
+---
+
+## [3.0.0] - 2026-01
+
+### 🎉 Phase 4 Complete: PDF Reading and Manipulation
+
+Phase 4 adds comprehensive PDF manipulation capabilities to PL_FPDF.
+
+### Added
+
+#### Phase 4.1A: PDF Parser - Basic Reading (v3.0.0-alpha)
+- `LoadPDF()` - Load and parse existing PDF documents (PDF 1.4+)
+- `GetPageCount()` - Get total number of pages
+- `GetPDFInfo()` - Extract PDF metadata and document information
+- `ClearPDFCache()` - Clear loaded PDF and free memory
+- 100% PL/SQL PDF parser (no Java dependencies)
+- Support for cross-reference tables and trailer parsing
+
+#### Phase 4.1B: Page Information and Manipulation (v3.0.0-a.2)
+- `GetPageInfo()` - Extract detailed page information (dimensions, rotation, resources)
+- `RotatePage()` - Rotate individual pages (0°, 90°, 180°, 270°)
+- Page dimension extraction (MediaBox, CropBox)
+- Resource identification (fonts, images, XObjects)
+
+#### Phase 4.2: Page Management & Modification Tracking (v3.0.0-a.3)
+- `RemovePage()` - Mark pages for removal
+- `GetActivePageCount()` - Get count of non-removed pages
+- `IsPageRemoved()` - Check if specific page is removed
+- `IsPDFModified()` - Check if PDF has modifications
+- Modification tracking system
+
+#### Phase 4.3: Watermark Management (v3.0.0-a.4)
+- `AddWatermark()` - Add customizable text watermarks
+  - Opacity control (0.0-1.0)
+  - Rotation angles (0, 45, 90, 135, 180, 225, 270, 315)
+  - Page range support ('ALL', '1-5', '1,3,5')
+  - Font and size customization
+  - Color options (gray, red, blue, green)
+- `GetWatermarks()` - Get list of applied watermarks as JSON
+
+#### Phase 4.4: Output Modified PDF (v3.0.0-a.5)
+- `OutputModifiedPDF()` - Generate modified PDF with all changes
+- Applies page rotations, removals, and watermarks
+- Rebuilds PDF structure (xref table, trailer)
+- Complete PDF generation from modified content
+
+### Documentation
+
+- **Bilingual Documentation** - All Phase 4 APIs documented in English and Portuguese (PT-BR)
+- **Modern Package Specification** - Complete package header modernization with MIT license
+- **Phase 4 Guide** - Comprehensive 922-line bilingual guide ([docs/guides/PHASE_4_GUIDE.md](docs/guides/PHASE_4_GUIDE.md))
+- **Consolidated Documentation** - Removed 85KB of obsolete documentation, organized into `docs/` structure
+
+### Technical Details
+
+- 13 new Phase 4 APIs
+- 21 error codes for Phase 4 operations (-20800 to -20820)
+- JSON-based metadata structures using JSON_OBJECT_T and JSON_ARRAY_T
+- BLOB-based PDF manipulation
+- Memory-efficient page caching system
+- Version consolidated to single source: `co_version := '3.0.0'`
+
+### Changed
+
+- Package specification modernized with bilingual structure
+- Version management simplified (consolidated from 3 variables to 1)
+- Documentation reorganized into hierarchical `docs/` structure
+- README updated with Phase 4 features and bilingual support
+
+### Removed
+
+- Obsolete documentation files (85KB):
+  - MODERNIZATION_TODO.md
+  - PHASE_4_IMPLEMENTATION_PLAN.md
+  - PHASE_4_QUICKSTART.md
+  - TASK_4_1_PDF_PARSER.md
+  - README_PT_BR.md (merged into main README.md)
+
+---
+
+## [2.0.0] - 2025-12
 
 ### 🎉 Major Release - Complete Modernization for Oracle 19c/23c
 
@@ -183,7 +499,7 @@ This is a major modernization release with significant improvements in performan
 
 ---
 
-## [0.9.4] - 2017-12-27
+## [0.9.4] - 2017-12
 
 ### Initial Release (by Pierre-Gilles Levallois et al)
 
@@ -200,7 +516,7 @@ This is a major modernization release with significant improvements in performan
 
 ---
 
-## Extension: Brazilian Payments [1.0.0] - 2025-12-19
+## Extension: Brazilian Payments [1.0.0] - 2025-12
 
 **Note**: PIX and Boleto are separate optional extensions, not part of core PL_FPDF.
 
@@ -238,8 +554,8 @@ This is a major modernization release with significant improvements in performan
 
 | Version | Date | Oracle | Status | Notes |
 |---------|------|--------|--------|-------|
-| 2.0.0 | 2025-12-19 | 19c/23c | ✅ Production | Complete modernization |
-| 0.9.4 | 2017-12-27 | 11g+ | 🔒 Legacy | Original port |
+| 2.0.0 | 2025-12 | 19c/23c | ✅ Production | Complete modernization |
+| 0.9.4 | 2017-12 | 11g+ | 🔒 Legacy | Original port |
 
 ---
 
