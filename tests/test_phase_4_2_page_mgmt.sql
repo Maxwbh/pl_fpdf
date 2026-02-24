@@ -37,97 +37,17 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
   END;
 
-  -- Create minimal PDF with 5 pages for testing
+  -- Create valid test PDF with 5 pages using PL_FPDF itself
   PROCEDURE create_test_pdf IS
-    l_pages_dict VARCHAR2(200);
-    l_page_objects CLOB;
-    l_xref VARCHAR2(500);
   BEGIN
-    -- Build Kids array with 5 pages
-    l_pages_dict := '<< /Type /Pages /Count 5 /Kids [3 0 R 4 0 R 5 0 R 6 0 R 7 0 R] >>';
-
-    -- Build page objects
-    l_page_objects :=
-      '3 0 obj' || CHR(10) ||
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources 8 0 R /Contents 9 0 R >>' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '4 0 obj' || CHR(10) ||
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources 8 0 R /Contents 10 0 R >>' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '5 0 obj' || CHR(10) ||
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources 8 0 R /Contents 11 0 R >>' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '6 0 obj' || CHR(10) ||
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources 8 0 R /Contents 12 0 R >>' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '7 0 obj' || CHR(10) ||
-      '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources 8 0 R /Contents 13 0 R >>' || CHR(10) ||
-      'endobj' || CHR(10);
-
-    l_pdf := UTL_RAW.CAST_TO_RAW(
-      '%PDF-1.4' || CHR(10) ||
-      '1 0 obj' || CHR(10) ||
-      '<< /Type /Catalog /Pages 2 0 R >>' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '2 0 obj' || CHR(10) ||
-      l_pages_dict || CHR(10) ||
-      'endobj' || CHR(10) ||
-      l_page_objects ||
-      '8 0 obj' || CHR(10) ||
-      '<< /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >>' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '9 0 obj' || CHR(10) ||
-      '<< /Length 44 >>' || CHR(10) ||
-      'stream' || CHR(10) ||
-      'BT /F1 12 Tf 100 700 Td (Page 1) Tj ET' || CHR(10) ||
-      'endstream' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '10 0 obj' || CHR(10) ||
-      '<< /Length 44 >>' || CHR(10) ||
-      'stream' || CHR(10) ||
-      'BT /F1 12 Tf 100 700 Td (Page 2) Tj ET' || CHR(10) ||
-      'endstream' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '11 0 obj' || CHR(10) ||
-      '<< /Length 44 >>' || CHR(10) ||
-      'stream' || CHR(10) ||
-      'BT /F1 12 Tf 100 700 Td (Page 3) Tj ET' || CHR(10) ||
-      'endstream' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '12 0 obj' || CHR(10) ||
-      '<< /Length 44 >>' || CHR(10) ||
-      'stream' || CHR(10) ||
-      'BT /F1 12 Tf 100 700 Td (Page 4) Tj ET' || CHR(10) ||
-      'endstream' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      '13 0 obj' || CHR(10) ||
-      '<< /Length 44 >>' || CHR(10) ||
-      'stream' || CHR(10) ||
-      'BT /F1 12 Tf 100 700 Td (Page 5) Tj ET' || CHR(10) ||
-      'endstream' || CHR(10) ||
-      'endobj' || CHR(10) ||
-      'xref' || CHR(10) ||
-      '0 14' || CHR(10) ||
-      '0000000000 65535 f ' || CHR(10) ||
-      '0000000009 65535 n ' || CHR(10) ||
-      '0000000058 65535 n ' || CHR(10) ||
-      '0000000145 65535 n ' || CHR(10) ||
-      '0000000256 65535 n ' || CHR(10) ||
-      '0000000367 65535 n ' || CHR(10) ||
-      '0000000478 65535 n ' || CHR(10) ||
-      '0000000589 65535 n ' || CHR(10) ||
-      '0000000700 65535 n ' || CHR(10) ||
-      '0000000798 65535 n ' || CHR(10) ||
-      '0000000891 65535 n ' || CHR(10) ||
-      '0000000985 65535 n ' || CHR(10) ||
-      '0000001079 65535 n ' || CHR(10) ||
-      '0000001173 65535 n ' || CHR(10) ||
-      'trailer' || CHR(10) ||
-      '<< /Size 14 /Root 1 0 R >>' || CHR(10) ||
-      'startxref' || CHR(10) ||
-      '1267' || CHR(10) ||
-      '%%EOF'
-    );
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.SetFont('Arial', '', 12);
+    FOR i IN 1..5 LOOP
+      PL_FPDF.AddPage();
+      PL_FPDF.Cell(0, 10, 'Page ' || i);
+    END LOOP;
+    l_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
   END;
 
 BEGIN

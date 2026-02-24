@@ -88,8 +88,9 @@ l_result := PL_FPDF.OutputModifiedPDF();
 
 ### Pendente para Release
 
+- [x] Corrigir parser xref (fallback robusto para offsets incorretos)
+- [x] Corrigir testes Phase 4 (PDFs de teste gerados via PL_FPDF)
 - [ ] Executar suite completa de testes (150+ testes)
-- [ ] Corrigir falhas encontradas
 - [ ] Performance benchmarking
 - [ ] Promover Beta → RC → Final
 

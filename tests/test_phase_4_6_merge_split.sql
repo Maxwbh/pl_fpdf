@@ -72,60 +72,30 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('Starting Phase 4.6 Multi-Document Tests...');
   DBMS_OUTPUT.PUT_LINE('');
 
-  -- Create test PDFs (minimal valid PDFs)
-  l_test_pdf1 := UTL_RAW.CAST_TO_RAW(
-    '%PDF-1.4' || CHR(10) ||
-    '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10) ||
-    '2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj' || CHR(10) ||
-    '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj' || CHR(10) ||
-    '4 0 obj<</Length 44>>stream' || CHR(10) ||
-    'BT /F1 12 Tf 100 700 Td (Test PDF 1) Tj ET' || CHR(10) ||
-    'endstream endobj' || CHR(10) ||
-    'xref' || CHR(10) || '0 5' || CHR(10) ||
-    '0000000000 65535 f ' || CHR(10) ||
-    '0000000009 00000 n ' || CHR(10) ||
-    '0000000058 00000 n ' || CHR(10) ||
-    '0000000115 00000 n ' || CHR(10) ||
-    '0000000214 00000 n ' || CHR(10) ||
-    'trailer<</Size 5/Root 1 0 R>>' || CHR(10) ||
-    'startxref' || CHR(10) || '314' || CHR(10) || '%%EOF'
-  );
+  -- Create valid test PDFs using PL_FPDF itself (guarantees correct structure)
+  -- PDF 1
+  PL_FPDF.Init('P', 'mm', 'Letter');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Test PDF 1');
+  l_test_pdf1 := PL_FPDF.OutputBlob();
+  PL_FPDF.Reset();
 
-  l_test_pdf2 := UTL_RAW.CAST_TO_RAW(
-    '%PDF-1.4' || CHR(10) ||
-    '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10) ||
-    '2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj' || CHR(10) ||
-    '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj' || CHR(10) ||
-    '4 0 obj<</Length 44>>stream' || CHR(10) ||
-    'BT /F1 12 Tf 100 700 Td (Test PDF 2) Tj ET' || CHR(10) ||
-    'endstream endobj' || CHR(10) ||
-    'xref' || CHR(10) || '0 5' || CHR(10) ||
-    '0000000000 65535 f ' || CHR(10) ||
-    '0000000009 00000 n ' || CHR(10) ||
-    '0000000058 00000 n ' || CHR(10) ||
-    '0000000115 00000 n ' || CHR(10) ||
-    '0000000214 00000 n ' || CHR(10) ||
-    'trailer<</Size 5/Root 1 0 R>>' || CHR(10) ||
-    'startxref' || CHR(10) || '314' || CHR(10) || '%%EOF'
-  );
+  -- PDF 2
+  PL_FPDF.Init('P', 'mm', 'Letter');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Test PDF 2');
+  l_test_pdf2 := PL_FPDF.OutputBlob();
+  PL_FPDF.Reset();
 
-  l_test_pdf3 := UTL_RAW.CAST_TO_RAW(
-    '%PDF-1.4' || CHR(10) ||
-    '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10) ||
-    '2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj' || CHR(10) ||
-    '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj' || CHR(10) ||
-    '4 0 obj<</Length 44>>stream' || CHR(10) ||
-    'BT /F1 12 Tf 100 700 Td (Test PDF 3) Tj ET' || CHR(10) ||
-    'endstream endobj' || CHR(10) ||
-    'xref' || CHR(10) || '0 5' || CHR(10) ||
-    '0000000000 65535 f ' || CHR(10) ||
-    '0000000009 00000 n ' || CHR(10) ||
-    '0000000058 00000 n ' || CHR(10) ||
-    '0000000115 00000 n ' || CHR(10) ||
-    '0000000214 00000 n ' || CHR(10) ||
-    'trailer<</Size 5/Root 1 0 R>>' || CHR(10) ||
-    'startxref' || CHR(10) || '314' || CHR(10) || '%%EOF'
-  );
+  -- PDF 3
+  PL_FPDF.Init('P', 'mm', 'Letter');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Test PDF 3');
+  l_test_pdf3 := PL_FPDF.OutputBlob();
+  PL_FPDF.Reset();
 
   DBMS_OUTPUT.PUT_LINE('=== LoadPDFWithID Tests ===');
   DBMS_OUTPUT.PUT_LINE('');

@@ -5830,23 +5830,65 @@ PROCEDURE parse_xref_table(p_pdf BLOB, p_xref_offset PLS_INTEGER) IS
   l_flag CHAR(1);
   l_pos PLS_INTEGER := 1;
   l_line_end PLS_INTEGER;
+  l_actual_offset PLS_INTEGER := p_xref_offset;
+  l_search_chunk VARCHAR2(32767);
+  l_xref_pos PLS_INTEGER;
 BEGIN
   g_xref_table.DELETE;
 
-  -- Read xref section
+  -- Read xref section at reported offset
   l_xref_section := read_blob_chunk(p_pdf, p_xref_offset + 1, 32767);
 
-  -- Validate starts with "xref"
-  IF NOT l_xref_section LIKE 'xref%' THEN
-    raise_application_error(-20803, 'Invalid xref table at offset ' || p_xref_offset);
+  -- If xref not found at exact position, search nearby
+  IF l_xref_section IS NULL OR NOT l_xref_section LIKE 'xref%' THEN
+    -- Search backward from end of file for 'xref' keyword
+    DECLARE
+      l_file_size PLS_INTEGER := DBMS_LOB.GETLENGTH(p_pdf);
+      l_search_start PLS_INTEGER;
+      l_chunk_size PLS_INTEGER := LEAST(l_file_size, 32767);
+    BEGIN
+      l_search_start := GREATEST(1, l_file_size - l_chunk_size + 1);
+      l_search_chunk := read_blob_chunk(p_pdf, l_search_start, l_chunk_size);
+
+      -- Find last occurrence of 'xref' followed by newline
+      l_xref_pos := 0;
+      DECLARE
+        l_tmp PLS_INTEGER;
+      BEGIN
+        l_tmp := INSTR(l_search_chunk, 'xref' || CHR(10));
+        WHILE l_tmp > 0 LOOP
+          -- Make sure this is a standalone 'xref', not part of 'startxref'
+          IF l_tmp = 1 OR SUBSTR(l_search_chunk, l_tmp - 1, 1) = CHR(10) THEN
+            l_xref_pos := l_tmp;
+          END IF;
+          l_tmp := INSTR(l_search_chunk, 'xref' || CHR(10), l_tmp + 1);
+        END LOOP;
+      END;
+
+      IF l_xref_pos > 0 THEN
+        l_actual_offset := l_search_start + l_xref_pos - 2; -- Convert to 0-based
+        l_xref_section := read_blob_chunk(p_pdf, l_actual_offset + 1, 32767);
+        -- Update global offset so parse_trailer uses correct position
+        g_xref_offset := l_actual_offset;
+        log_message(2, 'xref found at offset ' || l_actual_offset ||
+                       ' (startxref said ' || p_xref_offset || ')');
+      END IF;
+    END;
+
+    IF l_xref_section IS NULL OR NOT l_xref_section LIKE 'xref%' THEN
+      raise_application_error(-20803, 'Invalid xref table at offset ' || p_xref_offset);
+    END IF;
   END IF;
+
+  -- Normalize line endings: remove CR, keep LF only
+  l_xref_section := REPLACE(l_xref_section, CHR(13), '');
 
   -- Skip line "xref"
   l_pos := INSTR(l_xref_section, CHR(10)) + 1;
 
   -- Line 2: subsection header "0 N" where N = number of objects
   l_line_end := INSTR(l_xref_section, CHR(10), l_pos);
-  l_line := SUBSTR(l_xref_section, l_pos, l_line_end - l_pos);
+  l_line := TRIM(SUBSTR(l_xref_section, l_pos, l_line_end - l_pos));
   l_obj_start := TO_NUMBER(REGEXP_SUBSTR(l_line, '^[0-9]+'));
   l_obj_count := TO_NUMBER(REGEXP_SUBSTR(l_line, '[0-9]+$'));
   l_pos := l_line_end + 1;
@@ -6142,12 +6184,12 @@ BEGIN
 
   -- Find xref
   g_xref_offset := find_startxref(p_pdf_blob);
-  log_message(3, 'xref offset: ' || g_xref_offset);
+  log_message(3, 'startxref value: ' || g_xref_offset);
 
-  -- Parse xref table
+  -- Parse xref table (may correct g_xref_offset if startxref was inaccurate)
   parse_xref_table(p_pdf_blob, g_xref_offset);
 
-  -- Parse trailer
+  -- Parse trailer (search from the actual xref position)
   parse_trailer(p_pdf_blob, g_xref_offset);
 
   -- Count pages

@@ -71,29 +71,15 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('Starting Phase 4.5 Overlay Tests...');
   DBMS_OUTPUT.PUT_LINE('');
 
-  -- Create test PDF (simple PDF with one blank page)
-  -- For testing purposes, we'll create a minimal valid PDF
-  l_test_pdf := UTL_RAW.CAST_TO_RAW(
-    '%PDF-1.4' || CHR(10) ||
-    '1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj' || CHR(10) ||
-    '2 0 obj<</Type/Pages/Count 1/Kids[3 0 R]>>endobj' || CHR(10) ||
-    '3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 612 792]/Contents 4 0 R>>endobj' || CHR(10) ||
-    '4 0 obj<</Length 44>>stream' || CHR(10) ||
-    'BT /F1 12 Tf 100 700 Td (Test Page) Tj ET' || CHR(10) ||
-    'endstream' || CHR(10) ||
-    'endobj' || CHR(10) ||
-    'xref' || CHR(10) ||
-    '0 5' || CHR(10) ||
-    '0000000000 65535 f ' || CHR(10) ||
-    '0000000009 00000 n ' || CHR(10) ||
-    '0000000058 00000 n ' || CHR(10) ||
-    '0000000115 00000 n ' || CHR(10) ||
-    '0000000214 00000 n ' || CHR(10) ||
-    'trailer<</Size 5/Root 1 0 R>>' || CHR(10) ||
-    'startxref' || CHR(10) ||
-    '314' || CHR(10) ||
-    '%%EOF'
-  );
+  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Test Page');
+    l_test_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
 
   -- Create test logo (1x1 PNG - simplest valid PNG)
   l_logo_blob := HEXTORAW('89504E470D0A1A0A0000000D494844520000000100000001010000000037' ||
