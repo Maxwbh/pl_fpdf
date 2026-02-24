@@ -228,9 +228,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 -- Date: 2025-01-25
 --------------------------------------------------------------------------------
- -- Version Information
- co_version CONSTANT VARCHAR2(15) := '3.0.0-b.2';  -- PL_FPDF Version (Phase 4.6 Beta - Not Validated)
-
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4'; -- PDF output version
 
@@ -1780,7 +1777,7 @@ end p_putresources;
 ----------------------------------------------------------------------------------------
 procedure p_putinfo is
 begin
-	p_out('/Producer ' || p_textstring('PL_FPDF ' || co_pl_fpdf_version || ' portage pour Laclasse.com par P.G. Levallois de la version '|| co_fpdf_version ||' de PHP/FPDF d''Olivier Plathey.'));
+	p_out('/Producer ' || p_textstring('PL_FPDF ' || co_version ));
 	if(not empty(title)) then
 		p_out('/Title ' || p_textstring(title));
 	end if; 
@@ -5373,7 +5370,7 @@ begin
 
   -- PDF version
   l_metadata.put('pdfVersion', c_PDF_VERSION);
-  l_metadata.put('fpdfVersion', co_fpdf_version);
+  l_metadata.put('fpdfVersion', co_version);
 
   log_message(c_LOG_DEBUG, 'GetDocumentMetadata: Returned metadata for ' || g_current_page || ' pages');
 
@@ -6238,30 +6235,6 @@ BEGIN
 END GetPDFInfo;
 
 --------------------------------------------------------------------------------
--- GetPageInfo: Get information about specific page
---------------------------------------------------------------------------------
-FUNCTION GetPageInfo(p_page_number PLS_INTEGER) RETURN JSON_OBJECT_T IS
-  l_info JSON_OBJECT_T := JSON_OBJECT_T();
-BEGIN
-  IF g_loaded_pdf IS NULL THEN
-    raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
-  END IF;
-
-  -- Extract page info if not already done
-  extract_page_info(p_page_number);
-
-  -- Build JSON response
-  l_info.put('pageNumber', p_page_number);
-  l_info.put('pageObjectId', g_page_info_table(p_page_number).page_obj_id);
-  l_info.put('mediaBox', g_page_info_table(p_page_number).media_box);
-  l_info.put('rotation', g_page_info_table(p_page_number).rotate);
-  l_info.put('resourcesObjectId', g_page_info_table(p_page_number).resources_id);
-  l_info.put('contentsObjectId', g_page_info_table(p_page_number).contents_id);
-
-  RETURN l_info;
-END GetPageInfo;
-
---------------------------------------------------------------------------------
 -- RotatePage: Rotate a specific page
 --------------------------------------------------------------------------------
 PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER) IS
@@ -7005,18 +6978,19 @@ PROCEDURE OverlayText(
 BEGIN
   -- Validate PDF loaded
   IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
-    raise_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+    
+    RAISE_APPLICATION_ERROR(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
   -- Validate page number
   IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
-    raise_error(-20810, 'Invalid page number: ' || p_page_number ||
+    RAISE_APPLICATION_ERROR(-20810, 'Invalid page number: ' || p_page_number ||
                         '. PDF has ' || g_loaded_page_count || ' pages.');
   END IF;
 
   -- Validate coordinates
   IF p_x < 0 OR p_y < 0 THEN
-    raise_error(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
+    RAISE_APPLICATION_ERROR(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
   END IF;
 
   -- Generate overlay ID
@@ -7055,7 +7029,7 @@ BEGIN
 
   -- Validate opacity
   IF l_overlay.opacity < 0 OR l_overlay.opacity > 1 THEN
-    raise_error(-20821, 'Invalid opacity. Must be between 0.0 and 1.0.');
+    RAISE_APPLICATION_ERROR(-20821, 'Invalid opacity. Must be between 0.0 and 1.0.');
   END IF;
 
   -- Store overlay
@@ -7083,37 +7057,37 @@ PROCEDURE OverlayImage(
 BEGIN
   -- Validate PDF loaded
   IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
-    raise_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+    RAISE_APPLICATION_ERROR(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
   -- Validate page number
   IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
-    raise_error(-20810, 'Invalid page number: ' || p_page_number);
+    RAISE_APPLICATION_ERROR(-20810, 'Invalid page number: ' || p_page_number);
   END IF;
 
   -- Validate coordinates
   IF p_x < 0 OR p_y < 0 THEN
-    raise_error(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
+    RAISE_APPLICATION_ERROR(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
   END IF;
 
   -- Validate image blob
   IF p_image_blob IS NULL OR DBMS_LOB.GETLENGTH(p_image_blob) = 0 THEN
-    raise_error(-20823, 'Invalid image: image blob is empty or NULL.');
+    RAISE_APPLICATION_ERROR(-20823, 'Invalid image: image blob is empty or NULL.');
   END IF;
 
   -- Validate image format (JPEG or PNG)
   l_img_signature := DBMS_LOB.SUBSTR(p_image_blob, 8, 1);
   IF l_img_signature != c_PNG_SIGNATURE AND
      DBMS_LOB.SUBSTR(p_image_blob, 2, 1) != c_JPEG_SOI THEN
-    raise_error(-20823, 'Invalid image format. Only JPEG and PNG are supported.');
+    RAISE_APPLICATION_ERROR(-20823, 'Invalid image format. Only JPEG and PNG are supported.');
   END IF;
 
   -- Validate dimensions
   IF p_width IS NOT NULL AND p_width <= 0 THEN
-    raise_error(-20824, 'Invalid width. Must be > 0 or NULL for original size.');
+    RAISE_APPLICATION_ERROR(-20824, 'Invalid width. Must be > 0 or NULL for original size.');
   END IF;
   IF p_height IS NOT NULL AND p_height <= 0 THEN
-    raise_error(-20824, 'Invalid height. Must be > 0 or NULL for original size.');
+    RAISE_APPLICATION_ERROR(-20824, 'Invalid height. Must be > 0 or NULL for original size.');
   END IF;
 
   -- Generate overlay ID
@@ -7148,7 +7122,7 @@ BEGIN
 
   -- Validate opacity
   IF l_overlay.opacity < 0 OR l_overlay.opacity > 1 THEN
-    raise_error(-20821, 'Invalid opacity. Must be between 0.0 and 1.0.');
+    RAISE_APPLICATION_ERROR(-20821, 'Invalid opacity. Must be between 0.0 and 1.0.');
   END IF;
 
   -- Store overlay
@@ -7171,7 +7145,7 @@ IS
 BEGIN
   -- Validate PDF loaded
   IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
-    raise_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
+    RAISE_APPLICATION_ERROR(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
   -- Iterate through overlays
@@ -7227,7 +7201,7 @@ END GetOverlays;
 PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2) IS
 BEGIN
   IF NOT g_overlays.EXISTS(p_overlay_id) THEN
-    raise_error(-20825, 'Overlay not found: ' || p_overlay_id);
+    RAISE_APPLICATION_ERROR(-20825, 'Overlay not found: ' || p_overlay_id);
   END IF;
 
   g_overlays.DELETE(p_overlay_id);
@@ -7285,27 +7259,27 @@ PROCEDURE LoadPDFWithID(
 BEGIN
   -- Validate PDF ID
   IF p_pdf_id IS NULL OR LENGTH(TRIM(p_pdf_id)) = 0 THEN
-    raise_error(-20830, 'Invalid PDF ID: cannot be empty or NULL');
+    RAISE_APPLICATION_ERROR(-20830, 'Invalid PDF ID: cannot be empty or NULL');
   END IF;
 
   IF LENGTH(p_pdf_id) > 50 THEN
-    raise_error(-20830, 'Invalid PDF ID: maximum length is 50 characters');
+    RAISE_APPLICATION_ERROR(-20830, 'Invalid PDF ID: maximum length is 50 characters');
   END IF;
 
   -- Check if already loaded
   IF g_loaded_pdfs.EXISTS(p_pdf_id) THEN
-    raise_error(-20828, 'PDF ID already loaded: ' || p_pdf_id);
+    RAISE_APPLICATION_ERROR(-20828, 'PDF ID already loaded: ' || p_pdf_id);
   END IF;
 
   -- Check max PDFs limit
   IF g_loaded_pdf_count >= c_max_loaded_pdfs THEN
-    raise_error(-20829, 'Maximum loaded PDFs exceeded. Limit is ' ||
+    RAISE_APPLICATION_ERROR(-20829, 'Maximum loaded PDFs exceeded. Limit is ' ||
                 c_max_loaded_pdfs || ' PDFs. Unload some PDFs first.');
   END IF;
 
   -- Validate BLOB
   IF p_pdf_blob IS NULL OR DBMS_LOB.GETLENGTH(p_pdf_blob) = 0 THEN
-    raise_error(-20830, 'Invalid PDF: blob is empty or NULL');
+    RAISE_APPLICATION_ERROR(-20830, 'Invalid PDF: blob is empty or NULL');
   END IF;
 
   -- Initialize document record
@@ -7384,7 +7358,7 @@ END GetLoadedPDFs;
 PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2) IS
 BEGIN
   IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
-    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+    RAISE_APPLICATION_ERROR(-20831, 'PDF ID not found: ' || p_pdf_id);
   END IF;
 
   g_loaded_pdfs.DELETE(p_pdf_id);
@@ -7414,14 +7388,14 @@ FUNCTION MergePDFs(
 BEGIN
   -- Validate input
   IF p_pdf_ids IS NULL OR p_pdf_ids.get_size() = 0 THEN
-    raise_error(-20832, 'No PDF IDs provided for merge');
+    RAISE_APPLICATION_ERROR(-20832, 'No PDF IDs provided for merge');
   END IF;
 
   -- Validate all PDFs loaded and count pages
   FOR i IN 0..p_pdf_ids.get_size() - 1 LOOP
     l_pdf_id := p_pdf_ids.get_string(i);
     IF NOT g_loaded_pdfs.EXISTS(l_pdf_id) THEN
-      raise_error(-20833, 'PDF ID not loaded: ' || l_pdf_id);
+      RAISE_APPLICATION_ERROR(-20833, 'PDF ID not loaded: ' || l_pdf_id);
     END IF;
     l_doc := g_loaded_pdfs(l_pdf_id);
     l_total_pages := l_total_pages + l_doc.page_count;
@@ -7498,7 +7472,7 @@ BEGIN
 EXCEPTION
   WHEN OTHERS THEN
     log_message(1, 'Merge error: ' || SQLERRM);
-    raise_error(-20834, 'Merge failed: ' || SQLERRM);
+    RAISE_APPLICATION_ERROR(-20834, 'Merge failed: ' || SQLERRM);
 END MergePDFs;
 
 /*******************************************************************************
@@ -7515,13 +7489,13 @@ FUNCTION SplitPDF(
   l_encoded CLOB;
 BEGIN
   IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
-    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+    RAISE_APPLICATION_ERROR(-20831, 'PDF ID not found: ' || p_pdf_id);
   END IF;
 
   l_doc := g_loaded_pdfs(p_pdf_id);
 
   IF p_page_ranges IS NULL OR p_page_ranges.get_size() = 0 THEN
-    raise_error(-20835, 'No page ranges provided');
+    RAISE_APPLICATION_ERROR(-20835, 'No page ranges provided');
   END IF;
 
   log_message(2, 'Splitting PDF ' || p_pdf_id || '...');
@@ -7553,13 +7527,13 @@ FUNCTION ExtractPages(
   l_page_num PLS_INTEGER;
 BEGIN
   IF NOT g_loaded_pdfs.EXISTS(p_pdf_id) THEN
-    raise_error(-20831, 'PDF ID not found: ' || p_pdf_id);
+    RAISE_APPLICATION_ERROR(-20831, 'PDF ID not found: ' || p_pdf_id);
   END IF;
 
   l_doc := g_loaded_pdfs(p_pdf_id);
 
   IF p_pages IS NULL OR LENGTH(TRIM(p_pages)) = 0 THEN
-    raise_error(-20838, 'Invalid page specification');
+    RAISE_APPLICATION_ERROR(-20838, 'Invalid page specification');
   END IF;
 
   log_message(2, 'Extracting pages ' || p_pages || ' from ' || p_pdf_id);
@@ -7575,7 +7549,7 @@ BEGIN
       l_page_num := TO_NUMBER(p_pages);
 
       IF l_page_num < 1 OR l_page_num > l_doc.page_count THEN
-        raise_error(-20839, 'Page ' || l_page_num || ' out of range');
+        RAISE_APPLICATION_ERROR(-20839, 'Page ' || l_page_num || ' out of range');
       END IF;
 
       -- Return simple PDF with placeholder
@@ -7598,14 +7572,15 @@ BEGIN
       );
     EXCEPTION
       WHEN VALUE_ERROR THEN
-        raise_error(-20838, 'Invalid page specification: ' || p_pages);
+        RAISE_APPLICATION_ERROR(-20838, 'Invalid page specification: ' || p_pages);
     END;
   ELSE
     -- Complex ranges not fully implemented yet
-    raise_error(-20838, 'Complex page ranges not fully implemented. Use single page or ALL.');
+    RAISE_APPLICATION_ERROR(-20838, 'Complex page ranges not fully implemented. Use single page or ALL.');
   END IF;
 
   RETURN l_result;
 END ExtractPages;
 
 END PL_FPDF;
+/

@@ -854,20 +854,6 @@ procedure AddBarcode(
   p_show_text boolean default true
 );
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-********************************************************************************
-*                                                                              *
-*                    PHASE 4: PDF PARSER AND EDITOR / EDITOR                   *
-*                              v3.0.0 (Complete)                               *
-*                                                                              *
-********************************************************************************
-*                                                                              *
-* English: APIs for reading and modifying existing PDF documents               *
-* Português: APIs para ler e modificar documentos PDF existentes              *
-*                                                                              *
-********************************************************************************
 
 /*******************************************************************************
 * Procedure: LoadPDF / Carregar PDF
@@ -944,37 +930,6 @@ FUNCTION GetPageCount RETURN PLS_INTEGER;
 *   END;
 *******************************************************************************/
 FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
-
-/*******************************************************************************
-* Function: GetPageInfo / Obter Informações da Página
-*
-* Description / Descrição:
-*   EN: Get detailed information about a specific page in the PDF
-*   PT: Obter informações detalhadas sobre uma página específica do PDF
-*
-* Parameters / Parâmetros:
-*   p_page_number - Page number (1-based) / Número da página (base 1)
-*
-* Returns / Retorna:
-*   JSON_OBJECT_T with page details / com detalhes da página:
-*   - pageNumber: Page number / Número da página
-*   - pageObjectId: PDF object ID / ID do objeto PDF
-*   - mediaBox: Dimensions (e.g., "0 0 612 792") / Dimensões
-*   - rotation: Rotation in degrees / Rotação em graus (0, 90, 180, 270)
-*   - resourcesObjectId: Resources object ID / ID do objeto Resources
-*   - contentsObjectId: Contents object ID / ID do objeto Contents
-*
-* Example / Exemplo:
-*   DECLARE
-*     l_info JSON_OBJECT_T;
-*   BEGIN
-*     PL_FPDF.LoadPDF(l_pdf);
-*     l_info := PL_FPDF.GetPageInfo(1);
-*     DBMS_OUTPUT.PUT_LINE('MediaBox: ' || l_info.get_string('mediaBox'));
-*     DBMS_OUTPUT.PUT_LINE('Rotation / Rotação: ' || l_info.get_number('rotation'));
-*   END;
-*******************************************************************************/
-FUNCTION GetPageInfo(p_page_number PLS_INTEGER) RETURN JSON_OBJECT_T;
 
 /*******************************************************************************
 * Procedure: RotatePage / Rotacionar Página
@@ -1652,3 +1607,4 @@ FUNCTION ExtractPages(
 --------------------------------------------------------------------------------
 
 END PL_FPDF;
+/
