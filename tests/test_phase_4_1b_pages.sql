@@ -56,6 +56,10 @@ BEGIN
   -- Create test PDF
   create_test_pdf();
 
+  -- Enable debug logging
+  PL_FPDF.EnableDebugMode();
+  PL_FPDF.SetLogLevel(4);
+
   --------------------------------------------------------------------------------
   -- TEST 1: Load PDF and verify page tree parsing
   --------------------------------------------------------------------------------

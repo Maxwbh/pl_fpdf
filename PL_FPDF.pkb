@@ -5970,9 +5970,12 @@ BEGIN
   END IF;
 
   l_offset := g_xref_table(p_obj_id).offset;
+  log_message(4, 'get_pdf_object(' || p_obj_id || '): offset=' || l_offset);
 
   -- Read object
   l_obj_text := read_blob_chunk(g_loaded_pdf, l_offset + 1, 32767);
+  log_message(4, 'get_pdf_object(' || p_obj_id || '): raw text (first 200)=' ||
+              SUBSTR(l_obj_text, 1, 200));
 
   -- Find end of object
   l_end_pos := INSTR(l_obj_text, 'endobj');
@@ -6043,6 +6046,7 @@ BEGIN
 
   -- Get Catalog
   l_catalog := get_pdf_object(g_root_obj_id);
+  log_message(3, 'Catalog (Root=' || g_root_obj_id || '): ' || SUBSTR(l_catalog, 1, 300));
 
   -- Extract Pages object ID
   l_pages_id := TO_NUMBER(
@@ -6050,18 +6054,32 @@ BEGIN
   );
 
   IF l_pages_id IS NULL THEN
+    log_message(1, 'Catalog object: ' || SUBSTR(l_catalog, 1, 500));
     raise_application_error(-20810, 'Pages not found in Catalog');
   END IF;
 
+  log_message(3, 'Pages object ID: ' || l_pages_id);
+
   -- Get Pages object
   l_pages_obj := get_pdf_object(l_pages_id);
+  log_message(3, 'Pages object content (first 300 chars): ' || SUBSTR(l_pages_obj, 1, 300));
 
   -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
+  -- Debug: check if /Kids exists
+  log_message(3, 'Looking for /Kids in Pages object, INSTR result: ' ||
+              INSTR(l_pages_obj, '/Kids'));
+
   l_kids_array := REGEXP_SUBSTR(l_pages_obj, '/Kids\s*\[([^\]]+)\]', 1, 1, NULL, 1);
 
+  -- Debug: log Pages object content if Kids not found
   IF l_kids_array IS NULL THEN
+    log_message(1, 'ERROR: Kids array not found. Pages object content:');
+    log_message(1, SUBSTR(l_pages_obj, 1, 500));
+    log_message(1, 'Object length: ' || LENGTH(l_pages_obj));
     raise_application_error(-20811, 'Kids array not found in Pages object');
   END IF;
+
+  log_message(3, 'Kids array extracted: ' || l_kids_array);
 
   -- Parse each page object reference
   l_pos := 1;
