@@ -5393,6 +5393,32 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
 begin
   l_page_info := JSON_OBJECT_T();
 
+  -- If a PDF is loaded (Phase 4 parser mode), return loaded PDF page info
+  IF g_loaded_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(g_loaded_pdf) > 0 THEN
+    l_page_num := NVL(p_page_number, 1);
+
+    -- Validate page number for loaded PDF
+    IF l_page_num < 1 OR l_page_num > g_loaded_page_count THEN
+      raise_application_error(-20106,
+        'Invalid page number: ' || l_page_num || '. Must be between 1 and ' || g_loaded_page_count);
+    END IF;
+
+    -- Extract page info if not already done
+    extract_page_info(l_page_num);
+
+    -- Build JSON response for loaded PDF
+    l_page_info.put('pageNumber', l_page_num);
+    l_page_info.put('pageObjectId', g_page_info_table(l_page_num).page_obj_id);
+    l_page_info.put('mediaBox', g_page_info_table(l_page_num).media_box);
+    l_page_info.put('rotation', NVL(g_page_info_table(l_page_num).rotate, 0));
+    l_page_info.put('resourcesObjectId', g_page_info_table(l_page_num).resources_id);
+    l_page_info.put('contentsObjectId', g_page_info_table(l_page_num).contents_id);
+
+    log_message(c_LOG_DEBUG, 'GetPageInfo: Returned loaded PDF info for page ' || l_page_num);
+    RETURN l_page_info;
+  END IF;
+
+  -- Generation mode: return info about page being generated
   -- Determine which page to query
   if p_page_number is null then
     l_page_num := g_current_page;
