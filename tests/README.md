@@ -128,7 +128,6 @@ All tests use self-contained test data:
 - DBMS_OUTPUT enabled: `SET SERVEROUTPUT ON SIZE UNLIMITED`
 
 **Optional:**
-- APEX 19.1+ for `apex_string` utilities (Phase 4 page ranges)
 - 5MB+ CLOB/BLOB buffer
 
 ### 📈 Test Metrics

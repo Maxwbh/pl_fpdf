@@ -6431,6 +6431,41 @@ BEGIN
 END IsPDFModified;
 
 --------------------------------------------------------------------------------
+-- split_string: Split a string by delimiter into a collection (pure PL/SQL)
+-- Replaces apex_string.split for Oracle environments without APEX
+--------------------------------------------------------------------------------
+FUNCTION split_string(
+  p_string VARCHAR2,
+  p_delimiter VARCHAR2 DEFAULT ','
+) RETURN tv4000 IS
+  l_result tv4000;
+  l_str VARCHAR2(4000);
+  l_idx PLS_INTEGER := 1;
+  l_delim_pos PLS_INTEGER;
+BEGIN
+  IF p_string IS NULL THEN
+    RETURN l_result;
+  END IF;
+
+  l_str := p_string;
+
+  LOOP
+    l_delim_pos := INSTR(l_str, p_delimiter);
+
+    IF l_delim_pos > 0 THEN
+      l_result(l_idx) := SUBSTR(l_str, 1, l_delim_pos - 1);
+      l_str := SUBSTR(l_str, l_delim_pos + LENGTH(p_delimiter));
+      l_idx := l_idx + 1;
+    ELSE
+      l_result(l_idx) := l_str;
+      EXIT;
+    END IF;
+  END LOOP;
+
+  RETURN l_result;
+END split_string;
+
+--------------------------------------------------------------------------------
 -- parse_page_range: Parse page range string to determine applicable pages
 --------------------------------------------------------------------------------
 FUNCTION parse_page_range(
@@ -6439,7 +6474,7 @@ FUNCTION parse_page_range(
 ) RETURN VARCHAR2 IS
   l_result VARCHAR2(4000);
   l_range VARCHAR2(100);
-  l_parts apex_t_varchar2;
+  l_parts tv4000;
   l_item VARCHAR2(50);
   l_from PLS_INTEGER;
   l_to PLS_INTEGER;
@@ -6456,7 +6491,7 @@ BEGIN
   END IF;
 
   -- Handle comma-separated list: '1,3,5' or ranges '1-5,7,9-12'
-  l_parts := apex_string.split(l_range, ',');
+  l_parts := split_string(l_range, ',');
 
   FOR i IN 1..l_parts.COUNT LOOP
     l_item := TRIM(l_parts(i));
@@ -6640,10 +6675,10 @@ PROCEDURE get_page_dimensions(
   p_width OUT NUMBER,
   p_height OUT NUMBER
 ) IS
-  l_parts apex_t_varchar2;
+  l_parts tv4000;
 BEGIN
   -- MediaBox format: "0 0 612 792"
-  l_parts := apex_string.split(p_media_box, ' ');
+  l_parts := split_string(p_media_box, ' ');
 
   IF l_parts.COUNT >= 4 THEN
     p_width := TO_NUMBER(l_parts(3));
@@ -6906,7 +6941,7 @@ FUNCTION OutputModifiedPDF RETURN BLOB IS
   l_output CLOB;
   l_result BLOB;
   l_page_num PLS_INTEGER;
-  l_active_pages apex_t_number := apex_t_number();  -- Initialize collection
+  l_active_pages tn;  -- Using native PL/SQL type (no APEX dependency)
   l_page_obj CLOB;
   l_page_obj_id PLS_INTEGER;
   l_obj_offset PLS_INTEGER;
