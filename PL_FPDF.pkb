@@ -1,49 +1,42 @@
-create or replace PACKAGE BODY                          PL_FPDF AS
+CREATE OR REPLACE PACKAGE BODY PL_FPDF AS
 /*******************************************************************************
-* Logiciel : PL_FPDF                                                           *
-* Version :  0.9.4                                                             *
-* Date :     27-Dec-2017                                                       *
-* Auteur :   Pierre-Gilles Levallois et al                              *
-* Licence :  GPL                                                               *
+*                                                                              *
+*                            PL_FPDF v3.0.0                                    *
+*                Oracle PL/SQL PDF Generation and Manipulation                 *
+*                           Package Body / Corpo do Pacote                     *
 *                                                                              *
 ********************************************************************************
-* Cette librairie PL/SQL est un portage de la version 1.53 de FPDF, célèbre    *
-* classe PHP développée par Olivier PLATHEY (http://www.fpdf.org/)             *
+*                                                                              *
+* Version / Versão: 3.0.0                                                      *
+* Release Date / Data: February 2026 / Fevereiro 2026                          *
+* License / Licença: MIT                                                       *
+*                                                                              *
 ********************************************************************************
-    This program is free software; you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation; either version 2 of the License, or
-    (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
-
-    You should have received a copy of the GNU General Public License
-    along with this program; if not, write to the Free Software
-    Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
-********************************************************************************/
-
-/*******************************************************************************
-   TODO :
-    - Known bugs :
-    
-    CHANGELOG : 
-    0.9.2 -> 0.9.3 : 
-        - Added Sample on setHeaderProc and setFooterProc procedures.
-        - Added parameter implementation to thes procedures.
-        - Modify Header and footer procedure behaviour to get parameter values
-        - declared subtype 'word' ans type 'tv4000a' in the specs.
-        
-    0.9.1 -> 0.9.2 : 
-        - Added procedure helloword Example.
-        - Added procedure testImg Example.
-		
-	0.9.3 -> 0.9.4 :
-		- Added function ReturnBlob
-		- Slight amendment to procedure fpdf to boost performance
-
+*                                                                              *
+* CREDITS / CRÉDITOS:                                                          *
+*                                                                              *
+* Original FPDF (PHP): Olivier PLATHEY (http://www.fpdf.org/)                  *
+* PL/SQL Port: Pierre-Gilles Levallois, Anton Scheffer, Marcel Amman           *
+* Modernization & Phase 4: Maxwell Oliveira (@maxwbh)                          *
+*                                                                              *
+********************************************************************************
+*                                                                              *
+* CHANGELOG:                                                                   *
+*                                                                              *
+* v3.0.0 (2026-02):                                                            *
+*   - Phase 4: PDF manipulation (load, parse, modify, merge, split)            *
+*   - Removed APEX dependencies (pure PL/SQL)                                  *
+*   - Removed ORDSYS.ORDIMAGE dependencies                                     *
+*   - PDF version updated to 1.4                                               *
+*   - Improved Oracle compatibility (INSTR/SUBSTR instead of REGEXP)           *
+*                                                                              *
+* v2.0.0 (2025-12):                                                            *
+*   - Phase 1-3: PDF generation with images, fonts, barcodes                   *
+*   - Native BLOB image support                                                *
+*   - CLOB-based document buffer                                               *
+*                                                                              *
+* v0.9.4 (2017-12): Original release by Pierre-Gilles Levallois                *
+*                                                                              *
 *******************************************************************************/
 
 -- Privates types 

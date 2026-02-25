@@ -1,8 +1,8 @@
 # PL_FPDF Test Suite Documentation
 # Documentação da Suite de Testes PL_FPDF
 
-**Version:** 3.0.0-a.7
-**Last Updated:** 2026-01-25
+**Version:** 3.0.0
+**Last Updated:** 2026-02-25
 **Maintainer:** @maxwbh
 
 [🇬🇧 English](#english) | [🇧🇷 Português](#português)
@@ -22,46 +22,43 @@ of the project, from Phase 1 (PDF Generation) through Phase 4.6 (PDF Merge & Spl
 tests/
 ├── README.md                          # This file
 ├── run_all_tests.sql                  # Master test runner
-├── test_runner.sql                    # New organized test runner
+├── test_runner.sql                    # Organized test runner
 │
 ├── Phase 1-3: PDF Generation
 │   ├── validate_phase_1.sql           # ✅ Phase 1 validation
 │   ├── validate_phase_2.sql           # ✅ Phase 2 validation
 │   ├── validate_phase_3.sql           # ✅ Phase 3 validation
-│   └── validate_phases_1_3.sql        # 🆕 Combined validation
+│   └── validate_phases_1_3.sql        # ✅ Combined validation
 │
 ├── Phase 4: PDF Reading & Manipulation
-│   ├── test_phase_4_1a_parser.sql     # Phase 4.1A: PDF Parser
+│   ├── test_phase_4_1a_parser.sql     # ✅ Phase 4.1A: PDF Parser
 │   ├── test_phase_4_1b_pages.sql      # ✅ Phase 4.1B: Page Info
 │   ├── test_phase_4_2_page_mgmt.sql   # ✅ Phase 4.2: Page Management
 │   ├── test_phase_4_3_watermark.sql   # ✅ Phase 4.3: Watermarks
 │   ├── test_phase_4_4_output.sql      # ✅ Phase 4.4: Output Modified
 │   ├── test_phase_4_5_overlay.sql     # ✅ Phase 4.5: Text/Image Overlay
-│   ├── test_phase_4_6_merge_split.sql # 🆕 Phase 4.6: Merge & Split
-│   └── validate_phase_4_complete.sql  # 🆕 Phase 4 validation
+│   ├── test_phase_4_6_merge_split.sql # ✅ Phase 4.6: Merge & Split
+│   └── validate_phase_4_complete.sql  # ✅ Phase 4 validation
 │
-└── Legacy & Utilities
-    ├── install_tests.sql              # Test installation
-    ├── uninstall_tests.sql            # Test cleanup
-    ├── run_init_tests_simple.sql      # Basic init tests
-    └── run_init_tests_utplsql.sql     # utPLSQL tests
+└── Utilities
+    └── debug_kids_array.sql           # Debug utility for PDF parsing
 ```
 
 ### 📊 Test Coverage Summary
 
 | Phase | Description | Tests | Status |
 |-------|-------------|-------|--------|
-| **1** | PDF Generation - Basics | validate_phase_1.sql | ✅ Complete |
-| **2** | Security & Robustness | validate_phase_2.sql | ✅ Complete |
-| **3** | Advanced Features | validate_phase_3.sql | ✅ Complete |
-| **4.1A** | PDF Parser | test_phase_4_1a_parser.sql | ✅ Complete |
-| **4.1B** | Page Information | test_phase_4_1b_pages.sql | ✅ Complete |
-| **4.2** | Page Management | test_phase_4_2_page_mgmt.sql | ✅ Complete |
-| **4.3** | Watermarks | test_phase_4_3_watermark.sql | ✅ Complete |
-| **4.4** | Output Modified PDF | test_phase_4_4_output.sql | ✅ Complete |
-| **4.5** | Text & Image Overlay | test_phase_4_5_overlay.sql (20 tests) | ✅ Complete |
-| **4.6** | PDF Merge & Split | test_phase_4_6_merge_split.sql | 🆕 To Create |
-| **Phase 4** | Complete Validation | validate_phase_4_complete.sql | 🆕 To Create |
+| **1** | PDF Generation - Basics | validate_phase_1.sql | ✅ 100% |
+| **2** | Security & Robustness | validate_phase_2.sql | ✅ 100% |
+| **3** | Advanced Features | validate_phase_3.sql | ✅ 100% |
+| **4.1A** | PDF Parser | test_phase_4_1a_parser.sql | ✅ 100% |
+| **4.1B** | Page Information | test_phase_4_1b_pages.sql | ✅ 100% |
+| **4.2** | Page Management | test_phase_4_2_page_mgmt.sql | ✅ 100% |
+| **4.3** | Watermarks | test_phase_4_3_watermark.sql | ✅ 100% |
+| **4.4** | Output Modified PDF | test_phase_4_4_output.sql | ✅ 100% |
+| **4.5** | Text & Image Overlay | test_phase_4_5_overlay.sql | ✅ 100% |
+| **4.6** | PDF Merge & Split | test_phase_4_6_merge_split.sql | ✅ 100% |
+| **Phase 4** | Complete Validation | validate_phase_4_complete.sql | ✅ 100% |
 
 ### 🚀 Running Tests
 
@@ -157,14 +154,14 @@ All tests use self-contained test data:
 1. **"Identifier too long" errors**
    - Solution: Use Oracle 12c+ or shorten variable names
 
-2. **"APEX_STRING not found"**
-   - Solution: Install APEX 19.1+ or use alternative parsing
-
-3. **"Insufficient CLOB buffer"**
+2. **"Insufficient CLOB buffer"**
    - Solution: Increase CLOB/BLOB size limits in database
 
-4. **Tests timeout**
+3. **Tests timeout**
    - Solution: Increase SQL*Plus timeout or run tests individually
+
+4. **REGEXP_SUBSTR returns NULL**
+   - Solution: Already fixed in v3.0.0 using INSTR/SUBSTR
 
 ### 📚 Writing New Tests
 
@@ -245,29 +242,26 @@ as fases do projeto, da Fase 1 (Geração de PDF) até a Fase 4.6 (Merge & Split
 tests/
 ├── README.md                          # Este arquivo
 ├── run_all_tests.sql                  # Executor principal de testes
-├── test_runner.sql                    # 🆕 Executor organizado
+├── test_runner.sql                    # Executor organizado
 │
 ├── Fase 1-3: Geração de PDF
 │   ├── validate_phase_1.sql           # ✅ Validação Fase 1
 │   ├── validate_phase_2.sql           # ✅ Validação Fase 2
 │   ├── validate_phase_3.sql           # ✅ Validação Fase 3
-│   └── validate_phases_1_3.sql        # 🆕 Validação combinada
+│   └── validate_phases_1_3.sql        # ✅ Validação combinada
 │
 ├── Fase 4: Leitura e Manipulação de PDF
-│   ├── test_phase_4_1a_parser.sql     # Fase 4.1A: Parser PDF
+│   ├── test_phase_4_1a_parser.sql     # ✅ Fase 4.1A: Parser PDF
 │   ├── test_phase_4_1b_pages.sql      # ✅ Fase 4.1B: Info Páginas
 │   ├── test_phase_4_2_page_mgmt.sql   # ✅ Fase 4.2: Gestão Páginas
 │   ├── test_phase_4_3_watermark.sql   # ✅ Fase 4.3: Marcas d'Água
 │   ├── test_phase_4_4_output.sql      # ✅ Fase 4.4: Output Modificado
 │   ├── test_phase_4_5_overlay.sql     # ✅ Fase 4.5: Overlay Texto/Imagem
-│   ├── test_phase_4_6_merge_split.sql # 🆕 Fase 4.6: Merge & Split
-│   └── validate_phase_4_complete.sql  # 🆕 Validação Fase 4
+│   ├── test_phase_4_6_merge_split.sql # ✅ Fase 4.6: Merge & Split
+│   └── validate_phase_4_complete.sql  # ✅ Validação Fase 4
 │
-└── Legacy & Utilitários
-    ├── install_tests.sql              # Instalação testes
-    ├── uninstall_tests.sql            # Limpeza testes
-    ├── run_init_tests_simple.sql      # Testes init básicos
-    └── run_init_tests_utplsql.sql     # Testes utPLSQL
+└── Utilitários
+    └── debug_kids_array.sql           # Utilitário de debug para parsing PDF
 ```
 
 ### 🚀 Executando Testes
