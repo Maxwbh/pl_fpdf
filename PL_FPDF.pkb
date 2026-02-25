@@ -5577,25 +5577,57 @@ BEGIN
   l_page_obj := get_pdf_object(l_page_obj_id);
 
   -- Extract MediaBox: /MediaBox [0 0 612 792]
-  l_media_box := REGEXP_SUBSTR(l_page_obj, '/MediaBox\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+  -- Using INSTR/SUBSTR for Oracle compatibility (REGEXP_SUBSTR fails in some Oracle versions)
+  DECLARE
+    l_start PLS_INTEGER;
+    l_end PLS_INTEGER;
+    l_tmp VARCHAR2(100);
+  BEGIN
+    l_start := INSTR(l_page_obj, '/MediaBox');
+    IF l_start > 0 THEN
+      l_start := INSTR(l_page_obj, '[', l_start);
+      IF l_start > 0 THEN
+        l_end := INSTR(l_page_obj, ']', l_start);
+        IF l_end > l_start THEN
+          l_media_box := TRIM(SUBSTR(l_page_obj, l_start + 1, l_end - l_start - 1));
+        END IF;
+      END IF;
+    END IF;
 
-  -- Extract Rotate: /Rotate 90
-  l_rotate := TO_NUMBER(
-    REGEXP_SUBSTR(l_page_obj, '/Rotate\s+([0-9]+)', 1, 1, NULL, 1)
-  );
+    -- Extract Rotate: /Rotate 90
+    l_start := INSTR(l_page_obj, '/Rotate');
+    IF l_start > 0 THEN
+      l_tmp := SUBSTR(l_page_obj, l_start + 7, 10);
+      l_tmp := TRIM(REGEXP_REPLACE(l_tmp, '[^0-9].*', ''));
+      IF l_tmp IS NOT NULL THEN
+        l_rotate := TO_NUMBER(l_tmp);
+      END IF;
+    END IF;
+
+    -- Extract Resources object ID: /Resources 2 0 R
+    l_start := INSTR(l_page_obj, '/Resources');
+    IF l_start > 0 THEN
+      l_tmp := SUBSTR(l_page_obj, l_start + 10, 20);
+      l_tmp := TRIM(REGEXP_REPLACE(l_tmp, '[^0-9].*', ''));
+      IF l_tmp IS NOT NULL THEN
+        l_resources_id := TO_NUMBER(l_tmp);
+      END IF;
+    END IF;
+
+    -- Extract Contents object ID: /Contents 4 0 R
+    l_start := INSTR(l_page_obj, '/Contents');
+    IF l_start > 0 THEN
+      l_tmp := SUBSTR(l_page_obj, l_start + 9, 20);
+      l_tmp := TRIM(REGEXP_REPLACE(l_tmp, '[^0-9].*', ''));
+      IF l_tmp IS NOT NULL THEN
+        l_contents_id := TO_NUMBER(l_tmp);
+      END IF;
+    END IF;
+  END;
+
   IF l_rotate IS NULL THEN
     l_rotate := 0;  -- Default: no rotation
   END IF;
-
-  -- Extract Resources object ID: /Resources 7 0 R
-  l_resources_id := TO_NUMBER(
-    REGEXP_SUBSTR(l_page_obj, '/Resources\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
-  );
-
-  -- Extract Contents object ID: /Contents 8 0 R
-  l_contents_id := TO_NUMBER(
-    REGEXP_SUBSTR(l_page_obj, '/Contents\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
-  );
 
   -- Store extracted info
   g_page_info_table(p_page_number).media_box := l_media_box;
@@ -6874,7 +6906,7 @@ FUNCTION OutputModifiedPDF RETURN BLOB IS
   l_output CLOB;
   l_result BLOB;
   l_page_num PLS_INTEGER;
-  l_active_pages apex_t_number;
+  l_active_pages apex_t_number := apex_t_number();  -- Initialize collection
   l_page_obj CLOB;
   l_page_obj_id PLS_INTEGER;
   l_obj_offset PLS_INTEGER;
