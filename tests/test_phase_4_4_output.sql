@@ -3,8 +3,7 @@
 -- Description: Test suite for OutputModifiedPDF API
 --------------------------------------------------------------------------------
 
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK OFF
+
 
 DECLARE
   l_pdf BLOB;

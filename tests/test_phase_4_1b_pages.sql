@@ -3,8 +3,6 @@
 -- Description: Test suite for GetPageInfo and RotatePage APIs
 --------------------------------------------------------------------------------
 
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK OFF
 
 DECLARE
   l_pdf BLOB;
@@ -57,7 +55,7 @@ BEGIN
   create_test_pdf();
 
   -- Enable debug logging
-  PL_FPDF.EnableDebugMode();
+  --PL_FPDF.EnableDebugMode();
   PL_FPDF.SetLogLevel(4);
 
   --------------------------------------------------------------------------------

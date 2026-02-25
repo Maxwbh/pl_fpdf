@@ -9,14 +9,7 @@
 *   text overlays, image overlays, and overlay management operations.
 *******************************************************************************/
 
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK OFF
-SET VERIFY OFF
 
-PROMPT ========================================
-PROMPT Phase 4.5: Text & Image Overlay Tests
-PROMPT ========================================
-PROMPT
 
 DECLARE
   -- Test counters
@@ -384,6 +377,3 @@ EXCEPTION
 END;
 /
 
-PROMPT
-PROMPT Test script completed.
-PROMPT

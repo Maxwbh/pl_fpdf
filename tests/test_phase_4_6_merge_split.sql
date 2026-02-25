@@ -9,14 +9,6 @@
 *   including merge, split, and extract functionality.
 *******************************************************************************/
 
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK OFF
-SET VERIFY OFF
-
-PROMPT ========================================
-PROMPT Phase 4.6: PDF Merge & Split Tests
-PROMPT ========================================
-PROMPT
 
 DECLARE
   -- Test counters
@@ -365,6 +357,3 @@ EXCEPTION
 END;
 /
 
-PROMPT
-PROMPT Test script completed.
-PROMPT

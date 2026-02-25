@@ -5382,6 +5382,210 @@ exception
     raise;
 end GetDocumentMetadata;
 
+--------------------------------------------------------------------------------
+-- read_blob_chunk: Read chunk of BLOB as text
+--------------------------------------------------------------------------------
+FUNCTION read_blob_chunk(
+  p_blob BLOB,
+  p_offset PLS_INTEGER,
+  p_length PLS_INTEGER
+) RETURN VARCHAR2 IS
+  l_raw RAW(32767);
+BEGIN
+  l_raw := DBMS_LOB.SUBSTR(p_blob, LEAST(p_length, 32767), p_offset);
+  RETURN UTL_RAW.CAST_TO_VARCHAR2(l_raw);
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN NULL;
+END read_blob_chunk;
+
+--------------------------------------------------------------------------------
+-- get_pdf_object: Load object by ID
+--------------------------------------------------------------------------------
+FUNCTION get_pdf_object(p_obj_id PLS_INTEGER) RETURN CLOB IS
+  l_offset PLS_INTEGER;
+  l_obj_text VARCHAR2(32767);
+  l_end_pos PLS_INTEGER;
+  l_obj_content CLOB;
+BEGIN
+  -- Check cache
+  IF g_object_cache.EXISTS(p_obj_id) THEN
+    RETURN g_object_cache(p_obj_id);
+  END IF;
+
+  -- Check if object exists
+  IF NOT g_xref_table.EXISTS(p_obj_id) THEN
+    raise_application_error(-20805, 'Object ' || p_obj_id || ' not in xref table');
+  END IF;
+
+  l_offset := g_xref_table(p_obj_id).offset;
+  log_message(4, 'get_pdf_object(' || p_obj_id || '): offset=' || l_offset);
+
+  -- Read object
+  l_obj_text := read_blob_chunk(g_loaded_pdf, l_offset + 1, 32767);
+  log_message(4, 'get_pdf_object(' || p_obj_id || '): raw text (first 200)=' ||
+              SUBSTR(l_obj_text, 1, 200));
+
+  -- Find end of object
+  l_end_pos := INSTR(l_obj_text, 'endobj');
+
+  IF l_end_pos = 0 THEN
+    raise_application_error(-20806, 'endobj not found for object ' || p_obj_id);
+  END IF;
+
+  -- Extract content
+  l_obj_content := SUBSTR(l_obj_text, 1, l_end_pos + 5);
+
+  -- Cache
+  g_object_cache(p_obj_id) := l_obj_content;
+
+  RETURN l_obj_content;
+END get_pdf_object;
+
+--------------------------------------------------------------------------------
+-- parse_page_tree: Parse page tree and populate page info table
+--------------------------------------------------------------------------------
+PROCEDURE parse_page_tree IS
+  l_catalog CLOB;
+  l_pages_id PLS_INTEGER;
+  l_pages_obj CLOB;
+  l_kids_array VARCHAR2(4000);
+  l_page_obj_id PLS_INTEGER;
+  l_page_num PLS_INTEGER := 1;
+  l_pos PLS_INTEGER;
+  l_end_pos PLS_INTEGER;
+BEGIN
+  g_page_info_table.DELETE;
+
+  -- Get Catalog
+  l_catalog := get_pdf_object(g_root_obj_id);
+  log_message(3, 'Catalog (Root=' || g_root_obj_id || '): ' || SUBSTR(l_catalog, 1, 300));
+
+  -- Extract Pages object ID
+  l_pages_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  IF l_pages_id IS NULL THEN
+    log_message(1, 'Catalog object: ' || SUBSTR(l_catalog, 1, 500));
+    raise_application_error(-20810, 'Pages not found in Catalog');
+  END IF;
+
+  log_message(3, 'Pages object ID: ' || l_pages_id);
+
+  -- Get Pages object
+  l_pages_obj := get_pdf_object(l_pages_id);
+  log_message(3, 'Pages object content (first 300 chars): ' || SUBSTR(l_pages_obj, 1, 300));
+
+  -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
+  -- Debug: check if /Kids exists
+  log_message(3, 'Looking for /Kids in Pages object, INSTR result: ' ||
+              INSTR(l_pages_obj, '/Kids'));
+
+  l_kids_array := REGEXP_SUBSTR(l_pages_obj, '/Kids\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+
+  -- Debug: log Pages object content if Kids not found
+  IF l_kids_array IS NULL THEN
+    log_message(1, 'ERROR: Kids array not found. Pages object content:');
+    log_message(1, SUBSTR(l_pages_obj, 1, 500));
+    log_message(1, 'Object length: ' || LENGTH(l_pages_obj));
+    raise_application_error(-20811, 'Kids array not found in Pages object');
+  END IF;
+
+  log_message(3, 'Kids array extracted: ' || l_kids_array);
+
+  -- Parse each page object reference
+  l_pos := 1;
+  LOOP
+    -- Find next number in Kids array
+    l_page_obj_id := TO_NUMBER(
+      REGEXP_SUBSTR(l_kids_array, '([0-9]+)\s+0\s+R', 1, l_pos, NULL, 1)
+    );
+
+    EXIT WHEN l_page_obj_id IS NULL;
+
+    -- Store page object ID
+    g_page_info_table(l_page_num).page_obj_id := l_page_obj_id;
+
+    l_page_num := l_page_num + 1;
+    l_pos := l_pos + 1;
+  END LOOP;
+
+  log_message(3, 'Parsed page tree: ' || g_page_info_table.COUNT || ' pages');
+END parse_page_tree;
+
+
+--------------------------------------------------------------------------------
+-- get_page_object_id: Get object ID for specific page number
+--------------------------------------------------------------------------------
+FUNCTION get_page_object_id(p_page_number PLS_INTEGER) RETURN PLS_INTEGER IS
+BEGIN
+  -- Ensure page tree is parsed
+  IF g_page_info_table.COUNT = 0 THEN
+    parse_page_tree();
+  END IF;
+
+  -- Validate page number
+  IF p_page_number < 1 OR p_page_number > g_page_info_table.COUNT THEN
+    raise_application_error(-20812,
+      'Invalid page number: ' || p_page_number ||
+      '. Valid range: 1-' || g_page_info_table.COUNT);
+  END IF;
+
+  RETURN g_page_info_table(p_page_number).page_obj_id;
+END get_page_object_id;
+
+
+--------------------------------------------------------------------------------
+-- extract_page_info: Extract detailed page information
+--------------------------------------------------------------------------------
+PROCEDURE extract_page_info(p_page_number PLS_INTEGER) IS
+  l_page_obj_id PLS_INTEGER;
+  l_page_obj CLOB;
+  l_media_box VARCHAR2(100);
+  l_rotate NUMBER;
+  l_resources_id PLS_INTEGER;
+  l_contents_id PLS_INTEGER;
+BEGIN
+  l_page_obj_id := get_page_object_id(p_page_number);
+
+  -- Check if already parsed
+  IF g_page_info_table(p_page_number).media_box IS NOT NULL THEN
+    RETURN;  -- Already parsed
+  END IF;
+
+  -- Get page object
+  l_page_obj := get_pdf_object(l_page_obj_id);
+
+  -- Extract MediaBox: /MediaBox [0 0 612 792]
+  l_media_box := REGEXP_SUBSTR(l_page_obj, '/MediaBox\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+
+  -- Extract Rotate: /Rotate 90
+  l_rotate := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Rotate\s+([0-9]+)', 1, 1, NULL, 1)
+  );
+  IF l_rotate IS NULL THEN
+    l_rotate := 0;  -- Default: no rotation
+  END IF;
+
+  -- Extract Resources object ID: /Resources 7 0 R
+  l_resources_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Resources\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  -- Extract Contents object ID: /Contents 8 0 R
+  l_contents_id := TO_NUMBER(
+    REGEXP_SUBSTR(l_page_obj, '/Contents\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
+  );
+
+  -- Store extracted info
+  g_page_info_table(p_page_number).media_box := l_media_box;
+  g_page_info_table(p_page_number).rotate := l_rotate;
+  g_page_info_table(p_page_number).resources_id := l_resources_id;
+  g_page_info_table(p_page_number).contents_id := l_contents_id;
+
+  log_message(3, 'Extracted page ' || p_page_number || ' info: MediaBox=' || l_media_box);
+END extract_page_info;
 /*******************************************************************************
 * Function: GetPageInfo
 * Description: Returns information about a specific page as JSON
@@ -5748,22 +5952,6 @@ end AddBarcode;
  * HELPER FUNCTIONS - PDF PARSING
  ******************************************************************************/
 
---------------------------------------------------------------------------------
--- read_blob_chunk: Read chunk of BLOB as text
---------------------------------------------------------------------------------
-FUNCTION read_blob_chunk(
-  p_blob BLOB,
-  p_offset PLS_INTEGER,
-  p_length PLS_INTEGER
-) RETURN VARCHAR2 IS
-  l_raw RAW(32767);
-BEGIN
-  l_raw := DBMS_LOB.SUBSTR(p_blob, LEAST(p_length, 32767), p_offset);
-  RETURN UTL_RAW.CAST_TO_VARCHAR2(l_raw);
-EXCEPTION
-  WHEN OTHERS THEN
-    RETURN NULL;
-END read_blob_chunk;
 
 --------------------------------------------------------------------------------
 -- extract_number_after_pattern: Extract number after pattern
@@ -5976,48 +6164,6 @@ BEGIN
   log_message(3, 'Trailer parsed: Root=' || g_root_obj_id);
 END parse_trailer;
 
---------------------------------------------------------------------------------
--- get_pdf_object: Load object by ID
---------------------------------------------------------------------------------
-FUNCTION get_pdf_object(p_obj_id PLS_INTEGER) RETURN CLOB IS
-  l_offset PLS_INTEGER;
-  l_obj_text VARCHAR2(32767);
-  l_end_pos PLS_INTEGER;
-  l_obj_content CLOB;
-BEGIN
-  -- Check cache
-  IF g_object_cache.EXISTS(p_obj_id) THEN
-    RETURN g_object_cache(p_obj_id);
-  END IF;
-
-  -- Check if object exists
-  IF NOT g_xref_table.EXISTS(p_obj_id) THEN
-    raise_application_error(-20805, 'Object ' || p_obj_id || ' not in xref table');
-  END IF;
-
-  l_offset := g_xref_table(p_obj_id).offset;
-  log_message(4, 'get_pdf_object(' || p_obj_id || '): offset=' || l_offset);
-
-  -- Read object
-  l_obj_text := read_blob_chunk(g_loaded_pdf, l_offset + 1, 32767);
-  log_message(4, 'get_pdf_object(' || p_obj_id || '): raw text (first 200)=' ||
-              SUBSTR(l_obj_text, 1, 200));
-
-  -- Find end of object
-  l_end_pos := INSTR(l_obj_text, 'endobj');
-
-  IF l_end_pos = 0 THEN
-    raise_application_error(-20806, 'endobj not found for object ' || p_obj_id);
-  END IF;
-
-  -- Extract content
-  l_obj_content := SUBSTR(l_obj_text, 1, l_end_pos + 5);
-
-  -- Cache
-  g_object_cache(p_obj_id) := l_obj_content;
-
-  RETURN l_obj_content;
-END get_pdf_object;
 
 --------------------------------------------------------------------------------
 -- count_pages: Count pages in PDF
@@ -6055,148 +6201,7 @@ BEGIN
   RETURN l_count;
 END count_pages;
 
---------------------------------------------------------------------------------
--- parse_page_tree: Parse page tree and populate page info table
---------------------------------------------------------------------------------
-PROCEDURE parse_page_tree IS
-  l_catalog CLOB;
-  l_pages_id PLS_INTEGER;
-  l_pages_obj CLOB;
-  l_kids_array VARCHAR2(4000);
-  l_page_obj_id PLS_INTEGER;
-  l_page_num PLS_INTEGER := 1;
-  l_pos PLS_INTEGER;
-  l_end_pos PLS_INTEGER;
-BEGIN
-  g_page_info_table.DELETE;
 
-  -- Get Catalog
-  l_catalog := get_pdf_object(g_root_obj_id);
-  log_message(3, 'Catalog (Root=' || g_root_obj_id || '): ' || SUBSTR(l_catalog, 1, 300));
-
-  -- Extract Pages object ID
-  l_pages_id := TO_NUMBER(
-    REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
-  );
-
-  IF l_pages_id IS NULL THEN
-    log_message(1, 'Catalog object: ' || SUBSTR(l_catalog, 1, 500));
-    raise_application_error(-20810, 'Pages not found in Catalog');
-  END IF;
-
-  log_message(3, 'Pages object ID: ' || l_pages_id);
-
-  -- Get Pages object
-  l_pages_obj := get_pdf_object(l_pages_id);
-  log_message(3, 'Pages object content (first 300 chars): ' || SUBSTR(l_pages_obj, 1, 300));
-
-  -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
-  -- Debug: check if /Kids exists
-  log_message(3, 'Looking for /Kids in Pages object, INSTR result: ' ||
-              INSTR(l_pages_obj, '/Kids'));
-
-  l_kids_array := REGEXP_SUBSTR(l_pages_obj, '/Kids\s*\[([^\]]+)\]', 1, 1, NULL, 1);
-
-  -- Debug: log Pages object content if Kids not found
-  IF l_kids_array IS NULL THEN
-    log_message(1, 'ERROR: Kids array not found. Pages object content:');
-    log_message(1, SUBSTR(l_pages_obj, 1, 500));
-    log_message(1, 'Object length: ' || LENGTH(l_pages_obj));
-    raise_application_error(-20811, 'Kids array not found in Pages object');
-  END IF;
-
-  log_message(3, 'Kids array extracted: ' || l_kids_array);
-
-  -- Parse each page object reference
-  l_pos := 1;
-  LOOP
-    -- Find next number in Kids array
-    l_page_obj_id := TO_NUMBER(
-      REGEXP_SUBSTR(l_kids_array, '([0-9]+)\s+0\s+R', 1, l_pos, NULL, 1)
-    );
-
-    EXIT WHEN l_page_obj_id IS NULL;
-
-    -- Store page object ID
-    g_page_info_table(l_page_num).page_obj_id := l_page_obj_id;
-
-    l_page_num := l_page_num + 1;
-    l_pos := l_pos + 1;
-  END LOOP;
-
-  log_message(3, 'Parsed page tree: ' || g_page_info_table.COUNT || ' pages');
-END parse_page_tree;
-
---------------------------------------------------------------------------------
--- get_page_object_id: Get object ID for specific page number
---------------------------------------------------------------------------------
-FUNCTION get_page_object_id(p_page_number PLS_INTEGER) RETURN PLS_INTEGER IS
-BEGIN
-  -- Ensure page tree is parsed
-  IF g_page_info_table.COUNT = 0 THEN
-    parse_page_tree();
-  END IF;
-
-  -- Validate page number
-  IF p_page_number < 1 OR p_page_number > g_page_info_table.COUNT THEN
-    raise_application_error(-20812,
-      'Invalid page number: ' || p_page_number ||
-      '. Valid range: 1-' || g_page_info_table.COUNT);
-  END IF;
-
-  RETURN g_page_info_table(p_page_number).page_obj_id;
-END get_page_object_id;
-
---------------------------------------------------------------------------------
--- extract_page_info: Extract detailed page information
---------------------------------------------------------------------------------
-PROCEDURE extract_page_info(p_page_number PLS_INTEGER) IS
-  l_page_obj_id PLS_INTEGER;
-  l_page_obj CLOB;
-  l_media_box VARCHAR2(100);
-  l_rotate NUMBER;
-  l_resources_id PLS_INTEGER;
-  l_contents_id PLS_INTEGER;
-BEGIN
-  l_page_obj_id := get_page_object_id(p_page_number);
-
-  -- Check if already parsed
-  IF g_page_info_table(p_page_number).media_box IS NOT NULL THEN
-    RETURN;  -- Already parsed
-  END IF;
-
-  -- Get page object
-  l_page_obj := get_pdf_object(l_page_obj_id);
-
-  -- Extract MediaBox: /MediaBox [0 0 612 792]
-  l_media_box := REGEXP_SUBSTR(l_page_obj, '/MediaBox\s*\[([^\]]+)\]', 1, 1, NULL, 1);
-
-  -- Extract Rotate: /Rotate 90
-  l_rotate := TO_NUMBER(
-    REGEXP_SUBSTR(l_page_obj, '/Rotate\s+([0-9]+)', 1, 1, NULL, 1)
-  );
-  IF l_rotate IS NULL THEN
-    l_rotate := 0;  -- Default: no rotation
-  END IF;
-
-  -- Extract Resources object ID: /Resources 7 0 R
-  l_resources_id := TO_NUMBER(
-    REGEXP_SUBSTR(l_page_obj, '/Resources\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
-  );
-
-  -- Extract Contents object ID: /Contents 8 0 R
-  l_contents_id := TO_NUMBER(
-    REGEXP_SUBSTR(l_page_obj, '/Contents\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
-  );
-
-  -- Store extracted info
-  g_page_info_table(p_page_number).media_box := l_media_box;
-  g_page_info_table(p_page_number).rotate := l_rotate;
-  g_page_info_table(p_page_number).resources_id := l_resources_id;
-  g_page_info_table(p_page_number).contents_id := l_contents_id;
-
-  log_message(3, 'Extracted page ' || p_page_number || ' info: MediaBox=' || l_media_box);
-END extract_page_info;
 
 /*******************************************************************************
  * PUBLIC APIs - PHASE 4

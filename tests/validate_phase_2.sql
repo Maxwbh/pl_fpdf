@@ -3,7 +3,7 @@ DECLARE
   l_test_count PLS_INTEGER := 0;
   l_pass_count PLS_INTEGER := 0;
   l_fail_count PLS_INTEGER := 0;
-
+  l_passed BOOLEAN := TRUE;
   PROCEDURE test_result(p_test_name VARCHAR2,
                         p_passed    BOOLEAN,
                         p_message   VARCHAR2 DEFAULT NULL) IS
@@ -240,8 +240,7 @@ BEGIN
   END;
 
   -- Test 2.3.4: Parameter validation
-  DECLARE
-    l_passed BOOLEAN := TRUE;
+
   BEGIN
     -- Test NULL handling
     PL_FPDF.Init(NULL, 'mm', 'A4');  -- Should use default

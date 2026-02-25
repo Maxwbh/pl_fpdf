@@ -3,8 +3,6 @@
 -- Description: Test suite for RemovePage, GetActivePageCount, modification tracking
 --------------------------------------------------------------------------------
 
-SET SERVEROUTPUT ON SIZE UNLIMITED
-SET FEEDBACK OFF
 
 DECLARE
   l_pdf BLOB;
