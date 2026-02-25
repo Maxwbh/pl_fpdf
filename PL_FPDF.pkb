@@ -5478,13 +5478,32 @@ BEGIN
   log_message(3, 'Pages object content (first 300 chars): ' || SUBSTR(l_pages_obj, 1, 300));
 
   -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
-  -- Debug: check if /Kids exists
-  log_message(3, 'Looking for /Kids in Pages object, INSTR result: ' ||
-              INSTR(l_pages_obj, '/Kids'));
+  -- Using INSTR/SUBSTR instead of REGEXP for better Oracle compatibility
+  DECLARE
+    l_kids_start PLS_INTEGER;
+    l_kids_end PLS_INTEGER;
+  BEGIN
+    -- Find /Kids position
+    l_kids_start := INSTR(l_pages_obj, '/Kids');
 
-  l_kids_array := REGEXP_SUBSTR(l_pages_obj, '/Kids\s*\[([^\]]+)\]', 1, 1, NULL, 1);
+    IF l_kids_start > 0 THEN
+      -- Find opening bracket after /Kids
+      l_kids_start := INSTR(l_pages_obj, '[', l_kids_start);
 
-  -- Debug: log Pages object content if Kids not found
+      IF l_kids_start > 0 THEN
+        -- Find closing bracket
+        l_kids_end := INSTR(l_pages_obj, ']', l_kids_start);
+
+        IF l_kids_end > l_kids_start THEN
+          -- Extract content between brackets
+          l_kids_array := SUBSTR(l_pages_obj, l_kids_start + 1, l_kids_end - l_kids_start - 1);
+          log_message(3, 'Kids array extracted via INSTR: ' || l_kids_array);
+        END IF;
+      END IF;
+    END IF;
+  END;
+
+  -- Fallback error if not found
   IF l_kids_array IS NULL THEN
     log_message(1, 'ERROR: Kids array not found. Pages object content:');
     log_message(1, SUBSTR(l_pages_obj, 1, 500));
