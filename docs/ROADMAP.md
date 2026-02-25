@@ -268,9 +268,9 @@ Veja [CONTRIBUTING.md](../CONTRIBUTING.md)
 
 ## Documentacao Detalhada
 
-- [FUTURE_IMPROVEMENTS_ROADMAP.md](roadmaps/FUTURE_IMPROVEMENTS_ROADMAP.md) - Plano detalhado
-- [MIGRATION_ROADMAP.md](roadmaps/MIGRATION_ROADMAP.md) - Estrategia de migracao
 - [PHASE_4_GUIDE.md](guides/PHASE_4_GUIDE.md) - Guia da Fase 4
+- [API_REFERENCE.md](api/API_REFERENCE.md) - Referencia da API
+- [PHASE_5_IMPLEMENTATION_PLAN.md](plans/PHASE_5_IMPLEMENTATION_PLAN.md) - Plano Fase 5
 
 ---
 

@@ -8,6 +8,6 @@ Atualmente, a maior parte da documentação está disponível nos seguintes loca
 - **Guias do Usuário:** [../guides/](../guides/)
 - **Docs de Arquitetura:** [../architecture/](../architecture/)
 - **Planos de Implementação:** [../plans/](../plans/)
-- **Roadmaps:** [../roadmaps/](../roadmaps/)
+- **Roadmap:** [../ROADMAP.md](../ROADMAP.md)
 
 Para a documentação principal do projeto, consulte [../../README.md](../../README.md).
