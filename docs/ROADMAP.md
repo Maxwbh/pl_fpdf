@@ -127,6 +127,104 @@ l_result := PL_FPDF.OutputModifiedPDF();
 
 ---
 
+## v3.3.0 - HTML to PDF 💡
+
+**Status:** Proposed
+**Target:** Q4 2026
+
+### Objetivo
+Converter HTML para PDF diretamente em PL/SQL, sem dependencias externas.
+
+### Features Planejadas
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **HTML Parser** | 💡 Proposed | Alta | Parser HTML basico em PL/SQL |
+| **CSS Inline** | 💡 Proposed | Alta | Suporte a estilos inline |
+| **Tags Basicas** | 💡 Proposed | Alta | h1-h6, p, br, hr, div, span |
+| **Tabelas** | 💡 Proposed | Alta | table, tr, td, th, thead, tbody |
+| **Listas** | 💡 Proposed | Media | ul, ol, li |
+| **Links** | 💡 Proposed | Media | a href (interno/externo) |
+| **Imagens** | 💡 Proposed | Media | img src (base64/URL) |
+| **CSS Classes** | 💡 Proposed | Baixa | Suporte a classes CSS |
+| **CSS Externo** | 💡 Proposed | Baixa | Arquivo CSS separado |
+
+### API Proposta
+
+```sql
+-- Conversao simples
+l_pdf := PL_FPDF.HTMLToPDF('<h1>Titulo</h1><p>Paragrafo</p>');
+
+-- Com opcoes
+l_pdf := PL_FPDF.HTMLToPDF(
+  p_html    => l_html_content,
+  p_options => JSON_OBJECT_T('{
+    "pageSize": "A4",
+    "orientation": "P",
+    "margins": {"top": 20, "right": 15, "bottom": 20, "left": 15},
+    "defaultFont": "Arial",
+    "defaultFontSize": 12
+  }')
+);
+
+-- Render parcial (adiciona ao PDF atual)
+PL_FPDF.fpdf();
+PL_FPDF.AddPage();
+PL_FPDF.RenderHTML('<table>...</table>');
+PL_FPDF.RenderHTML('<p>Mais conteudo</p>');
+l_pdf := PL_FPDF.Output();
+```
+
+### Implementacao TODO
+
+- [ ] **Fase 1: Parser HTML**
+  - [ ] Tokenizer HTML (tags, atributos, texto)
+  - [ ] Arvore DOM simplificada
+  - [ ] Tratamento de entidades HTML (&amp;, &lt;, etc.)
+  - [ ] Suporte a HTML mal-formado (tolerante)
+
+- [ ] **Fase 2: Tags Basicas**
+  - [ ] Headings (h1-h6) → SetFont + Cell
+  - [ ] Paragrafos (p) → MultiCell
+  - [ ] Line breaks (br) → Ln
+  - [ ] Horizontal rule (hr) → Line
+  - [ ] Div/Span → containers
+
+- [ ] **Fase 3: Tabelas**
+  - [ ] Estrutura table/tr/td
+  - [ ] Colspan/rowspan
+  - [ ] Larguras automaticas/fixas
+  - [ ] Bordas e padding
+  - [ ] Quebra de pagina em tabelas longas
+
+- [ ] **Fase 4: Estilos**
+  - [ ] Parser CSS inline (style="...")
+  - [ ] Cores (color, background-color)
+  - [ ] Fontes (font-family, font-size, font-weight)
+  - [ ] Alinhamento (text-align)
+  - [ ] Margens/padding
+
+- [ ] **Fase 5: Elementos Avancados**
+  - [ ] Listas (ul, ol, li)
+  - [ ] Links (a href)
+  - [ ] Imagens (img src)
+  - [ ] Negrito/Italico (b, i, strong, em)
+
+### Limitacoes Conhecidas
+
+- Sem suporte a JavaScript
+- Sem suporte a CSS externo (fase inicial)
+- Sem suporte a flexbox/grid
+- Layout simplificado (fluxo vertical)
+- Fontes limitadas as disponiveis no PL_FPDF
+
+### Dependencias
+
+- PL_FPDF v3.0.0+ (base)
+- Nenhuma dependencia externa
+
+---
+
 ## v4.0.0 - Advanced 💡
 
 **Status:** Proposed
