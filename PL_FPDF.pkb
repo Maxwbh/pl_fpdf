@@ -3952,7 +3952,7 @@ begin
 	-- Disable compression
 	SetCompression(false);
 	-- Set default PDF version number
-	PDFVersion:='1.3.1';
+	PDFVersion:='1.4';
 end fpdf;
 
 ----------------------------------------------------------------------------------------
