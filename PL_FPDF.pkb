@@ -5685,8 +5685,8 @@ begin
 
     -- Validate page number for loaded PDF
     IF l_page_num < 1 OR l_page_num > g_loaded_page_count THEN
-      raise_application_error(-20106,
-        'Invalid page number: ' || l_page_num || '. Must be between 1 and ' || g_loaded_page_count);
+      raise_application_error(-20812,
+        'Invalid page number: ' || l_page_num || '. Valid range: 1-' || g_loaded_page_count);
     END IF;
 
     -- Extract page info if not already done
@@ -6073,6 +6073,8 @@ END extract_number_after_pattern;
 --------------------------------------------------------------------------------
 FUNCTION parse_pdf_header(p_pdf BLOB) RETURN VARCHAR2 IS
   l_header VARCHAR2(50);
+  l_pos PLS_INTEGER;
+  l_version VARCHAR2(10);
 BEGIN
   l_header := read_blob_chunk(p_pdf, 1, 50);
 
@@ -6083,7 +6085,20 @@ BEGIN
   END IF;
 
   -- Extract version (e.g., "1.7" from "%PDF-1.7")
-  RETURN REGEXP_SUBSTR(l_header, '[0-9]\.[0-9]');
+  -- Using INSTR/SUBSTR instead of REGEXP for better Oracle compatibility
+  l_pos := INSTR(l_header, '%PDF-');
+  IF l_pos > 0 THEN
+    l_version := SUBSTR(l_header, l_pos + 5, 3);  -- Extract "1.7" after "%PDF-"
+    -- Validate version format (digit.digit)
+    IF SUBSTR(l_version, 1, 1) BETWEEN '0' AND '9'
+       AND SUBSTR(l_version, 2, 1) = '.'
+       AND SUBSTR(l_version, 3, 1) BETWEEN '0' AND '9' THEN
+      RETURN l_version;
+    END IF;
+  END IF;
+
+  -- Fallback: return default version if parsing fails
+  RETURN '1.4';
 END parse_pdf_header;
 
 --------------------------------------------------------------------------------
