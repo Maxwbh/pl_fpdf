@@ -300,6 +300,7 @@ g_loaded_pdf BLOB;
 g_pdf_version VARCHAR2(10);
 g_xref_offset PLS_INTEGER;
 g_root_obj_id PLS_INTEGER;
+g_pages_obj_id PLS_INTEGER;  -- Parent Pages object ID (for inherited properties)
 g_loaded_page_count PLS_INTEGER := 0;
 
 -- xref table (object_id => xref_entry)
@@ -5471,6 +5472,8 @@ BEGIN
     raise_application_error(-20810, 'Pages not found in Catalog');
   END IF;
 
+  -- Store Pages object ID for inherited properties lookup
+  g_pages_obj_id := l_pages_id;
   log_message(3, 'Pages object ID: ' || l_pages_id);
 
   -- Get Pages object
@@ -5624,6 +5627,34 @@ BEGIN
       END IF;
     END IF;
   END;
+
+  -- If MediaBox not found in Page object, check parent Pages object (inheritance)
+  IF l_media_box IS NULL AND g_pages_obj_id IS NOT NULL THEN
+    DECLARE
+      l_pages_obj CLOB;
+      l_start PLS_INTEGER;
+      l_end PLS_INTEGER;
+    BEGIN
+      l_pages_obj := get_pdf_object(g_pages_obj_id);
+      l_start := INSTR(l_pages_obj, '/MediaBox');
+      IF l_start > 0 THEN
+        l_start := INSTR(l_pages_obj, '[', l_start);
+        IF l_start > 0 THEN
+          l_end := INSTR(l_pages_obj, ']', l_start);
+          IF l_end > l_start THEN
+            l_media_box := TRIM(SUBSTR(l_pages_obj, l_start + 1, l_end - l_start - 1));
+            log_message(3, 'MediaBox inherited from parent Pages: ' || l_media_box);
+          END IF;
+        END IF;
+      END IF;
+    END;
+  END IF;
+
+  -- Default MediaBox to Letter size if still not found
+  IF l_media_box IS NULL THEN
+    l_media_box := '0 0 612 792';
+    log_message(3, 'MediaBox defaulting to Letter size: ' || l_media_box);
+  END IF;
 
   IF l_rotate IS NULL THEN
     l_rotate := 0;  -- Default: no rotation
@@ -7521,15 +7552,19 @@ FUNCTION MergePDFs(
   l_xref CLOB;
   l_trailer CLOB;
 BEGIN
-  -- Validate input
-  IF p_pdf_ids IS NULL OR p_pdf_ids.get_size() = 0 THEN
+  -- Validate input (check NULL first to avoid null pointer exception)
+  IF p_pdf_ids IS NULL THEN
+    RAISE_APPLICATION_ERROR(-20832, 'No PDF IDs provided for merge');
+  END IF;
+
+  IF p_pdf_ids.get_size() = 0 THEN
     RAISE_APPLICATION_ERROR(-20832, 'No PDF IDs provided for merge');
   END IF;
 
   -- Validate all PDFs loaded and count pages
   FOR i IN 0..p_pdf_ids.get_size() - 1 LOOP
     l_pdf_id := p_pdf_ids.get_string(i);
-    IF NOT g_loaded_pdfs.EXISTS(l_pdf_id) THEN
+    IF l_pdf_id IS NULL OR NOT g_loaded_pdfs.EXISTS(l_pdf_id) THEN
       RAISE_APPLICATION_ERROR(-20833, 'PDF ID not loaded: ' || l_pdf_id);
     END IF;
     l_doc := g_loaded_pdfs(l_pdf_id);
@@ -7606,8 +7641,13 @@ BEGIN
   RETURN l_result;
 EXCEPTION
   WHEN OTHERS THEN
-    log_message(1, 'Merge error: ' || SQLERRM);
-    RAISE_APPLICATION_ERROR(-20834, 'Merge failed: ' || SQLERRM);
+    -- Re-raise application errors with original code, only wrap unexpected errors
+    IF SQLCODE BETWEEN -20999 AND -20000 THEN
+      RAISE;
+    ELSE
+      log_message(1, 'Merge error: ' || SQLERRM);
+      RAISE_APPLICATION_ERROR(-20834, 'Merge failed: ' || SQLERRM);
+    END IF;
 END MergePDFs;
 
 /*******************************************************************************
