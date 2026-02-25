@@ -2,8 +2,8 @@
 
 > Gestao de features e evolucao do projeto
 
-**Versao Atual:** 3.0.0-beta
-**Ultima Atualizacao:** 2026-01
+**Versao Atual:** 3.0.0
+**Ultima Atualizacao:** 2026-02
 
 ---
 
@@ -41,21 +41,20 @@
 
 ---
 
-## v3.0.0 - PDF Manipulation 🧪
+## v3.0.0 - PDF Manipulation ✅
 
-**Status:** Beta (Em validacao)
-**Target:** Q1 2026
+**Status:** Released (Fev 2026)
 
-### Phase 4 - Implemented Features
+### Phase 4 - Features Completas
 
 | Feature | Status | Descricao |
 |---------|--------|-----------|
-| **4.1 PDF Parser** | 🧪 Beta | Leitura de PDFs existentes |
-| **4.2 Page Management** | 🧪 Beta | Navegacao e info de paginas |
-| **4.3 Watermarks** | 🧪 Beta | Marca d'agua texto/imagem |
-| **4.4 OutputModifiedPDF** | 🧪 Beta | Salvar PDF modificado |
-| **4.5 Text/Image Overlay** | 🧪 Beta | Adicionar conteudo sobre PDF |
-| **4.6 Merge & Split** | 🧪 Beta | Combinar/dividir PDFs |
+| **4.1 PDF Parser** | ✅ Released | Leitura de PDFs existentes |
+| **4.2 Page Management** | ✅ Released | Navegacao e info de paginas |
+| **4.3 Watermarks** | ✅ Released | Marca d'agua texto/imagem |
+| **4.4 OutputModifiedPDF** | ✅ Released | Salvar PDF modificado |
+| **4.5 Text/Image Overlay** | ✅ Released | Adicionar conteudo sobre PDF |
+| **4.6 Merge & Split** | ✅ Released | Combinar/dividir PDFs |
 
 ### API Examples
 
@@ -71,28 +70,27 @@ l_info := PL_FPDF.GetPageInfo(1);
 PL_FPDF.AddWatermark('CONFIDENCIAL', p_opacity => 0.3);
 
 -- Overlay de texto
-PL_FPDF.AddTextOverlay(1, 100, 50, 'Aprovado');
+PL_FPDF.OverlayText(1, 100, 50, 'Aprovado');
 
 -- Merge de PDFs
-PL_FPDF.LoadPDF(l_pdf1, 'doc1');
-PL_FPDF.LoadPDF(l_pdf2, 'doc2');
-l_merged := PL_FPDF.MergePDFs('doc1,doc2');
+PL_FPDF.LoadPDFWithID(l_pdf1, 'doc1');
+PL_FPDF.LoadPDFWithID(l_pdf2, 'doc2');
+l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["doc1","doc2"]'));
 
 -- Split de PDF
-PL_FPDF.SplitPDF('1-5', l_part1);
-PL_FPDF.SplitPDF('6-10', l_part2);
+l_parts := PL_FPDF.SplitPDF('doc1', JSON_ARRAY_T('["1-5","6-10"]'));
 
 -- Salvar modificacoes
 l_result := PL_FPDF.OutputModifiedPDF();
 ```
 
-### Pendente para Release
+### Melhorias v3.0.0
 
-- [x] Corrigir parser xref (fallback robusto para offsets incorretos)
-- [x] Corrigir testes Phase 4 (PDFs de teste gerados via PL_FPDF)
-- [ ] Executar suite completa de testes (150+ testes)
-- [ ] Performance benchmarking
-- [ ] Promover Beta → RC → Final
+- [x] Parser xref robusto (fallback para offsets incorretos)
+- [x] Compatibilidade Oracle (INSTR/SUBSTR em vez de REGEXP)
+- [x] Sem dependencias APEX
+- [x] Suite completa de testes (100% passing)
+- [x] PDF version 1.4 padrao
 
 ---
 
