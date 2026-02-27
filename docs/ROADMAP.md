@@ -116,14 +116,170 @@ l_result := PL_FPDF.OutputModifiedPDF();
 **Status:** Planned
 **Target:** Q3 2026
 
-| Feature | Status | Prioridade |
-|---------|--------|------------|
-| PDF Password Protection | 📋 Planned | Alta |
-| RC4 40-bit encryption | 📋 Planned | Alta |
-| AES 128-bit encryption | 📋 Planned | Alta |
-| AES 256-bit encryption | 💡 Proposed | Media |
-| Permission controls | 📋 Planned | Alta |
-| PDF Decryption | 📋 Planned | Alta |
+### Objetivo
+Adicionar criptografia e protecao por senha a PDFs, seguindo especificacoes PDF 1.4-2.0.
+
+### Features Planejadas
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Password Protection** | 📋 Planned | Alta | Senha de usuario e owner |
+| **RC4 40-bit** | 📋 Planned | Alta | Criptografia legada (PDF 1.1-1.3) |
+| **RC4 128-bit** | 📋 Planned | Alta | Criptografia padrao (PDF 1.4) |
+| **AES 128-bit** | 📋 Planned | Alta | Criptografia moderna (PDF 1.5) |
+| **AES 256-bit** | 💡 Proposed | Media | Criptografia avancada (PDF 2.0) |
+| **Permission Controls** | 📋 Planned | Alta | Controle de impressao/copia/edicao |
+| **PDF Decryption** | 📋 Planned | Alta | Remover protecao com senha |
+
+### API Proposta
+
+```sql
+-- Proteger PDF com senha simples
+l_pdf := PL_FPDF.EncryptPDF(
+  p_pdf           => l_original_pdf,
+  p_user_password => 'senha123'
+);
+
+-- Proteger com senha owner e permissoes
+l_pdf := PL_FPDF.EncryptPDF(
+  p_pdf            => l_original_pdf,
+  p_user_password  => 'user123',      -- Senha para abrir
+  p_owner_password => 'owner456',     -- Senha para editar
+  p_permissions    => JSON_OBJECT_T('{
+    "print": true,
+    "printHighQuality": false,
+    "modify": false,
+    "copy": false,
+    "annotate": true,
+    "fillForms": true,
+    "extract": false,
+    "assemble": false
+  }'),
+  p_encryption     => 'AES-128'       -- RC4-40, RC4-128, AES-128, AES-256
+);
+
+-- Descriptografar PDF
+l_pdf := PL_FPDF.DecryptPDF(
+  p_pdf      => l_encrypted_pdf,
+  p_password => 'senha123'
+);
+
+-- Verificar se PDF esta protegido
+l_info := PL_FPDF.GetSecurityInfo(l_pdf);
+-- Retorna: {"encrypted": true, "method": "AES-128", "permissions": {...}}
+
+-- Proteger durante geracao
+PL_FPDF.fpdf();
+PL_FPDF.SetEncryption('AES-128', 'user123', 'owner456');
+PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE);
+PL_FPDF.AddPage();
+PL_FPDF.Cell(0, 10, 'Documento Confidencial');
+l_pdf := PL_FPDF.Output();
+```
+
+### Implementacao TODO
+
+- [ ] **Fase 1: Infraestrutura Criptografica**
+  - [ ] Implementar MD5 em PL/SQL puro (para RC4 key derivation)
+  - [ ] Implementar SHA-256 em PL/SQL puro (para AES key derivation)
+  - [ ] Implementar RC4 cipher em PL/SQL
+  - [ ] Implementar AES cipher em PL/SQL (ou usar DBMS_CRYPTO)
+  - [ ] Key derivation conforme PDF spec (Algorithm 2)
+
+- [ ] **Fase 2: RC4 Encryption (PDF 1.4)**
+  - [ ] RC4 40-bit encryption
+  - [ ] RC4 128-bit encryption
+  - [ ] Encryption dictionary (/Encrypt)
+  - [ ] String encryption
+  - [ ] Stream encryption
+  - [ ] Object encryption
+
+- [ ] **Fase 3: AES Encryption (PDF 1.5+)**
+  - [ ] AES 128-bit CBC mode
+  - [ ] AES 256-bit CBC mode (PDF 2.0)
+  - [ ] Initialization vectors (IV)
+  - [ ] Padding (PKCS#7)
+
+- [ ] **Fase 4: Password Management**
+  - [ ] User password (abrir documento)
+  - [ ] Owner password (permissoes completas)
+  - [ ] Password validation
+  - [ ] Empty password handling
+
+- [ ] **Fase 5: Permission Controls**
+  - [ ] Print permission (bit 3)
+  - [ ] Modify permission (bit 4)
+  - [ ] Copy permission (bit 5)
+  - [ ] Annotate permission (bit 6)
+  - [ ] Fill forms permission (bit 9)
+  - [ ] Extract permission (bit 10)
+  - [ ] Assemble permission (bit 11)
+  - [ ] Print high quality (bit 12)
+
+- [ ] **Fase 6: Decryption**
+  - [ ] Detectar PDF criptografado
+  - [ ] Identificar metodo de criptografia
+  - [ ] Validar senha
+  - [ ] Descriptografar objetos
+  - [ ] Remover encryption dictionary
+
+### Especificacoes PDF
+
+| Versao PDF | Encryption | Key Size |
+|------------|------------|----------|
+| 1.1-1.3 | RC4 | 40-bit |
+| 1.4 | RC4 | 128-bit |
+| 1.5 | AES | 128-bit |
+| 1.6 | AES | 128-bit |
+| 2.0 | AES | 256-bit |
+
+### Estrutura Encryption Dictionary
+
+```
+/Encrypt <<
+  /Filter /Standard
+  /V 4                    % Version (4 = AES)
+  /R 4                    % Revision
+  /Length 128             % Key length in bits
+  /CF <<                  % Crypt filters
+    /StdCF <<
+      /CFM /AESV2
+      /Length 16
+    >>
+  >>
+  /StmF /StdCF           % Stream filter
+  /StrF /StdCF           % String filter
+  /O (owner_hash)        % Owner password hash
+  /U (user_hash)         % User password hash
+  /P -3904               % Permissions flags
+>>
+```
+
+### Consideracoes de Seguranca
+
+- RC4 40-bit: **INSEGURO** - apenas para compatibilidade legada
+- RC4 128-bit: **FRACO** - usar apenas se necessario
+- AES 128-bit: **RECOMENDADO** - padrao atual
+- AES 256-bit: **FORTE** - para documentos sensiveis
+
+### Dependencias
+
+**Opcao 1: PL/SQL Puro**
+- Implementar MD5, SHA-256, RC4, AES do zero
+- Maior complexidade, sem dependencias
+
+**Opcao 2: DBMS_CRYPTO**
+- Usar pacote Oracle nativo
+- Disponivel em Oracle 10g+
+- Mais simples e performatico
+
+**Recomendacao:** Usar DBMS_CRYPTO quando disponivel, fallback para PL/SQL puro.
+
+### Limitacoes Conhecidas
+
+- Certificados digitais (X.509) serao v4.0.0
+- Public key encryption nao suportado inicialmente
+- Metadata encryption opcional
 
 ---
 
