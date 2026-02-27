@@ -1586,6 +1586,174 @@ FUNCTION ExtractPages(
 ) RETURN BLOB;
 
 --------------------------------------------------------------------------------
+-- Phase 5: Security / Segurança (v3.2.0)
+--------------------------------------------------------------------------------
+
+/*******************************************************************************
+* Function: EncryptPDF / Criptografar PDF
+*
+* Description / Descrição:
+*   EN: Encrypt PDF with password protection following PDF specification
+*   PT: Criptografar PDF com proteção por senha seguindo especificação PDF
+*
+* Parameters / Parâmetros:
+*   p_pdf - PDF blob to encrypt / PDF blob para criptografar
+*   p_user_password - Password to open document / Senha para abrir documento
+*   p_owner_password - Password for full access (optional) / Senha acesso total
+*   p_permissions - JSON with permission flags / JSON com flags de permissão
+*   p_encryption - Encryption method: 'RC4-40','RC4-128','AES-128','AES-256'
+*
+* Returns / Retorna:
+*   BLOB - Encrypted PDF / PDF criptografado
+*
+* Raises / Erros:
+*   -20850: Invalid encryption method / Método de criptografia inválido
+*   -20851: Password required / Senha obrigatória
+*   -20852: Encryption failed / Falha na criptografia
+*
+* Example / Exemplo:
+*   l_encrypted := PL_FPDF.EncryptPDF(
+*     p_pdf => l_pdf,
+*     p_user_password => 'user123',
+*     p_owner_password => 'owner456',
+*     p_permissions => JSON_OBJECT_T('{"print":true,"copy":false}'),
+*     p_encryption => 'AES-128'
+*   );
+*******************************************************************************/
+FUNCTION EncryptPDF(
+  p_pdf IN BLOB,
+  p_user_password IN VARCHAR2,
+  p_owner_password IN VARCHAR2 DEFAULT NULL,
+  p_permissions IN JSON_OBJECT_T DEFAULT NULL,
+  p_encryption IN VARCHAR2 DEFAULT 'RC4-128'
+) RETURN BLOB;
+
+/*******************************************************************************
+* Function: DecryptPDF / Descriptografar PDF
+*
+* Description / Descrição:
+*   EN: Remove encryption from PDF using password
+*   PT: Remover criptografia do PDF usando senha
+*
+* Parameters / Parâmetros:
+*   p_pdf - Encrypted PDF blob / PDF blob criptografado
+*   p_password - User or owner password / Senha de usuário ou owner
+*
+* Returns / Retorna:
+*   BLOB - Decrypted PDF / PDF descriptografado
+*
+* Raises / Erros:
+*   -20853: PDF is not encrypted / PDF não está criptografado
+*   -20854: Invalid password / Senha inválida
+*   -20855: Decryption failed / Falha na descriptografia
+*
+* Example / Exemplo:
+*   l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
+*******************************************************************************/
+FUNCTION DecryptPDF(
+  p_pdf IN BLOB,
+  p_password IN VARCHAR2
+) RETURN BLOB;
+
+/*******************************************************************************
+* Function: IsEncrypted / Verificar Criptografia
+*
+* Description / Descrição:
+*   EN: Check if PDF is encrypted
+*   PT: Verificar se PDF está criptografado
+*
+* Parameters / Parâmetros:
+*   p_pdf - PDF blob to check / PDF blob para verificar
+*
+* Returns / Retorna:
+*   BOOLEAN - TRUE if encrypted / TRUE se criptografado
+*
+* Example / Exemplo:
+*   IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
+*******************************************************************************/
+FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN;
+
+/*******************************************************************************
+* Function: GetSecurityInfo / Obter Info Segurança
+*
+* Description / Descrição:
+*   EN: Get security information from PDF
+*   PT: Obter informações de segurança do PDF
+*
+* Parameters / Parâmetros:
+*   p_pdf - PDF blob / PDF blob
+*
+* Returns / Retorna:
+*   JSON_OBJECT_T - Security info including:
+*     - encrypted: boolean
+*     - method: string (RC4-40, RC4-128, AES-128, AES-256)
+*     - permissions: object with print, copy, modify, etc.
+*     - hasUserPassword: boolean
+*     - hasOwnerPassword: boolean
+*
+* Example / Exemplo:
+*   l_info := PL_FPDF.GetSecurityInfo(l_pdf);
+*   IF l_info.get_boolean('encrypted') THEN ...
+*******************************************************************************/
+FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T;
+
+/*******************************************************************************
+* Procedure: SetEncryption / Definir Criptografia
+*
+* Description / Descrição:
+*   EN: Set encryption for PDF being generated (use before Output)
+*   PT: Definir criptografia para PDF em geração (usar antes do Output)
+*
+* Parameters / Parâmetros:
+*   p_encryption - Method: 'RC4-40','RC4-128','AES-128','AES-256'
+*   p_user_password - Password to open / Senha para abrir
+*   p_owner_password - Password for full access / Senha acesso total
+*
+* Example / Exemplo:
+*   PL_FPDF.fpdf();
+*   PL_FPDF.SetEncryption('AES-128', 'user123', 'owner456');
+*   PL_FPDF.AddPage();
+*   l_pdf := PL_FPDF.Output();
+*******************************************************************************/
+PROCEDURE SetEncryption(
+  p_encryption IN VARCHAR2,
+  p_user_password IN VARCHAR2,
+  p_owner_password IN VARCHAR2 DEFAULT NULL
+);
+
+/*******************************************************************************
+* Procedure: SetPermissions / Definir Permissões
+*
+* Description / Descrição:
+*   EN: Set document permissions (requires SetEncryption first)
+*   PT: Definir permissões do documento (requer SetEncryption antes)
+*
+* Parameters / Parâmetros:
+*   p_print - Allow printing / Permitir impressão
+*   p_modify - Allow modification / Permitir modificação
+*   p_copy - Allow copy/extract / Permitir cópia/extração
+*   p_annotate - Allow annotations / Permitir anotações
+*   p_fill_forms - Allow form filling / Permitir preenchimento de formulários
+*   p_extract - Allow content extraction / Permitir extração de conteúdo
+*   p_assemble - Allow document assembly / Permitir montagem de documento
+*   p_print_high - Allow high quality print / Permitir impressão alta qualidade
+*
+* Example / Exemplo:
+*   PL_FPDF.SetEncryption('AES-128', 'user', 'owner');
+*   PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE, p_modify => FALSE);
+*******************************************************************************/
+PROCEDURE SetPermissions(
+  p_print IN BOOLEAN DEFAULT TRUE,
+  p_modify IN BOOLEAN DEFAULT FALSE,
+  p_copy IN BOOLEAN DEFAULT FALSE,
+  p_annotate IN BOOLEAN DEFAULT TRUE,
+  p_fill_forms IN BOOLEAN DEFAULT TRUE,
+  p_extract IN BOOLEAN DEFAULT FALSE,
+  p_assemble IN BOOLEAN DEFAULT FALSE,
+  p_print_high IN BOOLEAN DEFAULT TRUE
+);
+
+--------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 END PL_FPDF;

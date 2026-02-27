@@ -40,6 +40,9 @@ tests/
 │   ├── test_phase_4_6_merge_split.sql # ✅ Phase 4.6: Merge & Split
 │   └── validate_phase_4_complete.sql  # ✅ Phase 4 validation
 │
+├── Phase 5: Security (v3.2.0)
+│   └── test_phase_security.sql        # 🆕 Password Protection & Encryption
+│
 └── Utilities
     └── debug_kids_array.sql           # Debug utility for PDF parsing
 ```
@@ -59,6 +62,7 @@ tests/
 | **4.5** | Text & Image Overlay | test_phase_4_5_overlay.sql | ✅ 100% |
 | **4.6** | PDF Merge & Split | test_phase_4_6_merge_split.sql | ✅ 100% |
 | **Phase 4** | Complete Validation | validate_phase_4_complete.sql | ✅ 100% |
+| **5** | Security/Encryption | test_phase_security.sql | 🆕 New |
 
 ### 🚀 Running Tests
 

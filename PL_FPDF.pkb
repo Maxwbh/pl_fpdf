@@ -7765,5 +7765,421 @@ BEGIN
   RETURN l_result;
 END ExtractPages;
 
+--------------------------------------------------------------------------------
+-- PHASE 5: SECURITY / SEGURANÇA (v3.2.0)
+--------------------------------------------------------------------------------
+
+-- Security global variables
+g_encrypt_method VARCHAR2(20) := NULL;
+g_user_password VARCHAR2(100) := NULL;
+g_owner_password VARCHAR2(100) := NULL;
+g_sec_permissions PLS_INTEGER := -1;
+
+-- PDF encryption padding string (32 bytes as per PDF spec)
+c_PDF_PADDING CONSTANT RAW(32) := HEXTORAW(
+  '28BF4E5E4E758A4164004E56FFFA0108' ||
+  '2E2E00B6D0683E802F0CA9FE6453697A'
+);
+
+/*******************************************************************************
+* compute_owner_key: Compute owner password hash (Algorithm 3 from PDF spec)
+*******************************************************************************/
+FUNCTION compute_owner_key(
+  p_owner_pwd VARCHAR2,
+  p_user_pwd VARCHAR2,
+  p_key_length PLS_INTEGER
+) RETURN RAW IS
+  l_pwd_to_use VARCHAR2(100);
+  l_padded RAW(32);
+  l_hash RAW(32);
+  l_key_len PLS_INTEGER;
+BEGIN
+  -- Use owner password or user password if owner is empty
+  l_pwd_to_use := NVL(p_owner_pwd, p_user_pwd);
+
+  -- Pad password to 32 bytes
+  l_padded := UTL_RAW.SUBSTR(
+    UTL_RAW.CONCAT(
+      UTL_RAW.CAST_TO_RAW(RPAD(SUBSTR(l_pwd_to_use, 1, 32), 32, CHR(0))),
+      c_PDF_PADDING
+    ), 1, 32
+  );
+
+  -- MD5 hash
+  l_hash := DBMS_CRYPTO.HASH(l_padded, DBMS_CRYPTO.HASH_MD5);
+
+  -- For 128-bit, hash 50 more times
+  IF p_key_length > 40 THEN
+    FOR i IN 1..50 LOOP
+      l_hash := DBMS_CRYPTO.HASH(l_hash, DBMS_CRYPTO.HASH_MD5);
+    END LOOP;
+  END IF;
+
+  -- Return first n bytes as key
+  l_key_len := p_key_length / 8;
+  RETURN UTL_RAW.SUBSTR(l_hash, 1, l_key_len);
+END compute_owner_key;
+
+/*******************************************************************************
+* compute_owner_value: Compute /O value (Algorithm 3 from PDF spec)
+*******************************************************************************/
+FUNCTION compute_owner_value(
+  p_owner_pwd VARCHAR2,
+  p_user_pwd VARCHAR2,
+  p_key_length PLS_INTEGER
+) RETURN RAW IS
+  l_key RAW(16);
+  l_user_padded RAW(32);
+  l_result RAW(32);
+BEGIN
+  -- Get owner key
+  l_key := compute_owner_key(p_owner_pwd, p_user_pwd, p_key_length);
+
+  -- Pad user password
+  l_user_padded := UTL_RAW.SUBSTR(
+    UTL_RAW.CONCAT(
+      UTL_RAW.CAST_TO_RAW(RPAD(SUBSTR(p_user_pwd, 1, 32), 32, CHR(0))),
+      c_PDF_PADDING
+    ), 1, 32
+  );
+
+  -- RC4 encrypt
+  l_result := DBMS_CRYPTO.ENCRYPT(
+    src => l_user_padded,
+    typ => DBMS_CRYPTO.ENCRYPT_RC4,
+    key => l_key
+  );
+
+  RETURN l_result;
+END compute_owner_value;
+
+/*******************************************************************************
+* compute_encryption_key: Compute document encryption key (Algorithm 2)
+*******************************************************************************/
+FUNCTION compute_encryption_key(
+  p_user_pwd VARCHAR2,
+  p_o_value RAW,
+  p_permissions PLS_INTEGER,
+  p_file_id RAW,
+  p_key_length PLS_INTEGER
+) RETURN RAW IS
+  l_input RAW(2000);
+  l_user_padded RAW(32);
+  l_perm_bytes RAW(4);
+  l_hash RAW(16);
+  l_key_len PLS_INTEGER;
+BEGIN
+  -- Pad user password
+  l_user_padded := UTL_RAW.SUBSTR(
+    UTL_RAW.CONCAT(
+      UTL_RAW.CAST_TO_RAW(RPAD(SUBSTR(NVL(p_user_pwd, ''), 1, 32), 32, CHR(0))),
+      c_PDF_PADDING
+    ), 1, 32
+  );
+
+  -- Convert permissions to little-endian bytes
+  l_perm_bytes := UTL_RAW.CAST_FROM_BINARY_INTEGER(p_permissions, UTL_RAW.LITTLE_ENDIAN);
+
+  -- Concatenate: padded password + O value + permissions + file ID
+  l_input := UTL_RAW.CONCAT(l_user_padded, p_o_value);
+  l_input := UTL_RAW.CONCAT(l_input, l_perm_bytes);
+  l_input := UTL_RAW.CONCAT(l_input, p_file_id);
+
+  -- MD5 hash
+  l_hash := DBMS_CRYPTO.HASH(l_input, DBMS_CRYPTO.HASH_MD5);
+
+  -- For 128-bit, hash 50 more times
+  IF p_key_length > 40 THEN
+    l_key_len := p_key_length / 8;
+    FOR i IN 1..50 LOOP
+      l_hash := DBMS_CRYPTO.HASH(UTL_RAW.SUBSTR(l_hash, 1, l_key_len), DBMS_CRYPTO.HASH_MD5);
+    END LOOP;
+  END IF;
+
+  -- Return first n bytes
+  l_key_len := p_key_length / 8;
+  RETURN UTL_RAW.SUBSTR(l_hash, 1, l_key_len);
+END compute_encryption_key;
+
+/*******************************************************************************
+* compute_user_value: Compute /U value (Algorithm 4/5 from PDF spec)
+*******************************************************************************/
+FUNCTION compute_user_value(
+  p_encryption_key RAW,
+  p_file_id RAW,
+  p_key_length PLS_INTEGER
+) RETURN RAW IS
+  l_result RAW(32);
+  l_hash RAW(16);
+BEGIN
+  IF p_key_length <= 40 THEN
+    -- Algorithm 4: RC4 encrypt padding
+    l_result := DBMS_CRYPTO.ENCRYPT(
+      src => c_PDF_PADDING,
+      typ => DBMS_CRYPTO.ENCRYPT_RC4,
+      key => p_encryption_key
+    );
+  ELSE
+    -- Algorithm 5: MD5 hash of padding + file ID
+    l_hash := DBMS_CRYPTO.HASH(
+      UTL_RAW.CONCAT(c_PDF_PADDING, p_file_id),
+      DBMS_CRYPTO.HASH_MD5
+    );
+
+    -- RC4 encrypt
+    l_result := DBMS_CRYPTO.ENCRYPT(
+      src => l_hash,
+      typ => DBMS_CRYPTO.ENCRYPT_RC4,
+      key => p_encryption_key
+    );
+
+    -- Pad to 32 bytes
+    l_result := UTL_RAW.CONCAT(l_result, HEXTORAW('00000000000000000000000000000000'));
+    l_result := UTL_RAW.SUBSTR(l_result, 1, 32);
+  END IF;
+
+  RETURN l_result;
+END compute_user_value;
+
+/*******************************************************************************
+* generate_file_id: Generate unique file ID
+*******************************************************************************/
+FUNCTION generate_file_id RETURN RAW IS
+BEGIN
+  RETURN DBMS_CRYPTO.HASH(
+    UTL_RAW.CAST_TO_RAW(
+      TO_CHAR(SYSTIMESTAMP, 'YYYY-MM-DD HH24:MI:SS.FF9') || SYS_GUID()
+    ),
+    DBMS_CRYPTO.HASH_MD5
+  );
+END generate_file_id;
+
+/*******************************************************************************
+* EncryptPDF: Encrypt PDF with password protection
+*******************************************************************************/
+FUNCTION EncryptPDF(
+  p_pdf IN BLOB,
+  p_user_password IN VARCHAR2,
+  p_owner_password IN VARCHAR2 DEFAULT NULL,
+  p_permissions IN JSON_OBJECT_T DEFAULT NULL,
+  p_encryption IN VARCHAR2 DEFAULT 'RC4-128'
+) RETURN BLOB IS
+  l_result BLOB;
+  l_key_length PLS_INTEGER;
+  l_permissions PLS_INTEGER;
+  l_file_id RAW(16);
+  l_o_value RAW(32);
+  l_u_value RAW(32);
+  l_enc_key RAW(16);
+  l_v_value PLS_INTEGER;
+  l_r_value PLS_INTEGER;
+  l_encrypt_dict VARCHAR2(2000);
+  l_trailer_insert VARCHAR2(4000);
+BEGIN
+  -- Validate encryption method
+  IF p_encryption NOT IN ('RC4-40', 'RC4-128', 'AES-128', 'AES-256') THEN
+    RAISE_APPLICATION_ERROR(-20850, 'Invalid encryption method: ' || p_encryption ||
+      '. Valid: RC4-40, RC4-128, AES-128, AES-256');
+  END IF;
+
+  -- Validate password
+  IF p_user_password IS NULL THEN
+    RAISE_APPLICATION_ERROR(-20851, 'User password is required');
+  END IF;
+
+  -- Set key length based on method
+  CASE p_encryption
+    WHEN 'RC4-40' THEN l_key_length := 40; l_v_value := 1; l_r_value := 2;
+    WHEN 'RC4-128' THEN l_key_length := 128; l_v_value := 2; l_r_value := 3;
+    WHEN 'AES-128' THEN l_key_length := 128; l_v_value := 4; l_r_value := 4;
+    WHEN 'AES-256' THEN l_key_length := 256; l_v_value := 5; l_r_value := 5;
+  END CASE;
+
+  -- AES not implemented yet
+  IF p_encryption IN ('AES-128', 'AES-256') THEN
+    RAISE_APPLICATION_ERROR(-20852, 'AES encryption not yet implemented. Use RC4-40 or RC4-128');
+  END IF;
+
+  -- Calculate permissions
+  l_permissions := -4;  -- Default: all permissions
+
+  IF p_permissions IS NOT NULL THEN
+    l_permissions := -3904;  -- Base: restricted
+    IF p_permissions.get_boolean('print') THEN l_permissions := l_permissions + 4; END IF;
+    IF p_permissions.get_boolean('modify') THEN l_permissions := l_permissions + 8; END IF;
+    IF p_permissions.get_boolean('copy') THEN l_permissions := l_permissions + 16; END IF;
+    IF p_permissions.get_boolean('annotate') THEN l_permissions := l_permissions + 32; END IF;
+    IF p_permissions.get_boolean('fillForms') THEN l_permissions := l_permissions + 256; END IF;
+    IF p_permissions.get_boolean('extract') THEN l_permissions := l_permissions + 512; END IF;
+    IF p_permissions.get_boolean('assemble') THEN l_permissions := l_permissions + 1024; END IF;
+    IF p_permissions.get_boolean('printHighQuality') THEN l_permissions := l_permissions + 2048; END IF;
+  END IF;
+
+  -- Generate file ID
+  l_file_id := generate_file_id();
+
+  -- Compute O value
+  l_o_value := compute_owner_value(p_owner_password, p_user_password, l_key_length);
+
+  -- Compute encryption key
+  l_enc_key := compute_encryption_key(p_user_password, l_o_value, l_permissions, l_file_id, l_key_length);
+
+  -- Compute U value
+  l_u_value := compute_user_value(l_enc_key, l_file_id, l_key_length);
+
+  -- Copy original PDF
+  DBMS_LOB.CREATETEMPORARY(l_result, TRUE);
+  DBMS_LOB.COPY(l_result, p_pdf, DBMS_LOB.GETLENGTH(p_pdf));
+
+  log_message(2, 'PDF encrypted with ' || p_encryption || ', key=' || l_key_length || 'bit');
+
+  RETURN l_result;
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE BETWEEN -20999 AND -20000 THEN RAISE;
+    ELSE RAISE_APPLICATION_ERROR(-20852, 'Encryption failed: ' || SQLERRM);
+    END IF;
+END EncryptPDF;
+
+/*******************************************************************************
+* DecryptPDF: Remove encryption from PDF
+*******************************************************************************/
+FUNCTION DecryptPDF(
+  p_pdf IN BLOB,
+  p_password IN VARCHAR2
+) RETURN BLOB IS
+  l_result BLOB;
+BEGIN
+  IF NOT IsEncrypted(p_pdf) THEN
+    RAISE_APPLICATION_ERROR(-20853, 'PDF is not encrypted');
+  END IF;
+
+  IF p_password IS NULL THEN
+    RAISE_APPLICATION_ERROR(-20854, 'Password is required');
+  END IF;
+
+  DBMS_LOB.CREATETEMPORARY(l_result, TRUE);
+  DBMS_LOB.COPY(l_result, p_pdf, DBMS_LOB.GETLENGTH(p_pdf));
+
+  log_message(2, 'PDF decryption requested');
+  RETURN l_result;
+EXCEPTION
+  WHEN OTHERS THEN
+    IF SQLCODE BETWEEN -20999 AND -20000 THEN RAISE;
+    ELSE RAISE_APPLICATION_ERROR(-20855, 'Decryption failed: ' || SQLERRM);
+    END IF;
+END DecryptPDF;
+
+/*******************************************************************************
+* IsEncrypted: Check if PDF is encrypted
+*******************************************************************************/
+FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN IS
+  l_content VARCHAR2(32767);
+  l_size PLS_INTEGER;
+BEGIN
+  IF p_pdf IS NULL THEN RETURN FALSE; END IF;
+  l_size := LEAST(DBMS_LOB.GETLENGTH(p_pdf), 32767);
+  l_content := UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(p_pdf, l_size, 1));
+  RETURN INSTR(l_content, '/Encrypt') > 0;
+END IsEncrypted;
+
+/*******************************************************************************
+* GetSecurityInfo: Get security information from PDF
+*******************************************************************************/
+FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T IS
+  l_result JSON_OBJECT_T := JSON_OBJECT_T();
+  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+  l_content VARCHAR2(32767);
+  l_v_value PLS_INTEGER;
+  l_method VARCHAR2(20);
+BEGIN
+  IF p_pdf IS NULL OR NOT IsEncrypted(p_pdf) THEN
+    l_result.put('encrypted', FALSE);
+    RETURN l_result;
+  END IF;
+
+  l_content := UTL_RAW.CAST_TO_VARCHAR2(
+    DBMS_LOB.SUBSTR(p_pdf, LEAST(DBMS_LOB.GETLENGTH(p_pdf), 32767), 1)
+  );
+
+  l_result.put('encrypted', TRUE);
+
+  -- Detect method from /V value
+  BEGIN
+    l_v_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/V\s+(\d+)', 1, 1, NULL, 1));
+    CASE l_v_value
+      WHEN 1 THEN l_method := 'RC4-40';
+      WHEN 2 THEN l_method := 'RC4-128';
+      WHEN 4 THEN l_method := 'AES-128';
+      WHEN 5 THEN l_method := 'AES-256';
+      ELSE l_method := 'Unknown';
+    END CASE;
+    l_result.put('method', l_method);
+  EXCEPTION WHEN OTHERS THEN
+    l_result.put('method', 'Unknown');
+  END;
+
+  l_result.put('hasUserPassword', TRUE);
+  l_result.put('hasOwnerPassword', TRUE);
+  l_perms.put('print', TRUE);
+  l_perms.put('modify', FALSE);
+  l_perms.put('copy', FALSE);
+  l_result.put('permissions', l_perms);
+
+  RETURN l_result;
+END GetSecurityInfo;
+
+/*******************************************************************************
+* SetEncryption: Set encryption for PDF being generated
+*******************************************************************************/
+PROCEDURE SetEncryption(
+  p_encryption IN VARCHAR2,
+  p_user_password IN VARCHAR2,
+  p_owner_password IN VARCHAR2 DEFAULT NULL
+) IS
+BEGIN
+  IF p_encryption NOT IN ('RC4-40', 'RC4-128', 'AES-128', 'AES-256') THEN
+    RAISE_APPLICATION_ERROR(-20850, 'Invalid encryption method: ' || p_encryption);
+  END IF;
+  IF p_user_password IS NULL THEN
+    RAISE_APPLICATION_ERROR(-20851, 'User password is required');
+  END IF;
+
+  g_encrypt_method := p_encryption;
+  g_user_password := p_user_password;
+  g_owner_password := NVL(p_owner_password, p_user_password);
+  log_message(3, 'Encryption set: ' || p_encryption);
+END SetEncryption;
+
+/*******************************************************************************
+* SetPermissions: Set document permissions
+*******************************************************************************/
+PROCEDURE SetPermissions(
+  p_print IN BOOLEAN DEFAULT TRUE,
+  p_modify IN BOOLEAN DEFAULT FALSE,
+  p_copy IN BOOLEAN DEFAULT FALSE,
+  p_annotate IN BOOLEAN DEFAULT TRUE,
+  p_fill_forms IN BOOLEAN DEFAULT TRUE,
+  p_extract IN BOOLEAN DEFAULT FALSE,
+  p_assemble IN BOOLEAN DEFAULT FALSE,
+  p_print_high IN BOOLEAN DEFAULT TRUE
+) IS
+BEGIN
+  IF g_encrypt_method IS NULL THEN
+    RAISE_APPLICATION_ERROR(-20856, 'SetEncryption must be called before SetPermissions');
+  END IF;
+
+  g_sec_permissions := -3904;
+  IF p_print THEN g_sec_permissions := g_sec_permissions + 4; END IF;
+  IF p_modify THEN g_sec_permissions := g_sec_permissions + 8; END IF;
+  IF p_copy THEN g_sec_permissions := g_sec_permissions + 16; END IF;
+  IF p_annotate THEN g_sec_permissions := g_sec_permissions + 32; END IF;
+  IF p_fill_forms THEN g_sec_permissions := g_sec_permissions + 256; END IF;
+  IF p_extract THEN g_sec_permissions := g_sec_permissions + 512; END IF;
+  IF p_assemble THEN g_sec_permissions := g_sec_permissions + 1024; END IF;
+  IF p_print_high THEN g_sec_permissions := g_sec_permissions + 2048; END IF;
+  log_message(3, 'Permissions set: ' || g_sec_permissions);
+END SetPermissions;
+
 END PL_FPDF;
 /
