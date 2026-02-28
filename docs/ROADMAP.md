@@ -2,8 +2,8 @@
 
 > Gestao de features e evolucao do projeto
 
-**Versao Atual:** 3.0.0
-**Ultima Atualizacao:** 2026-02
+**Versao Atual:** 3.2.0 (Security In Progress)
+**Ultima Atualizacao:** 2026-02-28
 
 ---
 
@@ -377,6 +377,274 @@ l_pdf := PL_FPDF.Output();
 
 - PL_FPDF v3.0.0+ (base)
 - Nenhuma dependencia externa
+
+---
+
+## v3.4.0 - PDF 1.5/1.6 Support 📋
+
+**Status:** Planned
+**Target:** Q1 2027
+
+### Objetivo
+Atualizar o PL_FPDF para suportar features do PDF 1.5 e 1.6, incluindo criptografia AES e compressao avancada.
+
+### PDF 1.5 Features (ISO 32000-1:2008)
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AES-128 Encryption** | 📋 Planned | Alta | Criptografia AES CBC mode |
+| **Object Streams** | 📋 Planned | Alta | Compressao de objetos em streams |
+| **Cross-Reference Streams** | 📋 Planned | Media | xref como stream comprimido |
+| **JPEG2000 Images** | 💡 Proposed | Baixa | Suporte a JPX/JP2 |
+
+### PDF 1.6 Features
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AES-128 Improvements** | 📋 Planned | Alta | Metadata encryption |
+| **OpenType Fonts** | 💡 Proposed | Media | Suporte a fontes OTF |
+| **3D Annotations** | 💡 Proposed | Baixa | Objetos 3D (U3D) |
+
+### Implementacao AES-128
+
+```sql
+-- Estrutura Encryption Dictionary (PDF 1.5+)
+/Encrypt <<
+  /Filter /Standard
+  /V 4                    % Version 4 = AES
+  /R 4                    % Revision 4
+  /Length 128             % Key length
+  /CF <<
+    /StdCF <<
+      /CFM /AESV2         % AES encryption
+      /AuthEvent /DocOpen
+      /Length 16
+    >>
+  >>
+  /StmF /StdCF
+  /StrF /StdCF
+  /O (32 bytes)
+  /U (32 bytes)
+  /P -3904
+>>
+```
+
+### TODO Tecnico
+
+- [ ] **Fase 1: AES-128 CBC**
+  - [ ] DBMS_CRYPTO.ENCRYPT com AES_CBC_PKCS5
+  - [ ] Gerar IV (Initialization Vector) 16 bytes
+  - [ ] Prepend IV ao ciphertext
+  - [ ] PKCS#7 padding automatico
+
+- [ ] **Fase 2: Crypt Filters**
+  - [ ] Implementar /CF dictionary
+  - [ ] Suporte a /StmF e /StrF
+  - [ ] Identity filter para metadata
+
+- [ ] **Fase 3: Object Streams**
+  - [ ] Agrupar objetos em streams
+  - [ ] Compressao FlateDecode
+  - [ ] Offset table interno
+
+- [ ] **Fase 4: Cross-Reference Streams**
+  - [ ] xref como stream binario
+  - [ ] Indice W[1 2 1] ou W[1 3 1]
+  - [ ] Compressao FlateDecode
+
+### Algoritmos AES (PDF Spec)
+
+```
+Algorithm 1a: AES-128 Key Derivation
+1. Compute encryption key (Algorithm 2)
+2. Truncate to 16 bytes for AES-128
+3. Use with DBMS_CRYPTO.ENCRYPT
+
+Algorithm 1b: AES Object Encryption
+1. Generate random 16-byte IV
+2. Concatenate: object_key || object_num || gen_num
+3. MD5 hash, truncate to N+5 bytes (max 16)
+4. AES-CBC encrypt with IV prepended
+```
+
+---
+
+## v3.5.0 - PDF 1.7 Support 📋
+
+**Status:** Planned
+**Target:** Q2 2027
+
+### Objetivo
+Suporte completo ao PDF 1.7 (ISO 32000-1:2008), incluindo AES-256 e features avancadas.
+
+### PDF 1.7 Features
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AES-256 Encryption** | 📋 Planned | Alta | Criptografia forte (PDF 1.7 ExtensionLevel 3) |
+| **Unicode Passwords** | 📋 Planned | Alta | Senhas UTF-8 (SASLprep) |
+| **SHA-256 Hashing** | 📋 Planned | Alta | Substituir MD5 por SHA-256 |
+| **Extension Levels** | 📋 Planned | Media | /Extensions dictionary |
+| **XFA Forms** | 💡 Proposed | Baixa | Adobe XML Forms |
+
+### AES-256 Implementation (PDF 1.7 ExtensionLevel 3)
+
+```sql
+-- Encryption Dictionary AES-256
+/Encrypt <<
+  /Filter /Standard
+  /V 5                    % Version 5 = AES-256
+  /R 5                    % Revision 5
+  /Length 256             % Key length in bits
+  /CF <<
+    /StdCF <<
+      /CFM /AESV3         % AES-256
+      /AuthEvent /DocOpen
+      /Length 32
+    >>
+  >>
+  /StmF /StdCF
+  /StrF /StdCF
+  /O (48 bytes)           % Owner hash
+  /U (48 bytes)           % User hash
+  /OE (32 bytes)          % Owner encryption key
+  /UE (32 bytes)          % User encryption key
+  /Perms (16 bytes)       % Encrypted permissions
+  /P -3904
+>>
+```
+
+### Algoritmos AES-256 (PDF 1.7 ExtensionLevel 3)
+
+```
+Algorithm 2.A: Computing encryption key (AES-256)
+1. Generate random 32-byte file encryption key
+2. Compute U = SHA-256(password || User Validation Salt)
+3. Compute UE = AES-256-CBC(file_key, SHA-256(password || User Key Salt))
+4. Similar for O and OE with owner password
+
+Algorithm 2.B: Password validation (AES-256)
+1. Compute hash = SHA-256(password || Validation Salt || U)
+2. Compare with first 32 bytes of U
+3. If match, decrypt UE with SHA-256(password || Key Salt) to get file key
+```
+
+### TODO Tecnico
+
+- [ ] **Fase 1: SHA-256 Integration**
+  - [ ] DBMS_CRYPTO.HASH com HASH_SH256
+  - [ ] Substituir MD5 em key derivation
+  - [ ] 32-byte validation/key salts
+
+- [ ] **Fase 2: AES-256 CBC**
+  - [ ] DBMS_CRYPTO.ENCRYPT com AES256_CBC_PKCS5
+  - [ ] 32-byte encryption keys
+  - [ ] 16-byte IV (mesmo que AES-128)
+
+- [ ] **Fase 3: Unicode Passwords**
+  - [ ] SASLprep normalization (RFC 4013)
+  - [ ] UTF-8 encoding
+  - [ ] Max 127 bytes
+
+- [ ] **Fase 4: Extension Level**
+  - [ ] /Extensions << /ADBE << /BaseVersion /1.7 /ExtensionLevel 3 >> >>
+  - [ ] Compatibilidade com leitores
+
+### Comparativo de Seguranca
+
+| Versao | Encryption | Key | Hash | Seguranca |
+|--------|------------|-----|------|-----------|
+| PDF 1.4 | RC4-128 | 128-bit | MD5 | ⚠️ Fraco |
+| PDF 1.5 | AES-128 | 128-bit | MD5 | ✅ Bom |
+| PDF 1.7 Ext3 | AES-256 | 256-bit | SHA-256 | ✅✅ Forte |
+| PDF 2.0 | AES-256 | 256-bit | SHA-256/384/512 | ✅✅✅ Muito Forte |
+
+---
+
+## v3.6.0 - PDF 2.0 Support 💡
+
+**Status:** Proposed
+**Target:** Q3 2027
+
+### Objetivo
+Suporte ao PDF 2.0 (ISO 32000-2:2020), a versao mais recente do padrao PDF.
+
+### PDF 2.0 Novidades
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AES-256 Nativo** | 💡 Proposed | Alta | Sem Extension Level |
+| **SHA-384/512** | 💡 Proposed | Alta | Hashes mais fortes |
+| **Unencrypted Wrapper** | 💡 Proposed | Media | Documento wrapper nao criptografado |
+| **Page-Level Encryption** | 💡 Proposed | Media | Criptografia por pagina |
+| **Associated Files** | 💡 Proposed | Baixa | Arquivos associados (AF) |
+| **Namespaces** | 💡 Proposed | Baixa | Namespaces para extensoes |
+| **Deprecated Removal** | 💡 Proposed | Baixa | Remover features obsoletas |
+
+### Estrutura PDF 2.0
+
+```
+%PDF-2.0
+% Sem mais /Extensions necessario para AES-256
+% Header mais limpo
+
+/Encrypt <<
+  /Filter /Standard
+  /V 6                    % Version 6 = PDF 2.0 AES-256
+  /R 6                    % Revision 6
+  /Length 256
+  /CF << ... >>
+  /O (48 bytes)
+  /U (48 bytes)
+  /OE (32 bytes)
+  /UE (32 bytes)
+  /Perms (16 bytes)
+  /P permissions
+>>
+```
+
+### Mudancas Principais PDF 2.0
+
+1. **Header simplificado**: `%PDF-2.0` (sem necessidade de binary marker)
+2. **AES-256 como padrao**: Sem necessidade de Extension Level
+3. **Deprecations removidas**:
+   - RC4 encryption (removido)
+   - LZW compression (removido)
+   - Standard security handler revisions 2-4
+4. **Novos objetos**:
+   - Page-level security
+   - Associated files (embedded resources)
+   - Document parts (modular PDFs)
+
+### API Proposta
+
+```sql
+-- Criar PDF 2.0 com AES-256
+PL_FPDF.fpdf();
+PL_FPDF.SetPDFVersion('2.0');
+PL_FPDF.SetEncryption('AES-256', 'user123', 'owner456');
+PL_FPDF.AddPage();
+l_pdf := PL_FPDF.Output();
+
+-- Verificar versao suportada
+SELECT PL_FPDF.GetSupportedVersions() FROM DUAL;
+-- Retorna: ["1.4", "1.5", "1.6", "1.7", "2.0"]
+
+-- Upgrade de versao
+l_pdf := PL_FPDF.UpgradePDFVersion(l_old_pdf, '2.0');
+```
+
+### Compatibilidade
+
+| Leitor | PDF 1.4 | PDF 1.5 | PDF 1.7 | PDF 2.0 |
+|--------|---------|---------|---------|---------|
+| Adobe Reader DC | ✅ | ✅ | ✅ | ✅ |
+| Foxit Reader | ✅ | ✅ | ✅ | ✅ |
+| Chrome PDF | ✅ | ✅ | ✅ | ⚠️ |
+| Firefox PDF.js | ✅ | ✅ | ✅ | ⚠️ |
+| Preview (macOS) | ✅ | ✅ | ✅ | ✅ |
+
+⚠️ = Suporte parcial (pode nao suportar todas as features)
 
 ---
 
