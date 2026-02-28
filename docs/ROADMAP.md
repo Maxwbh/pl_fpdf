@@ -1138,19 +1138,499 @@ PL_FPDF.AddAssociatedFile(
 
 ---
 
-## v4.0.0 - Advanced 💡
+## v4.0.0 - PDF 2.0 Migration & Advanced Features 🚀
 
-**Status:** Proposed
-**Target:** 2027
+**Status:** Planned
+**Target:** Q1-Q2 2028
 
-| Feature | Status | Prioridade |
-|---------|--------|------------|
-| Digital Signatures (X.509) | 💡 Proposed | Alta |
-| PDF/A Compliance | 💡 Proposed | Media |
-| Bookmarks/Outline | 💡 Proposed | Media |
-| Hyperlinks | 💡 Proposed | Media |
-| Annotations | 💡 Proposed | Baixa |
-| Form Fields (AcroForms) | 💡 Proposed | Baixa |
+### Objetivo Principal
+Migracao completa para PDF 2.0 (ISO 32000-2:2020) como versao padrao, com ferramentas de migracao e compliance total.
+
+---
+
+### 1. Core PDF 2.0 Migration
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **PDF 2.0 Header Generation** | 📋 Planned | Critica | 1 |
+| **Remove Deprecated Features** | 📋 Planned | Critica | 1 |
+| **V6/R6 Encryption Native** | 📋 Planned | Critica | 2 |
+| **Backward Compatibility Mode** | 📋 Planned | Alta | 2 |
+| **Auto-Version Detection** | 📋 Planned | Alta | 3 |
+| **Migration Validator** | 📋 Planned | Alta | 3 |
+
+#### Deprecated Features a Remover
+```
+REMOVIDOS NO PDF 2.0:
+- RC4 encryption (40-bit e 128-bit)
+- LZW compression
+- Security handler revisions 2-4
+- Movie annotations
+- Sound annotations
+- Embedded GoTo actions
+- XFA Forms (deprecated, nao removido)
+```
+
+---
+
+### 2. Digital Signatures (X.509/PKI)
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **PKCS#7 Signatures** | 📋 Planned | Critica | 4 |
+| **PAdES Compliance** | 📋 Planned | Alta | 5 |
+| **Timestamp Authority (TSA)** | 📋 Planned | Alta | 5 |
+| **Certificate Chain Validation** | 📋 Planned | Alta | 6 |
+| **LTV (Long Term Validation)** | 💡 Proposed | Media | 7 |
+| **Multiple Signatures** | 📋 Planned | Media | 6 |
+
+#### Signature Structure (PDF 2.0)
+```
+/Sig <<
+  /Type /Sig
+  /Filter /Adobe.PPKLite
+  /SubFilter /adbe.pkcs7.detached
+  /ByteRange [0 840 960 240]
+  /Contents <PKCS#7 signature>
+  /Cert [<certificate chain>]
+  /M (D:20280115120000+00'00')
+  /Name (Signer Name)
+  /Reason (Contract Agreement)
+  /Location (Sao Paulo, Brazil)
+  /ContactInfo (email@example.com)
+>>
+```
+
+#### API Proposta - Assinaturas
+```sql
+-- Assinar documento
+PL_FPDF.SignDocument(
+  p_certificate   => l_x509_cert,      -- BLOB do certificado
+  p_private_key   => l_private_key,    -- RAW da chave privada
+  p_password      => 'cert_password',
+  p_reason        => 'Aprovacao de contrato',
+  p_location      => 'Sao Paulo, BR',
+  p_contact       => 'legal@empresa.com',
+  p_timestamp_url => 'http://timestamp.digicert.com'
+);
+
+-- Adicionar campo de assinatura visual
+PL_FPDF.AddSignatureField(
+  p_name   => 'sig_aprovador',
+  p_page   => 1,
+  p_x      => 400,
+  p_y      => 100,
+  p_width  => 150,
+  p_height => 50,
+  p_image  => l_signature_image  -- Imagem da assinatura
+);
+
+-- Validar assinatura existente
+l_valid := PL_FPDF.ValidateSignature(
+  p_pdf         => l_pdf_blob,
+  p_sig_index   => 1,
+  p_check_revocation => TRUE
+);
+```
+
+---
+
+### 3. PDF/A Compliance (Archival)
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **PDF/A-1b (Basic)** | 📋 Planned | Alta | 8 |
+| **PDF/A-2b (PDF 1.7)** | 📋 Planned | Alta | 8 |
+| **PDF/A-3b (Attachments)** | 📋 Planned | Alta | 9 |
+| **PDF/A-4 (PDF 2.0)** | 📋 Planned | Media | 10 |
+| **Compliance Validator** | 📋 Planned | Alta | 9 |
+| **Auto-Fix Non-Compliance** | 💡 Proposed | Media | 10 |
+
+#### Requisitos PDF/A
+```
+PDF/A-1b:
+- Fonts embarcadas 100%
+- Sem JavaScript
+- Sem forms XFA
+- Sem encryption
+- Metadata XMP obrigatorio
+- Color profiles ICC
+
+PDF/A-3b (adicional):
+- Arquivos anexados permitidos
+- ZUGFeRD/Factur-X suportado
+
+PDF/A-4 (PDF 2.0):
+- Baseado em PDF 2.0
+- Page-level output intents
+- Mais flexibilidade em anexos
+```
+
+#### API Proposta - PDF/A
+```sql
+-- Criar PDF/A-3b
+PL_FPDF.fpdf();
+PL_FPDF.SetPDFACompliance('PDF/A-3b');
+PL_FPDF.SetMetadata(
+  p_title    => 'Fatura 12345',
+  p_author   => 'Sistema ERP',
+  p_subject  => 'Nota Fiscal Eletronica'
+);
+PL_FPDF.AddPage();
+PL_FPDF.Cell(0, 10, 'Conteudo da fatura');
+
+-- Anexar XML (ZUGFeRD)
+PL_FPDF.AddAssociatedFile(
+  p_filename     => 'factur-x.xml',
+  p_content      => l_xml_invoice,
+  p_relationship => 'Data',
+  p_mime_type    => 'text/xml'
+);
+
+-- Validar compliance
+l_errors := PL_FPDF.ValidatePDFA(l_pdf_blob, 'PDF/A-3b');
+IF l_errors.COUNT = 0 THEN
+  DBMS_OUTPUT.PUT_LINE('PDF/A-3b compliant!');
+END IF;
+```
+
+---
+
+### 4. PDF/UA (Universal Accessibility)
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **PDF/UA-1 (Basic)** | 📋 Planned | Alta | 11 |
+| **PDF/UA-2 (PDF 2.0)** | 📋 Planned | Media | 12 |
+| **Screen Reader Support** | 📋 Planned | Alta | 11 |
+| **Alt Text Automation** | 💡 Proposed | Media | 12 |
+| **Accessibility Checker** | 📋 Planned | Alta | 11 |
+
+#### Requisitos PDF/UA
+```
+Obrigatorios:
+- Document title no metadata
+- Document language definido
+- Todos elementos com tags
+- Alt text para imagens
+- Reading order correto
+- Table headers marcados
+- Links com texto descritivo
+- Bookmarks para docs > 20 paginas
+```
+
+---
+
+### 5. E-Invoice Standards (ZUGFeRD/Factur-X)
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **ZUGFeRD 2.1/2.2** | 📋 Planned | Alta | 13 |
+| **Factur-X** | 📋 Planned | Alta | 13 |
+| **XRechnung** | 💡 Proposed | Media | 14 |
+| **UBL 2.1** | 💡 Proposed | Baixa | 14 |
+
+#### API Proposta - E-Invoice
+```sql
+-- Gerar fatura ZUGFeRD
+l_invoice := PL_FPDF_INVOICE.Create(
+  p_profile  => 'ZUGFERD_2.1_COMFORT',
+  p_seller   => JSON_OBJECT_T('{
+    "name": "Empresa ABC",
+    "vat_id": "BR12345678901234",
+    "address": {"city": "Sao Paulo", "country": "BR"}
+  }'),
+  p_buyer    => JSON_OBJECT_T('{...}'),
+  p_items    => l_invoice_items,
+  p_totals   => l_invoice_totals
+);
+
+-- Gerar PDF com XML embarcado
+l_pdf := PL_FPDF_INVOICE.GeneratePDF(l_invoice);
+```
+
+---
+
+### 6. Migration Tools
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **PDF Version Upgrader** | 📋 Planned | Critica | 15 |
+| **Batch Migration** | 📋 Planned | Alta | 15 |
+| **Migration Report** | 📋 Planned | Alta | 16 |
+| **Rollback Support** | 📋 Planned | Media | 16 |
+
+#### API Proposta - Migration
+```sql
+-- Upgrade single PDF
+l_pdf_20 := PL_FPDF_MIGRATE.UpgradeVersion(
+  p_source_pdf    => l_pdf_14,
+  p_target_version => '2.0',
+  p_options       => JSON_OBJECT_T('{
+    "remove_deprecated": true,
+    "upgrade_encryption": "AES-256",
+    "embed_fonts": true,
+    "optimize": true
+  }')
+);
+
+-- Batch migration
+l_job_id := PL_FPDF_MIGRATE.BatchUpgrade(
+  p_source_table  => 'DOCUMENTS',
+  p_pdf_column    => 'PDF_CONTENT',
+  p_target_version => '2.0',
+  p_parallel_degree => 4
+);
+
+-- Migration report
+l_report := PL_FPDF_MIGRATE.GetReport(l_job_id);
+-- {
+--   "total": 1000,
+--   "success": 985,
+--   "failed": 15,
+--   "warnings": 42,
+--   "details": [...]
+-- }
+```
+
+---
+
+### 7. Performance & Optimization
+
+| Feature | Status | Prioridade | Sprint |
+|---------|--------|------------|--------|
+| **Incremental Updates** | 📋 Planned | Alta | 17 |
+| **Linearization (Fast Web View)** | 📋 Planned | Media | 17 |
+| **Parallel Processing** | 📋 Planned | Media | 18 |
+| **Memory Optimization** | 📋 Planned | Alta | 18 |
+
+---
+
+## TODO v4.0.0 - Completo
+
+### Sprint 1: Core PDF 2.0 Foundation (2 semanas)
+- [ ] **T001** Implementar header %PDF-2.0
+- [ ] **T002** Remover suporte a RC4 encryption
+- [ ] **T003** Remover suporte a LZW compression
+- [ ] **T004** Atualizar xref para formato 2.0
+- [ ] **T005** Criar flag g_pdf_version global
+- [ ] **T006** Implementar SetPDFVersion('2.0')
+- [ ] **T007** Testes unitarios para header 2.0
+- [ ] **T008** Documentar breaking changes
+
+### Sprint 2: Encryption V6/R6 (2 semanas)
+- [ ] **T009** Implementar /V 6 /R 6 encryption dict
+- [ ] **T010** AES-256 nativo sem Extension Level
+- [ ] **T011** SHA-256/384/512 key derivation
+- [ ] **T012** Backward compatibility: detectar versao automaticamente
+- [ ] **T013** Parametro p_encryption_version em SetProtection
+- [ ] **T014** Migrar senha Unicode (SASLprep)
+- [ ] **T015** Testes de compatibilidade com Adobe Reader
+- [ ] **T016** Testes de compatibilidade com Foxit
+
+### Sprint 3: Version Detection & Validation (2 semanas)
+- [ ] **T017** Parser para detectar versao de PDF existente
+- [ ] **T018** Funcao GetPDFVersion(p_pdf BLOB) RETURN VARCHAR2
+- [ ] **T019** Funcao GetMinimumRequiredVersion() RETURN VARCHAR2
+- [ ] **T020** Validador de compliance por versao
+- [ ] **T021** Report de features deprecadas usadas
+- [ ] **T022** Warning system para features 1.4-only
+- [ ] **T023** Migration advisor automatico
+
+### Sprint 4: Digital Signatures - Basic (3 semanas)
+- [ ] **T024** Estrutura /Sig dictionary
+- [ ] **T025** Criar signature field widget
+- [ ] **T026** Calcular ByteRange corretamente
+- [ ] **T027** Integrar com DBMS_CRYPTO para hash
+- [ ] **T028** PKCS#7 signature container
+- [ ] **T029** Inserir certificado X.509
+- [ ] **T030** API SignDocument() basica
+- [ ] **T031** Suporte a certificados A1 (arquivo)
+- [ ] **T032** Testes com certificados de teste
+
+### Sprint 5: Digital Signatures - PAdES (2 semanas)
+- [ ] **T033** PAdES-B (Basic) compliance
+- [ ] **T034** PAdES-T (Timestamp) compliance
+- [ ] **T035** Integracao com TSA (Timestamp Authority)
+- [ ] **T036** HTTP client para TSA (UTL_HTTP)
+- [ ] **T037** Parsing de TSA response
+- [ ] **T038** Embedded timestamp no signature
+- [ ] **T039** Testes com TSA publico (freetsa.org)
+
+### Sprint 6: Digital Signatures - Advanced (2 semanas)
+- [ ] **T040** Multiple signatures support
+- [ ] **T041** Incremental updates para assinaturas
+- [ ] **T042** Certificate chain embedding
+- [ ] **T043** ValidateSignature() function
+- [ ] **T044** Signature appearance (visual)
+- [ ] **T045** Custom signature image
+- [ ] **T046** Signature metadata (reason, location)
+
+### Sprint 7: LTV Signatures (2 semanas)
+- [ ] **T047** PAdES-LT compliance
+- [ ] **T048** PAdES-LTA compliance
+- [ ] **T049** CRL embedding
+- [ ] **T050** OCSP response embedding
+- [ ] **T051** Document Security Store (DSS)
+- [ ] **T052** Validacao offline
+
+### Sprint 8: PDF/A-1 e PDF/A-2 (3 semanas)
+- [ ] **T053** PDF/A-1b output mode
+- [ ] **T054** PDF/A-2b output mode
+- [ ] **T055** XMP metadata obrigatorio
+- [ ] **T056** ICC color profile embedding
+- [ ] **T057** Font embedding 100%
+- [ ] **T058** Output intent dictionary
+- [ ] **T059** Remove JavaScript
+- [ ] **T060** Remove forms XFA
+- [ ] **T061** PDF/A identifier metadata
+
+### Sprint 9: PDF/A-3 e Validator (2 semanas)
+- [ ] **T062** PDF/A-3b output mode
+- [ ] **T063** Associated files para PDF/A-3
+- [ ] **T064** ZUGFeRD/Factur-X attachment
+- [ ] **T065** ValidatePDFA() function
+- [ ] **T066** Compliance report detalhado
+- [ ] **T067** Lista de erros com localizacao
+- [ ] **T068** Sugestoes de correcao
+
+### Sprint 10: PDF/A-4 (2 semanas)
+- [ ] **T069** PDF/A-4 output mode (PDF 2.0 based)
+- [ ] **T070** Page-level output intents
+- [ ] **T071** PDF/A-4e (engineering)
+- [ ] **T072** PDF/A-4f (embedded files)
+- [ ] **T073** Auto-fix para non-compliance
+
+### Sprint 11: PDF/UA-1 (3 semanas)
+- [ ] **T074** SetAccessible(TRUE) mode
+- [ ] **T075** Automatic structure tags
+- [ ] **T076** Document language /Lang
+- [ ] **T077** Alt text para Image()
+- [ ] **T078** Table header marking
+- [ ] **T079** Reading order definition
+- [ ] **T080** Bookmarks automaticos
+- [ ] **T081** Link text descritivo
+- [ ] **T082** PDF/UA identifier
+
+### Sprint 12: PDF/UA-2 (2 semanas)
+- [ ] **T083** PDF/UA-2 compliance (PDF 2.0)
+- [ ] **T084** MathML structure
+- [ ] **T085** Pronunciation hints
+- [ ] **T086** Namespaced structure elements
+- [ ] **T087** AccessibilityChecker()
+
+### Sprint 13: E-Invoice ZUGFeRD (3 semanas)
+- [ ] **T088** ZUGFeRD 2.1 MINIMUM profile
+- [ ] **T089** ZUGFeRD 2.1 BASIC profile
+- [ ] **T090** ZUGFeRD 2.1 COMFORT profile
+- [ ] **T091** ZUGFeRD 2.1 EXTENDED profile
+- [ ] **T092** Factur-X 1.0 compliance
+- [ ] **T093** XML schema validation
+- [ ] **T094** Invoice data model PL/SQL
+- [ ] **T095** PDF visual + XML embedded
+
+### Sprint 14: E-Invoice Extended (2 semanas)
+- [ ] **T096** XRechnung support
+- [ ] **T097** UBL 2.1 XML generation
+- [ ] **T098** Cross-Industry Invoice (CII)
+- [ ] **T099** Country-specific variants
+
+### Sprint 15: Migration Tools - Basic (2 semanas)
+- [ ] **T100** UpgradeVersion() function
+- [ ] **T101** Parser para PDF existente
+- [ ] **T102** Object extraction
+- [ ] **T103** Stream decompression
+- [ ] **T104** Re-encryption to AES-256
+- [ ] **T105** Font re-embedding
+- [ ] **T106** Remove deprecated objects
+
+### Sprint 16: Migration Tools - Batch (2 semanas)
+- [ ] **T107** BatchUpgrade() procedure
+- [ ] **T108** DBMS_PARALLEL_EXECUTE integration
+- [ ] **T109** Progress tracking
+- [ ] **T110** Error handling e retry
+- [ ] **T111** Migration report JSON
+- [ ] **T112** Rollback support
+
+### Sprint 17: Optimization (2 semanas)
+- [ ] **T113** Incremental updates
+- [ ] **T114** Linearization (Fast Web View)
+- [ ] **T115** Hint tables
+- [ ] **T116** Object reordering
+
+### Sprint 18: Performance (2 semanas)
+- [ ] **T117** Memory pooling
+- [ ] **T118** Streaming output
+- [ ] **T119** Lazy font loading
+- [ ] **T120** Parallel image processing
+- [ ] **T121** Benchmark suite
+
+---
+
+## Metricas de Sucesso v4.0.0
+
+| Metrica | Target |
+|---------|--------|
+| PDF 2.0 Compliance | 100% |
+| Adobe Reader Compatibility | 100% |
+| Foxit Reader Compatibility | 100% |
+| Chrome PDF.js Compatibility | 95%+ |
+| Digital Signature Validation | 100% PAdES-B |
+| PDF/A-3b Compliance | 100% |
+| PDF/UA-1 Compliance | 100% |
+| ZUGFeRD 2.1 Compliance | 100% |
+| Migration Success Rate | 99%+ |
+| Performance vs v3.x | +20% |
+
+---
+
+## Timeline v4.0.0
+
+```
+Q1 2028
+├── Sprint 1-2: Core PDF 2.0 (4 semanas)
+├── Sprint 3: Validation (2 semanas)
+└── Sprint 4-5: Signatures Basic (5 semanas)
+
+Q2 2028
+├── Sprint 6-7: Signatures Advanced (4 semanas)
+├── Sprint 8-9: PDF/A (5 semanas)
+└── Sprint 10: PDF/A-4 (2 semanas)
+
+Q3 2028
+├── Sprint 11-12: PDF/UA (5 semanas)
+├── Sprint 13-14: E-Invoice (5 semanas)
+└── Sprint 15-16: Migration (4 semanas)
+
+Q4 2028
+├── Sprint 17-18: Optimization (4 semanas)
+├── Beta Testing (4 semanas)
+└── Release Candidate (2 semanas)
+```
+
+---
+
+## Dependencias Externas
+
+| Dependencia | Uso | Obrigatorio |
+|-------------|-----|-------------|
+| DBMS_CRYPTO | Encryption, Hash, Signatures | Sim |
+| UTL_HTTP | TSA requests | Para PAdES-T |
+| UTL_COMPRESS | Stream compression | Sim |
+| XMLTYPE | XMP, ZUGFeRD XML | Para PDF/A |
+| Oracle Wallet | Certificate storage | Para Signatures |
+
+---
+
+## Riscos e Mitigacoes
+
+| Risco | Impacto | Mitigacao |
+|-------|---------|-----------|
+| Complexidade PKCS#7 | Alto | Usar biblioteca externa ou DBMS_CRYPTO |
+| TSA indisponivel | Medio | Fallback para assinatura sem timestamp |
+| Certificados expirados | Medio | LTV para validacao futura |
+| Incompatibilidade viewers | Alto | Testes extensivos em multiplos viewers |
+| Performance degradacao | Medio | Profiling e otimizacao continua |
 
 ---
 
