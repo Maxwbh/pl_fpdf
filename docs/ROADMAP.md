@@ -380,261 +380,719 @@ l_pdf := PL_FPDF.Output();
 
 ---
 
-## v3.4.0 - PDF 1.5/1.6 Support 📋
+## v3.4.0 - PDF 1.5/1.6 Complete Support 📋
 
 **Status:** Planned
 **Target:** Q1 2027
 
 ### Objetivo
-Atualizar o PL_FPDF para suportar features do PDF 1.5 e 1.6, incluindo criptografia AES e compressao avancada.
+Implementacao completa das especificacoes PDF 1.5 e 1.6, incluindo estrutura, compressao, graficos, fontes e seguranca.
 
-### PDF 1.5 Features (ISO 32000-1:2008)
+---
 
-| Feature | Status | Prioridade | Descricao |
-|---------|--------|------------|-----------|
-| **AES-128 Encryption** | 📋 Planned | Alta | Criptografia AES CBC mode |
-| **Object Streams** | 📋 Planned | Alta | Compressao de objetos em streams |
-| **Cross-Reference Streams** | 📋 Planned | Media | xref como stream comprimido |
-| **JPEG2000 Images** | 💡 Proposed | Baixa | Suporte a JPX/JP2 |
-
-### PDF 1.6 Features
+### 1. Estrutura e Compressao
 
 | Feature | Status | Prioridade | Descricao |
 |---------|--------|------------|-----------|
-| **AES-128 Improvements** | 📋 Planned | Alta | Metadata encryption |
-| **OpenType Fonts** | 💡 Proposed | Media | Suporte a fontes OTF |
-| **3D Annotations** | 💡 Proposed | Baixa | Objetos 3D (U3D) |
+| **Object Streams** | 📋 Planned | Alta | Multiplos objetos em um stream comprimido |
+| **Cross-Reference Streams** | 📋 Planned | Alta | xref como stream binario comprimido |
+| **Incremental Updates** | 📋 Planned | Media | Atualizacoes incrementais ao PDF |
+| **Linearization** | 💡 Proposed | Baixa | PDF otimizado para web (Fast Web View) |
 
-### Implementacao AES-128
+#### Object Streams (ObjStm)
+```
+% Antes (PDF 1.4): Cada objeto separado
+1 0 obj << /Type /Page >> endobj
+2 0 obj << /Type /Font >> endobj
 
+% Depois (PDF 1.5): Objetos agrupados em stream
+3 0 obj <<
+  /Type /ObjStm
+  /N 2                    % Numero de objetos
+  /First 10               % Offset do primeiro objeto
+  /Filter /FlateDecode
+>>
+stream
+1 0 2 20                  % obj_num offset pairs
+<< /Type /Page >>
+<< /Type /Font >>
+endstream
+endobj
+```
+
+#### Cross-Reference Streams
+```
+% Antes (PDF 1.4): xref table em texto
+xref
+0 4
+0000000000 65535 f
+0000000015 00000 n
+
+% Depois (PDF 1.5): xref em stream binario
+4 0 obj <<
+  /Type /XRef
+  /Size 4
+  /W [1 2 1]              % Largura dos campos
+  /Filter /FlateDecode
+>>
+stream
+[binary data]
+endstream
+```
+
+---
+
+### 2. Graficos e Imagens
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **JPEG2000 (JPX)** | 📋 Planned | Media | Imagens JPX/JP2 nativas |
+| **Soft Masks** | 📋 Planned | Media | Mascaras de transparencia |
+| **Blend Modes** | 📋 Planned | Media | Modos de mesclagem avancados |
+| **ICC Color Profiles** | 💡 Proposed | Baixa | Perfis de cor ICC embedded |
+
+#### Blend Modes Suportados
+- Normal, Multiply, Screen, Overlay
+- Darken, Lighten, ColorDodge, ColorBurn
+- HardLight, SoftLight, Difference, Exclusion
+
+#### API Proposta - Graficos
 ```sql
--- Estrutura Encryption Dictionary (PDF 1.5+)
+-- Definir blend mode
+PL_FPDF.SetBlendMode('Multiply');
+PL_FPDF.SetOpacity(0.5);
+
+-- Imagem JPEG2000
+PL_FPDF.ImageJPX(l_jpx_blob, 10, 10, 100, 100);
+
+-- Soft mask
+PL_FPDF.SetSoftMask(l_mask_blob);
+PL_FPDF.Image(l_image_blob, 10, 10);
+PL_FPDF.ClearSoftMask();
+```
+
+---
+
+### 3. Fontes e Texto
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **OpenType CFF** | 📋 Planned | Alta | Fontes OpenType com outlines CFF |
+| **CIDFont Improvements** | 📋 Planned | Media | Melhor suporte a fontes CJK |
+| **ActualText** | 📋 Planned | Media | Texto real para acessibilidade |
+| **ToUnicode CMap** | 📋 Planned | Alta | Mapeamento correto de caracteres |
+
+#### Estrutura CIDFont
+```
+/Font <<
+  /Type /Font
+  /Subtype /Type0
+  /BaseFont /MyFont-Identity-H
+  /Encoding /Identity-H
+  /DescendantFonts [<<
+    /Type /Font
+    /Subtype /CIDFontType0
+    /BaseFont /MyFont
+    /CIDSystemInfo <<
+      /Registry (Adobe)
+      /Ordering (Identity)
+      /Supplement 0
+    >>
+    /FontDescriptor 5 0 R
+    /W [...]                % Larguras por CID
+  >>]
+  /ToUnicode 6 0 R
+>>
+```
+
+---
+
+### 4. Seguranca (AES-128)
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AES-128 Encryption** | 📋 Planned | Alta | Criptografia AES CBC |
+| **Crypt Filters** | 📋 Planned | Alta | Filtros por tipo de objeto |
+| **Metadata Encryption** | 📋 Planned | Media | Criptografar/nao criptografar metadata |
+
+#### Encryption Dictionary (V=4, R=4)
+```
 /Encrypt <<
   /Filter /Standard
-  /V 4                    % Version 4 = AES
-  /R 4                    % Revision 4
-  /Length 128             % Key length
+  /V 4
+  /R 4
+  /Length 128
   /CF <<
     /StdCF <<
-      /CFM /AESV2         % AES encryption
+      /CFM /AESV2
       /AuthEvent /DocOpen
       /Length 16
     >>
   >>
   /StmF /StdCF
   /StrF /StdCF
+  /EFF /StdCF               % Embedded files filter
   /O (32 bytes)
   /U (32 bytes)
-  /P -3904
+  /P permissions
 >>
 ```
 
-### TODO Tecnico
-
-- [ ] **Fase 1: AES-128 CBC**
-  - [ ] DBMS_CRYPTO.ENCRYPT com AES_CBC_PKCS5
-  - [ ] Gerar IV (Initialization Vector) 16 bytes
-  - [ ] Prepend IV ao ciphertext
-  - [ ] PKCS#7 padding automatico
-
-- [ ] **Fase 2: Crypt Filters**
-  - [ ] Implementar /CF dictionary
-  - [ ] Suporte a /StmF e /StrF
-  - [ ] Identity filter para metadata
-
-- [ ] **Fase 3: Object Streams**
-  - [ ] Agrupar objetos em streams
-  - [ ] Compressao FlateDecode
-  - [ ] Offset table interno
-
-- [ ] **Fase 4: Cross-Reference Streams**
-  - [ ] xref como stream binario
-  - [ ] Indice W[1 2 1] ou W[1 3 1]
-  - [ ] Compressao FlateDecode
-
-### Algoritmos AES (PDF Spec)
-
+#### Algoritmo AES-128
 ```
-Algorithm 1a: AES-128 Key Derivation
-1. Compute encryption key (Algorithm 2)
-2. Truncate to 16 bytes for AES-128
-3. Use with DBMS_CRYPTO.ENCRYPT
-
-Algorithm 1b: AES Object Encryption
-1. Generate random 16-byte IV
-2. Concatenate: object_key || object_num || gen_num
-3. MD5 hash, truncate to N+5 bytes (max 16)
-4. AES-CBC encrypt with IV prepended
+1. Gerar IV aleatorio (16 bytes)
+2. Derivar object key: MD5(file_key || obj_num || gen_num || "sAlT")
+3. Truncar para 16 bytes
+4. AES-CBC encrypt: IV || ciphertext
+5. Padding: PKCS#7
 ```
 
 ---
 
-## v3.5.0 - PDF 1.7 Support 📋
+### 5. Interatividade
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Optional Content** | 📋 Planned | Media | Layers/camadas (OCG) |
+| **Embedded Files** | 📋 Planned | Media | Arquivos anexados |
+| **Markup Annotations** | 💡 Proposed | Baixa | Highlight, Underline, Strikeout |
+
+#### Optional Content Groups (Layers)
+```sql
+-- Criar layer
+l_layer_id := PL_FPDF.CreateLayer('Background');
+
+-- Ativar layer
+PL_FPDF.BeginLayer(l_layer_id);
+PL_FPDF.Rect(0, 0, 210, 297, 'F');
+PL_FPDF.EndLayer();
+
+-- Layer visibility
+PL_FPDF.SetLayerVisibility(l_layer_id, TRUE);
+```
+
+---
+
+### 6. Acessibilidade (Tagged PDF)
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Structure Tree** | 📋 Planned | Alta | Arvore de estrutura do documento |
+| **Standard Tags** | 📋 Planned | Alta | P, H1-H6, Table, TR, TD, etc. |
+| **Alt Text** | 📋 Planned | Alta | Texto alternativo para imagens |
+| **Reading Order** | 📋 Planned | Media | Ordem de leitura definida |
+
+#### Tagged PDF Structure
+```
+/StructTreeRoot <<
+  /Type /StructTreeRoot
+  /K [<<
+    /Type /StructElem
+    /S /Document
+    /K [
+      << /S /H1 /K (Titulo) >>
+      << /S /P /K (Paragrafo) >>
+      << /S /Table /K [...] >>
+    ]
+  >>]
+  /ParentTree 10 0 R
+>>
+```
+
+#### API Proposta - Tagged PDF
+```sql
+-- Habilitar tagged PDF
+PL_FPDF.SetTagged(TRUE);
+
+-- Marcar elementos
+PL_FPDF.BeginTag('H1');
+PL_FPDF.Cell(0, 10, 'Titulo do Documento');
+PL_FPDF.EndTag();
+
+PL_FPDF.BeginTag('P');
+PL_FPDF.MultiCell(0, 5, 'Paragrafo de texto...');
+PL_FPDF.EndTag();
+
+-- Imagem com alt text
+PL_FPDF.BeginTag('Figure', p_alt => 'Grafico de vendas 2026');
+PL_FPDF.Image('chart.png', 10, 50, 100);
+PL_FPDF.EndTag();
+```
+
+---
+
+### TODO Implementacao v3.4.0
+
+- [ ] **Sprint 1: Estrutura**
+  - [ ] Object Streams (ObjStm)
+  - [ ] Cross-Reference Streams
+  - [ ] Parser para novos formatos
+
+- [ ] **Sprint 2: Seguranca**
+  - [ ] AES-128 CBC encryption
+  - [ ] Crypt filters (/CF)
+  - [ ] DBMS_CRYPTO integration
+
+- [ ] **Sprint 3: Graficos**
+  - [ ] Blend modes
+  - [ ] Soft masks
+  - [ ] Opacity groups
+
+- [ ] **Sprint 4: Fontes**
+  - [ ] OpenType CFF support
+  - [ ] ToUnicode CMap generation
+  - [ ] CIDFont improvements
+
+- [ ] **Sprint 5: Tagged PDF**
+  - [ ] Structure tree root
+  - [ ] Standard structure tags
+  - [ ] Content marking API
+
+- [ ] **Sprint 6: Interatividade**
+  - [ ] Optional content groups (layers)
+  - [ ] Embedded files
+  - [ ] Markup annotations
+
+---
+
+## v3.5.0 - PDF 1.7 Complete Support 📋
 
 **Status:** Planned
 **Target:** Q2 2027
 
 ### Objetivo
-Suporte completo ao PDF 1.7 (ISO 32000-1:2008), incluindo AES-256 e features avancadas.
+Implementacao completa da especificacao PDF 1.7 (ISO 32000-1:2008), padrao mais usado atualmente.
 
-### PDF 1.7 Features
+---
+
+### 1. Seguranca Avancada (AES-256)
 
 | Feature | Status | Prioridade | Descricao |
 |---------|--------|------------|-----------|
-| **AES-256 Encryption** | 📋 Planned | Alta | Criptografia forte (PDF 1.7 ExtensionLevel 3) |
-| **Unicode Passwords** | 📋 Planned | Alta | Senhas UTF-8 (SASLprep) |
-| **SHA-256 Hashing** | 📋 Planned | Alta | Substituir MD5 por SHA-256 |
+| **AES-256 Encryption** | 📋 Planned | Alta | Criptografia forte |
+| **SHA-256 Key Derivation** | 📋 Planned | Alta | Substituir MD5 |
+| **Unicode Passwords** | 📋 Planned | Alta | Senhas UTF-8 |
 | **Extension Levels** | 📋 Planned | Media | /Extensions dictionary |
-| **XFA Forms** | 💡 Proposed | Baixa | Adobe XML Forms |
 
-### AES-256 Implementation (PDF 1.7 ExtensionLevel 3)
-
-```sql
--- Encryption Dictionary AES-256
+#### Encryption Dictionary (V=5, R=5)
+```
 /Encrypt <<
   /Filter /Standard
-  /V 5                    % Version 5 = AES-256
-  /R 5                    % Revision 5
-  /Length 256             % Key length in bits
+  /V 5
+  /R 5
+  /Length 256
   /CF <<
     /StdCF <<
-      /CFM /AESV3         % AES-256
+      /CFM /AESV3
       /AuthEvent /DocOpen
       /Length 32
     >>
   >>
   /StmF /StdCF
   /StrF /StdCF
-  /O (48 bytes)           % Owner hash
-  /U (48 bytes)           % User hash
-  /OE (32 bytes)          % Owner encryption key
-  /UE (32 bytes)          % User encryption key
-  /Perms (16 bytes)       % Encrypted permissions
-  /P -3904
+  /O (48 bytes)
+  /U (48 bytes)
+  /OE (32 bytes)            % Encrypted owner key
+  /UE (32 bytes)            % Encrypted user key
+  /Perms (16 bytes)         % Encrypted permissions
+  /P permissions
 >>
 ```
 
-### Algoritmos AES-256 (PDF 1.7 ExtensionLevel 3)
-
+#### Extension Level para AES-256
 ```
-Algorithm 2.A: Computing encryption key (AES-256)
-1. Generate random 32-byte file encryption key
-2. Compute U = SHA-256(password || User Validation Salt)
-3. Compute UE = AES-256-CBC(file_key, SHA-256(password || User Key Salt))
-4. Similar for O and OE with owner password
-
-Algorithm 2.B: Password validation (AES-256)
-1. Compute hash = SHA-256(password || Validation Salt || U)
-2. Compare with first 32 bytes of U
-3. If match, decrypt UE with SHA-256(password || Key Salt) to get file key
+/Extensions <<
+  /ADBE <<
+    /BaseVersion /1.7
+    /ExtensionLevel 3
+  >>
+>>
 ```
-
-### TODO Tecnico
-
-- [ ] **Fase 1: SHA-256 Integration**
-  - [ ] DBMS_CRYPTO.HASH com HASH_SH256
-  - [ ] Substituir MD5 em key derivation
-  - [ ] 32-byte validation/key salts
-
-- [ ] **Fase 2: AES-256 CBC**
-  - [ ] DBMS_CRYPTO.ENCRYPT com AES256_CBC_PKCS5
-  - [ ] 32-byte encryption keys
-  - [ ] 16-byte IV (mesmo que AES-128)
-
-- [ ] **Fase 3: Unicode Passwords**
-  - [ ] SASLprep normalization (RFC 4013)
-  - [ ] UTF-8 encoding
-  - [ ] Max 127 bytes
-
-- [ ] **Fase 4: Extension Level**
-  - [ ] /Extensions << /ADBE << /BaseVersion /1.7 /ExtensionLevel 3 >> >>
-  - [ ] Compatibilidade com leitores
-
-### Comparativo de Seguranca
-
-| Versao | Encryption | Key | Hash | Seguranca |
-|--------|------------|-----|------|-----------|
-| PDF 1.4 | RC4-128 | 128-bit | MD5 | ⚠️ Fraco |
-| PDF 1.5 | AES-128 | 128-bit | MD5 | ✅ Bom |
-| PDF 1.7 Ext3 | AES-256 | 256-bit | SHA-256 | ✅✅ Forte |
-| PDF 2.0 | AES-256 | 256-bit | SHA-256/384/512 | ✅✅✅ Muito Forte |
 
 ---
 
-## v3.6.0 - PDF 2.0 Support 💡
+### 2. Formularios Avancados
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AcroForms** | 📋 Planned | Alta | Formularios interativos |
+| **Field Types** | 📋 Planned | Alta | Text, Button, Choice, Signature |
+| **JavaScript Actions** | 💡 Proposed | Baixa | Acoes em campos |
+| **Field Validation** | 📋 Planned | Media | Validacao de entrada |
+
+#### AcroForm Structure
+```
+/AcroForm <<
+  /Fields [
+    <<
+      /Type /Annot
+      /Subtype /Widget
+      /FT /Tx                % Text field
+      /T (nome)              % Field name
+      /V (valor)             % Current value
+      /Rect [100 700 300 720]
+      /F 4                   % Flags
+    >>
+    <<
+      /FT /Btn               % Button/Checkbox
+      /T (aceito)
+      /V /Yes
+    >>
+    <<
+      /FT /Ch                % Choice (dropdown/list)
+      /T (estado)
+      /Opt [(SP) (RJ) (MG)]
+      /V (SP)
+    >>
+  ]
+  /NeedAppearances true
+  /SigFlags 3
+>>
+```
+
+#### API Proposta - Forms
+```sql
+-- Criar formulario
+PL_FPDF.BeginForm();
+
+-- Campo de texto
+PL_FPDF.AddTextField(
+  p_name     => 'nome',
+  p_x        => 50,
+  p_y        => 100,
+  p_width    => 150,
+  p_height   => 20,
+  p_default  => '',
+  p_required => TRUE
+);
+
+-- Checkbox
+PL_FPDF.AddCheckbox(
+  p_name    => 'aceito_termos',
+  p_x       => 50,
+  p_y       => 130,
+  p_checked => FALSE
+);
+
+-- Dropdown
+PL_FPDF.AddDropdown(
+  p_name    => 'estado',
+  p_x       => 50,
+  p_y       => 160,
+  p_options => JSON_ARRAY_T('["SP","RJ","MG","RS"]'),
+  p_default => 'SP'
+);
+
+-- Campo de assinatura
+PL_FPDF.AddSignatureField(
+  p_name   => 'assinatura',
+  p_x      => 50,
+  p_y      => 200,
+  p_width  => 200,
+  p_height => 50
+);
+
+PL_FPDF.EndForm();
+```
+
+---
+
+### 3. Anotacoes Avancadas
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Text Annotations** | 📋 Planned | Alta | Notas/comentarios |
+| **Link Annotations** | 📋 Planned | Alta | Hyperlinks internos/externos |
+| **File Attachment** | 📋 Planned | Media | Anexar arquivos |
+| **Stamp Annotations** | 💡 Proposed | Baixa | Carimbos predefinidos |
+| **Redaction** | 💡 Proposed | Baixa | Remocao segura de conteudo |
+
+#### Annotation Types
+```
+% Text annotation (sticky note)
+<<
+  /Type /Annot
+  /Subtype /Text
+  /Rect [100 700 120 720]
+  /Contents (Comentario aqui)
+  /Open false
+  /Name /Comment
+>>
+
+% Link annotation
+<<
+  /Type /Annot
+  /Subtype /Link
+  /Rect [100 600 200 620]
+  /A <<
+    /Type /Action
+    /S /URI
+    /URI (https://example.com)
+  >>
+>>
+
+% File attachment
+<<
+  /Type /Annot
+  /Subtype /FileAttachment
+  /Rect [100 500 120 520]
+  /FS <<
+    /Type /Filespec
+    /F (documento.pdf)
+    /EF << /F 5 0 R >>
+  >>
+>>
+```
+
+---
+
+### 4. Navegacao e Estrutura
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Bookmarks (Outlines)** | 📋 Planned | Alta | Indice navegavel |
+| **Named Destinations** | 📋 Planned | Alta | Destinos nomeados |
+| **Page Labels** | 📋 Planned | Media | Numeracao customizada |
+| **Article Threads** | 💡 Proposed | Baixa | Fluxo de leitura |
+
+#### Bookmark Structure
+```
+/Outlines <<
+  /Type /Outlines
+  /Count 3
+  /First 10 0 R
+  /Last 12 0 R
+>>
+
+10 0 obj <<
+  /Title (Capitulo 1)
+  /Parent 9 0 R
+  /Next 11 0 R
+  /Dest [1 0 R /XYZ 0 800 0]
+  /Count 2
+  /First 13 0 R
+>>
+```
+
+#### API Proposta - Navegacao
+```sql
+-- Adicionar bookmark
+l_bm1 := PL_FPDF.AddBookmark('Capitulo 1', p_page => 1);
+l_bm2 := PL_FPDF.AddBookmark('Secao 1.1', p_page => 2, p_parent => l_bm1);
+l_bm3 := PL_FPDF.AddBookmark('Capitulo 2', p_page => 10);
+
+-- Named destination
+PL_FPDF.AddDestination('intro', p_page => 1, p_y => 700);
+
+-- Link para destino
+PL_FPDF.AddInternalLink(50, 100, 100, 20, 'intro');
+
+-- Page labels
+PL_FPDF.SetPageLabels(JSON_OBJECT_T('{
+  "1": {"style": "r", "prefix": ""},
+  "5": {"style": "D", "prefix": "", "start": 1}
+}'));
+-- Paginas 1-4: i, ii, iii, iv
+-- Paginas 5+: 1, 2, 3...
+```
+
+---
+
+### 5. Multimedia
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Rich Media** | 💡 Proposed | Baixa | Video/Audio embedded |
+| **3D Content** | 💡 Proposed | Baixa | Modelos 3D (U3D, PRC) |
+| **Screen Annotations** | 💡 Proposed | Baixa | Players multimedia |
+
+---
+
+### 6. Transparencia Avancada
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Transparency Groups** | 📋 Planned | Media | Grupos de transparencia |
+| **Knockout Groups** | 📋 Planned | Media | Knockout behavior |
+| **Isolated Groups** | 📋 Planned | Media | Grupos isolados |
+| **Spot Colors** | 💡 Proposed | Baixa | Cores especiais |
+
+---
+
+### TODO Implementacao v3.5.0
+
+- [ ] **Sprint 1: AES-256**
+  - [ ] SHA-256 key derivation
+  - [ ] AES-256-CBC encryption
+  - [ ] Unicode password support
+
+- [ ] **Sprint 2: AcroForms**
+  - [ ] Text fields
+  - [ ] Checkboxes and radio buttons
+  - [ ] Dropdowns and list boxes
+  - [ ] Signature fields
+
+- [ ] **Sprint 3: Bookmarks**
+  - [ ] Outline tree structure
+  - [ ] Named destinations
+  - [ ] Page labels
+
+- [ ] **Sprint 4: Annotations**
+  - [ ] Text annotations
+  - [ ] Link annotations
+  - [ ] File attachments
+
+- [ ] **Sprint 5: Transparency**
+  - [ ] Transparency groups
+  - [ ] Isolated/knockout groups
+
+---
+
+## v3.6.0 - PDF 2.0 Complete Support 💡
 
 **Status:** Proposed
-**Target:** Q3 2027
+**Target:** Q3-Q4 2027
 
 ### Objetivo
-Suporte ao PDF 2.0 (ISO 32000-2:2020), a versao mais recente do padrao PDF.
+Implementacao da especificacao PDF 2.0 (ISO 32000-2:2020), a versao mais atual do padrao.
 
-### PDF 2.0 Novidades
+---
+
+### 1. Mudancas Estruturais
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Header Simplificado** | 💡 Proposed | Alta | %PDF-2.0 sem binary marker |
+| **Deprecations Removidas** | 💡 Proposed | Alta | Limpar features obsoletas |
+| **Document Parts** | 💡 Proposed | Media | PDFs modulares |
+| **Namespaces** | 💡 Proposed | Baixa | Extensoes padronizadas |
+
+#### Features Removidas no PDF 2.0
+- RC4 encryption (totalmente removido)
+- LZW compression (substituido por FlateDecode)
+- Standard security handler R2-R4
+- Embedded GoTo actions
+- Movie annotations
+- Sound annotations
+
+---
+
+### 2. Seguranca PDF 2.0
 
 | Feature | Status | Prioridade | Descricao |
 |---------|--------|------------|-----------|
 | **AES-256 Nativo** | 💡 Proposed | Alta | Sem Extension Level |
 | **SHA-384/512** | 💡 Proposed | Alta | Hashes mais fortes |
-| **Unencrypted Wrapper** | 💡 Proposed | Media | Documento wrapper nao criptografado |
-| **Page-Level Encryption** | 💡 Proposed | Media | Criptografia por pagina |
-| **Associated Files** | 💡 Proposed | Baixa | Arquivos associados (AF) |
-| **Namespaces** | 💡 Proposed | Baixa | Namespaces para extensoes |
-| **Deprecated Removal** | 💡 Proposed | Baixa | Remover features obsoletas |
+| **Page-Level Security** | 💡 Proposed | Media | Criptografia por pagina |
+| **Unencrypted Wrapper** | 💡 Proposed | Media | Metadata nao criptografada |
 
-### Estrutura PDF 2.0
-
+#### Encryption Dictionary (V=6, R=6)
 ```
-%PDF-2.0
-% Sem mais /Extensions necessario para AES-256
-% Header mais limpo
-
 /Encrypt <<
   /Filter /Standard
-  /V 6                    % Version 6 = PDF 2.0 AES-256
-  /R 6                    % Revision 6
+  /V 6
+  /R 6
   /Length 256
-  /CF << ... >>
+  /CF << /StdCF << /CFM /AESV3 /Length 32 >> >>
+  /StmF /StdCF
+  /StrF /StdCF
   /O (48 bytes)
   /U (48 bytes)
   /OE (32 bytes)
   /UE (32 bytes)
   /Perms (16 bytes)
   /P permissions
+  /EncryptMetadata false    % Opcional: metadata nao criptografada
 >>
 ```
 
-### Mudancas Principais PDF 2.0
+---
 
-1. **Header simplificado**: `%PDF-2.0` (sem necessidade de binary marker)
-2. **AES-256 como padrao**: Sem necessidade de Extension Level
-3. **Deprecations removidas**:
-   - RC4 encryption (removido)
-   - LZW compression (removido)
-   - Standard security handler revisions 2-4
-4. **Novos objetos**:
-   - Page-level security
-   - Associated files (embedded resources)
-   - Document parts (modular PDFs)
+### 3. Acessibilidade Avancada
 
-### API Proposta
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **PDF/UA-2** | 💡 Proposed | Alta | Universal Accessibility v2 |
+| **MathML** | 💡 Proposed | Media | Formulas matematicas acessiveis |
+| **Pronunciations** | 💡 Proposed | Baixa | Guias de pronuncia |
+| **Namespaces Tags** | 💡 Proposed | Media | Tags estruturadas com namespace |
 
-```sql
--- Criar PDF 2.0 com AES-256
-PL_FPDF.fpdf();
-PL_FPDF.SetPDFVersion('2.0');
-PL_FPDF.SetEncryption('AES-256', 'user123', 'owner456');
-PL_FPDF.AddPage();
-l_pdf := PL_FPDF.Output();
-
--- Verificar versao suportada
-SELECT PL_FPDF.GetSupportedVersions() FROM DUAL;
--- Retorna: ["1.4", "1.5", "1.6", "1.7", "2.0"]
-
--- Upgrade de versao
-l_pdf := PL_FPDF.UpgradePDFVersion(l_old_pdf, '2.0');
+#### Structure Element com Namespace
+```
+/StructElem <<
+  /Type /StructElem
+  /S /mathml:math         % Tag com namespace
+  /NS /mathml
+  /K (...)
+  /Alt (x squared plus 2x)
+>>
 ```
 
-### Compatibilidade
+---
+
+### 4. Associated Files
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **AF Dictionary** | 💡 Proposed | Media | Arquivos associados estruturados |
+| **Relationship Types** | 💡 Proposed | Media | Source, Data, Alternative, etc. |
+| **MIME Types** | 💡 Proposed | Media | Tipos de arquivo padronizados |
+
+#### Associated Files Structure
+```
+/AF [<<
+  /Type /Filespec
+  /F (dados.xml)
+  /UF (dados.xml)
+  /AFRelationship /Data
+  /EF << /F 10 0 R >>
+>>]
+```
+
+#### API Proposta - Associated Files
+```sql
+-- Anexar arquivo estruturado
+PL_FPDF.AddAssociatedFile(
+  p_filename     => 'invoice.xml',
+  p_content      => l_xml_blob,
+  p_mime_type    => 'application/xml',
+  p_relationship => 'Data'           -- Source, Data, Alternative, Supplement
+);
+
+-- ZUGFeRD/Factur-X invoice
+PL_FPDF.AddAssociatedFile(
+  p_filename     => 'factur-x.xml',
+  p_content      => l_facturx_xml,
+  p_mime_type    => 'text/xml',
+  p_relationship => 'Alternative'
+);
+```
+
+---
+
+### 5. Rich Media Updates
+
+| Feature | Status | Prioridade | Descricao |
+|---------|--------|------------|-----------|
+| **Geospatial Data** | 💡 Proposed | Baixa | Dados geograficos |
+| **3D Annotations** | 💡 Proposed | Baixa | PRC format updates |
+
+---
+
+### 6. Comparativo de Versoes
+
+| Aspecto | PDF 1.4 | PDF 1.7 | PDF 2.0 |
+|---------|---------|---------|---------|
+| **Encryption** | RC4-128 | AES-256 | AES-256 only |
+| **Hash** | MD5 | SHA-256 | SHA-256/384/512 |
+| **Compression** | Flate, LZW | Flate, JBIG2 | Flate only |
+| **Forms** | AcroForms | XFA opcional | AcroForms only |
+| **Accessibility** | Basic | PDF/UA | PDF/UA-2 |
+| **Tamanho medio** | 100% | 80-90% | 70-85% |
+
+---
+
+### 7. Compatibilidade de Leitores
 
 | Leitor | PDF 1.4 | PDF 1.5 | PDF 1.7 | PDF 2.0 |
 |--------|---------|---------|---------|---------|
@@ -643,8 +1101,40 @@ l_pdf := PL_FPDF.UpgradePDFVersion(l_old_pdf, '2.0');
 | Chrome PDF | ✅ | ✅ | ✅ | ⚠️ |
 | Firefox PDF.js | ✅ | ✅ | ✅ | ⚠️ |
 | Preview (macOS) | ✅ | ✅ | ✅ | ✅ |
+| Sumatra PDF | ✅ | ✅ | ✅ | ⚠️ |
+| MuPDF | ✅ | ✅ | ✅ | ✅ |
 
-⚠️ = Suporte parcial (pode nao suportar todas as features)
+⚠️ = Suporte parcial
+
+---
+
+### TODO Implementacao v3.6.0
+
+- [ ] **Sprint 1: Core Updates**
+  - [ ] PDF 2.0 header generation
+  - [ ] Remove deprecated features
+  - [ ] V6/R6 encryption
+
+- [ ] **Sprint 2: Associated Files**
+  - [ ] AF dictionary
+  - [ ] Relationship types
+  - [ ] ZUGFeRD/Factur-X support
+
+- [ ] **Sprint 3: Accessibility**
+  - [ ] PDF/UA-2 compliance
+  - [ ] Namespace support
+  - [ ] MathML integration
+
+---
+
+### Comparativo de Seguranca
+
+| Versao | Encryption | Key | Hash | Nivel |
+|--------|------------|-----|------|-------|
+| PDF 1.4 | RC4-128 | 128-bit | MD5 | ⚠️ Fraco |
+| PDF 1.5 | AES-128 | 128-bit | MD5 | ✅ Bom |
+| PDF 1.7 Ext3 | AES-256 | 256-bit | SHA-256 | ✅✅ Forte |
+| PDF 2.0 | AES-256 | 256-bit | SHA-256+ | ✅✅✅ Muito Forte |
 
 ---
 
@@ -661,6 +1151,178 @@ l_pdf := PL_FPDF.UpgradePDFVersion(l_old_pdf, '2.0');
 | Hyperlinks | 💡 Proposed | Media |
 | Annotations | 💡 Proposed | Baixa |
 | Form Fields (AcroForms) | 💡 Proposed | Baixa |
+
+---
+
+## Estrategia de Migracao PDF
+
+### Analise: Pular Versoes ou Migrar Gradualmente?
+
+**Situacao Atual:** PL_FPDF gera PDF 1.4
+
+#### Opcao 1: Migracao Gradual (RECOMENDADA)
+```
+PDF 1.4 → PDF 1.5 → PDF 1.7 → PDF 2.0
+         (Skip 1.6)
+```
+
+**Por que pular PDF 1.6?**
+- PDF 1.6 nao adiciona features essenciais
+- Principais adicoes (3D, OpenType) sao baixa prioridade
+- PDF 1.5 ja inclui AES-128 e object streams
+
+#### Opcao 2: Salto Direto para PDF 1.7
+```
+PDF 1.4 → PDF 1.7 → PDF 2.0
+```
+
+**Vantagens:**
+- Menos releases
+- AES-256 diretamente
+
+**Desvantagens:**
+- Maior complexidade por release
+- Mais tempo ate primeira entrega de AES
+
+---
+
+### Roadmap de Migracao Recomendado
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    ESTRATEGIA DE MIGRACAO                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  PDF 1.4 (Atual)                                               │
+│     │                                                           │
+│     │  v3.2.0 - Security (RC4-128) ✅                          │
+│     │  - Password protection                                    │
+│     │  - Permission controls                                    │
+│     │                                                           │
+│     ▼                                                           │
+│  PDF 1.5 ─────────────────────────────────────────────────────  │
+│     │  v3.4.0 - PDF 1.5/1.6 Support                            │
+│     │  Prioridade: ALTA                                         │
+│     │  Features criticas:                                       │
+│     │  ✓ AES-128 encryption (substituir RC4)                   │
+│     │  ✓ Object streams (reducao 30% tamanho)                  │
+│     │  ✓ Cross-reference streams                               │
+│     │  ✓ Tagged PDF basics                                      │
+│     │                                                           │
+│     ▼                                                           │
+│  PDF 1.6 (SKIP) ─────────────────────────────────────────────   │
+│     │  Nao implementar separadamente                            │
+│     │  Features de baixa prioridade:                            │
+│     │  - 3D annotations                                         │
+│     │  - OpenType fonts                                         │
+│     │  Incluir apenas se necessario em v3.4.0                  │
+│     │                                                           │
+│     ▼                                                           │
+│  PDF 1.7 ─────────────────────────────────────────────────────  │
+│     │  v3.5.0 - PDF 1.7 Support                                │
+│     │  Prioridade: ALTA                                         │
+│     │  Features criticas:                                       │
+│     │  ✓ AES-256 encryption (seguranca forte)                  │
+│     │  ✓ SHA-256 hashing                                        │
+│     │  ✓ AcroForms completos                                    │
+│     │  ✓ Bookmarks/navigation                                   │
+│     │  ✓ Extension levels                                       │
+│     │                                                           │
+│     ▼                                                           │
+│  PDF 2.0 ─────────────────────────────────────────────────────  │
+│        v3.6.0 - PDF 2.0 Support                                │
+│        Prioridade: MEDIA (futuro)                               │
+│        Features:                                                │
+│        ✓ AES-256 nativo (sem extensions)                       │
+│        ✓ Associated files (ZUGFeRD)                            │
+│        ✓ PDF/UA-2 accessibility                                 │
+│        ✓ Remover features deprecadas                           │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### Matriz de Decisao
+
+| Criterio | PDF 1.5 | PDF 1.6 | PDF 1.7 | PDF 2.0 |
+|----------|---------|---------|---------|---------|
+| **Urgencia** | Alta | Baixa | Alta | Media |
+| **Complexidade** | Media | Baixa | Alta | Alta |
+| **Valor agregado** | Alto | Baixo | Muito Alto | Alto |
+| **Compatibilidade** | 99% | 99% | 98% | 85% |
+| **Decisao** | ✅ Impl. | ⏭️ Skip | ✅ Impl. | 💡 Futuro |
+
+---
+
+### Por que cada versao?
+
+#### PDF 1.5 - IMPLEMENTAR
+- **AES-128**: RC4 esta quebrado, AES e obrigatorio
+- **Object Streams**: Reducao de 30% no tamanho
+- **Xref Streams**: Melhor parsing e compressao
+- **Tagged PDF**: Base para acessibilidade
+
+#### PDF 1.6 - PULAR
+- **3D Annotations**: Nicho muito especifico
+- **OpenType**: TrueType ja atende 99% dos casos
+- **Embedding files**: Ja disponivel em 1.5
+
+#### PDF 1.7 - IMPLEMENTAR
+- **AES-256**: Padrao de seguranca atual
+- **SHA-256**: MD5 esta obsoleto
+- **AcroForms**: Muito solicitado por usuarios
+- **Bookmarks**: Navegacao essencial
+
+#### PDF 2.0 - FUTURO
+- **Baixa compatibilidade**: 15% dos viewers nao suportam
+- **RC4 removido**: Precisamos manter fallback
+- **ZUGFeRD**: Importante para faturas eletronicas EU
+
+---
+
+### Cronograma Sugerido
+
+| Versao | Release | PDF Version | Principais Features |
+|--------|---------|-------------|---------------------|
+| v3.2.0 | Q1 2026 | 1.4 | RC4-128, Passwords |
+| v3.3.0 | Q2 2026 | 1.4 | HTML to PDF |
+| v3.4.0 | Q1 2027 | 1.5 | AES-128, ObjStm, Tagged |
+| v3.5.0 | Q2 2027 | 1.7 | AES-256, Forms, Bookmarks |
+| v3.6.0 | Q4 2027 | 2.0 | Full 2.0, ZUGFeRD |
+
+---
+
+### Retrocompatibilidade
+
+```sql
+-- Default: PDF 1.4 (compativel com tudo)
+PL_FPDF.fpdf();  -- Gera PDF 1.4
+
+-- Especificar versao
+PL_FPDF.fpdf();
+PL_FPDF.SetPDFVersion('1.7');  -- Gera PDF 1.7
+
+-- Auto-upgrade por feature
+PL_FPDF.fpdf();
+PL_FPDF.SetEncryption('AES-256', 'pass');  -- Auto: PDF 1.7
+PL_FPDF.SetTagged(TRUE);                   -- Requer: PDF 1.5+
+
+-- Verificar versao minima
+l_min := PL_FPDF.GetMinimumVersion();  -- Retorna versao minima necessaria
+```
+
+---
+
+### Beneficios por Versao
+
+| Beneficio | 1.4 | 1.5 | 1.7 | 2.0 |
+|-----------|-----|-----|-----|-----|
+| Tamanho arquivo | 100% | 70% | 70% | 65% |
+| Seguranca | ⚠️ | ✅ | ✅✅ | ✅✅✅ |
+| Acessibilidade | ❌ | ✅ | ✅✅ | ✅✅✅ |
+| Forms | ❌ | ❌ | ✅✅ | ✅✅ |
+| Compatibilidade | 100% | 99% | 98% | 85% |
 
 ---
 
