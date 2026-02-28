@@ -1714,12 +1714,51 @@ FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T;
 *   PL_FPDF.SetEncryption('AES-128', 'user123', 'owner456');
 *   PL_FPDF.AddPage();
 *   l_pdf := PL_FPDF.Output();
+*
+* PDF Version Mapping / Mapeamento de Versão:
+*   RC4-40/RC4-128 -> PDF 1.4
+*   AES-128 -> PDF 1.5
+*   AES-256 -> PDF 1.7
 *******************************************************************************/
 PROCEDURE SetEncryption(
   p_encryption IN VARCHAR2,
   p_user_password IN VARCHAR2,
   p_owner_password IN VARCHAR2 DEFAULT NULL
 );
+
+/*******************************************************************************
+* Procedure: SetPDFVersion / Definir Versão PDF
+*
+* Description / Descrição:
+*   EN: Set the PDF version for generated documents
+*   PT: Definir a versão do PDF para documentos gerados
+*
+* Parameters / Parâmetros:
+*   p_version - PDF version: '1.4', '1.5', '1.6', '1.7', '2.0'
+*
+* Version Features / Recursos por Versão:
+*   1.4: RC4 128-bit encryption, transparency
+*   1.5: AES 128-bit, object streams, cross-reference streams
+*   1.6: AES 128-bit, OpenType fonts
+*   1.7: AES 256-bit, XFA forms
+*   2.0: AES 256-bit only, no RC4
+*
+* Example / Exemplo:
+*   PL_FPDF.SetPDFVersion('1.5');
+*******************************************************************************/
+PROCEDURE SetPDFVersion(p_version IN VARCHAR2);
+
+/*******************************************************************************
+* Function: GetPDFVersion / Obter Versão PDF
+*
+* Description / Descrição:
+*   EN: Get the current PDF version setting
+*   PT: Obter a configuração atual de versão do PDF
+*
+* Returns / Retorna:
+*   VARCHAR2 - Current PDF version (e.g., '1.4')
+*******************************************************************************/
+FUNCTION GetPDFVersion RETURN VARCHAR2;
 
 /*******************************************************************************
 * Procedure: SetPermissions / Definir Permissões

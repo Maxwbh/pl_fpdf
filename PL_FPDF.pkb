@@ -8131,6 +8131,10 @@ END GetSecurityInfo;
 
 /*******************************************************************************
 * SetEncryption: Set encryption for PDF being generated
+* Also sets appropriate PDF version based on encryption method:
+*   - RC4-40/RC4-128: PDF 1.4
+*   - AES-128: PDF 1.5
+*   - AES-256: PDF 1.7
 *******************************************************************************/
 PROCEDURE SetEncryption(
   p_encryption IN VARCHAR2,
@@ -8148,8 +8152,56 @@ BEGIN
   g_encrypt_method := p_encryption;
   g_user_password := p_user_password;
   g_owner_password := NVL(p_owner_password, p_user_password);
-  log_message(3, 'Encryption set: ' || p_encryption);
+
+  -- Set PDF version based on encryption method
+  CASE p_encryption
+    WHEN 'RC4-40' THEN PDFVersion := '1.4';   -- Minimum for security
+    WHEN 'RC4-128' THEN PDFVersion := '1.4';  -- PDF 1.4 standard
+    WHEN 'AES-128' THEN PDFVersion := '1.5';  -- Requires PDF 1.5+
+    WHEN 'AES-256' THEN PDFVersion := '1.7';  -- Requires PDF 1.7+
+  END CASE;
+
+  log_message(3, 'Encryption set: ' || p_encryption || ', PDF version: ' || PDFVersion);
 END SetEncryption;
+
+/*******************************************************************************
+* SetPDFVersion: Set PDF version for generated documents
+*******************************************************************************/
+PROCEDURE SetPDFVersion(p_version IN VARCHAR2) IS
+BEGIN
+  IF p_version NOT IN ('1.4', '1.5', '1.6', '1.7', '2.0') THEN
+    RAISE_APPLICATION_ERROR(-20857, 'Invalid PDF version: ' || p_version ||
+      '. Valid versions: 1.4, 1.5, 1.6, 1.7, 2.0');
+  END IF;
+
+  -- Validate encryption compatibility
+  IF g_encrypt_method IS NOT NULL THEN
+    CASE g_encrypt_method
+      WHEN 'AES-128' THEN
+        IF p_version < '1.5' THEN
+          RAISE_APPLICATION_ERROR(-20858,
+            'AES-128 encryption requires PDF 1.5 or higher');
+        END IF;
+      WHEN 'AES-256' THEN
+        IF p_version < '1.7' THEN
+          RAISE_APPLICATION_ERROR(-20858,
+            'AES-256 encryption requires PDF 1.7 or higher');
+        END IF;
+      ELSE NULL;
+    END CASE;
+  END IF;
+
+  PDFVersion := p_version;
+  log_message(3, 'PDF version set to: ' || p_version);
+END SetPDFVersion;
+
+/*******************************************************************************
+* GetPDFVersion: Get current PDF version setting
+*******************************************************************************/
+FUNCTION GetPDFVersion RETURN VARCHAR2 IS
+BEGIN
+  RETURN NVL(PDFVersion, '1.4');
+END GetPDFVersion;
 
 /*******************************************************************************
 * SetPermissions: Set document permissions

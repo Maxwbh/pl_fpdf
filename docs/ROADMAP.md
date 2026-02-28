@@ -113,23 +113,24 @@ l_result := PL_FPDF.OutputModifiedPDF();
 
 ## v3.2.0 - Security 📋
 
-**Status:** Planned
+**Status:** In Progress 🚧
 **Target:** Q3 2026
 
 ### Objetivo
 Adicionar criptografia e protecao por senha a PDFs, seguindo especificacoes PDF 1.4-2.0.
 
-### Features Planejadas
+### Features
 
 | Feature | Status | Prioridade | Descricao |
 |---------|--------|------------|-----------|
-| **Password Protection** | 📋 Planned | Alta | Senha de usuario e owner |
-| **RC4 40-bit** | 📋 Planned | Alta | Criptografia legada (PDF 1.1-1.3) |
-| **RC4 128-bit** | 📋 Planned | Alta | Criptografia padrao (PDF 1.4) |
+| **Password Protection** | ✅ Done | Alta | Senha de usuario e owner |
+| **RC4 40-bit** | ✅ Done | Alta | Criptografia legada (PDF 1.4) |
+| **RC4 128-bit** | ✅ Done | Alta | Criptografia padrao (PDF 1.4) |
 | **AES 128-bit** | 📋 Planned | Alta | Criptografia moderna (PDF 1.5) |
-| **AES 256-bit** | 💡 Proposed | Media | Criptografia avancada (PDF 2.0) |
-| **Permission Controls** | 📋 Planned | Alta | Controle de impressao/copia/edicao |
-| **PDF Decryption** | 📋 Planned | Alta | Remover protecao com senha |
+| **AES 256-bit** | 📋 Planned | Media | Criptografia avancada (PDF 1.7) |
+| **Permission Controls** | ✅ Done | Alta | Controle de impressao/copia/edicao |
+| **PDF Decryption** | 🚧 Partial | Alta | Remover protecao com senha |
+| **PDF Version Control** | ✅ Done | Alta | SetPDFVersion, GetPDFVersion |
 
 ### API Proposta
 
@@ -179,46 +180,44 @@ l_pdf := PL_FPDF.Output();
 
 ### Implementacao TODO
 
-- [ ] **Fase 1: Infraestrutura Criptografica**
-  - [ ] Implementar MD5 em PL/SQL puro (para RC4 key derivation)
-  - [ ] Implementar SHA-256 em PL/SQL puro (para AES key derivation)
-  - [ ] Implementar RC4 cipher em PL/SQL
-  - [ ] Implementar AES cipher em PL/SQL (ou usar DBMS_CRYPTO)
-  - [ ] Key derivation conforme PDF spec (Algorithm 2)
+- [x] **Fase 1: Infraestrutura Criptografica** ✅
+  - [x] Usar DBMS_CRYPTO (MD5, RC4)
+  - [x] Key derivation conforme PDF spec (Algorithm 2, 3, 4, 5)
+  - [x] Compute O value (owner hash)
+  - [x] Compute U value (user hash)
 
-- [ ] **Fase 2: RC4 Encryption (PDF 1.4)**
-  - [ ] RC4 40-bit encryption
-  - [ ] RC4 128-bit encryption
-  - [ ] Encryption dictionary (/Encrypt)
-  - [ ] String encryption
-  - [ ] Stream encryption
-  - [ ] Object encryption
+- [x] **Fase 2: RC4 Encryption (PDF 1.4)** ✅
+  - [x] RC4 40-bit encryption
+  - [x] RC4 128-bit encryption
+  - [x] EncryptPDF() function
+  - [x] SetEncryption() procedure
 
 - [ ] **Fase 3: AES Encryption (PDF 1.5+)**
   - [ ] AES 128-bit CBC mode
-  - [ ] AES 256-bit CBC mode (PDF 2.0)
+  - [ ] AES 256-bit CBC mode (PDF 1.7)
   - [ ] Initialization vectors (IV)
   - [ ] Padding (PKCS#7)
 
-- [ ] **Fase 4: Password Management**
-  - [ ] User password (abrir documento)
-  - [ ] Owner password (permissoes completas)
-  - [ ] Password validation
-  - [ ] Empty password handling
+- [x] **Fase 4: Password Management** ✅
+  - [x] User password (abrir documento)
+  - [x] Owner password (permissoes completas)
+  - [x] Password validation
+  - [x] SetPDFVersion() - versao automatica por encryption
 
-- [ ] **Fase 5: Permission Controls**
-  - [ ] Print permission (bit 3)
-  - [ ] Modify permission (bit 4)
-  - [ ] Copy permission (bit 5)
-  - [ ] Annotate permission (bit 6)
-  - [ ] Fill forms permission (bit 9)
-  - [ ] Extract permission (bit 10)
-  - [ ] Assemble permission (bit 11)
-  - [ ] Print high quality (bit 12)
+- [x] **Fase 5: Permission Controls** ✅
+  - [x] Print permission (bit 3)
+  - [x] Modify permission (bit 4)
+  - [x] Copy permission (bit 5)
+  - [x] Annotate permission (bit 6)
+  - [x] Fill forms permission (bit 9)
+  - [x] Extract permission (bit 10)
+  - [x] Assemble permission (bit 11)
+  - [x] Print high quality (bit 12)
+  - [x] SetPermissions() procedure
 
-- [ ] **Fase 6: Decryption**
-  - [ ] Detectar PDF criptografado
-  - [ ] Identificar metodo de criptografia
+- [x] **Fase 6: Decryption** (Parcial)
+  - [x] IsEncrypted() - Detectar PDF criptografado
+  - [x] GetSecurityInfo() - Identificar metodo de criptografia
   - [ ] Validar senha
   - [ ] Descriptografar objetos
   - [ ] Remover encryption dictionary
