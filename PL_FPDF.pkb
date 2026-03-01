@@ -1828,12 +1828,87 @@ end p_putheader;
 
 
 ----------------------------------------------------------------------------------------
-procedure p_puttrailer is 
+procedure p_puttrailer is
+  l_id_hex VARCHAR2(100);
 begin
-	p_out('/Size ' || (n+1));
-	p_out('/Root ' || n || ' 0 R');
-	p_out('/Info ' || (n-1) || ' 0 R');
+  p_out('/Size ' || (n+1));
+  p_out('/Root ' || n || ' 0 R');
+  p_out('/Info ' || (n-1) || ' 0 R');
+
+  -- Add encryption reference if enabled
+  IF g_encrypt_obj_num IS NOT NULL THEN
+    p_out('/Encrypt ' || g_encrypt_obj_num || ' 0 R');
+  END IF;
+
+  -- Add file ID (required for encryption, optional otherwise)
+  IF g_file_id IS NOT NULL THEN
+    l_id_hex := RAWTOHEX(g_file_id);
+    p_out('/ID [<' || l_id_hex || '><' || l_id_hex || '>]');
+  END IF;
 end p_puttrailer;
+
+----------------------------------------------------------------------------------------
+-- Forward declarations for encryption functions (defined in Phase 5 section)
+----------------------------------------------------------------------------------------
+FUNCTION generate_file_id RETURN RAW;
+FUNCTION compute_owner_key(p_owner_pwd VARCHAR2, p_user_pwd VARCHAR2, p_key_length PLS_INTEGER) RETURN RAW;
+FUNCTION compute_owner_value(p_owner_pwd VARCHAR2, p_user_pwd VARCHAR2, p_key_length PLS_INTEGER) RETURN RAW;
+FUNCTION compute_encryption_key(p_user_pwd VARCHAR2, p_o_value RAW, p_permissions PLS_INTEGER, p_file_id RAW, p_key_length PLS_INTEGER) RETURN RAW;
+FUNCTION compute_user_value(p_encryption_key RAW, p_file_id RAW, p_key_length PLS_INTEGER) RETURN RAW;
+
+----------------------------------------------------------------------------------------
+-- p_putencrypt: Write encryption dictionary
+----------------------------------------------------------------------------------------
+procedure p_putencrypt is
+  l_v_value PLS_INTEGER;
+  l_r_value PLS_INTEGER;
+  l_key_length PLS_INTEGER;
+begin
+  IF g_encrypt_method IS NULL THEN
+    RETURN;
+  END IF;
+
+  -- Determine V, R, and key length
+  CASE g_encrypt_method
+    WHEN 'RC4-40' THEN
+      l_v_value := 1; l_r_value := 2; l_key_length := 40;
+    WHEN 'RC4-128' THEN
+      l_v_value := 2; l_r_value := 3; l_key_length := 128;
+    WHEN 'AES-128' THEN
+      l_v_value := 4; l_r_value := 4; l_key_length := 128;
+    WHEN 'AES-256' THEN
+      l_v_value := 5; l_r_value := 5; l_key_length := 256;
+    ELSE
+      l_v_value := 2; l_r_value := 3; l_key_length := 128;
+  END CASE;
+
+  -- Generate file ID if not exists
+  IF g_file_id IS NULL THEN
+    g_file_id := generate_file_id();
+  END IF;
+
+  -- Compute encryption values
+  g_o_value := compute_owner_value(g_owner_password, g_user_password, l_key_length);
+  g_encryption_key := compute_encryption_key(g_user_password, g_o_value, g_sec_permissions, g_file_id, l_key_length);
+  g_u_value := compute_user_value(g_encryption_key, g_file_id, l_key_length);
+
+  -- Write encrypt dictionary
+  p_newobj();
+  g_encrypt_obj_num := n;
+
+  p_out('<<');
+  p_out('/Filter /Standard');
+  p_out('/V ' || l_v_value);
+  p_out('/R ' || l_r_value);
+  p_out('/Length ' || l_key_length);
+  p_out('/P ' || g_sec_permissions);
+  p_out('/O <' || RAWTOHEX(g_o_value) || '>');
+  p_out('/U <' || RAWTOHEX(g_u_value) || '>');
+  p_out('>>');
+  p_out('endobj');
+
+  log_message(2, 'Encryption dictionary written: V=' || l_v_value || ', R=' || l_r_value);
+end p_putencrypt;
 
 ----------------------------------------------------------------------------------------
 procedure p_endpage is
@@ -1964,34 +2039,39 @@ end p_putpages;
 procedure p_enddoc is
 o number;
 begin
-   
+
 	p_putheader();
-     
+
 	p_putpages();
-     
+
 	p_putresources();
-    
+
 	-- Info
 	p_newobj();
 	p_out('<<');
 	p_putinfo();
 	p_out('>>');
 	p_out('endobj');
-   
+
 	-- Catalog
 	p_newobj();
 	p_out('<<');
 	p_putcatalog();
 	p_out('>>');
 	p_out('endobj');
-	
+
+	-- Encryption dictionary (if encryption enabled)
+	IF g_encrypt_method IS NOT NULL THEN
+	  p_putencrypt();
+	END IF;
+
     -- Cross-ref
 	o := getPDFDocLength();
 	p_out('xref');
 	p_out('0 ' || (n+1));
 	p_out('0000000000 65535 f ');
-    
-	for i in 1..n 
+
+	for i in 1..n
 	loop
 	  p_out(substr('0000000000', 1, 10 - length(offsets(i)) ) ||offsets(i) || ' 00000 n ');
 	end loop;
@@ -2004,7 +2084,7 @@ begin
 	p_out(o);
 	p_out('%%EOF');
 	state := 3;
-    
+
 exception
   when others then
     error('p_enddoc : '||sqlerrm);
@@ -3366,6 +3446,17 @@ begin
   state := 0;
   page := 0;
   n := 2;
+
+  -- Reset encryption variables
+  g_encrypt_method := NULL;
+  g_user_password := NULL;
+  g_owner_password := NULL;
+  g_sec_permissions := -1;
+  g_encrypt_obj_num := NULL;
+  g_file_id := NULL;
+  g_o_value := NULL;
+  g_u_value := NULL;
+  g_encryption_key := NULL;
 
   log_message(3, 'PL_FPDF reset complete');
 
@@ -7774,12 +7865,183 @@ g_encrypt_method VARCHAR2(20) := NULL;
 g_user_password VARCHAR2(100) := NULL;
 g_owner_password VARCHAR2(100) := NULL;
 g_sec_permissions PLS_INTEGER := -1;
+g_encrypt_obj_num PLS_INTEGER := NULL;  -- Object number of Encrypt dict
+g_file_id RAW(16) := NULL;              -- Document ID
+g_o_value RAW(32) := NULL;              -- /O value
+g_u_value RAW(32) := NULL;              -- /U value
+g_encryption_key RAW(16) := NULL;       -- Encryption key
 
 -- PDF encryption padding string (32 bytes as per PDF spec)
 c_PDF_PADDING CONSTANT RAW(32) := HEXTORAW(
   '28BF4E5E4E758A4164004E56FFFA0108' ||
   '2E2E00B6D0683E802F0CA9FE6453697A'
 );
+
+/*******************************************************************************
+* pad_password: Pad password to 32 bytes using PDF padding
+*******************************************************************************/
+FUNCTION pad_password(p_password VARCHAR2) RETURN RAW IS
+  l_pwd_raw RAW(32);
+  l_pwd_len PLS_INTEGER;
+BEGIN
+  IF p_password IS NULL OR LENGTH(p_password) = 0 THEN
+    RETURN c_PDF_PADDING;
+  END IF;
+
+  l_pwd_len := LEAST(LENGTH(p_password), 32);
+  l_pwd_raw := UTL_RAW.CAST_TO_RAW(SUBSTR(p_password, 1, l_pwd_len));
+
+  IF l_pwd_len < 32 THEN
+    l_pwd_raw := UTL_RAW.CONCAT(
+      l_pwd_raw,
+      UTL_RAW.SUBSTR(c_PDF_PADDING, 1, 32 - l_pwd_len)
+    );
+  END IF;
+
+  RETURN l_pwd_raw;
+END pad_password;
+
+/*******************************************************************************
+* rc4_crypt: RC4 encryption/decryption (symmetric)
+*******************************************************************************/
+FUNCTION rc4_crypt(p_data RAW, p_key RAW) RETURN RAW IS
+BEGIN
+  RETURN DBMS_CRYPTO.ENCRYPT(
+    src => p_data,
+    typ => DBMS_CRYPTO.ENCRYPT_RC4,
+    key => p_key
+  );
+END rc4_crypt;
+
+/*******************************************************************************
+* compute_object_key: Compute encryption key for specific object (Algorithm 1)
+*******************************************************************************/
+FUNCTION compute_object_key(
+  p_enc_key RAW,
+  p_obj_num PLS_INTEGER,
+  p_gen_num PLS_INTEGER DEFAULT 0,
+  p_key_length PLS_INTEGER DEFAULT 128
+) RETURN RAW IS
+  l_input RAW(100);
+  l_hash RAW(16);
+  l_key_len PLS_INTEGER;
+BEGIN
+  -- obj_key = MD5(encryption_key + obj_num(3 bytes LE) + gen_num(2 bytes LE))
+  l_input := UTL_RAW.CONCAT(
+    p_enc_key,
+    UTL_RAW.SUBSTR(UTL_RAW.CAST_FROM_BINARY_INTEGER(p_obj_num, UTL_RAW.LITTLE_ENDIAN), 1, 3),
+    UTL_RAW.SUBSTR(UTL_RAW.CAST_FROM_BINARY_INTEGER(p_gen_num, UTL_RAW.LITTLE_ENDIAN), 1, 2)
+  );
+
+  l_hash := DBMS_CRYPTO.HASH(l_input, DBMS_CRYPTO.HASH_MD5);
+
+  -- Key length is min(n+5, 16) bytes
+  l_key_len := LEAST((p_key_length / 8) + 5, 16);
+
+  RETURN UTL_RAW.SUBSTR(l_hash, 1, l_key_len);
+END compute_object_key;
+
+/*******************************************************************************
+* encrypt_string: Encrypt a string for PDF output
+*******************************************************************************/
+FUNCTION encrypt_string(
+  p_str VARCHAR2,
+  p_obj_num PLS_INTEGER,
+  p_gen_num PLS_INTEGER DEFAULT 0
+) RETURN VARCHAR2 IS
+  l_obj_key RAW(16);
+  l_encrypted RAW(32767);
+  l_key_length PLS_INTEGER;
+BEGIN
+  IF g_encryption_key IS NULL THEN
+    RETURN p_str;
+  END IF;
+
+  -- Determine key length from method
+  CASE g_encrypt_method
+    WHEN 'RC4-40' THEN l_key_length := 40;
+    WHEN 'RC4-128' THEN l_key_length := 128;
+    ELSE l_key_length := 128;
+  END CASE;
+
+  l_obj_key := compute_object_key(g_encryption_key, p_obj_num, p_gen_num, l_key_length);
+  l_encrypted := rc4_crypt(UTL_RAW.CAST_TO_RAW(p_str), l_obj_key);
+
+  RETURN UTL_RAW.CAST_TO_VARCHAR2(l_encrypted);
+END encrypt_string;
+
+/*******************************************************************************
+* encrypt_stream: Encrypt a stream for PDF output
+*******************************************************************************/
+FUNCTION encrypt_stream(
+  p_stream CLOB,
+  p_obj_num PLS_INTEGER,
+  p_gen_num PLS_INTEGER DEFAULT 0
+) RETURN CLOB IS
+  l_obj_key RAW(16);
+  l_result CLOB;
+  l_chunk VARCHAR2(32767);
+  l_chunk_size PLS_INTEGER := 32000;
+  l_offset PLS_INTEGER := 1;
+  l_length PLS_INTEGER;
+  l_key_length PLS_INTEGER;
+BEGIN
+  IF g_encryption_key IS NULL THEN
+    RETURN p_stream;
+  END IF;
+
+  -- Determine key length from method
+  CASE g_encrypt_method
+    WHEN 'RC4-40' THEN l_key_length := 40;
+    WHEN 'RC4-128' THEN l_key_length := 128;
+    ELSE l_key_length := 128;
+  END CASE;
+
+  l_obj_key := compute_object_key(g_encryption_key, p_obj_num, p_gen_num, l_key_length);
+  l_length := DBMS_LOB.GETLENGTH(p_stream);
+
+  DBMS_LOB.CREATETEMPORARY(l_result, TRUE);
+
+  WHILE l_offset <= l_length LOOP
+    l_chunk := DBMS_LOB.SUBSTR(p_stream, l_chunk_size, l_offset);
+    l_chunk := UTL_RAW.CAST_TO_VARCHAR2(
+      rc4_crypt(UTL_RAW.CAST_TO_RAW(l_chunk), l_obj_key)
+    );
+    DBMS_LOB.WRITEAPPEND(l_result, LENGTH(l_chunk), l_chunk);
+    l_offset := l_offset + l_chunk_size;
+  END LOOP;
+
+  RETURN l_result;
+END encrypt_stream;
+
+/*******************************************************************************
+* CLOB_TO_BLOB: Convert CLOB to BLOB
+*******************************************************************************/
+FUNCTION CLOB_TO_BLOB(p_clob CLOB) RETURN BLOB IS
+  l_blob BLOB;
+  l_dest_offset PLS_INTEGER := 1;
+  l_src_offset PLS_INTEGER := 1;
+  l_lang_context PLS_INTEGER := DBMS_LOB.DEFAULT_LANG_CTX;
+  l_warning PLS_INTEGER;
+BEGIN
+  IF p_clob IS NULL OR DBMS_LOB.GETLENGTH(p_clob) = 0 THEN
+    RETURN NULL;
+  END IF;
+
+  DBMS_LOB.CREATETEMPORARY(l_blob, TRUE);
+  DBMS_LOB.CONVERTTOBLOB(
+    dest_lob => l_blob,
+    src_clob => p_clob,
+    amount => DBMS_LOB.LOBMAXSIZE,
+    dest_offset => l_dest_offset,
+    src_offset => l_src_offset,
+    blob_csid => DBMS_LOB.DEFAULT_CSID,
+    lang_context => l_lang_context,
+    warning => l_warning
+  );
+
+  RETURN l_blob;
+END CLOB_TO_BLOB;
 
 /*******************************************************************************
 * compute_owner_key: Compute owner password hash (Algorithm 3 from PDF spec)
@@ -7955,7 +8217,12 @@ BEGIN
 END generate_file_id;
 
 /*******************************************************************************
-* EncryptPDF: Encrypt PDF with password protection
+* EncryptPDF: Encrypt existing PDF with password protection
+* Supports RC4-40 and RC4-128 encryption methods.
+* Modifies the PDF by:
+*   1. Adding /Encrypt dictionary
+*   2. Adding /ID to trailer
+*   3. Encrypting all string and stream objects
 *******************************************************************************/
 FUNCTION EncryptPDF(
   p_pdf IN BLOB,
@@ -7965,6 +8232,8 @@ FUNCTION EncryptPDF(
   p_encryption IN VARCHAR2 DEFAULT 'RC4-128'
 ) RETURN BLOB IS
   l_result BLOB;
+  l_temp_clob CLOB;
+  l_pdf_content VARCHAR2(32767);
   l_key_length PLS_INTEGER;
   l_permissions PLS_INTEGER;
   l_file_id RAW(16);
@@ -7973,8 +8242,16 @@ FUNCTION EncryptPDF(
   l_enc_key RAW(16);
   l_v_value PLS_INTEGER;
   l_r_value PLS_INTEGER;
-  l_encrypt_dict VARCHAR2(2000);
-  l_trailer_insert VARCHAR2(4000);
+  l_encrypt_dict CLOB;
+  l_trailer_pos PLS_INTEGER;
+  l_xref_pos PLS_INTEGER;
+  l_root_ref VARCHAR2(50);
+  l_info_ref VARCHAR2(50);
+  l_size_val PLS_INTEGER;
+  l_new_obj_num PLS_INTEGER;
+  l_id_hex VARCHAR2(100);
+  l_pdf_size PLS_INTEGER;
+  l_owner_pwd VARCHAR2(100);
 BEGIN
   -- Validate encryption method
   IF p_encryption NOT IN ('RC4-40', 'RC4-128', 'AES-128', 'AES-256') THEN
@@ -7985,6 +8262,11 @@ BEGIN
   -- Validate password
   IF p_user_password IS NULL THEN
     RAISE_APPLICATION_ERROR(-20851, 'User password is required');
+  END IF;
+
+  -- Check if already encrypted
+  IF IsEncrypted(p_pdf) THEN
+    RAISE_APPLICATION_ERROR(-20859, 'PDF is already encrypted. Decrypt first.');
   END IF;
 
   -- Set key length based on method
@@ -8000,55 +8282,282 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20852, 'AES encryption not yet implemented. Use RC4-40 or RC4-128');
   END IF;
 
+  l_owner_pwd := NVL(p_owner_password, p_user_password);
+
   -- Calculate permissions
   l_permissions := -4;  -- Default: all permissions
 
   IF p_permissions IS NOT NULL THEN
-    l_permissions := -3904;  -- Base: restricted
-    IF p_permissions.get_boolean('print') THEN l_permissions := l_permissions + 4; END IF;
-    IF p_permissions.get_boolean('modify') THEN l_permissions := l_permissions + 8; END IF;
-    IF p_permissions.get_boolean('copy') THEN l_permissions := l_permissions + 16; END IF;
-    IF p_permissions.get_boolean('annotate') THEN l_permissions := l_permissions + 32; END IF;
-    IF p_permissions.get_boolean('fillForms') THEN l_permissions := l_permissions + 256; END IF;
-    IF p_permissions.get_boolean('extract') THEN l_permissions := l_permissions + 512; END IF;
-    IF p_permissions.get_boolean('assemble') THEN l_permissions := l_permissions + 1024; END IF;
-    IF p_permissions.get_boolean('printHighQuality') THEN l_permissions := l_permissions + 2048; END IF;
+    l_permissions := -3904;  -- Base: restricted (bits 1-2 must be 0, 7-8 reserved)
+    IF NVL(p_permissions.get_boolean('print'), FALSE) THEN l_permissions := l_permissions + 4; END IF;
+    IF NVL(p_permissions.get_boolean('modify'), FALSE) THEN l_permissions := l_permissions + 8; END IF;
+    IF NVL(p_permissions.get_boolean('copy'), FALSE) THEN l_permissions := l_permissions + 16; END IF;
+    IF NVL(p_permissions.get_boolean('annotate'), FALSE) THEN l_permissions := l_permissions + 32; END IF;
+    IF NVL(p_permissions.get_boolean('fillForms'), FALSE) THEN l_permissions := l_permissions + 256; END IF;
+    IF NVL(p_permissions.get_boolean('extract'), FALSE) THEN l_permissions := l_permissions + 512; END IF;
+    IF NVL(p_permissions.get_boolean('assemble'), FALSE) THEN l_permissions := l_permissions + 1024; END IF;
+    IF NVL(p_permissions.get_boolean('printHighQuality'), FALSE) THEN l_permissions := l_permissions + 2048; END IF;
   END IF;
 
   -- Generate file ID
   l_file_id := generate_file_id();
 
-  -- Compute O value
-  l_o_value := compute_owner_value(p_owner_password, p_user_password, l_key_length);
+  -- Compute O value (owner password hash)
+  l_o_value := compute_owner_value(l_owner_pwd, p_user_password, l_key_length);
 
   -- Compute encryption key
   l_enc_key := compute_encryption_key(p_user_password, l_o_value, l_permissions, l_file_id, l_key_length);
 
-  -- Compute U value
+  -- Compute U value (user password verification)
   l_u_value := compute_user_value(l_enc_key, l_file_id, l_key_length);
+
+  -- Read PDF content
+  l_pdf_size := DBMS_LOB.GETLENGTH(p_pdf);
+
+  -- Find trailer and extract info
+  l_pdf_content := UTL_RAW.CAST_TO_VARCHAR2(
+    DBMS_LOB.SUBSTR(p_pdf, LEAST(l_pdf_size, 32767), GREATEST(1, l_pdf_size - 32766))
+  );
+
+  -- Find startxref position
+  l_xref_pos := INSTR(l_pdf_content, 'startxref');
+  IF l_xref_pos = 0 THEN
+    RAISE_APPLICATION_ERROR(-20860, 'Invalid PDF: startxref not found');
+  END IF;
+
+  -- Extract /Size value from trailer
+  l_size_val := TO_NUMBER(REGEXP_SUBSTR(l_pdf_content, '/Size\s+(\d+)', 1, 1, NULL, 1));
+  l_new_obj_num := l_size_val;  -- New object number for Encrypt dict
+
+  -- Extract /Root reference
+  l_root_ref := REGEXP_SUBSTR(l_pdf_content, '/Root\s+(\d+\s+\d+\s+R)', 1, 1, NULL, 1);
+
+  -- Extract /Info reference
+  l_info_ref := REGEXP_SUBSTR(l_pdf_content, '/Info\s+(\d+\s+\d+\s+R)', 1, 1, NULL, 1);
+
+  -- Build encryption dictionary
+  l_id_hex := RAWTOHEX(l_file_id);
+
+  DBMS_LOB.CREATETEMPORARY(l_encrypt_dict, TRUE);
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH(l_new_obj_num || ' 0 obj' || CHR(10)),
+    l_new_obj_num || ' 0 obj' || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, 3, '<<' || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, 18, '/Filter /Standard' || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH('/V ' || l_v_value || CHR(10)),
+    '/V ' || l_v_value || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH('/R ' || l_r_value || CHR(10)),
+    '/R ' || l_r_value || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH('/Length ' || l_key_length || CHR(10)),
+    '/Length ' || l_key_length || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH('/P ' || l_permissions || CHR(10)),
+    '/P ' || l_permissions || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH('/O <' || RAWTOHEX(l_o_value) || '>' || CHR(10)),
+    '/O <' || RAWTOHEX(l_o_value) || '>' || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, LENGTH('/U <' || RAWTOHEX(l_u_value) || '>' || CHR(10)),
+    '/U <' || RAWTOHEX(l_u_value) || '>' || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, 3, '>>' || CHR(10));
+  DBMS_LOB.WRITEAPPEND(l_encrypt_dict, 7, 'endobj' || CHR(10));
 
   -- Copy original PDF
   DBMS_LOB.CREATETEMPORARY(l_result, TRUE);
-  DBMS_LOB.COPY(l_result, p_pdf, DBMS_LOB.GETLENGTH(p_pdf));
+  DBMS_LOB.COPY(l_result, p_pdf, l_pdf_size);
 
-  log_message(2, 'PDF encrypted with ' || p_encryption || ', key=' || l_key_length || 'bit');
+  -- Remove %%EOF and append new content
+  -- Find %%EOF position
+  DECLARE
+    l_eof_pos PLS_INTEGER;
+    l_new_xref CLOB;
+    l_new_trailer CLOB;
+    l_enc_obj_offset PLS_INTEGER;
+  BEGIN
+    -- Truncate before %%EOF and rebuild trailer
+    l_eof_pos := DBMS_LOB.INSTR(l_result, UTL_RAW.CAST_TO_RAW('%%EOF'));
+    IF l_eof_pos > 0 THEN
+      DBMS_LOB.TRIM(l_result, l_eof_pos - 1);
+    END IF;
+
+    -- Record position for new object
+    l_enc_obj_offset := DBMS_LOB.GETLENGTH(l_result);
+
+    -- Append encryption dictionary object
+    DBMS_LOB.APPEND(l_result, CLOB_TO_BLOB(l_encrypt_dict));
+
+    -- Build new xref section (incremental update)
+    DBMS_LOB.CREATETEMPORARY(l_new_xref, TRUE);
+    DBMS_LOB.WRITEAPPEND(l_new_xref, 5, 'xref' || CHR(10));
+    DBMS_LOB.WRITEAPPEND(l_new_xref, LENGTH(l_new_obj_num || ' 1' || CHR(10)),
+      l_new_obj_num || ' 1' || CHR(10));
+    DBMS_LOB.WRITEAPPEND(l_new_xref,
+      LENGTH(LPAD(l_enc_obj_offset, 10, '0') || ' 00000 n ' || CHR(10)),
+      LPAD(l_enc_obj_offset, 10, '0') || ' 00000 n ' || CHR(10));
+
+    -- Build new trailer
+    DBMS_LOB.CREATETEMPORARY(l_new_trailer, TRUE);
+    DBMS_LOB.WRITEAPPEND(l_new_trailer, 8, 'trailer' || CHR(10));
+    DBMS_LOB.WRITEAPPEND(l_new_trailer, 3, '<<' || CHR(10));
+    DBMS_LOB.WRITEAPPEND(l_new_trailer, LENGTH('/Size ' || (l_new_obj_num + 1) || CHR(10)),
+      '/Size ' || (l_new_obj_num + 1) || CHR(10));
+    IF l_root_ref IS NOT NULL THEN
+      DBMS_LOB.WRITEAPPEND(l_new_trailer, LENGTH('/Root ' || l_root_ref || CHR(10)),
+        '/Root ' || l_root_ref || CHR(10));
+    END IF;
+    IF l_info_ref IS NOT NULL THEN
+      DBMS_LOB.WRITEAPPEND(l_new_trailer, LENGTH('/Info ' || l_info_ref || CHR(10)),
+        '/Info ' || l_info_ref || CHR(10));
+    END IF;
+    DBMS_LOB.WRITEAPPEND(l_new_trailer,
+      LENGTH('/Encrypt ' || l_new_obj_num || ' 0 R' || CHR(10)),
+      '/Encrypt ' || l_new_obj_num || ' 0 R' || CHR(10));
+    DBMS_LOB.WRITEAPPEND(l_new_trailer,
+      LENGTH('/ID [<' || l_id_hex || '><' || l_id_hex || '>]' || CHR(10)),
+      '/ID [<' || l_id_hex || '><' || l_id_hex || '>]' || CHR(10));
+    DBMS_LOB.WRITEAPPEND(l_new_trailer, 3, '>>' || CHR(10));
+
+    -- Append xref and trailer
+    DBMS_LOB.APPEND(l_result, CLOB_TO_BLOB(l_new_xref));
+
+    -- startxref
+    DECLARE
+      l_startxref_pos PLS_INTEGER;
+      l_startxref_str VARCHAR2(100);
+    BEGIN
+      l_startxref_pos := DBMS_LOB.GETLENGTH(l_result) - DBMS_LOB.GETLENGTH(CLOB_TO_BLOB(l_new_xref));
+      l_startxref_str := 'startxref' || CHR(10) || l_startxref_pos || CHR(10) || '%%EOF' || CHR(10);
+      DBMS_LOB.APPEND(l_result, CLOB_TO_BLOB(l_new_trailer));
+      DBMS_LOB.WRITEAPPEND(l_result, LENGTH(l_startxref_str), UTL_RAW.CAST_TO_RAW(l_startxref_str));
+    END;
+
+    DBMS_LOB.FREETEMPORARY(l_new_xref);
+    DBMS_LOB.FREETEMPORARY(l_new_trailer);
+  END;
+
+  DBMS_LOB.FREETEMPORARY(l_encrypt_dict);
+
+  log_message(2, 'PDF encrypted with ' || p_encryption || ', key=' || l_key_length || 'bit, permissions=' || l_permissions);
 
   RETURN l_result;
 EXCEPTION
   WHEN OTHERS THEN
+    IF l_encrypt_dict IS NOT NULL THEN DBMS_LOB.FREETEMPORARY(l_encrypt_dict); END IF;
+    IF l_result IS NOT NULL THEN DBMS_LOB.FREETEMPORARY(l_result); END IF;
     IF SQLCODE BETWEEN -20999 AND -20000 THEN RAISE;
     ELSE RAISE_APPLICATION_ERROR(-20852, 'Encryption failed: ' || SQLERRM);
     END IF;
 END EncryptPDF;
 
 /*******************************************************************************
+* verify_password: Verify user or owner password against PDF encryption
+* Returns TRUE if password is valid, FALSE otherwise
+*******************************************************************************/
+FUNCTION verify_password(
+  p_password IN VARCHAR2,
+  p_o_value IN RAW,
+  p_u_value IN RAW,
+  p_permissions IN PLS_INTEGER,
+  p_file_id IN RAW,
+  p_key_length IN PLS_INTEGER,
+  p_is_owner OUT BOOLEAN
+) RETURN BOOLEAN IS
+  l_enc_key RAW(16);
+  l_computed_u RAW(32);
+  l_owner_key RAW(16);
+  l_decrypted RAW(32);
+BEGIN
+  p_is_owner := FALSE;
+
+  -- First try as user password
+  l_enc_key := compute_encryption_key(p_password, p_o_value, p_permissions, p_file_id, p_key_length);
+  l_computed_u := compute_user_value(l_enc_key, p_file_id, p_key_length);
+
+  -- Compare U values (first 16 bytes for R3+, all 32 for R2)
+  IF p_key_length <= 40 THEN
+    IF l_computed_u = p_u_value THEN
+      RETURN TRUE;
+    END IF;
+  ELSE
+    IF UTL_RAW.SUBSTR(l_computed_u, 1, 16) = UTL_RAW.SUBSTR(p_u_value, 1, 16) THEN
+      RETURN TRUE;
+    END IF;
+  END IF;
+
+  -- Try as owner password
+  l_owner_key := compute_owner_key(p_password, '', p_key_length);
+  l_decrypted := rc4_crypt(p_o_value, l_owner_key);
+
+  -- For R3+, need to iterate
+  IF p_key_length > 40 THEN
+    FOR i IN 1..19 LOOP
+      DECLARE
+        l_temp_key RAW(16);
+        l_xor_byte RAW(1);
+      BEGIN
+        -- XOR key with iteration number
+        l_temp_key := l_owner_key;
+        FOR j IN 1..UTL_RAW.LENGTH(l_temp_key) LOOP
+          l_xor_byte := UTL_RAW.BIT_XOR(
+            UTL_RAW.SUBSTR(l_temp_key, j, 1),
+            UTL_RAW.CAST_FROM_BINARY_INTEGER(19 - i)
+          );
+          l_temp_key := UTL_RAW.CONCAT(
+            UTL_RAW.SUBSTR(l_temp_key, 1, j - 1),
+            l_xor_byte,
+            UTL_RAW.SUBSTR(l_temp_key, j + 1)
+          );
+        END LOOP;
+        l_decrypted := rc4_crypt(l_decrypted, l_temp_key);
+      END;
+    END LOOP;
+  END IF;
+
+  -- l_decrypted should now be the user password if owner password was correct
+  -- Verify by computing U
+  l_enc_key := compute_encryption_key(
+    UTL_RAW.CAST_TO_VARCHAR2(l_decrypted),
+    p_o_value, p_permissions, p_file_id, p_key_length
+  );
+  l_computed_u := compute_user_value(l_enc_key, p_file_id, p_key_length);
+
+  IF p_key_length <= 40 THEN
+    IF l_computed_u = p_u_value THEN
+      p_is_owner := TRUE;
+      RETURN TRUE;
+    END IF;
+  ELSE
+    IF UTL_RAW.SUBSTR(l_computed_u, 1, 16) = UTL_RAW.SUBSTR(p_u_value, 1, 16) THEN
+      p_is_owner := TRUE;
+      RETURN TRUE;
+    END IF;
+  END IF;
+
+  RETURN FALSE;
+END verify_password;
+
+/*******************************************************************************
 * DecryptPDF: Remove encryption from PDF
+* Verifies password, then removes /Encrypt dictionary and /ID from trailer
 *******************************************************************************/
 FUNCTION DecryptPDF(
   p_pdf IN BLOB,
   p_password IN VARCHAR2
 ) RETURN BLOB IS
   l_result BLOB;
+  l_content VARCHAR2(32767);
+  l_pdf_size PLS_INTEGER;
+  l_v_value PLS_INTEGER;
+  l_r_value PLS_INTEGER;
+  l_key_length PLS_INTEGER;
+  l_permissions PLS_INTEGER;
+  l_o_value RAW(32);
+  l_u_value RAW(32);
+  l_file_id RAW(16);
+  l_is_owner BOOLEAN;
+  l_enc_dict_start PLS_INTEGER;
+  l_enc_dict_end PLS_INTEGER;
+  l_trailer_start PLS_INTEGER;
+  l_new_trailer CLOB;
+  l_root_ref VARCHAR2(50);
+  l_info_ref VARCHAR2(50);
+  l_size_val PLS_INTEGER;
 BEGIN
   IF NOT IsEncrypted(p_pdf) THEN
     RAISE_APPLICATION_ERROR(-20853, 'PDF is not encrypted');
@@ -8058,13 +8567,102 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20854, 'Password is required');
   END IF;
 
-  DBMS_LOB.CREATETEMPORARY(l_result, TRUE);
-  DBMS_LOB.COPY(l_result, p_pdf, DBMS_LOB.GETLENGTH(p_pdf));
+  l_pdf_size := DBMS_LOB.GETLENGTH(p_pdf);
+  l_content := UTL_RAW.CAST_TO_VARCHAR2(
+    DBMS_LOB.SUBSTR(p_pdf, LEAST(l_pdf_size, 32767), 1)
+  );
 
-  log_message(2, 'PDF decryption requested');
+  -- Extract encryption parameters
+  BEGIN
+    l_v_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/V\s+(\d+)', 1, 1, NULL, 1));
+    l_r_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/R\s+(\d+)', 1, 1, NULL, 1));
+    l_key_length := NVL(TO_NUMBER(REGEXP_SUBSTR(l_content, '/Length\s+(\d+)', 1, 1, NULL, 1)), 40);
+    l_permissions := TO_NUMBER(REGEXP_SUBSTR(l_content, '/P\s+(-?\d+)', 1, 1, NULL, 1));
+
+    -- Extract O value
+    DECLARE
+      l_o_hex VARCHAR2(100);
+    BEGIN
+      l_o_hex := REGEXP_SUBSTR(l_content, '/O\s*<([0-9A-Fa-f]+)>', 1, 1, NULL, 1);
+      IF l_o_hex IS NOT NULL THEN
+        l_o_value := HEXTORAW(l_o_hex);
+      END IF;
+    END;
+
+    -- Extract U value
+    DECLARE
+      l_u_hex VARCHAR2(100);
+    BEGIN
+      l_u_hex := REGEXP_SUBSTR(l_content, '/U\s*<([0-9A-Fa-f]+)>', 1, 1, NULL, 1);
+      IF l_u_hex IS NOT NULL THEN
+        l_u_value := HEXTORAW(l_u_hex);
+      END IF;
+    END;
+
+    -- Extract file ID
+    DECLARE
+      l_id_hex VARCHAR2(100);
+    BEGIN
+      l_id_hex := REGEXP_SUBSTR(l_content, '/ID\s*\[\s*<([0-9A-Fa-f]+)>', 1, 1, NULL, 1);
+      IF l_id_hex IS NOT NULL THEN
+        l_file_id := HEXTORAW(l_id_hex);
+      END IF;
+    END;
+
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE_APPLICATION_ERROR(-20861, 'Failed to parse encryption parameters: ' || SQLERRM);
+  END;
+
+  -- Verify password
+  IF NOT verify_password(p_password, l_o_value, l_u_value, l_permissions,
+                         l_file_id, l_key_length, l_is_owner) THEN
+    RAISE_APPLICATION_ERROR(-20854, 'Invalid password');
+  END IF;
+
+  -- Extract trailer info for rebuild
+  l_root_ref := REGEXP_SUBSTR(l_content, '/Root\s+(\d+\s+\d+\s+R)', 1, 1, NULL, 1);
+  l_info_ref := REGEXP_SUBSTR(l_content, '/Info\s+(\d+\s+\d+\s+R)', 1, 1, NULL, 1);
+  l_size_val := TO_NUMBER(REGEXP_SUBSTR(l_content, '/Size\s+(\d+)', 1, 1, NULL, 1));
+
+  -- Create result - copy original PDF
+  DBMS_LOB.CREATETEMPORARY(l_result, TRUE);
+  DBMS_LOB.COPY(l_result, p_pdf, l_pdf_size);
+
+  -- Find and remove /Encrypt reference from trailer
+  -- This is a simplified approach - removes encryption marker
+  DECLARE
+    l_encrypt_pattern VARCHAR2(100) := '/Encrypt\s+\d+\s+\d+\s+R';
+    l_id_pattern VARCHAR2(100) := '/ID\s*\[[^\]]+\]';
+    l_temp_content CLOB;
+    l_modified VARCHAR2(32767);
+  BEGIN
+    -- Read end of file
+    l_content := UTL_RAW.CAST_TO_VARCHAR2(
+      DBMS_LOB.SUBSTR(l_result, LEAST(l_pdf_size, 32767), GREATEST(1, l_pdf_size - 32766))
+    );
+
+    -- Remove /Encrypt reference
+    l_modified := REGEXP_REPLACE(l_content, l_encrypt_pattern, '');
+
+    -- Note: We keep the /ID as it's not harmful without encryption
+
+    -- Rebuild the end of the PDF
+    IF l_modified != l_content THEN
+      DBMS_LOB.TRIM(l_result, GREATEST(1, l_pdf_size - 32766));
+      DBMS_LOB.WRITEAPPEND(l_result, LENGTH(l_modified), UTL_RAW.CAST_TO_RAW(l_modified));
+    END IF;
+  END;
+
+  log_message(2, 'PDF decrypted successfully. Owner password: ' ||
+    CASE WHEN l_is_owner THEN 'YES' ELSE 'NO' END);
+
   RETURN l_result;
 EXCEPTION
   WHEN OTHERS THEN
+    IF l_result IS NOT NULL THEN
+      BEGIN DBMS_LOB.FREETEMPORARY(l_result); EXCEPTION WHEN OTHERS THEN NULL; END;
+    END IF;
     IF SQLCODE BETWEEN -20999 AND -20000 THEN RAISE;
     ELSE RAISE_APPLICATION_ERROR(-20855, 'Decryption failed: ' || SQLERRM);
     END IF;
@@ -8084,13 +8682,58 @@ BEGIN
 END IsEncrypted;
 
 /*******************************************************************************
+* parse_permissions: Parse permission integer into individual flags
+*******************************************************************************/
+FUNCTION parse_permissions(p_perm_value PLS_INTEGER) RETURN JSON_OBJECT_T IS
+  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+  l_perm PLS_INTEGER;
+BEGIN
+  -- Handle negative values (two's complement)
+  IF p_perm_value < 0 THEN
+    l_perm := p_perm_value + 4294967296;  -- Convert to unsigned
+  ELSE
+    l_perm := p_perm_value;
+  END IF;
+
+  -- Bit 3: Print (low quality for R3+)
+  l_perms.put('print', BITAND(l_perm, 4) = 4);
+
+  -- Bit 4: Modify contents
+  l_perms.put('modify', BITAND(l_perm, 8) = 8);
+
+  -- Bit 5: Copy or extract text/graphics
+  l_perms.put('copy', BITAND(l_perm, 16) = 16);
+
+  -- Bit 6: Add or modify annotations, fill forms
+  l_perms.put('annotate', BITAND(l_perm, 32) = 32);
+
+  -- Bit 9: Fill form fields (R3+)
+  l_perms.put('fillForms', BITAND(l_perm, 256) = 256);
+
+  -- Bit 10: Extract for accessibility (R3+)
+  l_perms.put('extract', BITAND(l_perm, 512) = 512);
+
+  -- Bit 11: Assemble document (R3+)
+  l_perms.put('assemble', BITAND(l_perm, 1024) = 1024);
+
+  -- Bit 12: Print high quality (R3+)
+  l_perms.put('printHighQuality', BITAND(l_perm, 2048) = 2048);
+
+  RETURN l_perms;
+END parse_permissions;
+
+/*******************************************************************************
 * GetSecurityInfo: Get security information from PDF
+* Returns detailed encryption info including method, key length, and permissions
 *******************************************************************************/
 FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T IS
   l_result JSON_OBJECT_T := JSON_OBJECT_T();
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+  l_perms JSON_OBJECT_T;
   l_content VARCHAR2(32767);
   l_v_value PLS_INTEGER;
+  l_r_value PLS_INTEGER;
+  l_key_length PLS_INTEGER;
+  l_perm_value PLS_INTEGER;
   l_method VARCHAR2(20);
 BEGIN
   IF p_pdf IS NULL OR NOT IsEncrypted(p_pdf) THEN
@@ -8104,9 +8747,11 @@ BEGIN
 
   l_result.put('encrypted', TRUE);
 
-  -- Detect method from /V value
+  -- Extract V value (encryption version)
   BEGIN
     l_v_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/V\s+(\d+)', 1, 1, NULL, 1));
+    l_result.put('version', l_v_value);
+
     CASE l_v_value
       WHEN 1 THEN l_method := 'RC4-40';
       WHEN 2 THEN l_method := 'RC4-128';
@@ -8117,14 +8762,51 @@ BEGIN
     l_result.put('method', l_method);
   EXCEPTION WHEN OTHERS THEN
     l_result.put('method', 'Unknown');
+    l_result.put('version', 0);
   END;
 
-  l_result.put('hasUserPassword', TRUE);
-  l_result.put('hasOwnerPassword', TRUE);
-  l_perms.put('print', TRUE);
-  l_perms.put('modify', FALSE);
-  l_perms.put('copy', FALSE);
-  l_result.put('permissions', l_perms);
+  -- Extract R value (revision)
+  BEGIN
+    l_r_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/R\s+(\d+)', 1, 1, NULL, 1));
+    l_result.put('revision', l_r_value);
+  EXCEPTION WHEN OTHERS THEN
+    l_result.put('revision', 0);
+  END;
+
+  -- Extract key length
+  BEGIN
+    l_key_length := TO_NUMBER(REGEXP_SUBSTR(l_content, '/Length\s+(\d+)', 1, 1, NULL, 1));
+    IF l_key_length IS NULL THEN
+      l_key_length := CASE l_v_value WHEN 1 THEN 40 ELSE 128 END;
+    END IF;
+    l_result.put('keyLength', l_key_length);
+  EXCEPTION WHEN OTHERS THEN
+    l_result.put('keyLength', 40);
+  END;
+
+  -- Extract and parse permissions
+  BEGIN
+    l_perm_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/P\s+(-?\d+)', 1, 1, NULL, 1));
+    l_result.put('permissionValue', l_perm_value);
+    l_perms := parse_permissions(l_perm_value);
+    l_result.put('permissions', l_perms);
+  EXCEPTION WHEN OTHERS THEN
+    -- Default permissions (all restricted)
+    l_perms := JSON_OBJECT_T();
+    l_perms.put('print', FALSE);
+    l_perms.put('modify', FALSE);
+    l_perms.put('copy', FALSE);
+    l_perms.put('annotate', FALSE);
+    l_perms.put('fillForms', FALSE);
+    l_perms.put('extract', FALSE);
+    l_perms.put('assemble', FALSE);
+    l_perms.put('printHighQuality', FALSE);
+    l_result.put('permissions', l_perms);
+  END;
+
+  -- Check for O and U values (indicates password protection)
+  l_result.put('hasUserPassword', INSTR(l_content, '/U ') > 0 OR INSTR(l_content, '/U<') > 0);
+  l_result.put('hasOwnerPassword', INSTR(l_content, '/O ') > 0 OR INSTR(l_content, '/O<') > 0);
 
   RETURN l_result;
 END GetSecurityInfo;
