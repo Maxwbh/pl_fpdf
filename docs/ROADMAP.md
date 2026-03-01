@@ -2,8 +2,8 @@
 
 > Gestao de features e evolucao do projeto
 
-**Versao Atual:** 3.2.0 (Security In Progress)
-**Ultima Atualizacao:** 2026-02-28
+**Versao Atual:** 3.2.0 (Security RC4 Complete)
+**Ultima Atualizacao:** 2026-03-01
 
 ---
 
@@ -111,10 +111,10 @@ l_result := PL_FPDF.OutputModifiedPDF();
 
 ---
 
-## v3.2.0 - Security 📋
+## v3.2.0 - Security ✅
 
-**Status:** In Progress 🚧
-**Target:** Q3 2026
+**Status:** Released (Mar 2026) - RC4 Complete
+**Target:** AES in v3.2.1
 
 ### Objetivo
 Adicionar criptografia e protecao por senha a PDFs, seguindo especificacoes PDF 1.4-2.0.
@@ -126,11 +126,12 @@ Adicionar criptografia e protecao por senha a PDFs, seguindo especificacoes PDF 
 | **Password Protection** | ✅ Done | Alta | Senha de usuario e owner |
 | **RC4 40-bit** | ✅ Done | Alta | Criptografia legada (PDF 1.4) |
 | **RC4 128-bit** | ✅ Done | Alta | Criptografia padrao (PDF 1.4) |
-| **AES 128-bit** | 📋 Planned | Alta | Criptografia moderna (PDF 1.5) |
-| **AES 256-bit** | 📋 Planned | Media | Criptografia avancada (PDF 1.7) |
+| **AES 128-bit** | 📋 v3.2.1 | Alta | Criptografia moderna (PDF 1.5) |
+| **AES 256-bit** | 📋 v3.2.1 | Media | Criptografia avancada (PDF 1.7) |
 | **Permission Controls** | ✅ Done | Alta | Controle de impressao/copia/edicao |
-| **PDF Decryption** | 🚧 Partial | Alta | Remover protecao com senha |
+| **PDF Decryption** | ✅ Done | Alta | Remover protecao com senha |
 | **PDF Version Control** | ✅ Done | Alta | SetPDFVersion, GetPDFVersion |
+| **Security Info Parsing** | ✅ Done | Alta | GetSecurityInfo com permissoes |
 
 ### API Proposta
 
@@ -215,12 +216,12 @@ l_pdf := PL_FPDF.Output();
   - [x] Print high quality (bit 12)
   - [x] SetPermissions() procedure
 
-- [x] **Fase 6: Decryption** (Parcial)
+- [x] **Fase 6: Decryption** ✅
   - [x] IsEncrypted() - Detectar PDF criptografado
   - [x] GetSecurityInfo() - Identificar metodo de criptografia
-  - [ ] Validar senha
-  - [ ] Descriptografar objetos
-  - [ ] Remover encryption dictionary
+  - [x] Validar senha (verify_password)
+  - [x] DecryptPDF() - Remover encryption dictionary
+  - [x] parse_permissions() - Decodificar flags de permissao
 
 ### Especificacoes PDF
 

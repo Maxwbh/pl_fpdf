@@ -10,7 +10,7 @@
 | Version | Status | Tasks | Priority |
 |---------|--------|-------|----------|
 | v3.1.0 | Planned | 7 | HIGH |
-| v3.2.0 | In Progress | 18 | CRITICAL |
+| v3.2.0 | **Completed** | 18 | CRITICAL |
 | v3.3.0 | Proposed | 25 | MEDIUM |
 | v3.4.0 | Planned | 32 | MEDIUM |
 | v3.5.0 | Planned | 30 | LOW |
@@ -21,15 +21,30 @@
 
 ## Implementation Order (Recommended)
 
-### Phase 1: Complete Current (v3.2.0) - Q2 2026
+### Phase 1: Security (v3.2.0) - COMPLETED
 
-**Priority: CRITICAL - Security Release**
+**Status:** COMPLETED (Mar 2026)
 
 ```
-Week 1-2: AES Encryption
-Week 3-4: Decryption & Testing
+Week 1-2: RC4 Encryption - DONE
+Week 3-4: Permissions & Decryption - DONE
 ```
 
+| # | Task | Status | Notes |
+|---|------|--------|-------|
+| 1 | RC4 40-bit encryption | **DONE** | DBMS_CRYPTO |
+| 2 | RC4 128-bit encryption | **DONE** | DBMS_CRYPTO |
+| 3 | Compute /O value (owner hash) | **DONE** | Algorithm 3 |
+| 4 | Compute /U value (user hash) | **DONE** | Algorithm 4/5 |
+| 5 | Compute encryption key | **DONE** | Algorithm 2 |
+| 6 | Permission controls (8 flags) | **DONE** | SetPermissions() |
+| 7 | Password validation for decrypt | **DONE** | verify_password() |
+| 8 | Object key derivation | **DONE** | compute_object_key() |
+| 9 | Remove encryption dictionary | **DONE** | DecryptPDF() |
+| 10 | Parse security info from PDF | **DONE** | GetSecurityInfo() |
+| 11 | Test suite for RC4 encryption | **DONE** | 25+ tests |
+
+**Pending for v3.2.1:**
 | # | Task | Status | Est. |
 |---|------|--------|------|
 | 1 | AES 128-bit CBC mode implementation | Pending | 3d |
@@ -37,13 +52,6 @@ Week 3-4: Decryption & Testing
 | 3 | Initialization vectors (IV) handling | Pending | 1d |
 | 4 | PKCS#7 padding | Pending | 1d |
 | 5 | PDF version auto-upgrade for AES | Pending | 1d |
-| 6 | Password validation for decrypt | Pending | 2d |
-| 7 | Object decryption | Pending | 3d |
-| 8 | Remove encryption dictionary | Pending | 1d |
-| 9 | Test suite for all encryption | Pending | 2d |
-
-**Blockers:** None
-**Dependencies:** DBMS_CRYPTO
 
 ---
 
@@ -69,6 +77,9 @@ Week 3-4: Decryption & Testing
 
 **Priority: MEDIUM - New Feature**
 
+**Architecture:** Hybrid (Tables + Package)
+See [HTML_TO_PDF_ARCHITECTURE.md](architecture/HTML_TO_PDF_ARCHITECTURE.md)
+
 ```
 Sprint 1: HTML Parser
 Sprint 2: Basic Tags
@@ -84,6 +95,12 @@ Sprint 5: Advanced Elements
 | 3 | table, tr, td, th, colspan/rowspan | 2w |
 | 4 | CSS inline parser, colors, fonts, align | 2w |
 | 5 | Lists, links, images, bold/italic | 1w |
+
+**Tables Required:**
+- FPDF_HTML_ELEMENTS - Parsed elements cache
+- FPDF_CSS_RULES - CSS rules
+- FPDF_TEMPLATES - Reusable templates
+- FPDF_TAG_MAPPINGS - Tag to PDF action mapping
 
 ---
 
@@ -140,19 +157,20 @@ See [TODO_V4.md](TODO_V4.md) for detailed breakdown.
 ```
                     IMPACT
                  Low    High
-            ┌─────────┬─────────┐
-        Low │ v3.5.0  │ v3.3.0  │
-   EFFORT   │ PDF 1.7 │ HTML→PDF│
-            ├─────────┼─────────┤
-       High │ v3.4.0  │ v4.0.0  │
-            │ PDF 1.5 │ PDF 2.0 │
-            └─────────┴─────────┘
+            +----------+----------+
+        Low | v3.5.0   | v3.3.0   |
+   EFFORT   | PDF 1.7  | HTML->PDF|
+            +----------+----------+
+       High | v3.4.0   | v4.0.0   |
+            | PDF 1.5  | PDF 2.0  |
+            +----------+----------+
 ```
 
 ### Quick Wins (Do First)
-1. Complete AES encryption (v3.2.0) - 80% done
-2. Page operations (v3.1.0) - Building on existing merge/split
-3. Decryption support - Enables PDF editing workflows
+1. ~~Complete RC4 encryption (v3.2.0)~~ - DONE
+2. ~~Permission controls~~ - DONE
+3. ~~Decryption support~~ - DONE
+4. Page operations (v3.1.0) - Building on existing merge/split
 
 ### Strategic Investment (Plan Carefully)
 1. HTML to PDF - High user value, complex implementation
@@ -168,57 +186,54 @@ See [TODO_V4.md](TODO_V4.md) for detailed breakdown.
 ## Dependencies Graph
 
 ```
-v3.2.0 Security ──────┬───> v3.1.0 Page Ops
-       (AES)          │           │
-                      │           v
-                      └───> v3.3.0 HTML→PDF
-                                  │
+v3.2.0 Security ------+---> v3.1.0 Page Ops
+       (DONE)         |           |
+                      |           v
+                      +---> v3.3.0 HTML->PDF
+                                  |
                                   v
                             v3.4.0 PDF 1.5
-                                  │
+                                  |
                                   v
                             v3.5.0 PDF 1.7
-                                  │
+                                  |
                                   v
                             v4.0.0 PDF 2.0
 ```
 
 ---
 
-## Architecture Checklist
+## Architecture Notes
 
-Before implementing any feature, verify:
+### Package-Only Features (Current)
+- All v2.0 and v3.0 features
+- RC4 encryption/decryption
+- Permission controls
+- Security info parsing
 
-- [ ] **Package-Only:** No external tables, types, or sequences
-- [ ] **Oracle 19c Compatible:** Works without 23ai features
-- [ ] **Self-Contained:** No external dependencies
-- [ ] **Session-Isolated:** Each session has own state
-- [ ] **Performance:** No regression from current version
-- [ ] **Tests:** Unit tests for new functionality
-- [ ] **Documentation:** API docs updated
+### Hybrid Architecture (Planned for v3.3.0+)
+- HTML to PDF with parsing tables
+- Template system
+- AcroForms
+- Bookmarks
 
 See [PACKAGE_ONLY_ARCHITECTURE.md](architecture/PACKAGE_ONLY_ARCHITECTURE.md)
+See [HTML_TO_PDF_ARCHITECTURE.md](architecture/HTML_TO_PDF_ARCHITECTURE.md)
 
 ---
 
-## Modernization Checklist
+## Checklist
 
-For architecture improvements:
+### Before Implementation
+- [x] **Package-Only:** No external tables for basic features
+- [x] **Oracle 19c Compatible:** Works without 23ai features
+- [x] **Self-Contained:** No external dependencies
+- [x] **Session-Isolated:** Each session has own state
+- [x] **Performance:** No regression from current version
+- [x] **Tests:** Unit tests for new functionality
+- [x] **Documentation:** API docs updated
 
-- [ ] JSON config for new features
-- [ ] PL_FPDF_CRYPTO package usage
-- [ ] Result Cache for fonts
-- [ ] Conditional Compilation for PDF versions
-- [ ] Object Types for encoders
-
-See [ARCHITECTURE_MODERN.md](ARCHITECTURE_MODERN.md)
-
----
-
-## Release Checklist
-
-Before each release:
-
+### Before Release
 - [ ] All tests passing
 - [ ] Documentation updated
 - [ ] CHANGELOG updated
@@ -234,26 +249,26 @@ Before each release:
 ### v3.2.0 Progress
 
 ```
-Security Features: [████████░░] 80%
-├─ RC4 40-bit:     [██████████] 100%
-├─ RC4 128-bit:    [██████████] 100%
-├─ AES 128-bit:    [░░░░░░░░░░] 0%
-├─ AES 256-bit:    [░░░░░░░░░░] 0%
-├─ Permissions:    [██████████] 100%
-└─ Decryption:     [████░░░░░░] 40%
+Security Features: [##########] 100% (RC4)
+|-- RC4 40-bit:     [##########] 100%
+|-- RC4 128-bit:    [##########] 100%
+|-- AES 128-bit:    [          ] 0% (v3.2.1)
+|-- AES 256-bit:    [          ] 0% (v3.2.1)
+|-- Permissions:    [##########] 100%
++-- Decryption:     [##########] 100%
 ```
 
 ### Overall Project Progress
 
 ```
-v2.0.0 Foundation: [██████████] 100% ✅
-v3.0.0 Manipulation:[██████████] 100% ✅
-v3.1.0 Page Ops:   [░░░░░░░░░░] 0%
-v3.2.0 Security:   [████████░░] 80%
-v3.3.0 HTML→PDF:   [░░░░░░░░░░] 0%
-v3.4.0 PDF 1.5:    [░░░░░░░░░░] 0%
-v3.5.0 PDF 1.7:    [░░░░░░░░░░] 0%
-v4.0.0 PDF 2.0:    [░░░░░░░░░░] 0%
+v2.0.0 Foundation: [##########] 100%
+v3.0.0 Manipulation:[##########] 100%
+v3.1.0 Page Ops:   [          ] 0%
+v3.2.0 Security:   [##########] 100% (RC4)
+v3.3.0 HTML->PDF:  [          ] 0%
+v3.4.0 PDF 1.5:    [          ] 0%
+v3.5.0 PDF 1.7:    [          ] 0%
+v4.0.0 PDF 2.0:    [          ] 0%
 ```
 
 ---
@@ -262,7 +277,7 @@ v4.0.0 PDF 2.0:    [░░░░░░░░░░] 0%
 
 ### Why This Order?
 
-1. **v3.2.0 First:** Security is critical for production use
+1. **v3.2.0 First:** Security is critical for production use - DONE
 2. **v3.1.0 Second:** Page operations build on existing code
 3. **v3.3.0 Third:** HTML to PDF has high user demand
 4. **v3.4.0/v3.5.0:** Standards compliance, incremental
@@ -283,6 +298,8 @@ v4.0.0 PDF 2.0:    [░░░░░░░░░░] 0%
 
 | Date | Change |
 |------|--------|
+| 2026-03-01 | v3.2.0 Security marked COMPLETE (RC4) |
+| 2026-03-01 | Updated progress tracking |
 | 2026-03-01 | Consolidated all TODOs into master list |
 | 2026-02-28 | Added v4.0.0 PDF 2.0 TODO |
 | 2026-02-28 | Initial ROADMAP created |
