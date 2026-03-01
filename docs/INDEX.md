@@ -134,10 +134,12 @@ END;
 
 | Document | Description | Audience |
 |----------|-------------|----------|
-| [Package-Only Architecture](architecture/PACKAGE_ONLY_ARCHITECTURE.md) | Why no tables/types - core design | Architects, Contributors |
-| [Oracle 19c Compatibility](architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md) | Ensuring 19c works forever | Architects, DBAs |
-| [Modern Architecture](ARCHITECTURE_MODERN.md) | Using Oracle 19c+ features | Architects |
-| [Modernization Plan](architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md) | Future Oracle 26ai integration | Architects |
+| [Package-Only Architecture](architecture/PACKAGE_ONLY_ARCHITECTURE.md) | Atual: sem tabelas/tipos externos | Architects |
+| [Modular Hybrid Architecture](architecture/MODULAR_HYBRID_ARCHITECTURE.md) | **PDF 2.0**: packages modulares | Architects |
+| [Enterprise Architecture](architecture/PDF20_ENTERPRISE_ARCHITECTURE.md) | **PDF 2.0**: tabelas, tipos, REST | Architects, DBAs |
+| [Oracle 19c Compatibility](architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md) | Garantia de compatibilidade 19c | Architects, DBAs |
+| [Modern Architecture](ARCHITECTURE_MODERN.md) | Features Oracle 19c+ | Architects |
+| [Modernization Plan](architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md) | Oracle 26ai integration | Architects |
 
 ---
 
