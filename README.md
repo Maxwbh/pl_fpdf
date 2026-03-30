@@ -1,10 +1,10 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.0.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.2.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
-  <img src="https://img.shields.io/badge/phase_4-100%25-brightgreen.svg" alt="Phase 4">
+  <img src="https://img.shields.io/badge/security-RC4-brightgreen.svg" alt="Security">
 </p>
 
 <p align="center">
@@ -29,20 +29,25 @@ Generate and manipulate PDFs **directly in Oracle Database** - no Java, no exter
 |------|----------|
 | Create reports from Oracle | Pure PL/SQL - runs inside the database |
 | Modify existing PDFs | Load, edit, merge, split - all in PL/SQL |
+| Protect documents | RC4 encryption with permissions |
 | Zero dependencies | No OWA, no OrdImage, no external libs |
-| Simple deployment | Just 2 files: `.pks` + `.pkb` |
+| Simple deployment | Just 2 files in `src/` folder |
 
 ---
 
 ## Installation
 
 ```sql
--- Install
-@PL_FPDF.pks
-@PL_FPDF.pkb
+-- Option 1: Run deployment script
+@deploy_all.sql
+
+-- Option 2: Install manually
+@src/PL_FPDF.pks
+@src/PL_FPDF.pkb
 
 -- Verify
-SELECT PL_FPDF.GetVersion() FROM DUAL;
+SELECT PL_FPDF.co_version FROM DUAL;
+-- Returns: 3.2.0
 ```
 
 **Requirements:** Oracle 19c+ | No external dependencies
@@ -82,6 +87,26 @@ BEGIN
 END;
 ```
 
+### Encrypt PDF
+
+```sql
+DECLARE
+  l_pdf BLOB;
+  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  l_perms.put('print', TRUE);
+  l_perms.put('copy', FALSE);
+
+  l_pdf := PL_FPDF.EncryptPDF(
+    p_pdf            => l_original,
+    p_user_password  => 'user123',
+    p_owner_password => 'owner456',
+    p_permissions    => l_perms,
+    p_encryption     => 'RC4-128'
+  );
+END;
+```
+
 ### Merge PDFs
 
 ```sql
@@ -102,17 +127,24 @@ END;
 - Multi-page documents (unlimited pages)
 - Text, shapes, images (PNG, JPEG)
 - TrueType fonts with UTF-8
-- Barcodes (Code128, QR Code)
+- Barcodes (Code39, EAN-13, QR Code)
 - Tables with auto-pagination
 
 ### PDF Manipulation
 - Load and parse existing PDFs
 - Rotate pages (0, 90, 180, 270)
 - Remove pages
-- Add watermarks
+- Add watermarks (text/image)
 - Text and image overlays
 - Merge multiple PDFs
 - Split PDF by page ranges
+
+### Security (v3.2.0)
+- RC4 40-bit encryption (legacy)
+- RC4 128-bit encryption (standard)
+- Password protection (user/owner)
+- Permission controls (print, copy, modify, etc.)
+- PDF decryption
 
 ### Architecture
 - Pure PL/SQL (no external dependencies)
@@ -122,29 +154,74 @@ END;
 
 ---
 
+## Project Structure
+
+```
+pl_fpdf/
+│
+├── src/                          # Source Code
+│   ├── PL_FPDF.pks              # Package specification (79 KB)
+│   └── PL_FPDF.pkb              # Package body (355 KB)
+│
+├── extensions/                   # Optional Extensions
+│   └── brazilian-payments/      # PIX QR Code & Boleto
+│       ├── packages/            # PL_FPDF_PIX, PL_FPDF_BOLETO
+│       └── tests/
+│
+├── tests/                        # Test Suite (25+ tests)
+│   ├── run_all_tests.sql        # Run all tests
+│   ├── test_phase_*.sql         # Feature tests
+│   └── validate_phase_*.sql     # Validation scripts
+│
+├── scripts/                      # Utilities
+│   ├── optimize_native_compile.sql
+│   └── recompile_package.sql
+│
+├── docs/                         # Documentation
+│   ├── INDEX.md                 # Documentation index
+│   ├── ROADMAP.md               # Feature roadmap
+│   ├── TODO_MASTER.md           # Task tracking
+│   ├── api/                     # API Reference
+│   ├── guides/                  # User Guides
+│   └── architecture/            # Technical Docs
+│
+├── .github/                      # GitHub Templates
+│   └── ISSUE_TEMPLATE/
+│
+├── README.md                     # This file
+├── README_PT_BR.md              # Portuguese version
+├── CHANGELOG.md                 # Version history
+├── CONTRIBUTING.md              # How to contribute
+├── SECURITY.md                  # Security policy
+├── CODE_OF_CONDUCT.md
+└── deploy_all.sql               # Deployment script
+```
+
+---
+
 ## Documentation
 
 | Document | Description |
 |----------|-------------|
+| [Documentation Index](docs/INDEX.md) | Start here |
 | [API Reference](docs/api/API_REFERENCE.md) | Complete API documentation |
 | [Phase 4 Guide](docs/guides/PHASE_4_GUIDE.md) | PDF manipulation guide |
 | [Performance](docs/guides/PERFORMANCE_TUNING.md) | Optimization tips |
 | [Migration](docs/guides/MIGRATION_GUIDE.md) | Upgrade from older versions |
 | [Roadmap](docs/ROADMAP.md) | Future features |
+| [Architecture](docs/architecture/) | Technical documentation |
 
 ---
 
-## Project Structure
+## Version History
 
-```
-pl_fpdf/
-├── PL_FPDF.pks          # Package specification
-├── PL_FPDF.pkb          # Package body
-├── docs/                # Documentation
-├── tests/               # Test suite
-├── scripts/             # Utility scripts
-└── extensions/          # Optional extensions (PIX, Boleto)
-```
+| Version | Date | Highlights |
+|---------|------|------------|
+| **3.2.0** | Mar 2026 | Security: RC4 encryption, permissions, decryption |
+| 3.0.0 | Feb 2026 | PDF manipulation: load, modify, merge, split |
+| 2.0.0 | Dec 2025 | Foundation: UTF-8, TrueType, barcodes, QR |
+
+See [CHANGELOG.md](CHANGELOG.md) for full history.
 
 ---
 
@@ -164,7 +241,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 - **FPDF (PHP):** Olivier PLATHEY
 - **PL/SQL Port:** Anton Scheffer, Pierre-Gilles Levallois
-- **Modernization:** Maxwell Oliveira ([@maxwbh](https://github.com/maxwbh))
+- **Modernization & v3.x:** Maxwell Oliveira ([@maxwbh](https://github.com/maxwbh))
 
 ---
 

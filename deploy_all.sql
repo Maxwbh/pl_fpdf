@@ -1,8 +1,8 @@
 --------------------------------------------------------------------------------
 -- PL_FPDF Core Package Deployment Script
--- Project: PL_FPDF v2.0
+-- Project: PL_FPDF v3.2.0
 -- Author: Maxwell Oliveira (@maxwbh)
--- Date: 2025-12-19
+-- Date: 2026-03-01
 --------------------------------------------------------------------------------
 -- This script deploys the core PL_FPDF package for PDF generation
 --
@@ -17,19 +17,17 @@ SET ECHO ON
 
 PROMPT
 PROMPT ================================================================================
-PROMPT   Deploying PL_FPDF Core Package
+PROMPT   Deploying PL_FPDF Core Package v3.2.0
 PROMPT ================================================================================
 PROMPT
-PROMPT   PL_FPDF v2.0 - Modern PDF generation library for Oracle Database
+PROMPT   PL_FPDF - Modern PDF generation & manipulation library for Oracle Database
 PROMPT
 PROMPT   Features:
-PROMPT     - Multi-page PDF documents
-PROMPT     - Text rendering with multiple fonts
-PROMPT     - TrueType/OpenType font support
-PROMPT     - UTF-8 encoding
-PROMPT     - Image embedding (PNG, JPEG)
-PROMPT     - Graphics primitives
-PROMPT     - Native compilation support
+PROMPT     - PDF Generation (multi-page, text, images, graphics)
+PROMPT     - PDF Manipulation (load, modify, merge, split)
+PROMPT     - Security (RC4 encryption, permissions, decryption)
+PROMPT     - TrueType fonts with UTF-8 support
+PROMPT     - Barcodes (Code39, EAN-13, QR Code)
 PROMPT
 PROMPT ================================================================================
 PROMPT
@@ -42,12 +40,12 @@ PROMPT -------------------------------------------------------------------------
 PROMPT
 
 PROMPT Installing package specification...
-@@PL_FPDF.pks
+@@src/PL_FPDF.pks
 SHOW ERRORS PACKAGE PL_FPDF
 
 PROMPT
 PROMPT Installing package body...
-@@PL_FPDF.pkb
+@@src/PL_FPDF.pkb
 SHOW ERRORS PACKAGE BODY PL_FPDF
 
 PROMPT

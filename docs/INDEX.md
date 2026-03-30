@@ -1,6 +1,6 @@
-# PL_FPDF Documentation Index
+# PL_FPDF Documentation
 
-**Version:** 3.0.0+
+**Version:** 3.2.0
 **Last Updated:** 2026-03-01
 
 ---
@@ -9,48 +9,58 @@
 
 | Need | Document |
 |------|----------|
-| Get started quickly | [Quick Start](#quick-start) |
+| Get started | [Quick Start](#quick-start) |
 | API reference | [API Reference](api/API_REFERENCE.md) |
 | Manipulate PDFs | [Phase 4 Guide](guides/PHASE_4_GUIDE.md) |
+| Security features | [Security](#security-encryption) |
 | Upgrade from v0.9.4 | [Migration Guide](guides/MIGRATION_GUIDE.md) |
 | Optimize performance | [Performance Tuning](guides/PERFORMANCE_TUNING.md) |
 | See roadmap | [Roadmap](ROADMAP.md) |
-| See all TODOs | [TODO Master](TODO_MASTER.md) |
+| Architecture | [Architecture](architecture/) |
 
 ---
 
-## Documentation Structure
+## Project Structure
 
 ```
-docs/
-├── INDEX.md                    # This file - start here
-├── ROADMAP.md                  # Feature roadmap (all versions)
-├── TODO_MASTER.md              # Consolidated TODO list
-├── TODO_V4.md                  # v4.0.0 detailed tasks
-├── ARCHITECTURE_MODERN.md      # Modern Oracle features
+pl_fpdf/
 │
-├── api/
-│   └── API_REFERENCE.md        # Complete API documentation
+├── src/                           # Source Code
+│   ├── PL_FPDF.pks               # Package specification
+│   └── PL_FPDF.pkb               # Package body
 │
-├── guides/
-│   ├── PHASE_4_GUIDE.md        # PDF manipulation guide
-│   ├── MIGRATION_GUIDE.md      # Upgrade guide
-│   ├── PERFORMANCE_TUNING.md   # Optimization tips
-│   └── VALIDATION_GUIDE.md     # Input validation
+├── extensions/                    # Optional Extensions
+│   └── brazilian-payments/       # PIX & Boleto support
+│       ├── packages/
+│       └── tests/
 │
-├── architecture/
-│   ├── PACKAGE_ONLY_ARCHITECTURE.md    # Core architecture
-│   ├── ORACLE_19C_COMPATIBILITY_STRATEGY.md  # Oracle compatibility
-│   └── MODERNIZATION_ORACLE_26_APEX_24_2.md  # Future modernization
+├── tests/                         # Test Suite
+│   ├── run_all_tests.sql         # Run all tests
+│   ├── test_phase_*.sql          # Phase-specific tests
+│   └── validate_phase_*.sql      # Validation scripts
 │
-├── plans/
-│   └── PHASE_5_IMPLEMENTATION_PLAN.md  # Phase 5 planning
+├── scripts/                       # Utility Scripts
+│   ├── optimize_native_compile.sql
+│   └── recompile_package.sql
 │
-├── en/
-│   └── README.md               # English documentation
+├── docs/                          # Documentation
+│   ├── INDEX.md                  # This file
+│   ├── ROADMAP.md                # Feature roadmap
+│   ├── TODO_MASTER.md            # Task tracking
+│   ├── api/                      # API documentation
+│   ├── guides/                   # User guides
+│   ├── architecture/             # Technical architecture
+│   └── _archive/                 # Archived documents
 │
-└── pt-br/
-    └── README.md               # Portuguese documentation
+├── .github/                       # GitHub Templates
+│
+├── README.md                      # Project overview (EN)
+├── README_PT_BR.md               # Project overview (PT)
+├── CHANGELOG.md                   # Version history
+├── CONTRIBUTING.md                # Contribution guide
+├── SECURITY.md                    # Security policy
+├── CODE_OF_CONDUCT.md            # Code of conduct
+└── deploy_all.sql                # Main deployment script
 ```
 
 ---
@@ -60,12 +70,16 @@ docs/
 ### Installation
 
 ```sql
--- 1. Install package (2 files only)
-@PL_FPDF.pks
-@PL_FPDF.pkb
+-- Deploy package (run from project root)
+@deploy_all.sql
 
--- 2. Verify installation
-SELECT PL_FPDF.GetVersion() FROM DUAL;
+-- Or manually:
+@src/PL_FPDF.pks
+@src/PL_FPDF.pkb
+
+-- Verify installation
+SELECT PL_FPDF.co_version FROM DUAL;
+-- Returns: 3.2.0
 ```
 
 ### Create PDF
@@ -82,7 +96,7 @@ BEGIN
 END;
 ```
 
-### Modify PDF
+### Modify Existing PDF
 
 ```sql
 DECLARE
@@ -105,200 +119,111 @@ DECLARE
 BEGIN
   PL_FPDF.LoadPDFWithID(l_pdf1, 'doc1');
   PL_FPDF.LoadPDFWithID(l_pdf2, 'doc2');
-  l_merged := PL_FPDF.MergePDFs('doc1,doc2');
+  l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["doc1","doc2"]'));
 END;
 ```
 
 ---
 
-## Document Descriptions
+## Security (Encryption)
 
-### Core Documentation
+### Encrypt PDF with Permissions
 
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [API Reference](api/API_REFERENCE.md) | Complete API with all functions, parameters, examples | Developers |
-| [Roadmap](ROADMAP.md) | Feature plans for all versions (v2.0 - v4.0) | All |
-| [TODO Master](TODO_MASTER.md) | Consolidated task list with priorities | Contributors |
+```sql
+DECLARE
+  l_pdf BLOB;
+  l_encrypted BLOB;
+  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  -- Set permissions
+  l_perms.put('print', TRUE);
+  l_perms.put('copy', FALSE);
+  l_perms.put('modify', FALSE);
 
-### Guides
+  -- Encrypt
+  l_encrypted := PL_FPDF.EncryptPDF(
+    p_pdf            => l_pdf,
+    p_user_password  => 'user123',
+    p_owner_password => 'owner456',
+    p_permissions    => l_perms,
+    p_encryption     => 'RC4-128'
+  );
+END;
+```
 
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [Phase 4 Guide](guides/PHASE_4_GUIDE.md) | PDF manipulation: parse, edit, merge, split | Developers |
-| [Migration Guide](guides/MIGRATION_GUIDE.md) | Upgrade from v0.9.4 to v2.0+ | Developers |
-| [Performance Tuning](guides/PERFORMANCE_TUNING.md) | Optimization for large PDFs, batches | DBAs, Developers |
-| [Validation Guide](guides/VALIDATION_GUIDE.md) | Input validation patterns | Developers |
+### Protect During Generation
+
+```sql
+BEGIN
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.SetEncryption('RC4-128', 'user123', 'owner456');
+  PL_FPDF.SetPermissions(
+    p_print  => TRUE,
+    p_copy   => FALSE,
+    p_modify => FALSE
+  );
+  PL_FPDF.AddPage();
+  PL_FPDF.Cell(0, 10, 'Confidential Document');
+  l_pdf := PL_FPDF.Output_Blob();
+END;
+```
+
+### Decrypt PDF
+
+```sql
+l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
+```
+
+### Check Security Info
+
+```sql
+DECLARE
+  l_info JSON_OBJECT_T;
+BEGIN
+  l_info := PL_FPDF.GetSecurityInfo(l_pdf);
+  -- Returns: {"encrypted": true, "method": "RC4-128", "permissions": {...}}
+END;
+```
+
+---
+
+## Version History
+
+| Version | Status | Features |
+|---------|--------|----------|
+| **3.2.0** | Current | Security (RC4 encryption, permissions, decryption) |
+| 3.0.0 | Released | PDF manipulation (load, modify, merge, split, watermark) |
+| 2.0.0 | Released | Foundation (UTF-8, TrueType, barcodes, QR codes) |
+
+See [CHANGELOG.md](../CHANGELOG.md) for detailed history.
+
+---
+
+## Documentation Index
+
+### API Reference
+- [Complete API Reference](api/API_REFERENCE.md)
+
+### User Guides
+- [Phase 4 - PDF Manipulation](guides/PHASE_4_GUIDE.md)
+- [Migration Guide](guides/MIGRATION_GUIDE.md)
+- [Performance Tuning](guides/PERFORMANCE_TUNING.md)
+- [Validation Guide](guides/VALIDATION_GUIDE.md)
 
 ### Architecture
+- [Package-Only Architecture](architecture/PACKAGE_ONLY_ARCHITECTURE.md)
+- [Oracle 19c Compatibility](architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md)
+- [HTML to PDF Architecture](architecture/HTML_TO_PDF_ARCHITECTURE.md) (Planned)
+- [PDF 2.0 Enterprise](architecture/PDF20_ENTERPRISE_ARCHITECTURE.md) (Future)
+- [Modernization Strategy](architecture/ARCHITECTURE_MODERN.md)
 
-| Document | Description | Audience |
-|----------|-------------|----------|
-| [Package-Only Architecture](architecture/PACKAGE_ONLY_ARCHITECTURE.md) | Atual: sem tabelas/tipos externos | Architects |
-| [Modular Hybrid Architecture](architecture/MODULAR_HYBRID_ARCHITECTURE.md) | **PDF 2.0**: packages modulares | Architects |
-| [Enterprise Architecture](architecture/PDF20_ENTERPRISE_ARCHITECTURE.md) | **PDF 2.0**: tabelas, tipos, REST | Architects, DBAs |
-| [Oracle 19c Compatibility](architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md) | Garantia de compatibilidade 19c | Architects, DBAs |
-| [Modern Architecture](ARCHITECTURE_MODERN.md) | Features Oracle 19c+ | Architects |
-| [Modernization Plan](architecture/MODERNIZATION_ORACLE_26_APEX_24_2.md) | Oracle 26ai integration | Architects |
-
----
-
-## Version Documentation
-
-### Current Version (v3.0.0)
-
-| Feature | Documentation |
-|---------|---------------|
-| PDF Generation | [API Reference](api/API_REFERENCE.md) |
-| PDF Parsing | [Phase 4 Guide](guides/PHASE_4_GUIDE.md) |
-| Page Operations | [Phase 4 Guide](guides/PHASE_4_GUIDE.md) |
-| Watermarks | [Phase 4 Guide](guides/PHASE_4_GUIDE.md) |
-| Merge/Split | [Phase 4 Guide](guides/PHASE_4_GUIDE.md) |
-
-### In Progress (v3.2.0)
-
-| Feature | Documentation |
-|---------|---------------|
-| Encryption | [Roadmap - v3.2.0](ROADMAP.md#v320---security-) |
-| Decryption | [Roadmap - v3.2.0](ROADMAP.md#v320---security-) |
-
-### Planned Versions
-
-| Version | Focus | Documentation |
-|---------|-------|---------------|
-| v3.1.0 | Page Operations | [Roadmap](ROADMAP.md#v310---page-operations-) |
-| v3.3.0 | HTML to PDF | [Roadmap](ROADMAP.md#v330---html-to-pdf-) |
-| v3.4.0 | PDF 1.5/1.6 | [Roadmap](ROADMAP.md#v340---pdf-1516-complete-support-) |
-| v3.5.0 | PDF 1.7 | [Roadmap](ROADMAP.md#v350---pdf-17-complete-support-) |
-| v4.0.0 | PDF 2.0 | [TODO v4.0](TODO_V4.md) |
-
----
-
-## Feature Matrix
-
-### PDF Generation
-
-| Feature | Status | Version | Docs |
-|---------|--------|---------|------|
-| Basic text/cells | ✅ | v2.0 | [API](api/API_REFERENCE.md#text-rendering) |
-| TrueType fonts | ✅ | v2.0 | [API](api/API_REFERENCE.md#font-management) |
-| Images (PNG/JPEG) | ✅ | v2.0 | [API](api/API_REFERENCE.md#image-handling) |
-| Shapes/Drawing | ✅ | v2.0 | [API](api/API_REFERENCE.md#graphics--drawing) |
-| Barcodes/QR | ✅ | v2.0 | Extensions |
-| UTF-8 | ✅ | v2.0 | [API](api/API_REFERENCE.md#initialization--lifecycle) |
-
-### PDF Manipulation
-
-| Feature | Status | Version | Docs |
-|---------|--------|---------|------|
-| Parse existing PDF | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Rotate pages | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Remove pages | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Watermarks | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Text overlay | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Image overlay | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Merge PDFs | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-| Split PDF | ✅ | v3.0 | [Phase 4](guides/PHASE_4_GUIDE.md) |
-
-### Security
-
-| Feature | Status | Version | Docs |
-|---------|--------|---------|------|
-| RC4 40-bit | ✅ | v3.2 | [Roadmap](ROADMAP.md#v320---security-) |
-| RC4 128-bit | ✅ | v3.2 | [Roadmap](ROADMAP.md#v320---security-) |
-| AES 128-bit | 📋 | v3.2 | [Roadmap](ROADMAP.md#v320---security-) |
-| AES 256-bit | 📋 | v3.2 | [Roadmap](ROADMAP.md#v320---security-) |
-| Permissions | ✅ | v3.2 | [Roadmap](ROADMAP.md#v320---security-) |
-| Decryption | 🚧 | v3.2 | [Roadmap](ROADMAP.md#v320---security-) |
-
-### Future
-
-| Feature | Status | Version | Docs |
-|---------|--------|---------|------|
-| HTML to PDF | 💡 | v3.3 | [Roadmap](ROADMAP.md#v330---html-to-pdf-) |
-| Digital Signatures | 💡 | v4.0 | [TODO v4](TODO_V4.md) |
-| PDF/A | 💡 | v4.0 | [TODO v4](TODO_V4.md) |
-| PDF/UA | 💡 | v4.0 | [TODO v4](TODO_V4.md) |
-
----
-
-## Oracle Compatibility
-
-| Oracle Version | Support | Notes |
-|----------------|---------|-------|
-| **19c** | ✅ Full | Minimum version |
-| 21c | ✅ Full | Same as 19c |
-| 23ai | ✅ Full | + Optional enhancements |
-| 26ai | ✅ Full | + Optional enhancements |
-
-See [Oracle 19c Compatibility](architecture/ORACLE_19C_COMPATIBILITY_STRATEGY.md)
-
----
-
-## Architecture Principles
-
-1. **Package-Only:** No external tables, types, sequences
-2. **Self-Contained:** Zero external dependencies
-3. **Oracle 19c:** Always compatible
-4. **Simple Deploy:** 2 files only (.pks + .pkb)
-5. **Simple Uninstall:** DROP PACKAGE
-
-See [Package-Only Architecture](architecture/PACKAGE_ONLY_ARCHITECTURE.md)
-
----
-
-## Contributing
-
-### Documentation Standards
-
-1. All docs in Markdown format
-2. Code examples tested and working
-3. API changes reflected in API_REFERENCE.md
-4. New features added to ROADMAP.md
-
-### Code Standards
-
-1. Package-only (no external objects)
-2. Oracle 19c compatible
-3. Unit tests required
-4. Performance benchmarks for changes
-
-See [CONTRIBUTING.md](../CONTRIBUTING.md)
+### Planning
+- [Roadmap](ROADMAP.md)
+- [TODO Master](TODO_MASTER.md)
 
 ---
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/Maxwbh/pl_fpdf/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/Maxwbh/pl_fpdf/discussions)
-- **Email:** maxwbh@gmail.com
-
----
-
-## Related Resources
-
-### External
-
-| Resource | Description |
-|----------|-------------|
-| [PDF Reference](https://www.adobe.com/devnet/pdf/pdf_reference.html) | Adobe PDF specification |
-| [ISO 32000-1](https://www.iso.org/standard/51502.html) | PDF 1.7 standard |
-| [ISO 32000-2](https://www.iso.org/standard/75839.html) | PDF 2.0 standard |
-| [Oracle DBMS_CRYPTO](https://docs.oracle.com/en/database/) | Oracle crypto package |
-
-### Original Projects
-
-| Project | Description |
-|---------|-------------|
-| [FPDF (PHP)](http://www.fpdf.org/) | Original FPDF library |
-| [Anton Scheffer's PL/SQL](http://technology.amis.nl/) | Initial PL/SQL port |
-
----
-
-## Change Log
-
-| Date | Change |
-|------|--------|
-| 2026-03-01 | Created centralized documentation index |
-| 2026-02-28 | Added v4.0.0 documentation |
-| 2026-02 | v3.0.0 documentation complete |
+- **Issues:** [GitHub Issues](https://github.com/maxwbh/pl_fpdf/issues)
+- **Discussions:** [GitHub Discussions](https://github.com/maxwbh/pl_fpdf/discussions)
