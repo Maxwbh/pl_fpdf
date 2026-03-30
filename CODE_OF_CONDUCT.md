@@ -1,21 +1,22 @@
-# Codigo de Conduta
+# Código de Conduta
 
 ## Simples assim:
 
-**Faca o seu melhor para o codigo.**
+> **"Faça o melhor para o código. Ajude a divulgar nosso trabalho."**
 
 ---
 
 ## Diretrizes
 
-1. **Foco no codigo** - Discussoes tecnicas, melhorias, bugs, features
-2. **Respeito mutuo** - Criticas ao codigo, nao as pessoas
-3. **Colaboracao** - Ajude outros a contribuir
+1. **Qualidade** - Código limpo, testado, documentado
+2. **Respeito** - Críticas ao código, não às pessoas
+3. **Colaboração** - Ajude outros a contribuir
+4. **Divulgação** - Compartilhe, cite, recomende
 
 ## Contato
 
-Duvidas? **maxwbh@gmail.com**
+Dúvidas? **maxwbh@gmail.com**
 
 ---
 
-*Menos regras, mais codigo.*
+*Menos regras, mais código.*
