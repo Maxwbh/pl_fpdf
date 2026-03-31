@@ -177,13 +177,8 @@ pl_fpdf/
 │   ├── optimize_native_compile.sql
 │   └── recompile_package.sql
 │
-├── docs/                         # Documentation
-│   ├── INDEX.md                 # Documentation index
-│   ├── ROADMAP.md               # Feature roadmap
-│   ├── TODO_MASTER.md           # Task tracking
-│   ├── api/                     # API Reference
-│   ├── guides/                  # User Guides
-│   └── architecture/            # Technical Docs
+├── docs/
+│   └── DOCUMENTATION.md         # Complete documentation
 │
 ├── .github/                      # GitHub Templates
 │   └── ISSUE_TEMPLATE/
@@ -201,15 +196,11 @@ pl_fpdf/
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [Documentation Index](docs/INDEX.md) | Start here |
-| [API Reference](docs/api/API_REFERENCE.md) | Complete API documentation |
-| [Phase 4 Guide](docs/guides/PHASE_4_GUIDE.md) | PDF manipulation guide |
-| [Performance](docs/guides/PERFORMANCE_TUNING.md) | Optimization tips |
-| [Migration](docs/guides/MIGRATION_GUIDE.md) | Upgrade from older versions |
-| [Roadmap](docs/ROADMAP.md) | Future features |
-| [Architecture](docs/architecture/) | Technical documentation |
+See **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)** for complete reference:
+- API Reference
+- Version Roadmap
+- Architecture
+- Migration Guide
 
 ---
 
