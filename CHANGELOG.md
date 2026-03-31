@@ -12,7 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### 🎯 Phase 5: Advanced Page Operations
 
 **Status:** Planned - Q2 2026
-**Planning Document:** [docs/plans/PHASE_5_IMPLEMENTATION_PLAN.md](docs/plans/PHASE_5_IMPLEMENTATION_PLAN.md)
 
 ### Planned Features
 

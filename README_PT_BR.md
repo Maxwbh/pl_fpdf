@@ -126,11 +126,8 @@ END;
 
 | Documento | Descricao |
 |-----------|-----------|
-| [Referencia API](docs/api/API_REFERENCE.md) | Documentacao completa da API |
-| [Guia Fase 4](docs/guides/PHASE_4_GUIDE.md) | Guia de manipulacao de PDF |
-| [Performance](docs/guides/PERFORMANCE_TUNING.md) | Dicas de otimizacao |
-| [Migracao](docs/guides/MIGRATION_GUIDE.md) | Upgrade de versoes anteriores |
-| [Roadmap](docs/ROADMAP.md) | Features futuras |
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | API, Arquitetura, Migracao |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Versoes, TODOs, Backlog |
 
 ---
 
