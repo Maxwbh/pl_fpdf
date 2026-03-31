@@ -165,13 +165,7 @@ l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["doc1","doc2"]'));
 | **3.0.0** | Feb 2026 | PDF manipulation, merge, split, watermark |
 | **2.0.0** | Dec 2025 | UTF-8, TrueType, QR Code, Barcode |
 
-### Planned
-
-| Version | Target | Features |
-|---------|--------|----------|
-| 3.2.1 | Q2 2026 | AES-128, AES-256 encryption |
-| 3.3.0 | Q3 2026 | Bookmarks, hyperlinks |
-| 4.0.0 | 2028 | PDF 2.0, digital signatures |
+See **[ROADMAP.md](ROADMAP.md)** for planned versions and TODOs.
 
 ---
 
