@@ -124,11 +124,10 @@ END;
 
 ## Documentacao
 
-Veja **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)** para referencia completa:
-- Referencia da API
-- Roadmap de versoes
-- Arquitetura
-- Guia de migracao
+| Documento | Descricao |
+|-----------|-----------|
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | API, Arquitetura, Migracao |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Versoes, TODOs, Backlog |
 
 ---
 

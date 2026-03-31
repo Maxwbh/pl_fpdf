@@ -196,11 +196,10 @@ pl_fpdf/
 
 ## Documentation
 
-See **[docs/DOCUMENTATION.md](docs/DOCUMENTATION.md)** for complete reference:
-- API Reference
-- Version Roadmap
-- Architecture
-- Migration Guide
+| Document | Description |
+|----------|-------------|
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | API Reference, Architecture, Migration |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Version planning, TODOs, Backlog |
 
 ---
 
