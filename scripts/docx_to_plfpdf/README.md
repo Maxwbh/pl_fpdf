@@ -29,6 +29,10 @@ generates:
 | `hu_triagem_melhorias.docx`       | `hu_triagem_melhorias.sql`           |
 | `memorando_destrato.docx`         | `memorando_destrato.sql`             |
 
+Veja também `examples/sample_output.sql` — um recorte curto e comentado
+ilustrando como cada elemento DOCX (heading, runs, lista, tabela, quebra de
+página e imagem) aparece no PL/SQL emitido.
+
 Reproduce them with:
 
 ```bash
