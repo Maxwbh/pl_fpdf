@@ -18,6 +18,23 @@ sqlplus user/pwd@db @output.sql
 
 Without `-o` the generated PL/SQL is written to stdout.
 
+## Examples
+
+The `examples/` folder contains three real DOCX inputs and the SQL each one
+generates:
+
+| DOCX                              | SQL                                  |
+|-----------------------------------|--------------------------------------|
+| `curriculo_maxwell.docx`          | `curriculo_maxwell.sql`              |
+| `hu_triagem_melhorias.docx`       | `hu_triagem_melhorias.sql`           |
+| `memorando_destrato.docx`         | `memorando_destrato.sql`             |
+
+Reproduce them with:
+
+```bash
+python docx_to_plfpdf.py examples/curriculo_maxwell.docx -o examples/curriculo_maxwell.sql
+```
+
 ## Mapping
 
 | DOCX                  | PL_FPDF call                              |
