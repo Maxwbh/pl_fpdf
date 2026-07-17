@@ -23,11 +23,7 @@ Without `-o` the generated PL/SQL is written to stdout.
 The `examples/` folder contains three real DOCX inputs and the SQL each one
 generates:
 
-| DOCX                              | SQL                                  |
-|-----------------------------------|--------------------------------------|
-| `curriculo_maxwell.docx`          | `curriculo_maxwell.sql`              |
-| `hu_triagem_melhorias.docx`       | `hu_triagem_melhorias.sql`           |
-| `memorando_destrato.docx`         | `memorando_destrato.sql`             |
+
 
 Veja também `examples/sample_output.sql` — um recorte curto e comentado
 ilustrando como cada elemento DOCX (heading, runs, lista, tabela, quebra de
