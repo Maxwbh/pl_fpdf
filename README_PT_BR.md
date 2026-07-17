@@ -1,7 +1,7 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versao-3.0.0-blue.svg" alt="Versao">
+  <img src="https://img.shields.io/badge/versao-3.2.0-blue.svg" alt="Versao">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <img src="https://img.shields.io/badge/licenca-MIT-green.svg" alt="Licenca">
   <img src="https://img.shields.io/badge/fase_4-100%25-brightgreen.svg" alt="Fase 4">

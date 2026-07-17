@@ -7,9 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [3.1.0] - TBD (Planned 📋)
+## [Unreleased] - Planned 📋
 
-### 🎯 Phase 5: Advanced Page Operations
+### 🎯 Advanced Page Operations
 
 **Status:** Planned - Q2 2026
 
@@ -21,6 +21,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ReplacePage()` - Replace page content from another PDF
 - `DuplicatePage()` - Copy page within or across documents
 - `BatchProcess()` - Apply same operations to multiple PDFs
+
+---
+
+## [3.2.0] - 2026-07-17 ✅
+
+### 🔐 Security & Tooling
+
+**Status:** Released
+**Author:** @maxwbh
+
+### Security (RC4 Encryption)
+- `EncryptPDF()` - Encrypt PDF with owner/user passwords and permissions
+- `DecryptPDF()` - Decrypt protected PDF
+- `IsEncrypted()` - Check if PDF is encrypted
+- `GetSecurityInfo()` - Security metadata as JSON
+- `SetEncryption()` / `SetPermissions()` - Configure protection for generated PDFs
+- `SetPDFVersion()` / `GetPDFVersion()` - Control output PDF version
+
+### Tooling
+- `scripts/docx_to_plfpdf/` - Python generator that converts `.docx` files
+  into PL/SQL blocks using PL_FPDF (headings, styled runs, lists, tables,
+  inline images, page breaks)
+- Real-world examples in `scripts/docx_to_plfpdf/examples/`
+
+### Fixed
+- `co_version` and package headers aligned with released version (3.2.0)
 
 ---
 

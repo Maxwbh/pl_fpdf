@@ -207,7 +207,7 @@ pl_fpdf/
 
 | Version | Date | Highlights |
 |---------|------|------------|
-| **3.2.0** | Mar 2026 | Security: RC4 encryption, permissions, decryption |
+| **3.2.0** | Jul 2026 | Security: RC4 encryption, permissions, decryption • DOCX→PL/SQL generator |
 | 3.0.0 | Feb 2026 | PDF manipulation: load, modify, merge, split |
 | 2.0.0 | Dec 2025 | Foundation: UTF-8, TrueType, barcodes, QR |
 

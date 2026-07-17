@@ -1,13 +1,13 @@
 CREATE OR REPLACE PACKAGE BODY PL_FPDF AS
 /*******************************************************************************
 *                                                                              *
-*                            PL_FPDF v3.0.0                                    *
+*                            PL_FPDF v3.2.0                                    *
 *                Oracle PL/SQL PDF Generation and Manipulation                 *
 *                           Package Body / Corpo do Pacote                     *
 *                                                                              *
 ********************************************************************************
 *                                                                              *
-* Version / Versão: 3.0.0                                                      *
+* Version / Versão: 3.2.0                                                      *
 * Release Date / Data: February 2026 / Fevereiro 2026                          *
 * License / Licença: MIT                                                       *
 *                                                                              *

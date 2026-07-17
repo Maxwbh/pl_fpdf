@@ -161,7 +161,7 @@ l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["doc1","doc2"]'));
 
 | Version | Date | Features |
 |---------|------|----------|
-| **3.2.0** | Mar 2026 | RC4 encryption, permissions, decryption |
+| **3.2.0** | Jul 2026 | RC4 encryption, permissions, decryption |
 | **3.0.0** | Feb 2026 | PDF manipulation, merge, split, watermark |
 | **2.0.0** | Dec 2025 | UTF-8, TrueType, QR Code, Barcode |
 

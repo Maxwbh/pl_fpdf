@@ -1,7 +1,7 @@
 CREATE OR REPLACE PACKAGE PL_FPDF AS
 /*******************************************************************************
 *                                                                              *
-*                            PL_FPDF v3.0.0                                    *
+*                            PL_FPDF v3.2.0                                    *
 *                Oracle PL/SQL PDF Generation and Manipulation                *
 *                                                                              *
 ********************************************************************************
@@ -19,8 +19,8 @@ CREATE OR REPLACE PACKAGE PL_FPDF AS
 *                                                                              *
 ********************************************************************************
 *                                                                              *
-* Version / Versão: 3.0.0                                                      *
-* Release Date / Data de Lançamento: January 2026 / Janeiro 2026              *
+* Version / Versão: 3.2.0                                                      *
+* Release Date / Data de Lançamento: July 2026 / Julho 2026                  *
 * Status: Production Ready / Pronto para Produção                             *
 *                                                                              *
 * GitHub: https://github.com/maxwbh/pl_fpdf                                    *
@@ -117,7 +117,7 @@ type recImageBlob is record (
 );
 
 -- Global constants / Constantes globais
-co_version CONSTANT VARCHAR2(10) := '3.0.0';  -- PL_FPDF Version / Versão
+co_version CONSTANT VARCHAR2(10) := '3.2.0';  -- PL_FPDF Version / Versão
 noParam tv4000a;
 
 /*******************************************************************************
