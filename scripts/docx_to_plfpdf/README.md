@@ -6,7 +6,7 @@ Reads a `.docx` file and emits an Oracle PL/SQL anonymous block that uses the
 ## Install
 
 ```bash
-pip install -r requirements.txt
+pip install python-docx
 ```
 
 ## Usage
@@ -17,23 +17,6 @@ sqlplus user/pwd@db @output.sql
 ```
 
 Without `-o` the generated PL/SQL is written to stdout.
-
-## Examples
-
-The `examples/` folder contains three real DOCX inputs and the SQL each one
-generates:
-
-
-
-Veja também `examples/sample_output.sql` — um recorte curto e comentado
-ilustrando como cada elemento DOCX (heading, runs, lista, tabela, quebra de
-página e imagem) aparece no PL/SQL emitido.
-
-Reproduce them with:
-
-```bash
-python docx_to_plfpdf.py examples/curriculo_maxwell.docx -o examples/curriculo_maxwell.sql
-```
 
 ## Mapping
 

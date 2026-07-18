@@ -5,6 +5,8 @@
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <img src="https://img.shields.io/badge/licenca-MIT-green.svg" alt="Licenca">
   <img src="https://img.shields.io/badge/fase_4-100%25-brightgreen.svg" alt="Fase 4">
+  <a href="https://github.com/Maxwbh/pl_fpdf/actions/workflows/ci.yml"><img src="https://github.com/Maxwbh/pl_fpdf/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/releases"><img src="https://img.shields.io/github/v/release/Maxwbh/pl_fpdf?label=release" alt="Release"></a>
 </p>
 
 <p align="center">

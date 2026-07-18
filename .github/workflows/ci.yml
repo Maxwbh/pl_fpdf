@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  docx-generator:
+    name: DOCX to PL/SQL generator
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install python-docx
+
+      - name: Build sample DOCX and generate PL/SQL
+        run: |
+          set -e
+          python - <<'EOF'
+          from docx import Document
+          d = Document()
+          d.add_heading('CI Sample', level=1)
+          p = d.add_paragraph('Plain text with ')
+          p.add_run('bold').bold = True
+          p.add_run(' and ')
+          p.add_run('italic').italic = True
+          d.add_paragraph('Bullet item', style='List Bullet')
+          t = d.add_table(rows=2, cols=2)
+          t.rows[0].cells[0].text = 'Header A'
+          t.rows[0].cells[1].text = 'Header B'
+          t.rows[1].cells[0].text = '1'
+          t.rows[1].cells[1].text = '2'
+          d.save('/tmp/sample.docx')
+          EOF
+          python scripts/docx_to_plfpdf/docx_to_plfpdf.py /tmp/sample.docx -o /tmp/sample.sql
+          grep -q "PL_FPDF.Init" /tmp/sample.sql
+          grep -q "PL_FPDF.Output_Blob" /tmp/sample.sql
+          grep -q "q'\[CI Sample\]'" /tmp/sample.sql
+          echo "OK: generator produced $(wc -l < /tmp/sample.sql) lines of PL/SQL"
+
+  package-sanity:
+    name: Package version consistency
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: co_version matches CHANGELOG and README
+        run: |
+          set -e
+          ver=$(grep -oP "co_version CONSTANT VARCHAR2\(10\) := '\K[0-9.]+" src/PL_FPDF.pks)
+          echo "co_version=$ver"
+          grep -q "## \[$ver\]" CHANGELOG.md
+          grep -q "version-$ver" README.md
+          grep -q "PL_FPDF v$ver" src/PL_FPDF.pkb
+          echo "OK: version $ver consistent across package, CHANGELOG and README"

@@ -3,8 +3,11 @@
 <p align="center">
   <img src="https://img.shields.io/badge/version-3.2.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
-  <img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License">
+  <a href="LICENSE"><img src="https://img.shields.io/github/license/Maxwbh/pl_fpdf?color=green" alt="License"></a>
   <img src="https://img.shields.io/badge/security-RC4-brightgreen.svg" alt="Security">
+  <a href="https://github.com/Maxwbh/pl_fpdf/actions/workflows/ci.yml"><img src="https://github.com/Maxwbh/pl_fpdf/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/releases"><img src="https://img.shields.io/github/v/release/Maxwbh/pl_fpdf?label=release" alt="Release"></a>
+  <a href="https://github.com/Maxwbh/pl_fpdf/stargazers"><img src="https://img.shields.io/github/stars/Maxwbh/pl_fpdf?style=social" alt="Stars"></a>
 </p>
 
 <p align="center">
