@@ -21,6 +21,11 @@
   <a href="README.md">English</a>
 </p>
 
+> **📌 Sobre este projeto:** Este é um fork do [Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf) —
+> o porte PL/SQL original do [FPDF](http://www.fpdf.org/) por Pierre-Gilles Levallois — **mantido,
+> atualizado e melhorado** por [@maxwbh](https://github.com/maxwbh): suporte Oracle 19c/23c,
+> UTF-8/TrueType, manipulação de PDF (v3.0), criptografia RC4 (v3.2) e ferramentas.
+
 ---
 
 ## Por que PL_FPDF?
@@ -161,9 +166,9 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes.
 
 ## Creditos
 
-- **FPDF (PHP):** Olivier PLATHEY
-- **Port PL/SQL:** Anton Scheffer, Pierre-Gilles Levallois
-- **Modernizacao:** Maxwell Oliveira ([@maxwbh](https://github.com/maxwbh))
+- **FPDF (PHP):** [Olivier PLATHEY](http://www.fpdf.org/)
+- **Port PL/SQL original:** [Pierre-Gilles Levallois](https://github.com/Pilooz) ([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)), Anton Scheffer
+- **Este fork — Modernizacao e v2.x/v3.x:** Maxwell da Silva Oliveira ([@maxwbh](https://github.com/maxwbh))
 
 ---
 
