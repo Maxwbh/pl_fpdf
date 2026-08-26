@@ -69,8 +69,6 @@ SELECT PL_FPDF.co_version FROM DUAL;
 
 ## Início Rápido
 
-### Criar um PDF
-
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -83,92 +81,25 @@ BEGIN
 END;
 ```
 
-### Modificar um PDF existente
+Manipular PDFs existentes, mesclar, dividir, criptografar, QR Code, marca d'água e
+todo o restante da API estão na documentação:
 
-```sql
-DECLARE
-  l_pdf BLOB;
-BEGIN
-  SELECT pdf_blob INTO l_pdf FROM documentos WHERE id = 1;
-
-  PL_FPDF.LoadPDF(l_pdf);
-  PL_FPDF.RotatePage(1, 90);
-  PL_FPDF.AddWatermark('CONFIDENCIAL', 0.3);
-  PL_FPDF.RemovePage(3);
-
-  l_pdf := PL_FPDF.OutputModifiedPDF();
-END;
-```
-
-### Criptografar um PDF
-
-```sql
-DECLARE
-  l_pdf BLOB;
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
-BEGIN
-  l_perms.put('print', TRUE);
-  l_perms.put('copy', FALSE);
-
-  l_pdf := PL_FPDF.EncryptPDF(
-    p_pdf            => l_original,
-    p_user_password  => 'senha123',
-    p_owner_password => 'senhaAdmin456',
-    p_permissions    => l_perms,
-    p_encryption     => 'RC4-128'
-  );
-END;
-```
-
-### Mesclar PDFs
-
-```sql
-DECLARE
-  l_merged BLOB;
-BEGIN
-  PL_FPDF.LoadPDFWithID(l_pdf1, 'doc1');
-  PL_FPDF.LoadPDFWithID(l_pdf2, 'doc2');
-  l_merged := PL_FPDF.MergePDFs('doc1,doc2');
-END;
-```
+- 📖 **[Referência completa de uso](docs/DOCUMENTATION.md)** — todas as APIs, parâmetros e exemplos
+- 🌐 **[Índice de utilização no site](https://maxwbh.github.io/pl_fpdf/api.html)** — versão navegável
 
 ---
 
 ## Recursos
 
-### Geração de PDF
-- Documentos multi-página (páginas ilimitadas)
-- Texto, formas, imagens (PNG, JPEG)
-- Fontes TrueType com suporte a UTF-8
-- Códigos de barras (Code39, EAN-13, QR Code)
-- Tabelas com auto-paginação
+- **Geração**: multi-página, texto/formas/imagens (PNG, JPEG), fontes TrueType com UTF-8, tabelas com auto-paginação
+- **Códigos**: QR Code (TEXT, URL, PIX, VCARD, WIFI, EMAIL) e barras (CODE128, CODE39, EAN13, EAN8, ITF14)
+- **Manipulação**: carregar PDF existente, rotacionar/remover páginas, marca d'água, overlays, merge e split
+- **Segurança (v3.2)**: criptografia RC4 40/128 bits, senhas de usuário/proprietário, controle de permissões
+- **Extensão BR** (opcional): [PIX e Boleto Bancário](extensions/brazilian-payments/README_PT_BR.md)
+- **Arquitetura**: PL/SQL puro, package-only, Oracle 19c+, compilação nativa
 
-### Manipulação de PDF
-- Carregar e interpretar PDFs existentes
-- Rotacionar páginas (0, 90, 180, 270)
-- Remover páginas
-- Adicionar marcas d'água (texto/imagem)
-- Overlay de texto e imagem
-- Mesclar múltiplos PDFs
-- Dividir PDF por intervalo de páginas
-
-### Segurança (v3.2.0)
-- Criptografia RC4 de 40 bits (legado)
-- Criptografia RC4 de 128 bits (padrão)
-- Proteção por senha (usuário/proprietário)
-- Controle de permissões (imprimir, copiar, modificar etc.)
-- Descriptografia de PDF
-
-### Extensão de Pagamentos Brasileiros (opcional)
-- QR Code PIX (padrão EMV Merchant-Presented)
-- Boleto Bancário (padrão FEBRABAN)
-- Veja [extensions/brazilian-payments](extensions/brazilian-payments/README_PT_BR.md)
-
-### Arquitetura
-- PL/SQL puro (sem dependências externas)
-- Somente packages (sem tabelas, types ou sequences)
-- Compatível com Oracle 19c (garantido)
-- Suporte a compilação nativa (2-3x mais rápido)
+A lista completa, com assinatura e exemplo de cada API, está na
+[referência de uso](docs/DOCUMENTATION.md).
 
 ---
 
@@ -202,20 +133,10 @@ pl_fpdf/
 
 | Documento | Descrição |
 |-----------|-----------|
-| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Referência de API, arquitetura, migração |
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Referência completa de uso: todas as APIs com exemplos |
+| [Índice da API no site](https://maxwbh.github.io/pl_fpdf/api.html) | Versão navegável da referência |
+| [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Planejamento de versões, TODOs, backlog |
-
----
-
-## Histórico de Versões
-
-| Versão | Data | Destaques |
-|--------|------|-----------|
-| **3.2.0** | Jul 2026 | Segurança: criptografia RC4, permissões, descriptografia • Gerador DOCX→PL/SQL |
-| 3.0.0 | Fev 2026 | Manipulação de PDF: carregar, modificar, mesclar, dividir |
-| 2.0.0 | Dez 2025 | Base: UTF-8, TrueType, códigos de barras, QR |
-
-Veja o [CHANGELOG.md](CHANGELOG.md) para o histórico completo.
 
 ---
 
