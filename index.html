@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PL_FPDF — Biblioteca PL/SQL para gerar e manipular PDF no Oracle Database</title>
+<meta name="description" content="PL_FPDF é uma biblioteca 100% PL/SQL, sem dependências externas, para gerar e manipular arquivos PDF diretamente dentro do Oracle Database (19c+): criação, mesclagem, divisão, marca d'água, criptografia RC4 e extensão para PIX e Boleto Bancário.">
+<meta name="keywords" content="PL/SQL PDF, Oracle PDF, gerar PDF Oracle, PL_FPDF, FPDF PL/SQL, PDF Oracle Database, PIX QR Code Oracle, Boleto Bancário PL/SQL, criptografia PDF Oracle, relatório PDF PL/SQL">
+<meta name="author" content="Maxwell da Silva Oliveira">
+<link rel="canonical" href="https://maxwbh.github.io/pl_fpdf/">
+
+<meta property="og:type" content="website">
+<meta property="og:title" content="PL_FPDF — PDF em PL/SQL puro, direto no Oracle Database">
+<meta property="og:description" content="Gere, modifique, mescle e criptografe PDFs sem sair do Oracle Database. Sem Java, sem middleware, sem dependências externas.">
+<meta property="og:url" content="https://maxwbh.github.io/pl_fpdf/">
+<meta property="og:image" content="https://opengraph.githubassets.com/1/Maxwbh/pl_fpdf">
+<meta property="og:locale" content="pt_BR">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="PL_FPDF — PDF em PL/SQL puro, direto no Oracle Database">
+<meta name="twitter:description" content="Biblioteca open source (MIT) para gerar e manipular PDFs 100% em PL/SQL: criação, merge, split, marca d'água, criptografia RC4 e PIX/Boleto.">
+<meta name="twitter:image" content="https://opengraph.githubassets.com/1/Maxwbh/pl_fpdf">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareSourceCode",
+  "name": "PL_FPDF",
+  "description": "Biblioteca 100% PL/SQL para geração e manipulação de PDF diretamente no Oracle Database, sem dependências externas.",
+  "codeRepository": "https://github.com/Maxwbh/pl_fpdf",
+  "programmingLanguage": "PL/SQL",
+  "runtimePlatform": "Oracle Database 19c+",
+  "license": "https://opensource.org/licenses/MIT",
+  "author": {
+    "@type": "Person",
+    "name": "Maxwell da Silva Oliveira",
+    "url": "https://github.com/maxwbh"
+  },
+  "isBasedOn": "https://github.com/Pilooz/pl_fpdf",
+  "softwareVersion": "3.2.0",
+  "url": "https://maxwbh.github.io/pl_fpdf/"
+}
+</script>
+
+<style>
+  :root{
+    --bg:#0f1b2d; --bg2:#16283f; --panel:#0b1420; --border:#27405f;
+    --fg:#eef3f8; --muted:#aac4de; --accent:#e8503a; --code:#7fd1a8;
+    --key:#6fb3e8; --str:#e8c07d; --chip:#3d5a7d;
+  }
+  @media (prefers-color-scheme: light){
+    :root{ --bg:#f4f7fb; --bg2:#e9eff7; --panel:#0b1420; --border:#c7d6e8;
+           --fg:#12202f; --muted:#3d5670; --accent:#d8452f; --chip:#8fa9c4; }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:linear-gradient(135deg,var(--bg),var(--bg2));color:var(--fg);
+       font-family:-apple-system,Segoe UI,Roboto,Arial,sans-serif;line-height:1.6}
+  .wrap{max-width:1000px;margin:0 auto;padding:64px 24px 40px}
+  header{text-align:center;margin-bottom:32px}
+  .logo{font-size:64px;font-weight:800;letter-spacing:-1px;margin:0}
+  .logo .pl{color:var(--fg)} .logo .f{color:var(--accent)}
+  .tag{font-size:20px;color:var(--muted);max-width:640px;margin:12px auto 0}
+  .badges{margin-top:24px;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .badges img{height:20px}
+  .cta{margin-top:28px;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+  .btn{padding:12px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:15px}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.secondary{border:1px solid var(--chip);color:var(--fg)}
+  section{margin:48px 0}
+  h2{font-size:24px;border-bottom:1px solid var(--border);padding-bottom:10px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:20px}
+  .card{border:1px solid var(--border);border-radius:12px;padding:18px;background:rgba(127,127,127,.04)}
+  .card h3{margin:0 0 8px;font-size:17px}
+  .card p{margin:0;color:var(--muted);font-size:14px}
+  pre{background:var(--panel);color:var(--code);border:1px solid var(--border);border-radius:10px;
+      padding:18px 20px;overflow-x:auto;font-size:14px;line-height:1.6}
+  pre .k{color:var(--key)} pre .s{color:var(--str)}
+  footer{text-align:center;color:var(--muted);font-size:14px;padding:24px 0 8px}
+  footer a{color:var(--muted)}
+  .fork-note{border-left:3px solid var(--accent);padding:12px 16px;background:rgba(232,80,58,.08);
+             border-radius:0 8px 8px 0;font-size:14px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="logo"><span class="pl">PL_</span><span class="f">FPDF</span></p>
+    <p class="tag">Geração e manipulação de PDF <b>100% em PL/SQL</b>, executando diretamente
+    dentro do Oracle Database — sem Java, sem middleware, sem dependências externas.</p>
+    <div class="badges">
+      <img src="https://img.shields.io/badge/versão-3.2.0-blue.svg" alt="versão 3.2.0">
+      <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle 19c+">
+      <img src="https://img.shields.io/badge/licença-MIT-green.svg" alt="Licença MIT">
+      <img src="https://github.com/Maxwbh/pl_fpdf/actions/workflows/ci.yml/badge.svg" alt="CI passing">
+    </div>
+    <div class="cta">
+      <a class="btn primary" href="https://github.com/Maxwbh/pl_fpdf">Ver no GitHub</a>
+      <a class="btn secondary" href="https://github.com/Maxwbh/pl_fpdf#instalação">Como instalar</a>
+      <a class="btn secondary" href="https://github.com/Maxwbh/pl_fpdf/releases">Releases</a>
+    </div>
+  </header>
+
+  <p class="fork-note">📌 Este projeto é um <b>fork mantido ativamente</b> de
+  <a href="https://github.com/Pilooz/pl_fpdf">Pilooz/pl_fpdf</a> — o porte PL/SQL original do
+  FPDF (PHP) — atualizado por <a href="https://github.com/maxwbh">@maxwbh</a> para Oracle 19c/23c,
+  com manipulação de PDF, criptografia RC4 e extensão PIX/Boleto.</p>
+
+  <section>
+    <h2>Por que usar</h2>
+    <div class="grid">
+      <div class="card"><h3>Roda dentro do banco</h3><p>Sem servidor de aplicação, sem Java Stored Procedures — gere o PDF na própria trigger, job ou API PL/SQL.</p></div>
+      <div class="card"><h3>Manipula PDFs existentes</h3><p>Carregar, rotacionar, marcar d'água, mesclar e dividir arquivos PDF já prontos.</p></div>
+      <div class="card"><h3>Segurança RC4</h3><p>Criptografia com senha de usuário/proprietário e controle de permissões (imprimir, copiar, editar).</p></div>
+      <div class="card"><h3>PIX e Boleto</h3><p>Extensão opcional para gerar QR Code PIX (EMV) e Boleto Bancário (padrão FEBRABAN).</p></div>
+      <div class="card"><h3>Zero dependências</h3><p>Sem OWA, sem OrdImage, sem libs de terceiros. Apenas dois arquivos: <code>.pks</code> + <code>.pkb</code>.</p></div>
+      <div class="card"><h3>Open source (MIT)</h3><p>Código aberto, com CI automatizado e histórico de versões documentado.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Exemplo rápido</h2>
+    <pre><span class="k">DECLARE</span>
+  l_pdf BLOB;
+<span class="k">BEGIN</span>
+  PL_FPDF.Init(<span class="s">'P'</span>, <span class="s">'mm'</span>, <span class="s">'A4'</span>);
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, 16);
+  PL_FPDF.Cell(0, 10, <span class="s">'Olá, Mundo!'</span>, <span class="s">'0'</span>, 1, <span class="s">'C'</span>);
+  l_pdf := PL_FPDF.Output_Blob();
+<span class="k">END</span>;</pre>
+  </section>
+
+  <footer>
+    <p>
+      <a href="https://github.com/Maxwbh/pl_fpdf">Repositório</a> ·
+      <a href="https://github.com/Maxwbh/pl_fpdf/discussions">Discussions</a> ·
+      <a href="https://github.com/Maxwbh/pl_fpdf/issues">Issues</a> ·
+      <a href="mailto:maxwbh@gmail.com">Contato</a>
+    </p>
+    <p>MIT License · Maxwell da Silva Oliveira (<a href="https://github.com/maxwbh">@maxwbh</a>)</p>
+  </footer>
+</div>
+</body>
+</html>
