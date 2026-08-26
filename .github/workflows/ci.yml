@@ -69,7 +69,7 @@ jobs:
           check "CHANGELOG.md"           CHANGELOG.md    "## \[$ver\]"
           check "README.md (badge PT)"   README.md       "badge/versão-$ver"
           check "README_EN.md (badge EN)" README_EN.md   "badge/version-$ver"
-          check "index.html (badge)"     index.html      "badge/versão-$ver"
+          check "index.html (chip hero)" index.html      ">v$ver<"
           check "index.html (JSON-LD)"   index.html      "\"softwareVersion\": \"$ver\""
           check "PL_FPDF.pkb (header)"   src/PL_FPDF.pkb "PL_FPDF v$ver"
 
