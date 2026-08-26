@@ -1,125 +1,192 @@
---------------------------------------------------------------------------------
--- PL_FPDF Complete Test Suite Runner (Legacy - utPLSQL)
--- Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
--- Date: 2025-12 (Updated: 2026-01)
--- Version: 3.0.0-b.2
---
--- Description: Legacy test runner using utPLSQL framework
---
--- IMPORTANT: For the new organized test runner, use:
---   @tests/test_runner.sql  (Recommended - Phases 1-4 comprehensive tests)
---
--- This file uses utPLSQL (if installed) for legacy test compatibility.
--- For modern phase-based testing without utPLSQL dependency, use test_runner.sql
---
--- Usage:
---   sqlplus user/pass@db @run_all_tests.sql
---   Or: EXEC ut.run('test_pl_fpdf');
---------------------------------------------------------------------------------
+/*******************************************************************************
+* Test Runner: PL_FPDF Comprehensive Test Suite
+* Version: 3.2.0
+* Date: 2026-01
+* Author: @maxwbh
+*
+* Purpose: Organized test runner for all PL_FPDF phases
+*
+* Test Execution Order:
+*   1. Phase 1-3 Validation (Foundation)
+*   2. Phase 4 Individual Tests (Detailed)
+*   3. Phase 4 Complete Validation (Integration)
+*
+* Usage:
+*   SET SERVEROUTPUT ON SIZE UNLIMITED
+*   @tests/run_all_tests.sql
+*
+* Options:
+*   - Run all tests (default)
+*   - Comment out sections to skip specific phases
+*******************************************************************************/
 
 SET SERVEROUTPUT ON SIZE UNLIMITED
 SET FEEDBACK OFF
 SET VERIFY OFF
-SET LINESIZE 200
-SET PAGESIZE 5000
+SET TIMING ON
+
+PROMPT ################################################################################
+PROMPT #                                                                              #
+PROMPT #                      PL_FPDF Test Suite Runner                              #
+PROMPT #                            Version 3.0.0-b.2                                 #
+PROMPT #                                                                              #
+PROMPT ################################################################################
+PROMPT
+
+-- Display current timestamp
+SELECT 'Test Run Started: ' || TO_CHAR(SYSTIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS info FROM DUAL;
 
 PROMPT
 PROMPT ================================================================================
-PROMPT   PL_FPDF Complete Test Suite (Legacy - utPLSQL)
-PROMPT   Version: 3.0.0-b.2
-PROMPT ================================================================================
-PROMPT   NOTICE: This is the legacy test runner using utPLSQL.
-PROMPT   For modern phase-based testing, use: @tests/test_runner.sql
-PROMPT ================================================================================
-PROMPT   Running all test packages with utPLSQL framework
+PROMPT SECTION 1: FOUNDATION VALIDATION (Phases 1-3)
 PROMPT ================================================================================
 PROMPT
-
--- Check if utPLSQL is installed
-DECLARE
-  l_count NUMBER;
-BEGIN
-  SELECT COUNT(*)
-  INTO l_count
-  FROM all_objects
-  WHERE object_name = 'UT'
-    AND object_type = 'PACKAGE';
-
-  IF l_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('ERROR: utPLSQL is not installed.');
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Please use the modern test runner instead (no utPLSQL required):');
-    DBMS_OUTPUT.PUT_LINE('  @tests/test_runner.sql        - Comprehensive test suite (RECOMMENDED)');
-    DBMS_OUTPUT.PUT_LINE('  @tests/validate_phases_1_3.sql    - Phase 1-3 validation');
-    DBMS_OUTPUT.PUT_LINE('  @tests/validate_phase_4_complete.sql - Phase 4 validation');
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Or install utPLSQL: https://utplsql.org/');
-    RAISE_APPLICATION_ERROR(-20000, 'utPLSQL not found');
-  END IF;
-END;
-/
-
-PROMPT
-PROMPT Running test suite: test_pl_fpdf_init (Initialization Tests)
+PROMPT Running: validate_phases_1_3.sql
+PROMPT This validates PDF generation foundation (Phases 1-3)
 PROMPT --------------------------------------------------------------------------------
-EXEC ut.run('test_pl_fpdf_init');
+@@validate_phases_1_3.sql
 
 PROMPT
-PROMPT Running test suite: test_pl_fpdf_fonts (Font Handling Tests)
-PROMPT --------------------------------------------------------------------------------
-EXEC ut.run('test_pl_fpdf_fonts');
-
-PROMPT
-PROMPT Running test suite: test_pl_fpdf_images (Image Processing Tests)
-PROMPT --------------------------------------------------------------------------------
-EXEC ut.run('test_pl_fpdf_images');
-
-PROMPT
-PROMPT Running test suite: test_pl_fpdf_output (PDF Generation Tests)
-PROMPT --------------------------------------------------------------------------------
-EXEC ut.run('test_pl_fpdf_output');
-
-PROMPT
-PROMPT Running test suite: test_pl_fpdf_performance (Performance Tests)
-PROMPT --------------------------------------------------------------------------------
-EXEC ut.run('test_pl_fpdf_performance');
-
 PROMPT
 PROMPT ================================================================================
-PROMPT   Complete Test Suite - Summary
-PROMPT ================================================================================
-PROMPT   All legacy utPLSQL test suites executed.
-PROMPT   Check output above for detailed results.
-PROMPT ================================================================================
-PROMPT
-PROMPT   Note: These are legacy tests. For comprehensive Phase 1-4 testing:
-PROMPT   @tests/test_runner.sql
+PROMPT SECTION 2: PHASE 4 DETAILED TESTS
 PROMPT ================================================================================
 PROMPT
 
--- Generate coverage report (optional - comment out if not needed)
+-- Phase 4.1A: PDF Parser
 PROMPT
-PROMPT Generating code coverage report...
-PROMPT
-/*
-BEGIN
-  ut.run(
-    ut_varchar2_list(
-      'test_pl_fpdf_init',
-      'test_pl_fpdf_fonts',
-      'test_pl_fpdf_images',
-      'test_pl_fpdf_output',
-      'test_pl_fpdf_performance'
-    ),
-    ut_coverage_html_reporter()
-  );
-END;
-/
-*/
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.1A: PDF Parser Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_1a_parser.sql
+@@test_phase_4_parser_basic.sql
 
+-- Phase 4.1B: Page Information
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.1B: Page Information Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_1b_pages.sql
+@@test_phase_4_1b_pages.sql
+
+-- Phase 4.2: Page Management
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.2: Page Management Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_2_page_mgmt.sql
+@@test_phase_4_2_page_mgmt.sql
+
+-- Phase 4.3: Watermarks
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.3: Watermark Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_3_watermark.sql
+@@test_phase_4_3_watermark.sql
+
+-- Phase 4.4: Output Modified PDF
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.4: Output Modified PDF Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_4_output.sql
+@@test_phase_4_4_output.sql
+
+-- Phase 4.5: Text & Image Overlay
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.5: Text & Image Overlay Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_5_overlay.sql
+@@test_phase_4_5_overlay.sql
+
+-- Phase 4.6: PDF Merge & Split
+PROMPT
+PROMPT --------------------------------------------------------------------------------
+PROMPT Phase 4.6: PDF Merge & Split Tests
+PROMPT --------------------------------------------------------------------------------
+PROMPT Running: test_phase_4_6_merge_split.sql
+@@test_phase_4_6_merge_split.sql
+
+PROMPT
+PROMPT
+PROMPT ================================================================================
+PROMPT SECTION 3: PHASE 4 COMPLETE VALIDATION
+PROMPT ================================================================================
+PROMPT
+PROMPT Running: validate_phase_4_complete.sql
+PROMPT This validates all Phase 4 features together (Integration Test)
+PROMPT --------------------------------------------------------------------------------
+@@validate_phase_4_complete.sql
+
+PROMPT
+PROMPT ================================================================================
+PROMPT SECTION 4: Security - RC4 Encryption (v3.2)
+PROMPT ================================================================================
+PROMPT
+PROMPT Running: test_phase_security.sql
+PROMPT --------------------------------------------------------------------------------
+@@test_phase_security.sql
+
+PROMPT
+PROMPT
+PROMPT ################################################################################
+PROMPT #                                                                              #
+PROMPT #                        TEST SUITE EXECUTION COMPLETE                        #
+PROMPT #                                                                              #
+PROMPT ################################################################################
+PROMPT
+
+-- Display completion timestamp
+SELECT 'Test Run Completed: ' || TO_CHAR(SYSTIMESTAMP, 'YYYY-MM-DD HH24:MI:SS') AS info FROM DUAL;
+
+PROMPT
+PROMPT ================================================================================
+PROMPT Test Suite Summary
+PROMPT ================================================================================
+PROMPT
+PROMPT Tests Executed:
+PROMPT   1. validate_phases_1_3.sql       - Foundation validation
+PROMPT   2. test_phase_4_1a_parser.sql    - PDF Parser tests
+PROMPT   3. test_phase_4_1b_pages.sql     - Page Information tests
+PROMPT   4. test_phase_4_2_page_mgmt.sql  - Page Management tests
+PROMPT   5. test_phase_4_3_watermark.sql  - Watermark tests
+PROMPT   6. test_phase_4_4_output.sql     - Output Modified PDF tests
+PROMPT   7. test_phase_4_5_overlay.sql    - Text/Image Overlay tests (20 tests)
+PROMPT   8. test_phase_4_6_merge_split.sql- Merge/Split tests (20 tests)
+PROMPT   9. validate_phase_4_complete.sql - Phase 4 integration validation
+PROMPT  10. test_phase_security.sql - RC4 encryption (v3.2)
+PROMPT
+PROMPT Total Test Files: 9
+PROMPT Estimated Total Test Cases: ~150+
+PROMPT
+PROMPT Review the output above for any failures.
+PROMPT
+PROMPT ================================================================================
+PROMPT Next Steps
+PROMPT ================================================================================
+PROMPT
+PROMPT If all tests PASSED:
+PROMPT   - Phase 4 is validated and ready for promotion
+PROMPT   - Version can move from Beta (3.0.0-b.2) to Release Candidate (3.0.0-rc.1)
+PROMPT   - Update version in PL_FPDF.pkb, README.md, and CHANGELOG.md
+PROMPT
+PROMPT If any tests FAILED:
+PROMPT   - Review error messages in the output above
+PROMPT   - Fix issues in PL_FPDF package
+PROMPT   - Re-run affected test files
+PROMPT   - Version remains in Beta status until all tests pass
+PROMPT
+PROMPT For individual test reruns:
+PROMPT   @tests/validate_phases_1_3.sql
+PROMPT   @tests/test_phase_4_5_overlay.sql
+PROMPT   @tests/test_phase_4_6_merge_split.sql
+PROMPT   @tests/validate_phase_4_complete.sql
+PROMPT
+PROMPT ================================================================================
+PROMPT
+
+SET TIMING OFF
 SET FEEDBACK ON
 SET VERIFY ON
-
-PROMPT
-PROMPT Test suite execution complete.
-PROMPT

@@ -67,8 +67,6 @@ SELECT PL_FPDF.co_version FROM DUAL;
 
 ## Quick Start
 
-### Create PDF
-
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -81,92 +79,25 @@ BEGIN
 END;
 ```
 
-### Modify Existing PDF
+Manipulating existing PDFs, merge/split, encryption, QR codes, watermarks and the
+rest of the API are covered in the documentation:
 
-```sql
-DECLARE
-  l_pdf BLOB;
-BEGIN
-  SELECT pdf_blob INTO l_pdf FROM documents WHERE id = 1;
-
-  PL_FPDF.LoadPDF(l_pdf);
-  PL_FPDF.RotatePage(1, 90);
-  PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3);
-  PL_FPDF.RemovePage(3);
-
-  l_pdf := PL_FPDF.OutputModifiedPDF();
-END;
-```
-
-### Encrypt PDF
-
-```sql
-DECLARE
-  l_pdf BLOB;
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
-BEGIN
-  l_perms.put('print', TRUE);
-  l_perms.put('copy', FALSE);
-
-  l_pdf := PL_FPDF.EncryptPDF(
-    p_pdf            => l_original,
-    p_user_password  => 'user123',
-    p_owner_password => 'owner456',
-    p_permissions    => l_perms,
-    p_encryption     => 'RC4-128'
-  );
-END;
-```
-
-### Merge PDFs
-
-```sql
-DECLARE
-  l_merged BLOB;
-BEGIN
-  PL_FPDF.LoadPDFWithID(l_pdf1, 'doc1');
-  PL_FPDF.LoadPDFWithID(l_pdf2, 'doc2');
-  l_merged := PL_FPDF.MergePDFs('doc1,doc2');
-END;
-```
+- 📖 **[Full usage reference](docs/DOCUMENTATION.md)** (Portuguese) — every API with parameters and examples
+- 🌐 **[API usage index on the site](https://maxwbh.github.io/pl_fpdf/api.html)** — browsable version
 
 ---
 
 ## Features
 
-### PDF Generation
-- Multi-page documents (unlimited pages)
-- Text, shapes, images (PNG, JPEG)
-- TrueType fonts with UTF-8
-- Barcodes (Code39, EAN-13, QR Code)
-- Tables with auto-pagination
+- **Generation**: multi-page, text/shapes/images (PNG, JPEG), TrueType fonts with UTF-8, auto-paginated tables
+- **Codes**: QR Code (TEXT, URL, PIX, VCARD, WIFI, EMAIL) and barcodes (CODE128, CODE39, EAN13, EAN8, ITF14)
+- **Manipulation**: load existing PDFs, rotate/remove pages, watermarks, overlays, merge and split
+- **Security (v3.2)**: RC4 40/128-bit encryption, user/owner passwords, permission controls
+- **Brazilian extension** (optional): [PIX & Boleto](extensions/brazilian-payments/README.md)
+- **Architecture**: pure PL/SQL, package-only, Oracle 19c+, native compilation
 
-### PDF Manipulation
-- Load and parse existing PDFs
-- Rotate pages (0, 90, 180, 270)
-- Remove pages
-- Add watermarks (text/image)
-- Text and image overlays
-- Merge multiple PDFs
-- Split PDF by page ranges
-
-### Security (v3.2.0)
-- RC4 40-bit encryption (legacy)
-- RC4 128-bit encryption (standard)
-- Password protection (user/owner)
-- Permission controls (print, copy, modify, etc.)
-- PDF decryption
-
-### Brazilian Payments Extension (optional)
-- PIX QR Codes (EMV Merchant-Presented Mode)
-- Boleto Bancário (FEBRABAN standard)
-- See [extensions/brazilian-payments](extensions/brazilian-payments/README.md)
-
-### Architecture
-- Pure PL/SQL (no external dependencies)
-- Package-only (no tables, types, or sequences)
-- Oracle 19c compatible (guaranteed)
-- Native compilation support (2-3x faster)
+The complete list, with the signature and an example for each API, lives in the
+[usage reference](docs/DOCUMENTATION.md).
 
 ---
 
@@ -182,8 +113,9 @@ pl_fpdf/
 ├── extensions/                   # Optional Extensions
 │   └── brazilian-payments/      # PIX QR Code & Boleto
 │
-├── tests/                        # Test Suite (25+ tests)
-├── scripts/                      # Utilities (incl. docx_to_plfpdf generator)
+├── tests/                        # Test Suite (single runner: run_all_tests.sql)
+├── scripts/                      # Utilities (docx_to_plfpdf generator)
+├── assets/ + index.html          # Project site (GitHub Pages)
 ├── docs/                         # Documentation
 ├── README.md                     # Portuguese (primary)
 ├── README_EN.md                  # This file
@@ -199,20 +131,10 @@ pl_fpdf/
 
 | Document | Description |
 |----------|-------------|
-| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | API Reference, Architecture, Migration |
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Full usage reference: every API with examples (PT) |
+| [API index on the site](https://maxwbh.github.io/pl_fpdf/api.html) | Browsable reference |
+| [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Version planning, TODOs, Backlog |
-
----
-
-## Version History
-
-| Version | Date | Highlights |
-|---------|------|------------|
-| **3.2.0** | Jul 2026 | Security: RC4 encryption, permissions, decryption • DOCX→PL/SQL generator |
-| 3.0.0 | Feb 2026 | PDF manipulation: load, modify, merge, split |
-| 2.0.0 | Dec 2025 | Foundation: UTF-8, TrueType, barcodes, QR |
-
-See [CHANGELOG.md](CHANGELOG.md) for full history.
 
 ---
 
