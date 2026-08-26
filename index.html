@@ -65,6 +65,7 @@
     --shadow:0 26px 70px rgba(2,8,18,.6);
     --glow-a:rgba(232,80,58,.16); --glow-b:rgba(111,179,232,.13);
     --ok:#4ade80;
+    --sheet:#122036; --sheetfold:#1a2c48; --sheetbd:#33578a; --sheetink:#2c4a72;
   }
   @media (prefers-color-scheme: light){
     :root{
@@ -78,6 +79,7 @@
       --gridline:rgba(39,90,148,.065);
       --shadow:0 26px 60px rgba(23,49,82,.18);
       --glow-a:rgba(232,80,58,.10); --glow-b:rgba(39,121,192,.10);
+      --sheet:#ffffff; --sheetfold:#e9eff7; --sheetbd:#b9cbe2; --sheetink:#d9e4f1;
     }
   }
 
@@ -379,25 +381,25 @@
     <div class="stage fade d2">
       <!-- página PDF flutuante (decorativa) -->
       <svg class="pdf-sheet" viewBox="0 0 160 208" aria-hidden="true">
-        <path d="M8 8h104l40 40v152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" fill="#122036" stroke="#33578a" stroke-width="2"/>
-        <path d="M112 8v40h40" fill="#1a2c48" stroke="#33578a" stroke-width="2"/>
+        <path d="M8 8h104l40 40v152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" style="fill:var(--sheet);stroke:var(--sheetbd)" stroke-width="2"/>
+        <path d="M112 8v40h40" style="fill:var(--sheetfold);stroke:var(--sheetbd)" stroke-width="2"/>
         <rect x="22" y="70" width="80" height="8" rx="4" fill="#e8503a"/>
-        <rect x="22" y="92" width="112" height="6" rx="3" fill="#2c4a72"/>
-        <rect x="22" y="108" width="112" height="6" rx="3" fill="#2c4a72"/>
-        <rect x="22" y="124" width="84" height="6" rx="3" fill="#2c4a72"/>
+        <rect x="22" y="92" width="112" height="6" rx="3" style="fill:var(--sheetink)"/>
+        <rect x="22" y="108" width="112" height="6" rx="3" style="fill:var(--sheetink)"/>
+        <rect x="22" y="124" width="84" height="6" rx="3" style="fill:var(--sheetink)"/>
         <rect x="22" y="152" width="40" height="40" rx="4" fill="none" stroke="#6fb3e8" stroke-width="3"/>
         <path d="M30 160h8v8h-8zM46 160h8v8h-8zM30 176h8v8h-8zM46 176h8v8h-8z" fill="#6fb3e8"/>
-        <rect x="76" y="158" width="58" height="6" rx="3" fill="#2c4a72"/>
-        <rect x="76" y="172" width="58" height="6" rx="3" fill="#2c4a72"/>
-        <rect x="76" y="186" width="40" height="6" rx="3" fill="#2c4a72"/>
+        <rect x="76" y="158" width="58" height="6" rx="3" style="fill:var(--sheetink)"/>
+        <rect x="76" y="172" width="58" height="6" rx="3" style="fill:var(--sheetink)"/>
+        <rect x="76" y="186" width="40" height="6" rx="3" style="fill:var(--sheetink)"/>
       </svg>
       <svg class="pdf-sheet-2" viewBox="0 0 160 208" aria-hidden="true">
-        <path d="M8 8h104l40 40v152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" fill="#122036" stroke="#2c4a72" stroke-width="2"/>
-        <path d="M112 8v40h40" fill="#1a2c48" stroke="#2c4a72" stroke-width="2"/>
+        <path d="M8 8h104l40 40v152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" style="fill:var(--sheet);stroke:var(--sheetbd)" stroke-width="2"/>
+        <path d="M112 8v40h40" style="fill:var(--sheetfold);stroke:var(--sheetbd)" stroke-width="2"/>
         <rect x="22" y="72" width="60" height="8" rx="4" fill="#6fb3e8"/>
-        <rect x="22" y="96" width="112" height="6" rx="3" fill="#2c4a72"/>
-        <rect x="22" y="112" width="112" height="6" rx="3" fill="#2c4a72"/>
-        <rect x="22" y="128" width="70" height="6" rx="3" fill="#2c4a72"/>
+        <rect x="22" y="96" width="112" height="6" rx="3" style="fill:var(--sheetink)"/>
+        <rect x="22" y="112" width="112" height="6" rx="3" style="fill:var(--sheetink)"/>
+        <rect x="22" y="128" width="70" height="6" rx="3" style="fill:var(--sheetink)"/>
         <rect x="22" y="156" width="112" height="24" rx="4" fill="none" stroke="#e8503a" stroke-width="3"/>
         <path d="M30 162v12M38 162v12M44 162v12M56 162v12M62 162v12M74 162v12M84 162v12M92 162v12M100 162v12M112 162v12M122 162v12" stroke="#e8503a" stroke-width="3"/>
       </svg>
