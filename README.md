@@ -230,11 +230,48 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes. Dúvidas de uso? Use as [
 
 ---
 
+## 💼 Mantenedora
+
+O desenvolvimento contínuo do PL_FPDF conta com o apoio financeiro e institucional da
+**[M&S do Brasil LTDA](https://msbrasil.inf.br)**, empresa brasileira especializada em
+soluções para o ecossistema Oracle. É esse patrocínio que garante ao desenvolvedor
+**Maxwell da Silva Oliveira** ([@maxwbh](https://github.com/maxwbh)) o tempo e a
+estrutura para evoluir a biblioteca com constância — novas versões, correções,
+documentação e suporte à comunidade — mantendo o projeto **gratuito e open source
+(MIT)** para todos.
+
+Se o PL_FPDF é útil para a sua empresa e você precisa de consultoria, evolução sob
+demanda ou suporte especializado em Oracle/PL/SQL, fale com a mantenedora:
+
+- 🌐 **Site:** [msbrasil.inf.br](https://msbrasil.inf.br)
+- 📧 **Contato:** [contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
+
+---
+
+## 🙏 Agradecimentos
+
+Este projeto só existe porque outros o tornaram possível, e é justo nomeá-los:
+
+- **[Olivier Plathey](http://www.fpdf.org/)**, autor do **FPDF** original em PHP — a
+  biblioteca que definiu, há mais de duas décadas, o jeito simples e direto de gerar
+  PDF por código e inspirou portes em dezenas de linguagens.
+- **[Pierre-Gilles Levallois](https://github.com/Pilooz)** ([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)),
+  que teve a visão pioneira de trazer o FPDF para dentro do Oracle Database, criando o
+  porte PL/SQL sobre o qual todo este trabalho se apoia.
+- **Anton Scheffer** e os demais contribuidores do porte original, cujo código e ideias
+  seguem vivos em cada release.
+
+A este alicerce, o fork acrescenta a modernização para Oracle 19c/23c e as versões
+2.x/3.x — mas a fundação é de vocês. **Muito obrigado.**
+
+---
+
 ## Créditos
 
 - **FPDF (PHP):** [Olivier PLATHEY](http://www.fpdf.org/)
 - **Port PL/SQL original:** [Pierre-Gilles Levallois](https://github.com/Pilooz) ([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)), Anton Scheffer
 - **Este fork — Modernização e v2.x/v3.x:** Maxwell da Silva Oliveira ([@maxwbh](https://github.com/maxwbh))
+- **Mantenedora:** [M&S do Brasil LTDA](https://msbrasil.inf.br) · [contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
 
 ---
 

@@ -228,11 +228,39 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
+## 💼 Maintainer & Sponsor
+
+Ongoing development of PL_FPDF is financially supported by
+**[M&S do Brasil LTDA](https://msbrasil.inf.br)**, a Brazilian company specialized in
+Oracle solutions. This sponsorship gives developer
+**Maxwell da Silva Oliveira** ([@maxwbh](https://github.com/maxwbh)) the time and
+structure to keep evolving the library — new releases, fixes, documentation and
+community support — while keeping the project **free and open source (MIT)** for everyone.
+
+For consulting, custom development or specialized Oracle/PL/SQL support, contact the
+maintainer company: [msbrasil.inf.br](https://msbrasil.inf.br) ·
+[contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
+
+---
+
+## 🙏 Acknowledgements
+
+This project stands on the shoulders of the developers who came first:
+**[Olivier Plathey](http://www.fpdf.org/)**, author of the original FPDF (PHP), which
+defined the simple, code-first way of producing PDFs and inspired ports in dozens of
+languages; **[Pierre-Gilles Levallois](https://github.com/Pilooz)**
+([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)), who pioneered bringing FPDF into
+Oracle Database with the original PL/SQL port this work builds upon; and
+**Anton Scheffer** and the other contributors to the original port. Thank you.
+
+---
+
 ## Credits
 
 - **FPDF (PHP):** [Olivier PLATHEY](http://www.fpdf.org/)
 - **Original PL/SQL Port:** [Pierre-Gilles Levallois](https://github.com/Pilooz) ([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)), Anton Scheffer
 - **This fork — Modernization & v2.x/v3.x:** Maxwell da Silva Oliveira ([@maxwbh](https://github.com/maxwbh))
+- **Maintainer company:** [M&S do Brasil LTDA](https://msbrasil.inf.br) · [contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
 
 ---
 
