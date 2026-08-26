@@ -51,12 +51,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: co_version matches CHANGELOG and README
+      - name: co_version matches CHANGELOG, READMEs and landing page
         run: |
           set -e
           ver=$(grep -oP "co_version CONSTANT VARCHAR2\(10\) := '\K[0-9.]+" src/PL_FPDF.pks)
           echo "co_version=$ver"
-          grep -q "## \[$ver\]" CHANGELOG.md
-          grep -q "version-$ver" README.md
-          grep -q "PL_FPDF v$ver" src/PL_FPDF.pkb
-          echo "OK: version $ver consistent across package, CHANGELOG and README"
+
+          check() {  # check <descrição> <arquivo> <padrão>
+            if grep -q "$3" "$2"; then
+              echo "  OK   $1"
+            else
+              echo "  FALHA  $1 — esperado '$3' em $2"
+              exit 1
+            fi
+          }
+
+          check "CHANGELOG.md"           CHANGELOG.md    "## \[$ver\]"
+          check "README.md (badge PT)"   README.md       "badge/versão-$ver"
+          check "README_EN.md (badge EN)" README_EN.md   "badge/version-$ver"
+          check "index.html (badge)"     index.html      "badge/versão-$ver"
+          check "index.html (JSON-LD)"   index.html      "\"softwareVersion\": \"$ver\""
+          check "PL_FPDF.pkb (header)"   src/PL_FPDF.pkb "PL_FPDF v$ver"
+
+          echo "OK: versão $ver consistente em todos os arquivos"
