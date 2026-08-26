@@ -203,8 +203,10 @@ pl_fpdf/
 ├── src/
 │   ├── PL_FPDF.pks     # Specification
 │   └── PL_FPDF.pkb     # Body
-├── extensions/          # Optional (PIX, Boleto)
-├── tests/              # Test suite
+├── extensions/         # Optional (PIX, Boleto)
+├── tests/              # Test suite (run_all_tests.sql)
+├── scripts/            # Tooling (docx_to_plfpdf generator)
+├── docs/               # This documentation + roadmap
 └── deploy_all.sql      # Main deploy
 ```
 
@@ -232,12 +234,13 @@ l_pdf := PL_FPDF.Output_Blob;
 | `Output('S')` | `Output_Blob` |
 | `Output('F', path)` | Use UTL_FILE separately |
 | Limited UTF-8 | Full UTF-8 |
-| No encryption | RC4/AES encryption |
+| No encryption | RC4 encryption (AES no roadmap) |
 
 ---
 
 ## Support
 
 - **Author:** Maxwell da Silva Oliveira (@maxwbh)
+- **Maintainer company:** [M&S do Brasil LTDA](https://msbrasil.inf.br)
 - **Issues:** [GitHub Issues](https://github.com/Maxwbh/pl_fpdf/issues)
-- **Email:** maxwbh@gmail.com
+- **Email:** contato@msbrasil.inf.br

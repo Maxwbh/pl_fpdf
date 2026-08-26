@@ -5,70 +5,43 @@
 ## Quick Start
 
 ```sql
--- Run all tests
+SET SERVEROUTPUT ON SIZE UNLIMITED
+
+-- Run the full suite
 @tests/run_all_tests.sql
 
--- Run specific phase
+-- Or run a single area
 @tests/test_phase_security.sql
 ```
 
 ---
 
-## Test Files
+## Structure
 
-| File | Description | Status |
-|------|-------------|--------|
-| `run_all_tests.sql` | Master runner | - |
-| `validate_phases_1_3.sql` | PDF generation | ✅ |
-| `test_phase_4_*.sql` | PDF manipulation | ✅ |
-| `test_phase_security.sql` | Encryption (v3.2) | ✅ |
-
----
-
-## Test Structure
+One runner, one validation per area — no duplicates:
 
 ```
 tests/
-├── run_all_tests.sql           # Run all
-├── validate_phase_1.sql        # Phase 1: Basic PDF
-├── validate_phase_2.sql        # Phase 2: Security
-├── validate_phase_3.sql        # Phase 3: Advanced
-├── validate_phases_1_3.sql     # Phases 1-3 combined
-├── test_phase_4_*.sql          # Phase 4: PDF manipulation
-├── test_phase_security.sql     # Phase 5: Encryption
-└── validate_phase_4_complete.sql
+├── run_all_tests.sql              # Único runner: executa tudo abaixo, em ordem
+├── validate_phases_1_3.sql        # Geração de PDF (init, fontes, imagens, UTF-8)
+├── test_phase_4_parser_basic.sql  # Parser de PDF existente
+├── test_phase_4_1b_pages.sql      # Leitura de páginas
+├── test_phase_4_2_page_mgmt.sql   # Rotação / remoção de páginas
+├── test_phase_4_3_watermark.sql   # Marca d'água
+├── test_phase_4_4_output.sql      # OutputModifiedPDF
+├── test_phase_4_5_overlay.sql     # Overlay de texto/imagem
+├── test_phase_4_6_merge_split.sql # Merge e split
+├── validate_phase_4_complete.sql  # Integração da manipulação de PDF
+└── test_phase_security.sql        # Criptografia RC4 (v3.2)
 ```
+
+Os testes da extensão PIX/Boleto ficam em
+[`extensions/brazilian-payments/tests/`](../extensions/brazilian-payments/tests/).
 
 ---
 
 ## Requirements
 
-- Oracle 19c+
-- PL_FPDF installed
-- `SET SERVEROUTPUT ON SIZE UNLIMITED`
-
----
-
-## Writing Tests
-
-```sql
-DECLARE
-  l_pass PLS_INTEGER := 0;
-  l_fail PLS_INTEGER := 0;
-BEGIN
-  -- Test
-  BEGIN
-    PL_FPDF.Init;
-    l_pass := l_pass + 1;
-    DBMS_OUTPUT.PUT_LINE('PASS: Init');
-  EXCEPTION
-    WHEN OTHERS THEN
-      l_fail := l_fail + 1;
-      DBMS_OUTPUT.PUT_LINE('FAIL: Init - ' || SQLERRM);
-  END;
-  
-  -- Summary
-  DBMS_OUTPUT.PUT_LINE('Passed: ' || l_pass || ', Failed: ' || l_fail);
-END;
-/
-```
+- Oracle 19c+ with `PL_FPDF` installed (`@deploy_all.sql`)
+- `SERVEROUTPUT` enabled
+- No framework needed — plain SQL*Plus / SQLcl scripts with PASS/FAIL output

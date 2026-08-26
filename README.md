@@ -184,9 +184,10 @@ pl_fpdf/
 ├── extensions/                   # Extensões opcionais
 │   └── brazilian-payments/      # PIX QR Code & Boleto
 │
-├── tests/                        # Suíte de testes (25+ testes)
-├── scripts/                       # Utilitários (incl. gerador docx_to_plfpdf)
-├── docs/                          # Documentação
+├── tests/                        # Suíte de testes (runner único: run_all_tests.sql)
+├── scripts/                      # Utilitários (gerador docx_to_plfpdf)
+├── docs/                         # Documentação e roadmap
+├── assets/ + index.html          # Site do projeto (GitHub Pages)
 ├── README.md                     # Este arquivo (português)
 ├── README_EN.md                  # Versão em inglês
 ├── CHANGELOG.md                  # Histórico de versões
