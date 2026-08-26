@@ -28,6 +28,42 @@
 
 ---
 
+## Como passar parâmetros
+
+Todas as APIs aceitam as duas notações do PL/SQL:
+
+```sql
+-- Posicional (ordem da assinatura)
+PL_FPDF.Cell(0, 10, 'Olá', '1', 1, 'C');
+
+-- Nomeada (recomendada: legível e imune a mudanças de ordem)
+PL_FPDF.Cell(
+  pw      => 0,        -- largura; 0 = até a margem direita
+  ph      => 10,       -- altura da célula
+  ptxt    => 'Olá',
+  pborder => '1',      -- '0' | '1' | combinação de 'L','T','R','B'
+  pln     => 1,        -- 0 = cursor à direita | 1 = próxima linha | 2 = abaixo
+  palign  => 'C'       -- 'L' | 'C' | 'R'
+);
+
+-- Misturada (posicionais primeiro, nomeados depois)
+PL_FPDF.Cell(0, 10, 'Olá', palign => 'C');
+```
+
+Convenções recorrentes na biblioteca:
+
+| Convenção | Significado | Exemplo |
+|-----------|-------------|---------|
+| Parâmetro com `DEFAULT` | Pode ser omitido | `AddPage()` = `AddPage(NULL, NULL, 0)` |
+| Cores `r, g, b` | RGB 0–255; só `r` = tom de cinza | `SetFillColor(230, 230, 230)` |
+| Medidas | Na unidade do `Init` (mm, cm, pt, in); largura/altura `0` = automático/proporcional | `Cell(0, 10, ...)`, `Image(..., pWidth => 40, pHeight => 0)` |
+| Faixas de páginas `VARCHAR2` | Lista e intervalos; `'ALL'` = todas; `'21-'` = até o fim | `'1,3-5,10'` |
+| Opções em `JSON_OBJECT_T` | Chaves opcionais; ausentes assumem o padrão | `l_op.put('opacity', 0.5)` |
+| Coordenadas de overlay | Pontos PDF (1 pt = 1/72"), Y de baixo para cima | `OverlayText(1, 'OK', 400, 700)` |
+| Booleanos | `TRUE`/`FALSE` do PL/SQL | `SetAutoPageBreak(TRUE, 15)` |
+
+---
+
 ## 1. Instalação e ciclo de vida
 
 ```sql
@@ -80,13 +116,24 @@ IF NOT PL_FPDF.IsInitialized THEN PL_FPDF.Init; END IF;
 | `GetX`/`SetX`, `GetY`/`SetY`, `SetXY` | Cursor de escrita em unidades do documento |
 
 ```sql
-PL_FPDF.Init('P','mm','A4');
-PL_FPDF.SetMargins(20, 15, 20);
-PL_FPDF.SetAutoPageBreak(TRUE, 15);
-PL_FPDF.AddPage;                       -- página 1
-PL_FPDF.AddPage('L','A4');             -- página 2 em paisagem
-PL_FPDF.SetPage(1);                    -- volta a escrever na página 1
-PL_FPDF.SetXY(20, 40);
+PL_FPDF.Init(p_orientation => 'P', p_unit => 'mm', p_format => 'A4');
+
+PL_FPDF.SetMargins(
+  left  => 20,                 -- margem esquerda (mm, unidade do Init)
+  top   => 15,                 -- margem superior
+  right => 20                  -- omitido/-1 = igual à esquerda
+);
+PL_FPDF.SetAutoPageBreak(
+  pauto   => TRUE,             -- quebra automática ao chegar ao fim
+  pMargin => 15                -- distância da borda inferior que dispara a quebra
+);
+
+PL_FPDF.AddPage;                                 -- página 1 (herda tudo do Init)
+PL_FPDF.AddPage(p_orientation => 'L');           -- página 2 em paisagem
+PL_FPDF.AddPage(p_format => 'A5', p_rotation => 90);  -- página 3: A5 rotacionada
+
+PL_FPDF.SetPage(1);            -- volta a escrever na página 1
+PL_FPDF.SetXY(x => 20, y => 40);   -- posiciona o cursor
 ```
 
 ---
@@ -202,12 +249,13 @@ PL_FPDF.SetLineDashPattern('[3 2] 0');       -- padrão PDF nativo
 
 ```sql
 PL_FPDF.Image(
-  pFile   => 'logo.png',    -- arquivo em DIRECTORY, ou use getImageFromUrl
-  pX      => 10, pY => 10,
-  pWidth  => 40,            -- 0 = proporcional
-  pHeight => 0,
-  pType   => NULL,          -- autodetecta PNG/JPEG
-  pLink   => NULL
+  pFile   => 'logo.png',    -- nome do arquivo (DIRECTORY) ou URL registrada
+  pX      => 10,            -- posição X na unidade do documento
+  pY      => 10,            -- posição Y
+  pWidth  => 40,            -- largura; 0 = calcula pela altura
+  pHeight => 0,             -- altura; 0 = mantém a proporção da largura
+  pType   => NULL,          -- 'PNG' | 'JPG' | NULL = autodetecta
+  pLink   => NULL           -- URL/link interno opcional (imagem clicável)
 );
 
 -- Imagem vinda de URL (via UTL_HTTP)
