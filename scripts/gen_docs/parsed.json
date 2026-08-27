@@ -1,0 +1,2226 @@
+[
+ {
+  "kind": "procedure",
+  "name": "Init",
+  "params": [
+   {
+    "name": "p_orientation",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'P'"
+   },
+   {
+    "name": "p_unit",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'mm'"
+   },
+   {
+    "name": "p_format",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'A4'"
+   },
+   {
+    "name": "p_encoding",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'UTF-8'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Reset",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "IsInitialized",
+  "params": [],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "procedure",
+  "name": "AddTTFFont",
+  "params": [
+   {
+    "name": "p_font_name",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_font_blob",
+    "mode": "IN",
+    "type": "blob",
+    "default": null
+   },
+   {
+    "name": "p_encoding",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'UTF-8'"
+   },
+   {
+    "name": "p_embed",
+    "mode": "IN",
+    "type": "boolean",
+    "default": "true"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "LoadTTFFromFile",
+  "params": [
+   {
+    "name": "p_font_name",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_file_path",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_directory",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'FONTS_DIR'"
+   },
+   {
+    "name": "p_encoding",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'UTF-8'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "IsTTFFontLoaded",
+  "params": [
+   {
+    "name": "p_font_name",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "function",
+  "name": "GetTTFFontInfo",
+  "params": [
+   {
+    "name": "p_font_name",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": "RECTTFFONT"
+ },
+ {
+  "kind": "procedure",
+  "name": "ClearTTFFontCache",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "UTF8ToPDFString",
+  "params": [
+   {
+    "name": "p_text",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_escape",
+    "mode": "IN",
+    "type": "boolean",
+    "default": "true"
+   }
+  ],
+  "returns": "VARCHAR2"
+ },
+ {
+  "kind": "function",
+  "name": "IsUTF8Enabled",
+  "params": [],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetUTF8Enabled",
+  "params": [
+   {
+    "name": "p_enabled",
+    "mode": "IN",
+    "type": "boolean",
+    "default": "true"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetCurrentFontSize",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "function",
+  "name": "GetCurrentFontStyle",
+  "params": [],
+  "returns": "VARCHAR2"
+ },
+ {
+  "kind": "function",
+  "name": "GetCurrentFontFamily",
+  "params": [],
+  "returns": "VARCHAR2"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetDash",
+  "params": [
+   {
+    "name": "pblack",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "pwhite",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetLineSpacing",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetLineSpacing",
+  "params": [
+   {
+    "name": "pls",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Poly",
+  "params": [
+   {
+    "name": "points",
+    "mode": "IN",
+    "type": "tab_points",
+    "default": null
+   },
+   {
+    "name": "pclose",
+    "mode": "IN",
+    "type": "boolean",
+    "default": null
+   },
+   {
+    "name": "pstyle",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Triangle",
+  "params": [
+   {
+    "name": "px",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "py",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "psize",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "porientation",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'left'"
+   },
+   {
+    "name": "pstyle",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetLineDashPattern",
+  "params": [
+   {
+    "name": "pdash",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'[] 0'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Ln",
+  "params": [
+   {
+    "name": "h",
+    "mode": "IN",
+    "type": "number",
+    "default": "null"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetX",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetX",
+  "params": [
+   {
+    "name": "px",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetY",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetY",
+  "params": [
+   {
+    "name": "py",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetXY",
+  "params": [
+   {
+    "name": "x",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "y",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetHeaderProc",
+  "params": [
+   {
+    "name": "headerprocname",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "paramTable",
+    "mode": "IN",
+    "type": "tv4000a",
+    "default": "noParam"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetFooterProc",
+  "params": [
+   {
+    "name": "footerprocname",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "paramTable",
+    "mode": "IN",
+    "type": "tv4000a",
+    "default": "noParam"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetMargins",
+  "params": [
+   {
+    "name": "left",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "top",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "right",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetLeftMargin",
+  "params": [
+   {
+    "name": "pMargin",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetTopMargin",
+  "params": [
+   {
+    "name": "pMargin",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetRightMargin",
+  "params": [
+   {
+    "name": "pMargin",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetAutoPageBreak",
+  "params": [
+   {
+    "name": "pauto",
+    "mode": "IN",
+    "type": "boolean",
+    "default": null
+   },
+   {
+    "name": "pMargin",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetDisplayMode",
+  "params": [
+   {
+    "name": "zoom",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "layout",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'continuous'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetCompression",
+  "params": [
+   {
+    "name": "p_compress",
+    "mode": "IN",
+    "type": "boolean",
+    "default": "false"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetTitle",
+  "params": [
+   {
+    "name": "ptitle",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetSubject",
+  "params": [
+   {
+    "name": "psubject",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetAuthor",
+  "params": [
+   {
+    "name": "pauthor",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetKeywords",
+  "params": [
+   {
+    "name": "pkeywords",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetCreator",
+  "params": [
+   {
+    "name": "pcreator",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetAliasNbPages",
+  "params": [
+   {
+    "name": "palias",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'{nb}'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Header",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Footer",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "PageNo",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetDrawColor",
+  "params": [
+   {
+    "name": "r",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "g",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   },
+   {
+    "name": "b",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetFillColor",
+  "params": [
+   {
+    "name": "r",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "g",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   },
+   {
+    "name": "b",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetTextColor",
+  "params": [
+   {
+    "name": "r",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "g",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   },
+   {
+    "name": "b",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetLineWidth",
+  "params": [
+   {
+    "name": "width",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Line",
+  "params": [
+   {
+    "name": "x1",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "y1",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "x2",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "y2",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Rect",
+  "params": [
+   {
+    "name": "px",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "py",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "pw",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "ph",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "pstyle",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "AddLink",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetLink",
+  "params": [
+   {
+    "name": "plink",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "py",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "ppage",
+    "mode": "IN",
+    "type": "number",
+    "default": "-1"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Link",
+  "params": [
+   {
+    "name": "px",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "py",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "pw",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "ph",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "plink",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Text",
+  "params": [
+   {
+    "name": "px",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "py",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "ptxt",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "AcceptPageBreak",
+  "params": [],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "procedure",
+  "name": "AddFont",
+  "params": [
+   {
+    "name": "family",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "style",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "filename",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetFont",
+  "params": [
+   {
+    "name": "pfamily",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "pstyle",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "psize",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetStringWidth",
+  "params": [
+   {
+    "name": "pstr",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetFontSize",
+  "params": [
+   {
+    "name": "psize",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Cell",
+  "params": [
+   {
+    "name": "pw",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "ph",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "ptxt",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "pborder",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'0'"
+   },
+   {
+    "name": "pln",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "palign",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "pfill",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "plink",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "MultiCell",
+  "params": [
+   {
+    "name": "pw",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "ph",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "ptxt",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "pborder",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'0'"
+   },
+   {
+    "name": "palign",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'J'"
+   },
+   {
+    "name": "pfill",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "phMax",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   }
+  ],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "procedure",
+  "name": "MultiCell",
+  "params": [
+   {
+    "name": "pwidth",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "pheight",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "ptext",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "pbrdr",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'0'"
+   },
+   {
+    "name": "palignment",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'J'"
+   },
+   {
+    "name": "pfillin",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "phMaximum",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Write",
+  "params": [
+   {
+    "name": "pH",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "ptxt",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "plink",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "CellRotated",
+  "params": [
+   {
+    "name": "p_width",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_height",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "p_text",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "p_border",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'0'"
+   },
+   {
+    "name": "p_ln",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "p_align",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "p_fill",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "p_link",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "''"
+   },
+   {
+    "name": "p_rotation",
+    "mode": "IN",
+    "type": "pls_integer",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "WriteRotated",
+  "params": [
+   {
+    "name": "p_height",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_text",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_link",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   },
+   {
+    "name": "p_rotation",
+    "mode": "IN",
+    "type": "pls_integer",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "image",
+  "params": [
+   {
+    "name": "pFile",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "pX",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "pY",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "pWidth",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "pHeight",
+    "mode": "IN",
+    "type": "number",
+    "default": "0"
+   },
+   {
+    "name": "pType",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   },
+   {
+    "name": "pLink",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Output",
+  "params": [
+   {
+    "name": "pname",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   },
+   {
+    "name": "pdest",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "ReturnBlob",
+  "params": [
+   {
+    "name": "pname",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   },
+   {
+    "name": "pdest",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   }
+  ],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "function",
+  "name": "OutputBlob",
+  "params": [],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "procedure",
+  "name": "OutputFile",
+  "params": [
+   {
+    "name": "p_filename",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_directory",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'PDF_DIR'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "OpenPDF",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "ClosePDF",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "AddPage",
+  "params": [
+   {
+    "name": "p_orientation",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   },
+   {
+    "name": "p_format",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "null"
+   },
+   {
+    "name": "p_rotation",
+    "mode": "IN",
+    "type": "pls_integer",
+    "default": "0"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetPage",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "pls_integer",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetCurrentPage",
+  "params": [],
+  "returns": "PLS_INTEGER"
+ },
+ {
+  "kind": "procedure",
+  "name": "fpdf",
+  "params": [
+   {
+    "name": "orientation",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'P'"
+   },
+   {
+    "name": "unit",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'mm'"
+   },
+   {
+    "name": "format",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'A4'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "Error",
+  "params": [
+   {
+    "name": "pmsg",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "DebugEnabled",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "DebugDisabled",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetScaleFactor",
+  "params": [],
+  "returns": "NUMBER"
+ },
+ {
+  "kind": "function",
+  "name": "getImageFromUrl",
+  "params": [
+   {
+    "name": "p_Url",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": "RECIMAGEBLOB"
+ },
+ {
+  "kind": "procedure",
+  "name": "helloworld",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "testImg",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "test",
+  "params": [
+   {
+    "name": "pdest",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'D'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "MyRepetitiveHeader",
+  "params": [
+   {
+    "name": "param1",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "param2",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "MyRepetitiveFooter",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "testHeader",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "lpc_footer",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetLogLevel",
+  "params": [
+   {
+    "name": "p_level",
+    "mode": "IN",
+    "type": "pls_integer",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetLogLevel",
+  "params": [],
+  "returns": "PLS_INTEGER"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetDocumentConfig",
+  "params": [
+   {
+    "name": "p_config",
+    "mode": "IN",
+    "type": "JSON_OBJECT_T",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetDocumentMetadata",
+  "params": [],
+  "returns": "JSON_OBJECT_T"
+ },
+ {
+  "kind": "function",
+  "name": "GetPageInfo",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "pls_integer",
+    "default": "null"
+   }
+  ],
+  "returns": "JSON_OBJECT_T"
+ },
+ {
+  "kind": "procedure",
+  "name": "AddQRCode",
+  "params": [
+   {
+    "name": "p_x",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_y",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_size",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_data",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_format",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'TEXT'"
+   },
+   {
+    "name": "p_error_correction",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'M'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "AddBarcode",
+  "params": [
+   {
+    "name": "p_x",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_y",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_width",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_height",
+    "mode": "IN",
+    "type": "number",
+    "default": null
+   },
+   {
+    "name": "p_code",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": null
+   },
+   {
+    "name": "p_type",
+    "mode": "IN",
+    "type": "varchar2",
+    "default": "'CODE128'"
+   },
+   {
+    "name": "p_show_text",
+    "mode": "IN",
+    "type": "boolean",
+    "default": "true"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "LoadPDF",
+  "params": [
+   {
+    "name": "p_pdf_blob",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetPageCount",
+  "params": [],
+  "returns": "PLS_INTEGER"
+ },
+ {
+  "kind": "function",
+  "name": "GetPDFInfo",
+  "params": [],
+  "returns": "JSON_OBJECT_T"
+ },
+ {
+  "kind": "procedure",
+  "name": "RotatePage",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": null
+   },
+   {
+    "name": "p_rotation",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "RemovePage",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetActivePageCount",
+  "params": [],
+  "returns": "PLS_INTEGER"
+ },
+ {
+  "kind": "function",
+  "name": "IsPageRemoved",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": null
+   }
+  ],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "function",
+  "name": "IsPDFModified",
+  "params": [],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "procedure",
+  "name": "AddWatermark",
+  "params": [
+   {
+    "name": "p_text",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_opacity",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": "0.3"
+   },
+   {
+    "name": "p_rotation",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": "45"
+   },
+   {
+    "name": "p_pages",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": "'ALL'"
+   },
+   {
+    "name": "p_font",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": "'Helvetica'"
+   },
+   {
+    "name": "p_size",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": "48"
+   },
+   {
+    "name": "p_color",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": "'gray'"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetWatermarks",
+  "params": [],
+  "returns": "JSON_ARRAY_T"
+ },
+ {
+  "kind": "function",
+  "name": "OutputModifiedPDF",
+  "params": [],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "procedure",
+  "name": "ClearPDFCache",
+  "params": [],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "OverlayText",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": null
+   },
+   {
+    "name": "p_text",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_x",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": null
+   },
+   {
+    "name": "p_y",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": null
+   },
+   {
+    "name": "p_options",
+    "mode": "IN",
+    "type": "JSON_OBJECT_T",
+    "default": "NULL"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "OverlayImage",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": null
+   },
+   {
+    "name": "p_image_blob",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   },
+   {
+    "name": "p_x",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": null
+   },
+   {
+    "name": "p_y",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": null
+   },
+   {
+    "name": "p_width",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": "NULL"
+   },
+   {
+    "name": "p_height",
+    "mode": "IN",
+    "type": "NUMBER",
+    "default": "NULL"
+   },
+   {
+    "name": "p_options",
+    "mode": "IN",
+    "type": "JSON_OBJECT_T",
+    "default": "NULL"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetOverlays",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": "NULL"
+   }
+  ],
+  "returns": "JSON_ARRAY_T"
+ },
+ {
+  "kind": "procedure",
+  "name": "RemoveOverlay",
+  "params": [
+   {
+    "name": "p_overlay_id",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "ClearOverlays",
+  "params": [
+   {
+    "name": "p_page_number",
+    "mode": "IN",
+    "type": "PLS_INTEGER",
+    "default": "NULL"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "LoadPDFWithID",
+  "params": [
+   {
+    "name": "p_pdf_id",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_pdf_blob",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetLoadedPDFs",
+  "params": [],
+  "returns": "JSON_ARRAY_T"
+ },
+ {
+  "kind": "procedure",
+  "name": "UnloadPDF",
+  "params": [
+   {
+    "name": "p_pdf_id",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "MergePDFs",
+  "params": [
+   {
+    "name": "p_pdf_ids",
+    "mode": "IN",
+    "type": "JSON_ARRAY_T",
+    "default": null
+   },
+   {
+    "name": "p_options",
+    "mode": "IN",
+    "type": "JSON_OBJECT_T",
+    "default": "NULL"
+   }
+  ],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "function",
+  "name": "SplitPDF",
+  "params": [
+   {
+    "name": "p_pdf_id",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_page_ranges",
+    "mode": "IN",
+    "type": "JSON_ARRAY_T",
+    "default": null
+   }
+  ],
+  "returns": "JSON_ARRAY_T"
+ },
+ {
+  "kind": "function",
+  "name": "ExtractPages",
+  "params": [
+   {
+    "name": "p_pdf_id",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_pages",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_options",
+    "mode": "IN",
+    "type": "JSON_OBJECT_T",
+    "default": "NULL"
+   }
+  ],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "function",
+  "name": "EncryptPDF",
+  "params": [
+   {
+    "name": "p_pdf",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   },
+   {
+    "name": "p_user_password",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_owner_password",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": "NULL"
+   },
+   {
+    "name": "p_permissions",
+    "mode": "IN",
+    "type": "JSON_OBJECT_T",
+    "default": "NULL"
+   },
+   {
+    "name": "p_encryption",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": "'RC4-128'"
+   }
+  ],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "function",
+  "name": "DecryptPDF",
+  "params": [
+   {
+    "name": "p_pdf",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   },
+   {
+    "name": "p_password",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   }
+  ],
+  "returns": "BLOB"
+ },
+ {
+  "kind": "function",
+  "name": "IsEncrypted",
+  "params": [
+   {
+    "name": "p_pdf",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   }
+  ],
+  "returns": "BOOLEAN"
+ },
+ {
+  "kind": "function",
+  "name": "GetSecurityInfo",
+  "params": [
+   {
+    "name": "p_pdf",
+    "mode": "IN",
+    "type": "BLOB",
+    "default": null
+   }
+  ],
+  "returns": "JSON_OBJECT_T"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetEncryption",
+  "params": [
+   {
+    "name": "p_encryption",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_user_password",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   },
+   {
+    "name": "p_owner_password",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": "NULL"
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "procedure",
+  "name": "SetPDFVersion",
+  "params": [
+   {
+    "name": "p_version",
+    "mode": "IN",
+    "type": "VARCHAR2",
+    "default": null
+   }
+  ],
+  "returns": null
+ },
+ {
+  "kind": "function",
+  "name": "GetPDFVersion",
+  "params": [],
+  "returns": "VARCHAR2"
+ },
+ {
+  "kind": "procedure",
+  "name": "SetPermissions",
+  "params": [
+   {
+    "name": "p_print",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "TRUE"
+   },
+   {
+    "name": "p_modify",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "FALSE"
+   },
+   {
+    "name": "p_copy",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "FALSE"
+   },
+   {
+    "name": "p_annotate",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "TRUE"
+   },
+   {
+    "name": "p_fill_forms",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "TRUE"
+   },
+   {
+    "name": "p_extract",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "FALSE"
+   },
+   {
+    "name": "p_assemble",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "FALSE"
+   },
+   {
+    "name": "p_print_high",
+    "mode": "IN",
+    "type": "BOOLEAN",
+    "default": "TRUE"
+   }
+  ],
+  "returns": null
+ }
+]

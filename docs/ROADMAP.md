@@ -134,6 +134,33 @@
 
 ---
 
+## TODO — Documentação gerada a partir do código
+
+A referência da API (`docs/API_REFERENCE.md` e `reference.html`) hoje é gerada por
+`scripts/gen_docs/generate.py`, que **extrai as assinaturas** de `src/PL_FPDF.pks`
+(nomes, tipos, defaults e retorno) e as combina com metadados curados em
+`scripts/gen_docs/meta.py` (descrições, valores possíveis, erros e exemplos).
+
+**Melhoria planejada:** padronizar os comentários do próprio `.pks` para que também
+descrições, valores possíveis, erros e exemplos venham do código, eliminando o arquivo
+de metadados e o risco de divergência.
+
+| Tarefa | Situação |
+|--------|----------|
+| Definir o formato de comentário (tags tipo `@param nome {valores} descrição`, `@returns`, `@raises`, `@example`) | Pendente |
+| Migrar os blocos de comentário existentes do `.pks` para o formato | Pendente |
+| Fazer o gerador ler as tags do `.pks` e aposentar `meta.py` | Pendente |
+| Rodar o gerador no CI e falhar se a documentação estiver desatualizada em relação ao `.pks` | Pendente |
+
+### Divergências encontradas na revisão (a tratar)
+
+| Item | Situação |
+|------|----------|
+| `tests/validate_phase_4_complete.sql` chama `IsPDFLoaded`, `RemoveWatermark` e `ClearWatermarks`, que **não existem** no package — o bloco não compila e a validação não roda | Pendente: implementar as APIs ou ajustar o teste |
+| Verificação automática de referências (`scripts/gen_docs/check_refs.py`) já roda no CI para a documentação | Concluído |
+
+---
+
 ## Backlog (Sem Versao Definida)
 
 | Feature | Complexidade | Valor |

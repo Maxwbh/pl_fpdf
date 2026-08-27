@@ -354,13 +354,13 @@ l_info := PL_FPDF.GetPageInfo(1);              -- dimensões/rotação da págin
 
 | API | Quando usar |
 |-----|-------------|
-| `Output_Blob` / `OutputBlob` **RETURN BLOB** | Padrão: devolve o PDF para gravar em tabela, enviar por e-mail, APEX etc. |
+| `OutputBlob` / `OutputBlob` **RETURN BLOB** | Padrão: devolve o PDF para gravar em tabela, enviar por e-mail, APEX etc. |
 | `OutputFile(p_filename, p_directory)` | Grava direto num DIRECTORY Oracle |
 | `ReturnBlob(pname, pdest)` | Compatibilidade com código legado |
 | `Output(pname, pdest)` | Compatibilidade FPDF clássica |
 
 ```sql
-l_pdf := PL_FPDF.Output_Blob;
+l_pdf := PL_FPDF.OutputBlob;
 INSERT INTO documentos (pdf) VALUES (l_pdf);
 -- ou
 PL_FPDF.OutputFile('relatorio.pdf', 'PDF_DIR');
@@ -494,7 +494,7 @@ END;
 | `DecryptPDF(p_pdf, p_password)` | Remove a proteção (exige a senha) |
 | `IsEncrypted(p_pdf)` | TRUE se o BLOB está criptografado |
 | `GetSecurityInfo(p_pdf)` | JSON: algoritmo, tamanho de chave, permissões |
-| `SetEncryption(p_encryption, p_user_password, p_owner_password)` | Define criptografia **antes** do `Output_Blob` (documento novo) |
+| `SetEncryption(p_encryption, p_user_password, p_owner_password)` | Define criptografia **antes** do `OutputBlob` (documento novo) |
 | `SetPermissions(p_print, p_modify, p_copy, p_annotate, p_fill_forms, p_extract, p_assemble, p_print_high)` | Permissões do documento novo |
 | `SetPDFVersion('1.7')` / `GetPDFVersion` | Versão do arquivo PDF gerado |
 
@@ -520,14 +520,14 @@ Suíte de testes: `@tests/run_all_tests.sql` (veja [tests/README](../tests/READM
 ```sql
 -- ANTES (v0.9.4)                    -- AGORA (v2.0+)
 PL_FPDF.fpdf('P','mm','A4');         PL_FPDF.Init('P','mm','A4');
-l_pdf := PL_FPDF.Output('S');        l_pdf := PL_FPDF.Output_Blob;
+l_pdf := PL_FPDF.Output('S');        l_pdf := PL_FPDF.OutputBlob;
 PL_FPDF.Output('F', caminho);        PL_FPDF.OutputFile(nome, directory);
 ```
 
 | v0.9.4 | v2.0+ |
 |--------|-------|
 | `fpdf()` | `Init()` (o `fpdf()` segue disponível por compatibilidade) |
-| `Output('S')` | `Output_Blob` |
+| `Output('S')` | `OutputBlob` |
 | UTF-8 limitado | UTF-8 completo + TrueType |
 | Sem criptografia | RC4 (AES no roadmap) |
 

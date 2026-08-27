@@ -122,7 +122,7 @@
   </a>
   <div class="right">
     <a href="index.html">Início</a>
-    <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/docs/DOCUMENTATION.md">Referência completa</a>
+    <a href="reference.html">Referência da API</a>
     <a href="https://github.com/Maxwbh/pl_fpdf">GitHub</a>
   </div>
 </div></nav>
@@ -180,7 +180,7 @@
   PL_FPDF.AddPage();
   PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">16</span>);  <span class="c">-- família, estilo ''/B/I/BI/U, tamanho pt</span>
   PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">'Olá, Mundo!'</span>, <span class="s">'0'</span>, <span class="n">1</span>, <span class="s">'C'</span>);
-  l_pdf := PL_FPDF.Output_Blob();
+  l_pdf := PL_FPDF.OutputBlob();
 <span class="k">END</span>;</pre></div>
 </section>
 
@@ -331,12 +331,12 @@ PL_FPDF.SetDocumentConfig(JSON_OBJECT_T(<span class="s">'{"title":"Relatório","
 <section id="saida">
   <h2><span class="n">10</span> Saída — gerar o PDF</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>Quando usar</th></tr></thead><tbody>
-    <tr><td>Output_Blob → BLOB</td><td>Padrão: gravar em tabela, e-mail, APEX, ORDS</td></tr>
+    <tr><td>OutputBlob → BLOB</td><td>Padrão: gravar em tabela, e-mail, APEX, ORDS</td></tr>
     <tr><td>OutputFile(arquivo, directory)</td><td>Gravar num DIRECTORY Oracle</td></tr>
     <tr><td>ReturnBlob · Output</td><td>Compatibilidade com código legado/FPDF clássico</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">saida.sql</span></div>
-<pre>l_pdf := PL_FPDF.Output_Blob();                        <span class="c">-- BLOB para tabela/e-mail/APEX</span>
+<pre>l_pdf := PL_FPDF.OutputBlob();                        <span class="c">-- BLOB para tabela/e-mail/APEX</span>
 PL_FPDF.OutputFile(
   p_filename  =&gt; <span class="s">'relatorio.pdf'</span>,
   p_directory =&gt; <span class="s">'PDF_DIR'</span>);                           <span class="c">-- DIRECTORY Oracle com permissão de escrita</span></pre></div>
@@ -411,7 +411,7 @@ l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T(<span class="s">'["capa","corpo"]'</sp
     <tr><td>EncryptPDF(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — 'RC4-128' ou 'RC4-40'</td></tr>
     <tr><td>DecryptPDF(pdf, senha)</td><td>Remove a proteção</td></tr>
     <tr><td>IsEncrypted(pdf) · GetSecurityInfo(pdf)</td><td>Verifica e inspeciona (algoritmo, chave, permissões)</td></tr>
-    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento <b>novo</b>, antes do Output_Blob</td></tr>
+    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento <b>novo</b>, antes do OutputBlob</td></tr>
     <tr><td>SetPDFVersion('1.7') · GetPDFVersion</td><td>Versão do arquivo gerado</td></tr>
   </tbody></table></div>
   <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">proteger.sql</span></div>

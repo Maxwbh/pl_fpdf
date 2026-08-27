@@ -164,7 +164,7 @@ noParam tv4000a;
 *    └─ Table()          - Create table / Criar tabela                        *
 *                                                                              *
 * 8. OUTPUT / SAÍDA                                                            *
-*    ├─ Output_Blob()    - Get PDF as BLOB / Obter PDF como BLOB              *
+*    ├─ OutputBlob()    - Get PDF as BLOB / Obter PDF como BLOB              *
 *    └─ OutputFile()     - Save to file / Salvar em arquivo                   *
 *                                                                              *
 * 9. PHASE 4: PDF READING & MANIPULATION / LEITURA E MANIPULAÇÃO              *

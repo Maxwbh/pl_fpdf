@@ -75,7 +75,7 @@ BEGIN
   PL_FPDF.AddPage();
   PL_FPDF.SetFont('Arial', 'B', 16);
   PL_FPDF.Cell(0, 10, 'Hello World!', '0', 1, 'C');
-  l_pdf := PL_FPDF.Output_Blob();
+  l_pdf := PL_FPDF.OutputBlob();
 END;
 ```
 

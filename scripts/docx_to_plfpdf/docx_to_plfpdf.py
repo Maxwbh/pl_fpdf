@@ -252,7 +252,7 @@ BEGIN
 """
 
 PLSQL_EPILOGUE = """\
-  l_pdf := PL_FPDF.Output_Blob();
+  l_pdf := PL_FPDF.OutputBlob();
   -- TODO: persist l_pdf (INSERT into your table, return via OUT param, etc.)
   DBMS_OUTPUT.put_line('PDF generated, bytes=' || DBMS_LOB.getlength(l_pdf));
 END;

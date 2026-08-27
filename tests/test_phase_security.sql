@@ -81,7 +81,7 @@ DECLARE
     PL_FPDF.Cell(0, 10, 'This document is used for testing encryption.', '0', 1, 'L');
     PL_FPDF.Ln(10);
     PL_FPDF.Cell(0, 10, 'Confidential content that needs protection.', '0', 1, 'L');
-    l_result := PL_FPDF.Output_Blob();
+    l_result := PL_FPDF.OutputBlob();
     PL_FPDF.Reset();
     RETURN l_result;
   END;

@@ -1,0 +1,40 @@
+</div>
+<footer>
+  <p><a href="index.html">Início</a> · <a href="api.html">Índice de uso</a> ·
+  <a href="https://github.com/Maxwbh/pl_fpdf">Repositório</a> ·
+  <a href="mailto:contato@msbrasil.inf.br">Contato</a></p>
+  <p>Mantido com o apoio de <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
+  · Maxwell da Silva Oliveira (<a href="https://github.com/maxwbh">@maxwbh</a>) · MIT License</p>
+  <p style="font-size:12px;opacity:.75">Página gerada a partir de <code>src/PL_FPDF.pks</code>
+  por <code>scripts/gen_docs/generate.py</code></p>
+</footer>
+<a class="top" href="#" aria-label="Voltar ao topo">↑</a>
+<script>
+(function(){
+  var f = document.querySelector('.filter');
+  if (f) f.addEventListener('input', function(){
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.side-group').forEach(function(g){
+      var vis = 0;
+      g.querySelectorAll('li').forEach(function(li){
+        var hit = li.textContent.toLowerCase().indexOf(q) !== -1;
+        li.style.display = hit ? '' : 'none';
+        if (hit) vis++;
+      });
+      g.style.display = vis ? '' : 'none';
+    });
+  });
+  var links = [].slice.call(document.querySelectorAll('.side-group a'));
+  var obs = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (!e.isIntersecting) return;
+      links.forEach(function(a){
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    });
+  }, {rootMargin: '-70px 0px -75% 0px'});
+  document.querySelectorAll('article.api').forEach(function(a){ obs.observe(a); });
+})();
+</script>
+</body>
+</html>

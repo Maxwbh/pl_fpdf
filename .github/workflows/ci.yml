@@ -41,9 +41,33 @@ jobs:
           EOF
           python scripts/docx_to_plfpdf/docx_to_plfpdf.py /tmp/sample.docx -o /tmp/sample.sql
           grep -q "PL_FPDF.Init" /tmp/sample.sql
-          grep -q "PL_FPDF.Output_Blob" /tmp/sample.sql
+          grep -q "PL_FPDF.OutputBlob" /tmp/sample.sql
           grep -q "q'\[CI Sample\]'" /tmp/sample.sql
           echo "OK: generator produced $(wc -l < /tmp/sample.sql) lines of PL/SQL"
+
+  api-docs:
+    name: Referência da API consistente com o package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Toda referência PL_FPDF.* na documentação existe no package
+        run: python scripts/gen_docs/check_refs.py
+
+      - name: A referência gerada está atualizada em relação ao .pks
+        run: |
+          set -e
+          python scripts/gen_docs/generate.py
+          if ! git diff --quiet -- docs/API_REFERENCE.md reference.html; then
+            echo "A referência está desatualizada. Rode: python scripts/gen_docs/generate.py"
+            git diff --stat -- docs/API_REFERENCE.md reference.html
+            exit 1
+          fi
+          echo "OK: referência sincronizada com src/PL_FPDF.pks"
 
   package-sanity:
     name: Package version consistency

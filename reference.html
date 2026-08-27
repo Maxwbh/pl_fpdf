@@ -1,0 +1,2131 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PL_FPDF — Referência da API</title>
+<meta name="description" content="Referência detalhada da API do PL_FPDF: sintaxe, parâmetros com valores possíveis, retorno, erros e exemplos de cada função e procedure do package PL/SQL para PDF no Oracle Database.">
+<link rel="canonical" href="https://maxwbh.github.io/pl_fpdf/reference.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PL_FPDF — Referência da API">
+<meta property="og:description" content="Sintaxe, parâmetros com valores possíveis, retorno, erros e exemplos de cada API do PL_FPDF.">
+<meta property="og:url" content="https://maxwbh.github.io/pl_fpdf/reference.html">
+<meta property="og:image" content="https://maxwbh.github.io/pl_fpdf/assets/social-preview.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1422; --bg2:#101f36; --panel:#0a121e; --panelbar:#0e1929;
+    --cardbg:rgba(18,32,54,.62); --cardbd:#243d5e; --cardbd-h:#33578a;
+    --fg:#f2f6fb; --muted:#9db8d4; --faint:#69829f;
+    --accent:#e8503a; --accent2:#ff7a55; --blue:#6fb3e8;
+    --code:#7fd1a8; --line:#1d3350; --chipbg:rgba(111,179,232,.09);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f3f7fc; --bg2:#e7eef8; --panel:#0d1828; --panelbar:#101d30;
+      --cardbg:rgba(255,255,255,.82); --cardbd:#d4e0ef; --cardbd-h:#a9c2de;
+      --fg:#0f1f33; --muted:#41607f; --faint:#6d87a3;
+      --accent:#d8452f; --accent2:#f06544; --blue:#2779c0;
+      --line:#d8e2ef; --chipbg:rgba(39,121,192,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--fg);line-height:1.6;
+       font-family:'Inter',-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+       background:linear-gradient(165deg,var(--bg),var(--bg2))}
+  a{color:inherit}
+  nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      background:rgba(11,20,34,.72);border-bottom:1px solid var(--line)}
+  @media (prefers-color-scheme: light){ nav{background:rgba(243,247,252,.8)} }
+  .nav-in{display:flex;align-items:center;gap:22px;height:60px;max-width:1400px;margin:0 auto;padding:0 22px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;text-decoration:none}
+  .brand .f{color:var(--accent)}
+  .mark{width:26px;height:26px}
+  .nav-in .right{margin-left:auto;display:flex;gap:18px}
+  .nav-in .right a{text-decoration:none;font-size:14px;color:var(--muted);font-weight:500}
+  .nav-in .right a:hover{color:var(--fg)}
+
+  .layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:34px;
+          max-width:1400px;margin:0 auto;padding:0 22px}
+  .sidebar{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:22px 0 40px}
+  .side-in{padding-right:8px}
+  .filter{width:100%;padding:9px 12px;margin-bottom:16px;border-radius:9px;
+          border:1px solid var(--cardbd);background:var(--cardbg);color:var(--fg);font-size:13.5px;font-family:inherit}
+  .filter::placeholder{color:var(--faint)}
+  .side-group h4{margin:16px 0 6px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent)}
+  .side-group ul{list-style:none;margin:0;padding:0}
+  .side-group li a{display:block;padding:3px 8px;border-radius:6px;font-size:13px;color:var(--muted);
+                   text-decoration:none;font-family:'JetBrains Mono',monospace}
+  .side-group li a:hover{background:var(--chipbg);color:var(--fg)}
+  .side-group li a.active{color:var(--accent);font-weight:600}
+
+  .content{padding:26px 0 60px;min-width:0}
+  header.page{margin-bottom:26px}
+  .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:2.2px;
+          text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .kicker::before{content:"";width:24px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  h1{font-size:clamp(26px,3.6vw,38px);letter-spacing:-1px;margin:0 0 10px;font-weight:800}
+  .lead{color:var(--muted);max-width:720px;margin:0;font-size:15.5px}
+  .lead a{color:var(--fg)}
+
+  h2.grp{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);
+         margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+
+  .api{border:1px solid var(--cardbd);border-radius:14px;background:var(--cardbg);
+       padding:22px 24px;margin:0 0 18px;scroll-margin-top:76px}
+  .api h3{margin:0 0 8px;font-size:20px;font-weight:800;letter-spacing:-.3px;
+          font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .kind{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.8px;
+        text-transform:uppercase;color:var(--blue);border:1px solid var(--cardbd);
+        border-radius:999px;padding:2px 10px;background:var(--chipbg)}
+  .anchor{margin-left:auto;color:var(--faint);text-decoration:none;font-size:15px}
+  .anchor:hover{color:var(--accent)}
+  .api h5{margin:18px 0 8px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint)}
+  .api p.d{margin:0;color:var(--muted);font-size:14.5px}
+  .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
+  .api p.see a{color:var(--blue);text-decoration:none}
+  .api p.see a:hover{text-decoration:underline}
+
+  .code{background:var(--panel);border:1px solid #223a5a;border-radius:10px;overflow:hidden;margin:0 0 8px}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',Consolas,monospace;
+            font-size:12.5px;line-height:1.65;color:var(--code)}
+  .code .k{color:#6fb3e8} .code .s{color:#e8c07d} .code .c{color:#54718f}
+
+  .tbl{border:1px solid var(--cardbd);border-radius:10px;overflow-x:auto;margin:0 0 6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{text-align:left;background:var(--chipbg);color:var(--faint);font-weight:600;
+           font-size:11px;letter-spacing:.7px;text-transform:uppercase;padding:8px 12px;white-space:nowrap}
+  td{padding:8px 12px;border-top:1px solid var(--cardbd);color:var(--muted);vertical-align:top}
+  td.pname{font-family:'JetBrains Mono',monospace;color:var(--fg);white-space:nowrap;font-size:12.5px}
+  td.ptype{font-family:'JetBrains Mono',monospace;color:var(--blue);white-space:nowrap;font-size:12px}
+  td.pval{min-width:200px}
+  td code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg)}
+
+  footer{border-top:1px solid var(--line);padding:24px 22px 40px;text-align:center;
+         font-size:13.5px;color:var(--faint);max-width:1400px;margin:0 auto}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--fg)}
+  .top{position:fixed;right:20px;bottom:20px;width:40px;height:40px;border-radius:50%;
+       display:flex;align-items:center;justify-content:center;text-decoration:none;
+       background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px;
+       box-shadow:0 8px 22px rgba(232,80,58,.4);z-index:60}
+
+  @media (max-width: 620px){
+    .nav-in{gap:12px;padding:0 14px}
+    .nav-in .right{gap:12px}
+    .nav-in .right a.hide-s{display:none}
+    .brand span[style]{display:none}
+    .layout{padding:0 14px}
+  }
+  @media (max-width: 1000px){
+    .layout{grid-template-columns:1fr;gap:0}
+    .sidebar{position:static;height:auto;overflow:visible;padding:16px 0 0;
+             border-bottom:1px solid var(--line);margin-bottom:10px}
+    .side-group ul{display:flex;flex-wrap:wrap;gap:4px}
+    .side-group li a{padding:3px 10px;border:1px solid var(--cardbd);border-radius:999px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+<nav><div class="nav-in">
+  <a class="brand" href="index.html">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M28 18h32l16 16v44a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6z" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M60 18v16h16" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M34 56h32M34 68h22" stroke="var(--blue)" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    PL_<span class="f">FPDF</span> <span style="color:var(--faint);font-weight:500;font-size:14px">/ Referência</span>
+  </a>
+  <div class="right">
+    <a href="index.html">Início</a>
+    <a class="hide-s" href="api.html">Índice de uso</a>
+    <a href="https://github.com/Maxwbh/pl_fpdf">GitHub</a>
+  </div>
+</div></nav>
+<div class="layout">
+
+<aside class="sidebar"><div class="side-in"><input class="filter" type="search" placeholder="Filtrar API…" aria-label="Filtrar API">
+<div class="side-group"><h4>Ciclo de vida</h4><ul>
+<li><a href="#fpdf">fpdf</a></li>
+<li><a href="#init">Init</a></li>
+<li><a href="#isinitialized">IsInitialized</a></li>
+<li><a href="#reset">Reset</a></li>
+</ul></div>
+<div class="side-group"><h4>Páginas e posicionamento</h4><ul>
+<li><a href="#acceptpagebreak">AcceptPageBreak</a></li>
+<li><a href="#addpage">AddPage</a></li>
+<li><a href="#getcurrentpage">GetCurrentPage</a></li>
+<li><a href="#getx">GetX</a></li>
+<li><a href="#gety">GetY</a></li>
+<li><a href="#ln">Ln</a></li>
+<li><a href="#pageno">PageNo</a></li>
+<li><a href="#setautopagebreak">SetAutoPageBreak</a></li>
+<li><a href="#setleftmargin">SetLeftMargin</a></li>
+<li><a href="#setmargins">SetMargins</a></li>
+<li><a href="#setpage">SetPage</a></li>
+<li><a href="#setrightmargin">SetRightMargin</a></li>
+<li><a href="#settopmargin">SetTopMargin</a></li>
+<li><a href="#setx">SetX</a></li>
+<li><a href="#setxy">SetXY</a></li>
+<li><a href="#sety">SetY</a></li>
+</ul></div>
+<div class="side-group"><h4>Fontes e UTF-8</h4><ul>
+<li><a href="#addfont">AddFont</a></li>
+<li><a href="#addttffont">AddTTFFont</a></li>
+<li><a href="#clearttffontcache">ClearTTFFontCache</a></li>
+<li><a href="#getttffontinfo">GetTTFFontInfo</a></li>
+<li><a href="#isttffontloaded">IsTTFFontLoaded</a></li>
+<li><a href="#isutf8enabled">IsUTF8Enabled</a></li>
+<li><a href="#loadttffromfile">LoadTTFFromFile</a></li>
+<li><a href="#setfont">SetFont</a></li>
+<li><a href="#setfontsize">SetFontSize</a></li>
+<li><a href="#setutf8enabled">SetUTF8Enabled</a></li>
+<li><a href="#utf8topdfstring">UTF8ToPDFString</a></li>
+</ul></div>
+<div class="side-group"><h4>Escrita de texto</h4><ul>
+<li><a href="#cell">Cell</a></li>
+<li><a href="#cellrotated">CellRotated</a></li>
+<li><a href="#getcurrentfontfamily">GetCurrentFontFamily</a></li>
+<li><a href="#getcurrentfontsize">GetCurrentFontSize</a></li>
+<li><a href="#getcurrentfontstyle">GetCurrentFontStyle</a></li>
+<li><a href="#getlinespacing">GetLineSpacing</a></li>
+<li><a href="#getstringwidth">GetStringWidth</a></li>
+<li><a href="#multicell">MultiCell</a></li>
+<li><a href="#setlinespacing">SetLineSpacing</a></li>
+<li><a href="#text">Text</a></li>
+<li><a href="#write">Write</a></li>
+<li><a href="#writerotated">WriteRotated</a></li>
+</ul></div>
+<div class="side-group"><h4>Cores e desenho</h4><ul>
+<li><a href="#line">Line</a></li>
+<li><a href="#poly">Poly</a></li>
+<li><a href="#rect">Rect</a></li>
+<li><a href="#setdash">SetDash</a></li>
+<li><a href="#setdrawcolor">SetDrawColor</a></li>
+<li><a href="#setfillcolor">SetFillColor</a></li>
+<li><a href="#setlinedashpattern">SetLineDashPattern</a></li>
+<li><a href="#setlinewidth">SetLineWidth</a></li>
+<li><a href="#settextcolor">SetTextColor</a></li>
+<li><a href="#triangle">Triangle</a></li>
+</ul></div>
+<div class="side-group"><h4>Imagens</h4><ul>
+<li><a href="#getimagefromurl">getImageFromUrl</a></li>
+<li><a href="#image">image</a></li>
+</ul></div>
+<div class="side-group"><h4>Links</h4><ul>
+<li><a href="#addlink">AddLink</a></li>
+<li><a href="#link">Link</a></li>
+<li><a href="#setlink">SetLink</a></li>
+</ul></div>
+<div class="side-group"><h4>Cabeçalho e rodapé</h4><ul>
+<li><a href="#footer">Footer</a></li>
+<li><a href="#header">Header</a></li>
+<li><a href="#setaliasnbpages">SetAliasNbPages</a></li>
+<li><a href="#setfooterproc">SetFooterProc</a></li>
+<li><a href="#setheaderproc">SetHeaderProc</a></li>
+</ul></div>
+<div class="side-group"><h4>QR Code e código de barras</h4><ul>
+<li><a href="#addbarcode">AddBarcode</a></li>
+<li><a href="#addqrcode">AddQRCode</a></li>
+</ul></div>
+<div class="side-group"><h4>Metadados e configuração</h4><ul>
+<li><a href="#getdocumentmetadata">GetDocumentMetadata</a></li>
+<li><a href="#getpageinfo">GetPageInfo</a></li>
+<li><a href="#setauthor">SetAuthor</a></li>
+<li><a href="#setcompression">SetCompression</a></li>
+<li><a href="#setcreator">SetCreator</a></li>
+<li><a href="#setdisplaymode">SetDisplayMode</a></li>
+<li><a href="#setdocumentconfig">SetDocumentConfig</a></li>
+<li><a href="#setkeywords">SetKeywords</a></li>
+<li><a href="#setsubject">SetSubject</a></li>
+<li><a href="#settitle">SetTitle</a></li>
+</ul></div>
+<div class="side-group"><h4>Saída do documento</h4><ul>
+<li><a href="#closepdf">ClosePDF</a></li>
+<li><a href="#openpdf">OpenPDF</a></li>
+<li><a href="#output">Output</a></li>
+<li><a href="#outputblob">OutputBlob</a></li>
+<li><a href="#outputfile">OutputFile</a></li>
+<li><a href="#returnblob">ReturnBlob</a></li>
+</ul></div>
+<div class="side-group"><h4>Manipulação de PDF existente</h4><ul>
+<li><a href="#addwatermark">AddWatermark</a></li>
+<li><a href="#clearpdfcache">ClearPDFCache</a></li>
+<li><a href="#getactivepagecount">GetActivePageCount</a></li>
+<li><a href="#getpagecount">GetPageCount</a></li>
+<li><a href="#getpdfinfo">GetPDFInfo</a></li>
+<li><a href="#getwatermarks">GetWatermarks</a></li>
+<li><a href="#ispageremoved">IsPageRemoved</a></li>
+<li><a href="#ispdfmodified">IsPDFModified</a></li>
+<li><a href="#loadpdf">LoadPDF</a></li>
+<li><a href="#outputmodifiedpdf">OutputModifiedPDF</a></li>
+<li><a href="#removepage">RemovePage</a></li>
+<li><a href="#rotatepage">RotatePage</a></li>
+</ul></div>
+<div class="side-group"><h4>Overlays</h4><ul>
+<li><a href="#clearoverlays">ClearOverlays</a></li>
+<li><a href="#getoverlays">GetOverlays</a></li>
+<li><a href="#overlayimage">OverlayImage</a></li>
+<li><a href="#overlaytext">OverlayText</a></li>
+<li><a href="#removeoverlay">RemoveOverlay</a></li>
+</ul></div>
+<div class="side-group"><h4>Multi-PDF (merge, split, extract)</h4><ul>
+<li><a href="#extractpages">ExtractPages</a></li>
+<li><a href="#getloadedpdfs">GetLoadedPDFs</a></li>
+<li><a href="#loadpdfwithid">LoadPDFWithID</a></li>
+<li><a href="#mergepdfs">MergePDFs</a></li>
+<li><a href="#splitpdf">SplitPDF</a></li>
+<li><a href="#unloadpdf">UnloadPDF</a></li>
+</ul></div>
+<div class="side-group"><h4>Segurança e criptografia</h4><ul>
+<li><a href="#decryptpdf">DecryptPDF</a></li>
+<li><a href="#encryptpdf">EncryptPDF</a></li>
+<li><a href="#getpdfversion">GetPDFVersion</a></li>
+<li><a href="#getsecurityinfo">GetSecurityInfo</a></li>
+<li><a href="#isencrypted">IsEncrypted</a></li>
+<li><a href="#setencryption">SetEncryption</a></li>
+<li><a href="#setpdfversion">SetPDFVersion</a></li>
+<li><a href="#setpermissions">SetPermissions</a></li>
+</ul></div>
+<div class="side-group"><h4>Diagnóstico e utilidades</h4><ul>
+<li><a href="#debugdisabled">DebugDisabled</a></li>
+<li><a href="#debugenabled">DebugEnabled</a></li>
+<li><a href="#error">Error</a></li>
+<li><a href="#getloglevel">GetLogLevel</a></li>
+<li><a href="#getscalefactor">GetScaleFactor</a></li>
+<li><a href="#helloworld">helloworld</a></li>
+<li><a href="#setloglevel">SetLogLevel</a></li>
+</ul></div>
+</div></aside>
+<main class="content">
+<header class="page">
+      <p class="kicker">v3.2.0 · Oracle 19c+</p>
+      <h1>Referência da API</h1>
+      <p class="lead">Documentação detalhada de cada função e procedure pública do package
+      <code>PL_FPDF</code>: sintaxe, parâmetros com valores possíveis, retorno, erros e exemplo.
+      Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>.</p>
+    </header>
+<h2 class="grp" id="grp-lifecycle">Ciclo de vida</h2>
+<article class="api" id="fpdf">
+<h3>fpdf <span class="kind">Procedure</span><a class="anchor" href="#fpdf" aria-label="link">#</a></h3>
+<p class="d">Inicializa o documento no estilo FPDF clássico. Mantido por compatibilidade com a v0.9.4; em código novo use Init.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.fpdf(
+    orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;P&#x27;</span>,
+    unit        <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;mm&#x27;</span>,
+    format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;A4&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">orientation</td><td class="ptype">VARCHAR2</td><td>Orientação.</td><td class="pval">&#x27;P&#x27; (padrão) ou &#x27;L&#x27;</td><td><code>&#x27;P&#x27;</code></td></tr>
+<tr><td class="pname">unit</td><td class="ptype">VARCHAR2</td><td>Unidade de medida.</td><td class="pval">&#x27;mm&#x27; (padrão), &#x27;cm&#x27;, &#x27;pt&#x27; ou &#x27;in&#x27;</td><td><code>&#x27;mm&#x27;</code></td></tr>
+<tr><td class="pname">format</td><td class="ptype">VARCHAR2</td><td>Formato da página.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27; (padrão), &#x27;A5&#x27;, &#x27;Letter&#x27; ou &#x27;Legal&#x27;</td><td><code>&#x27;A4&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="init">
+<h3>Init <span class="kind">Procedure</span><a class="anchor" href="#init" aria-label="link">#</a></h3>
+<p class="d">Inicializa um novo documento PDF. Deve ser a primeira chamada de qualquer geração; define orientação, unidade de medida, formato de página e codificação usados por todas as demais APIs.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Init(
+    p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;P&#x27;</span>,
+    p_unit        <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;mm&#x27;</span>,
+    p_format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;A4&#x27;</span>,
+    p_encoding    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_orientation</td><td class="ptype">VARCHAR2</td><td>Orientação padrão das páginas.</td><td class="pval">&#x27;P&#x27; (retrato, padrão) ou &#x27;L&#x27; (paisagem)</td><td><code>&#x27;P&#x27;</code></td></tr>
+<tr><td class="pname">p_unit</td><td class="ptype">VARCHAR2</td><td>Unidade de medida de todas as coordenadas e dimensões do documento.</td><td class="pval">&#x27;mm&#x27; (padrão), &#x27;cm&#x27;, &#x27;pt&#x27; ou &#x27;in&#x27;</td><td><code>&#x27;mm&#x27;</code></td></tr>
+<tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Formato de página padrão.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27; (padrão), &#x27;A5&#x27;, &#x27;Letter&#x27; ou &#x27;Legal&#x27;</td><td><code>&#x27;A4&#x27;</code></td></tr>
+<tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Codificação de caracteres do texto.</td><td class="pval">&#x27;UTF-8&#x27; (padrão) ou &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre><span class="k">BEGIN</span>
+  PL_FPDF.Init(p_orientation =&gt; <span class="s">&#x27;P&#x27;</span>, p_unit =&gt; <span class="s">&#x27;mm&#x27;</span>, p_format =&gt; <span class="s">&#x27;A4&#x27;</span>);
+  PL_FPDF.AddPage();
+  <span class="c">-- ...</span>
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#reset">Reset</a>, <a href="#isinitialized">IsInitialized</a>, <a href="#addpage">AddPage</a></p>
+</article>
+<article class="api" id="isinitialized">
+<h3>IsInitialized <span class="kind">Function</span><a class="anchor" href="#isinitialized" aria-label="link">#</a></h3>
+<p class="d">Indica se há um documento em construção na sessão atual.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsInitialized
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se Init já foi chamado e o documento não foi finalizado.</p>
+<h5>Exemplo</h5><div class="code"><pre><span class="k">IF</span> <span class="k">NOT</span> PL_FPDF.IsInitialized <span class="k">THEN</span>
+  PL_FPDF.Init;
+<span class="k">END</span> <span class="k">IF</span>;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="reset">
+<h3>Reset <span class="kind">Procedure</span><a class="anchor" href="#reset" aria-label="link">#</a></h3>
+<p class="d">Reinicia o motor de PDF ao estado inicial, liberando CLOBs temporários e limpando todos os arrays internos. Use entre documentos gerados no mesmo job ou ao final de rotinas longas.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Reset;</pre></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Reset;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<h2 class="grp" id="grp-pages">Páginas e posicionamento</h2>
+<article class="api" id="acceptpagebreak">
+<h3>AcceptPageBreak <span class="kind">Function</span><a class="anchor" href="#acceptpagebreak" aria-label="link">#</a></h3>
+<p class="d">Informa se a quebra automática deve ocorrer no ponto atual. Chamada internamente pelo motor; pode ser consultada para lógicas próprias de paginação.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AcceptPageBreak
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se a quebra automática está habilitada.</p>
+<p class="see"><b>Veja também:</b> <a href="#setautopagebreak">SetAutoPageBreak</a></p>
+</article>
+<article class="api" id="addpage">
+<h3>AddPage <span class="kind">Procedure</span><a class="anchor" href="#addpage" aria-label="link">#</a></h3>
+<p class="d">Adiciona uma nova página ao documento e a torna a página corrente. Parâmetros nulos herdam os valores definidos em Init, permitindo misturar orientações e formatos no mesmo PDF.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddPage(
+    p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    p_format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    p_rotation    <span class="k">pls_integer</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_orientation</td><td class="ptype">VARCHAR2</td><td>Orientação apenas desta página.</td><td class="pval">&#x27;P&#x27;, &#x27;L&#x27; ou NULL (herda de Init)</td><td><code>null</code></td></tr>
+<tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Formato apenas desta página.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27;, &#x27;A5&#x27;, &#x27;Letter&#x27;, &#x27;Legal&#x27; ou NULL (herda de Init)</td><td><code>null</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Rotação de exibição da página no leitor de PDF.</td><td class="pval">0 (padrão), 90, 180 ou 270</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20105</td><td>Documento não inicializado (chame Init antes)</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.AddPage;                                      <span class="c">-- herda tudo de Init</span>
+PL_FPDF.AddPage(p_orientation =&gt; <span class="s">&#x27;L&#x27;</span>);                <span class="c">-- só esta em paisagem</span>
+PL_FPDF.AddPage(p_format =&gt; <span class="s">&#x27;A5&#x27;</span>, p_rotation =&gt; 90);  <span class="c">-- A5 rotacionada</span></pre></div>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a>, <a href="#setpage">SetPage</a>, <a href="#getcurrentpage">GetCurrentPage</a></p>
+</article>
+<article class="api" id="getcurrentpage">
+<h3>GetCurrentPage <span class="kind">Function</span><a class="anchor" href="#getcurrentpage" aria-label="link">#</a></h3>
+<p class="d">Retorna o número da página corrente (a que está recebendo conteúdo).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentPage
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">PLS_INTEGER — número da página ativa.</p>
+<p class="see"><b>Veja também:</b> <a href="#setpage">SetPage</a>, <a href="#pageno">PageNo</a></p>
+</article>
+<article class="api" id="getx">
+<h3>GetX <span class="kind">Function</span><a class="anchor" href="#getx" aria-label="link">#</a></h3>
+<p class="d">Retorna a posição X atual do cursor.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetX
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — coordenada X.</p>
+<p class="see"><b>Veja também:</b> <a href="#setx">SetX</a>, <a href="#setxy">SetXY</a></p>
+</article>
+<article class="api" id="gety">
+<h3>GetY <span class="kind">Function</span><a class="anchor" href="#gety" aria-label="link">#</a></h3>
+<p class="d">Retorna a posição Y atual do cursor.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetY
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — coordenada Y.</p>
+<p class="see"><b>Veja também:</b> <a href="#sety">SetY</a></p>
+</article>
+<article class="api" id="ln">
+<h3>Ln <span class="kind">Procedure</span><a class="anchor" href="#ln" aria-label="link">#</a></h3>
+<p class="d">Move o cursor para a próxima linha, retornando à margem esquerda.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Ln(
+    h <span class="k">number</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">h</td><td class="ptype">NUMBER</td><td>Altura do salto.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); NULL (padrão) usa a altura da última célula escrita</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Ln(6);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setxy">SetXY</a></p>
+</article>
+<article class="api" id="pageno">
+<h3>PageNo <span class="kind">Function</span><a class="anchor" href="#pageno" aria-label="link">#</a></h3>
+<p class="d">Retorna o número da página atual durante a geração — usado tipicamente em rodapés.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.PageNo
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — número da página corrente.</p>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Cell(0, 10, <span class="s">&#x27;Página &#x27;</span> || PL_FPDF.PageNo || <span class="s">&#x27;/{nb}&#x27;</span>, 0, 0, <span class="s">&#x27;C&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setaliasnbpages">SetAliasNbPages</a>, <a href="#setfooterproc">SetFooterProc</a></p>
+</article>
+<article class="api" id="setautopagebreak">
+<h3>SetAutoPageBreak <span class="kind">Procedure</span><a class="anchor" href="#setautopagebreak" aria-label="link">#</a></h3>
+<p class="d">Liga ou desliga a quebra automática de página e define a distância da borda inferior em que ela ocorre.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAutoPageBreak(
+    pauto   <span class="k">boolean</span>,
+    pMargin <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pauto</td><td class="ptype">BOOLEAN</td><td>Ativa a quebra automática.</td><td class="pval">TRUE ou FALSE</td><td>—</td></tr>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Margem inferior que dispara a quebra.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 é o padrão</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetAutoPageBreak(pauto =&gt; <span class="k">TRUE</span>, pMargin =&gt; 15);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#acceptpagebreak">AcceptPageBreak</a>, <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="setleftmargin">
+<h3>SetLeftMargin <span class="kind">Procedure</span><a class="anchor" href="#setleftmargin" aria-label="link">#</a></h3>
+<p class="d">Define apenas a margem esquerda.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLeftMargin(
+    pMargin <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Margem esquerda.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="setmargins">
+<h3>SetMargins <span class="kind">Procedure</span><a class="anchor" href="#setmargins" aria-label="link">#</a></h3>
+<p class="d">Define as margens esquerda, superior e direita do documento. A margem inferior é controlada por SetAutoPageBreak.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetMargins(
+    left  <span class="k">number</span>,
+    top   <span class="k">number</span>,
+    right <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">left</td><td class="ptype">NUMBER</td><td>Margem esquerda.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">top</td><td class="ptype">NUMBER</td><td>Margem superior.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">right</td><td class="ptype">NUMBER</td><td>Margem direita.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); -1 (padrão) usa o mesmo valor da margem esquerda</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetMargins(left =&gt; 20, top =&gt; 15, right =&gt; 20);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setleftmargin">SetLeftMargin</a>, <a href="#settopmargin">SetTopMargin</a>, <a href="#setrightmargin">SetRightMargin</a>, <a href="#setautopagebreak">SetAutoPageBreak</a></p>
+</article>
+<article class="api" id="setpage">
+<h3>SetPage <span class="kind">Procedure</span><a class="anchor" href="#setpage" aria-label="link">#</a></h3>
+<p class="d">Define qual página existente recebe o conteúdo das próximas chamadas, permitindo voltar a páginas anteriores (por exemplo, para preencher um sumário depois de conhecer os números finais).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPage(
+    p_page_number <span class="k">pls_integer</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página que passa a ser a corrente.</td><td class="pval">Inteiro ≥ 1, até GetPageCount</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20105</td><td>PDF não inicializado</td></tr>
+<tr><td class="pname">-20106</td><td>A página informada não existe</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetPage(1);
+PL_FPDF.SetXY(20, 40);
+PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#addpage">AddPage</a>, <a href="#getcurrentpage">GetCurrentPage</a></p>
+</article>
+<article class="api" id="setrightmargin">
+<h3>SetRightMargin <span class="kind">Procedure</span><a class="anchor" href="#setrightmargin" aria-label="link">#</a></h3>
+<p class="d">Define apenas a margem direita.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetRightMargin(
+    pMargin <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Margem direita.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="settopmargin">
+<h3>SetTopMargin <span class="kind">Procedure</span><a class="anchor" href="#settopmargin" aria-label="link">#</a></h3>
+<p class="d">Define apenas a margem superior.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTopMargin(
+    pMargin <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Margem superior.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="setx">
+<h3>SetX <span class="kind">Procedure</span><a class="anchor" href="#setx" aria-label="link">#</a></h3>
+<p class="d">Define a posição X do cursor.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetX(
+    px <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>Nova coordenada X.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); valores negativos contam a partir da borda direita</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#getx">GetX</a></p>
+</article>
+<article class="api" id="setxy">
+<h3>SetXY <span class="kind">Procedure</span><a class="anchor" href="#setxy" aria-label="link">#</a></h3>
+<p class="d">Define X e Y do cursor em uma única chamada.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetXY(
+    x <span class="k">number</span>,
+    y <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">x</td><td class="ptype">NUMBER</td><td>Coordenada X.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">y</td><td class="ptype">NUMBER</td><td>Coordenada Y.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetXY(x =&gt; 20, y =&gt; 40);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setx">SetX</a>, <a href="#sety">SetY</a></p>
+</article>
+<article class="api" id="sety">
+<h3>SetY <span class="kind">Procedure</span><a class="anchor" href="#sety" aria-label="link">#</a></h3>
+<p class="d">Define a posição Y do cursor (e reposiciona X na margem esquerda).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetY(
+    py <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Nova coordenada Y.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); valores negativos contam a partir da borda inferior — ex.: -15 para rodapé</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetY(-15);  <span class="c">-- 15 unidades acima do fim da página</span></pre></div>
+<p class="see"><b>Veja também:</b> <a href="#gety">GetY</a>, <a href="#setxy">SetXY</a></p>
+</article>
+<h2 class="grp" id="grp-fonts">Fontes e UTF-8</h2>
+<article class="api" id="addfont">
+<h3>AddFont <span class="kind">Procedure</span><a class="anchor" href="#addfont" aria-label="link">#</a></h3>
+<p class="d">Registra uma fonte adicional (compatibilidade FPDF). Para TrueType com UTF-8, prefira AddTTFFont.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddFont(
+    family   <span class="k">varchar2</span>,
+    style    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    filename <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">family</td><td class="ptype">VARCHAR2</td><td>Nome da família a registrar.</td><td class="pval">Texto livre; usado depois em SetFont</td><td>—</td></tr>
+<tr><td class="pname">style</td><td class="ptype">VARCHAR2</td><td>Estilo associado ao arquivo.</td><td class="pval">&#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27; ou &#x27;BI&#x27;</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">filename</td><td class="ptype">VARCHAR2</td><td>Arquivo de definição da fonte.</td><td class="pval">Nome do arquivo; vazio usa a convenção padrão do FPDF</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="addttffont">
+<h3>AddTTFFont <span class="kind">Procedure</span><a class="anchor" href="#addttffont" aria-label="link">#</a></h3>
+<p class="d">Carrega uma fonte TrueType a partir de um BLOB (por exemplo, de uma tabela de assets) e a disponibiliza para SetFont, com suporte completo a UTF-8.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddTTFFont(
+    p_font_name <span class="k">varchar2</span>,
+    p_font_blob <span class="k">blob</span>,
+    p_encoding  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>,
+    p_embed     <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Nome pelo qual a fonte será referenciada em SetFont.</td><td class="pval">Texto livre, ex.: &#x27;Roboto&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_font_blob</td><td class="ptype">BLOB</td><td>Conteúdo binário do arquivo .ttf.</td><td class="pval">BLOB não nulo com fonte TrueType válida</td><td>—</td></tr>
+<tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Codificação da fonte.</td><td class="pval">&#x27;UTF-8&#x27; (padrão) ou &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
+<tr><td class="pname">p_embed</td><td class="ptype">BOOLEAN</td><td>Embute a fonte no PDF (garante a aparência em qualquer leitor, aumenta o arquivo).</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_ttf <span class="k">BLOB</span>;
+<span class="k">BEGIN</span>
+  <span class="k">SELECT</span> arquivo <span class="k">INTO</span> l_ttf <span class="k">FROM</span> fontes <span class="k">WHERE</span> nome = <span class="s">&#x27;Roboto-Regular&#x27;</span>;
+  PL_FPDF.AddTTFFont(p_font_name =&gt; <span class="s">&#x27;Roboto&#x27;</span>, p_font_blob =&gt; l_ttf, p_embed =&gt; <span class="k">TRUE</span>);
+  PL_FPDF.SetFont(<span class="s">&#x27;Roboto&#x27;</span>, <span class="s">&#x27;&#x27;</span>, 12);
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#loadttffromfile">LoadTTFFromFile</a>, <a href="#isttffontloaded">IsTTFFontLoaded</a>, <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="clearttffontcache">
+<h3>ClearTTFFontCache <span class="kind">Procedure</span><a class="anchor" href="#clearttffontcache" aria-label="link">#</a></h3>
+<p class="d">Descarta todas as fontes TrueType carregadas, liberando memória da sessão.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearTTFFontCache;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a></p>
+</article>
+<article class="api" id="getttffontinfo">
+<h3>GetTTFFontInfo <span class="kind">Function</span><a class="anchor" href="#getttffontinfo" aria-label="link">#</a></h3>
+<p class="d">Retorna os metadados de uma fonte TrueType carregada.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetTTFFontInfo(
+    p_font_name <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> RECTTFFONT;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Nome da fonte.</td><td class="pval">O mesmo usado no carregamento</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">recTTFFont — record com métricas e informações da fonte.</p>
+<p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a></p>
+</article>
+<article class="api" id="isttffontloaded">
+<h3>IsTTFFontLoaded <span class="kind">Function</span><a class="anchor" href="#isttffontloaded" aria-label="link">#</a></h3>
+<p class="d">Verifica se uma fonte TrueType já foi carregada na sessão.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsTTFFontLoaded(
+    p_font_name <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Nome da fonte.</td><td class="pval">O mesmo usado no carregamento</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se a fonte está no cache.</p>
+<p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#clearttffontcache">ClearTTFFontCache</a></p>
+</article>
+<article class="api" id="isutf8enabled">
+<h3>IsUTF8Enabled <span class="kind">Function</span><a class="anchor" href="#isutf8enabled" aria-label="link">#</a></h3>
+<p class="d">Indica se o modo UTF-8 está ativo.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsUTF8Enabled
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se UTF-8 está habilitado.</p>
+<p class="see"><b>Veja também:</b> <a href="#setutf8enabled">SetUTF8Enabled</a></p>
+</article>
+<article class="api" id="loadttffromfile">
+<h3>LoadTTFFromFile <span class="kind">Procedure</span><a class="anchor" href="#loadttffromfile" aria-label="link">#</a></h3>
+<p class="d">Carrega uma fonte TrueType a partir de um arquivo em um DIRECTORY do Oracle.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadTTFFromFile(
+    p_font_name <span class="k">varchar2</span>,
+    p_file_path <span class="k">varchar2</span>,
+    p_directory <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;FONTS_DIR&#x27;</span>,
+    p_encoding  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Nome para uso em SetFont.</td><td class="pval">Texto livre</td><td>—</td></tr>
+<tr><td class="pname">p_file_path</td><td class="ptype">VARCHAR2</td><td>Nome do arquivo .ttf dentro do diretório.</td><td class="pval">Ex.: &#x27;Roboto-Regular.ttf&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_directory</td><td class="ptype">VARCHAR2</td><td>DIRECTORY do Oracle com permissão de leitura.</td><td class="pval">Padrão: &#x27;FONTS_DIR&#x27;</td><td><code>&#x27;FONTS_DIR&#x27;</code></td></tr>
+<tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Codificação da fonte.</td><td class="pval">&#x27;UTF-8&#x27; (padrão) ou &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.LoadTTFFromFile(<span class="s">&#x27;Roboto&#x27;</span>, <span class="s">&#x27;Roboto-Regular.ttf&#x27;</span>, <span class="s">&#x27;FONTS_DIR&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a></p>
+</article>
+<article class="api" id="setfont">
+<h3>SetFont <span class="kind">Procedure</span><a class="anchor" href="#setfont" aria-label="link">#</a></h3>
+<p class="d">Define a fonte, o estilo e o tamanho usados pelas próximas escritas de texto.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFont(
+    pfamily <span class="k">varchar2</span>,
+    pstyle  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    psize   <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pfamily</td><td class="ptype">VARCHAR2</td><td>Família da fonte.</td><td class="pval">&#x27;Arial&#x27;/&#x27;Helvetica&#x27;, &#x27;Times&#x27;, &#x27;Courier&#x27;, &#x27;Symbol&#x27;, &#x27;ZapfDingbats&#x27; ou o nome de uma fonte TrueType carregada com AddTTFFont/LoadTTFFromFile</td><td>—</td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo do texto.</td><td class="pval">&#x27;&#x27; (normal), &#x27;B&#x27; (negrito), &#x27;I&#x27; (itálico), &#x27;BI&#x27; (negrito itálico) ou &#x27;U&#x27; (sublinhado)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Tamanho em pontos.</td><td class="pval">Número &gt; 0; 0 (padrão) mantém o tamanho atual</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, 16);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setfontsize">SetFontSize</a>, <a href="#addttffont">AddTTFFont</a>, <a href="#getstringwidth">GetStringWidth</a></p>
+</article>
+<article class="api" id="setfontsize">
+<h3>SetFontSize <span class="kind">Procedure</span><a class="anchor" href="#setfontsize" aria-label="link">#</a></h3>
+<p class="d">Altera apenas o tamanho da fonte corrente.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFontSize(
+    psize <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Tamanho em pontos.</td><td class="pval">Número &gt; 0</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="setutf8enabled">
+<h3>SetUTF8Enabled <span class="kind">Procedure</span><a class="anchor" href="#setutf8enabled" aria-label="link">#</a></h3>
+<p class="d">Liga ou desliga o tratamento UTF-8 do texto.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetUTF8Enabled(
+    p_enabled <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_enabled</td><td class="ptype">BOOLEAN</td><td>Ativa UTF-8.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#isutf8enabled">IsUTF8Enabled</a>, <a href="#utf8topdfstring">UTF8ToPDFString</a></p>
+</article>
+<article class="api" id="utf8topdfstring">
+<h3>UTF8ToPDFString <span class="kind">Function</span><a class="anchor" href="#utf8topdfstring" aria-label="link">#</a></h3>
+<p class="d">Converte um texto UTF-8 para a representação interna do PDF. Chamada internamente; útil para depuração de acentuação.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.UTF8ToPDFString(
+    p_text   <span class="k">varchar2</span>,
+    p_escape <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>)
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Texto a converter.</td><td class="pval">Qualquer VARCHAR2 em UTF-8</td><td>—</td></tr>
+<tr><td class="pname">p_escape</td><td class="ptype">BOOLEAN</td><td>Aplica escape dos caracteres especiais do PDF (parênteses e barra invertida).</td><td class="pval">TRUE ou FALSE</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">VARCHAR2 — texto convertido.</p>
+<p class="see"><b>Veja também:</b> <a href="#setutf8enabled">SetUTF8Enabled</a></p>
+</article>
+<h2 class="grp" id="grp-text">Escrita de texto</h2>
+<article class="api" id="cell">
+<h3>Cell <span class="kind">Procedure</span><a class="anchor" href="#cell" aria-label="link">#</a></h3>
+<p class="d">Escreve um bloco retangular de texto, com bordas, alinhamento, preenchimento e link opcionais. É a API mais usada para montar relatórios e tabelas.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Cell(
+    pw      <span class="k">number</span>,
+    ph      <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ptxt    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    pborder <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    pln     <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    palign  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    pfill   <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    plink   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 é o padrão</td><td><code>0</code></td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2; vazio desenha apenas a célula</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Bordas desenhadas.</td><td class="pval">&#x27;0&#x27; (nenhuma), &#x27;1&#x27; (moldura completa) ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27; — ex.: &#x27;LTB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">pln</td><td class="ptype">NUMBER</td><td>Para onde o cursor vai depois.</td><td class="pval">0 = à direita da célula (padrão), 1 = início da próxima linha, 2 = abaixo da célula</td><td><code>0</code></td></tr>
+<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Alinhamento do texto.</td><td class="pval">&#x27;L&#x27; (esquerda), &#x27;C&#x27; (centro), &#x27;R&#x27; (direita) ou &#x27;&#x27; (padrão, esquerda)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td>Preenche o fundo com a cor de SetFillColor.</td><td class="pval">0 = transparente (padrão), 1 = preenchido</td><td><code>0</code></td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>Torna a célula clicável.</td><td class="pval">URL (&#x27;https://…&#x27;) ou identificador retornado por AddLink</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetFillColor(240, 240, 240);
+PL_FPDF.Cell(
+  pw      =&gt; 0,
+  ph      =&gt; 10,
+  ptxt    =&gt; <span class="s">&#x27;Total: R$ 1.234,56&#x27;</span>,
+  pborder =&gt; <span class="s">&#x27;LTB&#x27;</span>,
+  pln     =&gt; 1,
+  palign  =&gt; <span class="s">&#x27;R&#x27;</span>,
+  pfill   =&gt; 1);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#multicell">MultiCell</a>, <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a>, <a href="#setfillcolor">SetFillColor</a></p>
+</article>
+<article class="api" id="cellrotated">
+<h3>CellRotated <span class="kind">Procedure</span><a class="anchor" href="#cellrotated" aria-label="link">#</a></h3>
+<p class="d">Versão de Cell com rotação do texto — útil para cabeçalhos verticais de tabelas e etiquetas.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.CellRotated(
+    p_width    <span class="k">number</span>,
+    p_height   <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    p_text     <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    p_border   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    p_ln       <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    p_align    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    p_fill     <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    p_link     <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    p_rotation <span class="k">pls_integer</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Largura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita</td><td>—</td></tr>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Altura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td><code>0</code></td></tr>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_border</td><td class="ptype">VARCHAR2</td><td>Bordas.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">p_ln</td><td class="ptype">NUMBER</td><td>Posição do cursor depois.</td><td class="pval">0 = à direita, 1 = próxima linha, 2 = abaixo</td><td><code>0</code></td></tr>
+<tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td>Alinhamento.</td><td class="pval">&#x27;L&#x27;, &#x27;C&#x27; ou &#x27;R&#x27;</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_fill</td><td class="ptype">NUMBER</td><td>Preenchimento.</td><td class="pval">0 ou 1</td><td><code>0</code></td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td>Link opcional.</td><td class="pval">URL ou identificador de AddLink</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Ângulo de rotação do texto.</td><td class="pval">0 (padrão), 90, 180 ou 270 — outros valores geram erro</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20110</td><td>Valor de rotação inválido (use 0, 90, 180 ou 270)</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.CellRotated(40, 10, <span class="s">&#x27;VERTICAL&#x27;</span>, p_rotation =&gt; 90);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#cell">Cell</a>, <a href="#writerotated">WriteRotated</a></p>
+</article>
+<article class="api" id="getcurrentfontfamily">
+<h3>GetCurrentFontFamily <span class="kind">Function</span><a class="anchor" href="#getcurrentfontfamily" aria-label="link">#</a></h3>
+<p class="d">Retorna a família da fonte corrente.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontFamily
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Retorno</h5><p class="d">VARCHAR2 — nome da família.</p>
+<p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="getcurrentfontsize">
+<h3>GetCurrentFontSize <span class="kind">Function</span><a class="anchor" href="#getcurrentfontsize" aria-label="link">#</a></h3>
+<p class="d">Retorna o tamanho da fonte corrente.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontSize
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — tamanho em pontos.</p>
+<p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="getcurrentfontstyle">
+<h3>GetCurrentFontStyle <span class="kind">Function</span><a class="anchor" href="#getcurrentfontstyle" aria-label="link">#</a></h3>
+<p class="d">Retorna o estilo da fonte corrente.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontStyle
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Retorno</h5><p class="d">VARCHAR2 — &#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27;, &#x27;BI&#x27; ou &#x27;U&#x27;.</p>
+<p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="getlinespacing">
+<h3>GetLineSpacing <span class="kind">Function</span><a class="anchor" href="#getlinespacing" aria-label="link">#</a></h3>
+<p class="d">Retorna o espaçamento de linhas atual.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLineSpacing
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — espaçamento configurado.</p>
+<p class="see"><b>Veja também:</b> <a href="#setlinespacing">SetLineSpacing</a></p>
+</article>
+<article class="api" id="getstringwidth">
+<h3>GetStringWidth <span class="kind">Function</span><a class="anchor" href="#getstringwidth" aria-label="link">#</a></h3>
+<p class="d">Calcula a largura que um texto ocupará na fonte e no tamanho correntes — use para centralizar manualmente, dimensionar colunas ou decidir quebras.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetStringWidth(
+    pstr <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pstr</td><td class="ptype">VARCHAR2</td><td>Texto a medir.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">NUMBER — largura na unidade do documento.</p>
+<h5>Exemplo</h5><div class="code"><pre>l_w := PL_FPDF.GetStringWidth(l_titulo);
+PL_FPDF.SetX((210 - l_w) / 2);   <span class="c">-- centraliza em A4 retrato (210 mm)</span></pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a>, <a href="#cell">Cell</a></p>
+</article>
+<article class="api" id="multicell">
+<h3>MultiCell <span class="kind">Function</span><a class="anchor" href="#multicell" aria-label="link">#</a></h3>
+<p class="d">Escreve um parágrafo com quebra automática de linha dentro de uma largura definida. Existe como function (retorna o número de linhas) e como procedure.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.MultiCell(
+    pw      <span class="k">number</span>,
+    ph      <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ptxt    <span class="k">varchar2</span>,
+    pborder <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    palign  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;J&#x27;</span>,
+    pfill   <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    phMax   <span class="k">number</span> <span class="k">DEFAULT</span> 0)
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.MultiCell(
+    pwidth     <span class="k">number</span>,
+    pheight    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ptext      <span class="k">varchar2</span>,
+    pbrdr      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    palignment <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;J&#x27;</span>,
+    pfillin    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    phMaximum  <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura do bloco.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura de cada linha.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td><code>0</code></td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Texto do parágrafo (aceita quebras de linha).</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Bordas do bloco.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Alinhamento.</td><td class="pval">&#x27;J&#x27; (justificado, padrão), &#x27;L&#x27;, &#x27;C&#x27; ou &#x27;R&#x27;</td><td><code>&#x27;J&#x27;</code></td></tr>
+<tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td>Preenche o fundo.</td><td class="pval">0 (padrão) ou 1</td><td><code>0</code></td></tr>
+<tr><td class="pname">phMax</td><td class="ptype">NUMBER</td><td>Altura máxima do bloco; o texto é truncado se exceder.</td><td class="pval">Número; 0 (padrão) = sem limite</td><td><code>0</code></td></tr>
+<tr><td class="pname">pwidth</td><td class="ptype">NUMBER</td><td>Largura do bloco (versão procedure).</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 até a margem direita</td><td>—</td></tr>
+<tr><td class="pname">pheight</td><td class="ptype">NUMBER</td><td>Altura de cada linha (versão procedure).</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td><code>0</code></td></tr>
+<tr><td class="pname">ptext</td><td class="ptype">VARCHAR2</td><td>Texto do parágrafo (versão procedure).</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">pbrdr</td><td class="ptype">VARCHAR2</td><td>Bordas (versão procedure).</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou &#x27;LTRB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">palignment</td><td class="ptype">VARCHAR2</td><td>Alinhamento (versão procedure).</td><td class="pval">&#x27;J&#x27;, &#x27;L&#x27;, &#x27;C&#x27; ou &#x27;R&#x27;</td><td><code>&#x27;J&#x27;</code></td></tr>
+<tr><td class="pname">pfillin</td><td class="ptype">NUMBER</td><td>Preenchimento (versão procedure).</td><td class="pval">0 ou 1</td><td><code>0</code></td></tr>
+<tr><td class="pname">phMaximum</td><td class="ptype">NUMBER</td><td>Altura máxima (versão procedure).</td><td class="pval">Número; 0 = sem limite</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">NUMBER (versão function) — quantidade de linhas geradas.</p>
+<h5>Exemplo</h5><div class="code"><pre>l_linhas := PL_FPDF.MultiCell(
+  pw      =&gt; 0,
+  ph      =&gt; 6,
+  ptxt    =&gt; l_descricao,
+  pborder =&gt; <span class="s">&#x27;1&#x27;</span>,
+  palign  =&gt; <span class="s">&#x27;J&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#cell">Cell</a>, <a href="#write">Write</a></p>
+</article>
+<article class="api" id="setlinespacing">
+<h3>SetLineSpacing <span class="kind">Procedure</span><a class="anchor" href="#setlinespacing" aria-label="link">#</a></h3>
+<p class="d">Define o espaçamento entre linhas usado por Write e MultiCell.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineSpacing(
+    pls <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pls</td><td class="ptype">NUMBER</td><td>Fator/altura de espaçamento.</td><td class="pval">Número &gt; 0</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#getlinespacing">GetLineSpacing</a></p>
+</article>
+<article class="api" id="text">
+<h3>Text <span class="kind">Procedure</span><a class="anchor" href="#text" aria-label="link">#</a></h3>
+<p class="d">Escreve texto em coordenadas absolutas, sem alterar a posição do cursor nem quebrar linha.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Text(
+    px   <span class="k">number</span>,
+    py   <span class="k">number</span>,
+    ptxt <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>Coordenada X do início do texto.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Coordenada Y da linha de base.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#cell">Cell</a>, <a href="#write">Write</a></p>
+</article>
+<article class="api" id="write">
+<h3>Write <span class="kind">Procedure</span><a class="anchor" href="#write" aria-label="link">#</a></h3>
+<p class="d">Escreve texto de forma fluida, continuando de onde o anterior parou e quebrando linha automaticamente — permite alternar fontes e estilos no meio de uma frase.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Write(
+    pH    <span class="k">varchar2</span>,
+    ptxt  <span class="k">varchar2</span>,
+    plink <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pH</td><td class="ptype">VARCHAR2</td><td>Altura da linha.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>Link opcional aplicado ao texto.</td><td class="pval">URL ou identificador de AddLink; NULL (padrão) = sem link</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Write(6, <span class="s">&#x27;Documento gerado por &#x27;</span>);
+PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>);
+PL_FPDF.Write(6, <span class="s">&#x27;PL_FPDF&#x27;</span>, <span class="s">&#x27;https://maxwbh.github.io/pl_fpdf/&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#cell">Cell</a>, <a href="#multicell">MultiCell</a>, <a href="#writerotated">WriteRotated</a></p>
+</article>
+<article class="api" id="writerotated">
+<h3>WriteRotated <span class="kind">Procedure</span><a class="anchor" href="#writerotated" aria-label="link">#</a></h3>
+<p class="d">Versão de Write com rotação do texto.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.WriteRotated(
+    p_height   <span class="k">number</span>,
+    p_text     <span class="k">varchar2</span>,
+    p_link     <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    p_rotation <span class="k">pls_integer</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Altura da linha.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td>Link opcional.</td><td class="pval">URL ou identificador de AddLink; NULL = sem link</td><td><code>null</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Ângulo de rotação.</td><td class="pval">0 (padrão), 90, 180 ou 270</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20110</td><td>Valor de rotação inválido</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a></p>
+</article>
+<h2 class="grp" id="grp-draw">Cores e desenho</h2>
+<article class="api" id="line">
+<h3>Line <span class="kind">Procedure</span><a class="anchor" href="#line" aria-label="link">#</a></h3>
+<p class="d">Desenha uma linha reta entre dois pontos.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Line(
+    x1 <span class="k">number</span>,
+    y1 <span class="k">number</span>,
+    x2 <span class="k">number</span>,
+    y2 <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">x1</td><td class="ptype">NUMBER</td><td>X do ponto inicial.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">y1</td><td class="ptype">NUMBER</td><td>Y do ponto inicial.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">x2</td><td class="ptype">NUMBER</td><td>X do ponto final.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">y2</td><td class="ptype">NUMBER</td><td>Y do ponto final.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Line(10, 30, 200, 30);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setdrawcolor">SetDrawColor</a>, <a href="#setlinewidth">SetLineWidth</a></p>
+</article>
+<article class="api" id="poly">
+<h3>Poly <span class="kind">Procedure</span><a class="anchor" href="#poly" aria-label="link">#</a></h3>
+<p class="d">Desenha um polígono a partir de uma coleção de pontos.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Poly(
+    points tab_points,
+    pclose <span class="k">boolean</span>,
+    pstyle <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">points</td><td class="ptype">TAB_POINTS</td><td>Pontos do polígono.</td><td class="pval">Coleção tab_points com pares X/Y na unidade do documento</td><td>—</td></tr>
+<tr><td class="pname">pclose</td><td class="ptype">BOOLEAN</td><td>Fecha o polígono ligando o último ponto ao primeiro.</td><td class="pval">TRUE ou FALSE</td><td>—</td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (contorno), &#x27;F&#x27; (preenchido), &#x27;DF&#x27; (ambos)</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#line">Line</a>, <a href="#triangle">Triangle</a></p>
+</article>
+<article class="api" id="rect">
+<h3>Rect <span class="kind">Procedure</span><a class="anchor" href="#rect" aria-label="link">#</a></h3>
+<p class="d">Desenha um retângulo com contorno, preenchimento ou ambos.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Rect(
+    px     <span class="k">number</span>,
+    py     <span class="k">number</span>,
+    pw     <span class="k">number</span>,
+    ph     <span class="k">number</span>,
+    pstyle <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (apenas contorno, padrão), &#x27;F&#x27; (apenas preenchimento), &#x27;DF&#x27;/&#x27;FD&#x27; (contorno + preenchimento)</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Rect(px =&gt; 10, py =&gt; 40, pw =&gt; 60, ph =&gt; 25, pstyle =&gt; <span class="s">&#x27;DF&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setdrawcolor">SetDrawColor</a>, <a href="#setfillcolor">SetFillColor</a></p>
+</article>
+<article class="api" id="setdash">
+<h3>SetDash <span class="kind">Procedure</span><a class="anchor" href="#setdash" aria-label="link">#</a></h3>
+<p class="d">Define um padrão de linha tracejada simples.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDash(
+    pblack <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    pwhite <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pblack</td><td class="ptype">NUMBER</td><td>Comprimento do traço.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) volta para linha contínua</td><td><code>0</code></td></tr>
+<tr><td class="pname">pwhite</td><td class="ptype">NUMBER</td><td>Comprimento do espaço.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) volta para linha contínua</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetDash(2, 2);   <span class="c">-- tracejado</span>
+PL_FPDF.SetDash(0, 0);   <span class="c">-- volta ao contínuo</span></pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setlinedashpattern">SetLineDashPattern</a></p>
+</article>
+<article class="api" id="setdrawcolor">
+<h3>SetDrawColor <span class="kind">Procedure</span><a class="anchor" href="#setdrawcolor" aria-label="link">#</a></h3>
+<p class="d">Define a cor das linhas e contornos desenhados a seguir.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDrawColor(
+    r <span class="k">number</span>,
+    g <span class="k">number</span> <span class="k">DEFAULT</span> -1,
+    b <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">r</td><td class="ptype">NUMBER</td><td>Componente vermelho ou tom de cinza quando g e b são omitidos.</td><td class="pval">0 a 255</td><td>—</td></tr>
+<tr><td class="pname">g</td><td class="ptype">NUMBER</td><td>Componente verde.</td><td class="pval">0 a 255; -1 (padrão) indica escala de cinza usando r</td><td><code>-1</code></td></tr>
+<tr><td class="pname">b</td><td class="ptype">NUMBER</td><td>Componente azul.</td><td class="pval">0 a 255; -1 (padrão) indica escala de cinza usando r</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetDrawColor(200, 0, 0);   <span class="c">-- vermelho</span>
+PL_FPDF.SetDrawColor(128);         <span class="c">-- cinza médio</span></pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setfillcolor">SetFillColor</a>, <a href="#settextcolor">SetTextColor</a>, <a href="#setlinewidth">SetLineWidth</a></p>
+</article>
+<article class="api" id="setfillcolor">
+<h3>SetFillColor <span class="kind">Procedure</span><a class="anchor" href="#setfillcolor" aria-label="link">#</a></h3>
+<p class="d">Define a cor de preenchimento de células (pfill = 1), retângulos e formas.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFillColor(
+    r <span class="k">number</span>,
+    g <span class="k">number</span> <span class="k">DEFAULT</span> -1,
+    b <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">r</td><td class="ptype">NUMBER</td><td>Componente vermelho ou tom de cinza.</td><td class="pval">0 a 255</td><td>—</td></tr>
+<tr><td class="pname">g</td><td class="ptype">NUMBER</td><td>Componente verde.</td><td class="pval">0 a 255; -1 = escala de cinza</td><td><code>-1</code></td></tr>
+<tr><td class="pname">b</td><td class="ptype">NUMBER</td><td>Componente azul.</td><td class="pval">0 a 255; -1 = escala de cinza</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetFillColor(240, 240, 240);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#cell">Cell</a>, <a href="#rect">Rect</a></p>
+</article>
+<article class="api" id="setlinedashpattern">
+<h3>SetLineDashPattern <span class="kind">Procedure</span><a class="anchor" href="#setlinedashpattern" aria-label="link">#</a></h3>
+<p class="d">Define o padrão de tracejado usando a sintaxe nativa do PDF, para controle fino.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineDashPattern(
+    pdash <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;[] 0&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pdash</td><td class="ptype">VARCHAR2</td><td>Padrão no formato PDF.</td><td class="pval">&#x27;[] 0&#x27; (contínuo, padrão), &#x27;[3 2] 0&#x27; (3 on, 2 off), &#x27;[1 2 3 2] 0&#x27; etc.</td><td><code>&#x27;[] 0&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setdash">SetDash</a></p>
+</article>
+<article class="api" id="setlinewidth">
+<h3>SetLineWidth <span class="kind">Procedure</span><a class="anchor" href="#setlinewidth" aria-label="link">#</a></h3>
+<p class="d">Define a espessura das linhas desenhadas a seguir.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineWidth(
+    width <span class="k">number</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">width</td><td class="ptype">NUMBER</td><td>Espessura da linha.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); padrão do PDF ≈ 0.2 mm</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#line">Line</a>, <a href="#rect">Rect</a></p>
+</article>
+<article class="api" id="settextcolor">
+<h3>SetTextColor <span class="kind">Procedure</span><a class="anchor" href="#settextcolor" aria-label="link">#</a></h3>
+<p class="d">Define a cor do texto escrito a seguir.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTextColor(
+    r <span class="k">number</span>,
+    g <span class="k">number</span> <span class="k">DEFAULT</span> -1,
+    b <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">r</td><td class="ptype">NUMBER</td><td>Componente vermelho ou tom de cinza.</td><td class="pval">0 a 255</td><td>—</td></tr>
+<tr><td class="pname">g</td><td class="ptype">NUMBER</td><td>Componente verde.</td><td class="pval">0 a 255; -1 = escala de cinza</td><td><code>-1</code></td></tr>
+<tr><td class="pname">b</td><td class="ptype">NUMBER</td><td>Componente azul.</td><td class="pval">0 a 255; -1 = escala de cinza</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a>, <a href="#cell">Cell</a></p>
+</article>
+<article class="api" id="triangle">
+<h3>Triangle <span class="kind">Procedure</span><a class="anchor" href="#triangle" aria-label="link">#</a></h3>
+<p class="d">Desenha um triângulo equilátero a partir do centro e do tamanho informados.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Triangle(
+    px           <span class="k">number</span>,
+    py           <span class="k">number</span>,
+    psize        <span class="k">number</span>,
+    porientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;left&#x27;</span>,
+    pstyle       <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X do centro.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y do centro.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Tamanho do triângulo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">porientation</td><td class="ptype">VARCHAR2</td><td>Direção para onde a ponta aponta.</td><td class="pval">&#x27;U&#x27; (cima), &#x27;D&#x27; (baixo), &#x27;L&#x27; (esquerda) ou &#x27;R&#x27; (direita)</td><td><code>&#x27;left&#x27;</code></td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (contorno), &#x27;F&#x27; (preenchido), &#x27;DF&#x27; (ambos)</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#poly">Poly</a>, <a href="#rect">Rect</a></p>
+</article>
+<h2 class="grp" id="grp-images">Imagens</h2>
+<article class="api" id="getimagefromurl">
+<h3>getImageFromUrl <span class="kind">Function</span><a class="anchor" href="#getimagefromurl" aria-label="link">#</a></h3>
+<p class="d">Baixa uma imagem de uma URL via UTL_HTTP para uso no documento. Requer ACL de rede configurada no banco.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.getImageFromUrl(
+    p_Url <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> RECIMAGEBLOB;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_Url</td><td class="ptype">VARCHAR2</td><td>Endereço da imagem.</td><td class="pval">URL http:// ou https:// acessível a partir do banco</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">recImageBlob — record com o conteúdo e os metadados da imagem.</p>
+<p class="see"><b>Veja também:</b> <a href="#image">Image</a></p>
+</article>
+<article class="api" id="image">
+<h3>image <span class="kind">Procedure</span><a class="anchor" href="#image" aria-label="link">#</a></h3>
+<p class="d">Insere uma imagem PNG ou JPEG na página corrente, com dimensionamento proporcional opcional.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.image(
+    pFile   <span class="k">varchar2</span>,
+    pX      <span class="k">number</span>,
+    pY      <span class="k">number</span>,
+    pWidth  <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    pHeight <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    pType   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    pLink   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pFile</td><td class="ptype">VARCHAR2</td><td>Origem da imagem.</td><td class="pval">Nome de arquivo em DIRECTORY do Oracle ou identificador retornado por getImageFromUrl</td><td>—</td></tr>
+<tr><td class="pname">pX</td><td class="ptype">NUMBER</td><td>X do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">pY</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">pWidth</td><td class="ptype">NUMBER</td><td>Largura desejada.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) calcula a partir da altura</td><td><code>0</code></td></tr>
+<tr><td class="pname">pHeight</td><td class="ptype">NUMBER</td><td>Altura desejada.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) calcula a partir da largura, mantendo a proporção</td><td><code>0</code></td></tr>
+<tr><td class="pname">pType</td><td class="ptype">VARCHAR2</td><td>Formato da imagem.</td><td class="pval">&#x27;PNG&#x27;, &#x27;JPG&#x27;/&#x27;JPEG&#x27; ou NULL (padrão) para autodetecção</td><td><code>null</code></td></tr>
+<tr><td class="pname">pLink</td><td class="ptype">VARCHAR2</td><td>Torna a imagem clicável.</td><td class="pval">URL ou identificador de AddLink; NULL = sem link</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Image(
+  pFile   =&gt; <span class="s">&#x27;logo.png&#x27;</span>,
+  pX      =&gt; 10, pY =&gt; 10,
+  pWidth  =&gt; 40,
+  pHeight =&gt; 0,                     <span class="c">-- proporcional à largura</span>
+  pLink   =&gt; <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#getimagefromurl">getImageFromUrl</a>, <a href="#overlayimage">OverlayImage</a></p>
+</article>
+<h2 class="grp" id="grp-links">Links</h2>
+<article class="api" id="addlink">
+<h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="link">#</a></h3>
+<p class="d">Cria um link interno (ainda sem destino) e retorna seu identificador, usado depois em SetLink e nas APIs de texto.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AddLink
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — identificador do link.</p>
+<h5>Exemplo</h5><div class="code"><pre>l_link := PL_FPDF.AddLink;
+PL_FPDF.SetLink(l_link, 0, 3);
+PL_FPDF.Cell(60, 8, <span class="s">&#x27;Ir ao capítulo 3&#x27;</span>, plink =&gt; l_link);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setlink">SetLink</a>, <a href="#link">Link</a></p>
+</article>
+<article class="api" id="link">
+<h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="link">#</a></h3>
+<p class="d">Cria uma área retangular clicável em qualquer região da página.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
+    px    <span class="k">number</span>,
+    py    <span class="k">number</span>,
+    pw    <span class="k">number</span>,
+    ph    <span class="k">number</span>,
+    plink <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura da área.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura da área.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>Destino.</td><td class="pval">URL (&#x27;https://…&#x27;) ou identificador de AddLink</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#addlink">AddLink</a>, <a href="#setlink">SetLink</a></p>
+</article>
+<article class="api" id="setlink">
+<h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="link">#</a></h3>
+<p class="d">Define o destino de um link interno criado por AddLink.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLink(
+    plink <span class="k">number</span>,
+    py    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ppage <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">plink</td><td class="ptype">NUMBER</td><td>Identificador do link.</td><td class="pval">Valor retornado por AddLink</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Posição vertical de destino na página.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) = topo da página</td><td><code>0</code></td></tr>
+<tr><td class="pname">ppage</td><td class="ptype">NUMBER</td><td>Página de destino.</td><td class="pval">Número da página; -1 (padrão) = página corrente</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#addlink">AddLink</a></p>
+</article>
+<h2 class="grp" id="grp-headfoot">Cabeçalho e rodapé</h2>
+<article class="api" id="footer">
+<h3>Footer <span class="kind">Procedure</span><a class="anchor" href="#footer" aria-label="link">#</a></h3>
+<p class="d">Ponto de extensão do rodapé, chamado internamente ao fechar cada página.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Footer;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setfooterproc">SetFooterProc</a></p>
+</article>
+<article class="api" id="header">
+<h3>Header <span class="kind">Procedure</span><a class="anchor" href="#header" aria-label="link">#</a></h3>
+<p class="d">Ponto de extensão do cabeçalho, chamado internamente a cada nova página.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Header;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setheaderproc">SetHeaderProc</a></p>
+</article>
+<article class="api" id="setaliasnbpages">
+<h3>SetAliasNbPages <span class="kind">Procedure</span><a class="anchor" href="#setaliasnbpages" aria-label="link">#</a></h3>
+<p class="d">Define o marcador que será substituído pelo total de páginas ao finalizar o documento — permite escrever &#x27;Página 2 de 10&#x27; sem saber o total antecipadamente.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAliasNbPages(
+    palias <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;{nb}&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">palias</td><td class="ptype">VARCHAR2</td><td>Marcador a substituir.</td><td class="pval">Qualquer texto; &#x27;{nb}&#x27; é o padrão</td><td><code>&#x27;{nb}&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetAliasNbPages;   <span class="c">-- habilita <span class="s">&#x27;{nb}&#x27;</span></span>
+PL_FPDF.Cell(0, 10, <span class="s">&#x27;Página &#x27;</span> || PL_FPDF.PageNo || <span class="s">&#x27; de {nb}&#x27;</span>, 0, 0, <span class="s">&#x27;C&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#pageno">PageNo</a></p>
+</article>
+<article class="api" id="setfooterproc">
+<h3>SetFooterProc <span class="kind">Procedure</span><a class="anchor" href="#setfooterproc" aria-label="link">#</a></h3>
+<p class="d">Registra uma procedure sua para ser executada automaticamente no rodapé de cada página.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFooterProc(
+    footerprocname <span class="k">varchar2</span>,
+    paramTable     tv4000a <span class="k">DEFAULT</span> noParam);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">footerprocname</td><td class="ptype">VARCHAR2</td><td>Nome qualificado da procedure.</td><td class="pval">&#x27;pacote.procedure&#x27; ou &#x27;procedure&#x27;</td><td>—</td></tr>
+<tr><td class="pname">paramTable</td><td class="ptype">TV4000A</td><td>Parâmetros repassados à procedure.</td><td class="pval">Coleção tv4000a; noParam (padrão) = sem parâmetros</td><td><code>noParam</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre><span class="c">-- <span class="k">procedure</span> sua:</span>
+<span class="c">--   PL_FPDF.SetY(-15);</span>
+<span class="c">--   PL_FPDF.Cell(0, 10, <span class="s">&#x27;Página &#x27;</span> || PL_FPDF.PageNo || <span class="s">&#x27;/{nb}&#x27;</span>, 0, 0, <span class="s">&#x27;C&#x27;</span>);</span>
+PL_FPDF.SetFooterProc(<span class="s">&#x27;meu_pkg.rodape&#x27;</span>);
+PL_FPDF.SetAliasNbPages;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setheaderproc">SetHeaderProc</a>, <a href="#setaliasnbpages">SetAliasNbPages</a>, <a href="#footer">Footer</a></p>
+</article>
+<article class="api" id="setheaderproc">
+<h3>SetHeaderProc <span class="kind">Procedure</span><a class="anchor" href="#setheaderproc" aria-label="link">#</a></h3>
+<p class="d">Registra uma procedure sua para ser executada automaticamente no início de cada página.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetHeaderProc(
+    headerprocname <span class="k">varchar2</span>,
+    paramTable     tv4000a <span class="k">DEFAULT</span> noParam);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">headerprocname</td><td class="ptype">VARCHAR2</td><td>Nome qualificado da procedure.</td><td class="pval">&#x27;pacote.procedure&#x27; ou &#x27;procedure&#x27;; deve ser acessível ao usuário do banco</td><td>—</td></tr>
+<tr><td class="pname">paramTable</td><td class="ptype">TV4000A</td><td>Parâmetros repassados à procedure.</td><td class="pval">Coleção tv4000a com até os valores esperados pela sua procedure; noParam (padrão) = sem parâmetros</td><td><code>noParam</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetHeaderProc(<span class="s">&#x27;meu_pkg.cabecalho&#x27;</span>, tv4000a(<span class="s">&#x27;Relatório Mensal&#x27;</span>, <span class="s">&#x27;Ago/2026&#x27;</span>));</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setfooterproc">SetFooterProc</a>, <a href="#header">Header</a></p>
+</article>
+<h2 class="grp" id="grp-codes">QR Code e código de barras</h2>
+<article class="api" id="addbarcode">
+<h3>AddBarcode <span class="kind">Procedure</span><a class="anchor" href="#addbarcode" aria-label="link">#</a></h3>
+<p class="d">Desenha um código de barras linear na página corrente, com texto legível opcional.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddBarcode(
+    p_x         <span class="k">number</span>,
+    p_y         <span class="k">number</span>,
+    p_width     <span class="k">number</span>,
+    p_height    <span class="k">number</span>,
+    p_code      <span class="k">varchar2</span>,
+    p_type      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;CODE128&#x27;</span>,
+    p_show_text <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>X do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Largura total do código.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Altura das barras.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_code</td><td class="ptype">VARCHAR2</td><td>Dado a codificar.</td><td class="pval">Deve respeitar o padrão escolhido: EAN13 = 13 dígitos, EAN8 = 8 dígitos, ITF14 = 14 dígitos, CODE39 = alfanumérico maiúsculo, CODE128 = ASCII</td><td>—</td></tr>
+<tr><td class="pname">p_type</td><td class="ptype">VARCHAR2</td><td>Simbologia do código de barras.</td><td class="pval">&#x27;CODE128&#x27; (padrão), &#x27;CODE39&#x27;, &#x27;EAN13&#x27;, &#x27;EAN8&#x27; ou &#x27;ITF14&#x27;</td><td><code>&#x27;CODE128&#x27;</code></td></tr>
+<tr><td class="pname">p_show_text</td><td class="ptype">BOOLEAN</td><td>Imprime o valor legível abaixo das barras.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.AddBarcode(
+  p_x =&gt; 30, p_y =&gt; 70, p_width =&gt; 150, p_height =&gt; 20,
+  p_code      =&gt; <span class="s">&#x27;7891234567895&#x27;</span>,
+  p_type      =&gt; <span class="s">&#x27;EAN13&#x27;</span>,
+  p_show_text =&gt; <span class="k">TRUE</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#addqrcode">AddQRCode</a></p>
+</article>
+<article class="api" id="addqrcode">
+<h3>AddQRCode <span class="kind">Procedure</span><a class="anchor" href="#addqrcode" aria-label="link">#</a></h3>
+<p class="d">Desenha um QR Code na página corrente, com formato de conteúdo e nível de correção de erros configuráveis.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddQRCode(
+    p_x                <span class="k">number</span>,
+    p_y                <span class="k">number</span>,
+    p_size             <span class="k">number</span>,
+    p_data             <span class="k">varchar2</span>,
+    p_format           <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;TEXT&#x27;</span>,
+    p_error_correction <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;M&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>X do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>Lado do QR Code (largura = altura).</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
+<tr><td class="pname">p_data</td><td class="ptype">VARCHAR2</td><td>Conteúdo a codificar.</td><td class="pval">Até 2953 bytes em modo binário; o conteúdo deve seguir o formato escolhido em p_format</td><td>—</td></tr>
+<tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Formato do conteúdo, que define como leitores interpretam o código.</td><td class="pval">&#x27;TEXT&#x27; (padrão, texto livre), &#x27;URL&#x27;, &#x27;PIX&#x27;, &#x27;VCARD&#x27;, &#x27;WIFI&#x27; ou &#x27;EMAIL&#x27;</td><td><code>&#x27;TEXT&#x27;</code></td></tr>
+<tr><td class="pname">p_error_correction</td><td class="ptype">VARCHAR2</td><td>Nível de correção de erros: quanto maior, mais o código resiste a sujeira e dobras, porém menos dados cabem.</td><td class="pval">&#x27;L&#x27; (7%), &#x27;M&#x27; (15%, padrão), &#x27;Q&#x27; (25%) ou &#x27;H&#x27; (30%)</td><td><code>&#x27;M&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.AddQRCode(
+  p_x =&gt; 150, p_y =&gt; 20, p_size =&gt; 40,
+  p_data             =&gt; <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>,
+  p_format           =&gt; <span class="s">&#x27;URL&#x27;</span>,
+  p_error_correction =&gt; <span class="s">&#x27;M&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#addbarcode">AddBarcode</a></p>
+</article>
+<h2 class="grp" id="grp-meta">Metadados e configuração</h2>
+<article class="api" id="getdocumentmetadata">
+<h3>GetDocumentMetadata <span class="kind">Function</span><a class="anchor" href="#getdocumentmetadata" aria-label="link">#</a></h3>
+<p class="d">Retorna os metadados atualmente definidos no documento.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetDocumentMetadata
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Retorno</h5><p class="d">JSON_OBJECT_T — objeto com title, subject, author, keywords, creator e demais opções.</p>
+<p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="getpageinfo">
+<h3>GetPageInfo <span class="kind">Function</span><a class="anchor" href="#getpageinfo" aria-label="link">#</a></h3>
+<p class="d">Retorna as informações de uma página do documento em construção.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPageInfo(
+    p_page_number <span class="k">pls_integer</span> <span class="k">DEFAULT</span> <span class="k">null</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página consultada.</td><td class="pval">Inteiro ≥ 1, até GetPageCount; NULL (padrão) = página corrente</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">JSON_OBJECT_T — largura, altura, orientação e rotação da página.</p>
+<p class="see"><b>Veja também:</b> <a href="#getcurrentpage">GetCurrentPage</a>, <a href="#getpdfinfo">GetPDFInfo</a></p>
+</article>
+<article class="api" id="setauthor">
+<h3>SetAuthor <span class="kind">Procedure</span><a class="anchor" href="#setauthor" aria-label="link">#</a></h3>
+<p class="d">Define o autor do documento nos metadados.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAuthor(
+    pauthor <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pauthor</td><td class="ptype">VARCHAR2</td><td>Autor.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="setcompression">
+<h3>SetCompression <span class="kind">Procedure</span><a class="anchor" href="#setcompression" aria-label="link">#</a></h3>
+<p class="d">Liga ou desliga a compressão do conteúdo do PDF (arquivos menores).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetCompression(
+    p_compress <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">false</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_compress</td><td class="ptype">BOOLEAN</td><td>Ativa a compressão.</td><td class="pval">TRUE ou FALSE; FALSE é o padrão</td><td><code>false</code></td></tr>
+</tbody></table></div>
+</article>
+<article class="api" id="setcreator">
+<h3>SetCreator <span class="kind">Procedure</span><a class="anchor" href="#setcreator" aria-label="link">#</a></h3>
+<p class="d">Define o aplicativo criador do documento nos metadados.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetCreator(
+    pcreator <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pcreator</td><td class="ptype">VARCHAR2</td><td>Nome do sistema gerador.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="setdisplaymode">
+<h3>SetDisplayMode <span class="kind">Procedure</span><a class="anchor" href="#setdisplaymode" aria-label="link">#</a></h3>
+<p class="d">Define como o leitor de PDF deve exibir o documento ao abri-lo.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDisplayMode(
+    zoom   <span class="k">varchar2</span>,
+    layout <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;continuous&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">zoom</td><td class="ptype">VARCHAR2</td><td>Nível de zoom inicial.</td><td class="pval">&#x27;fullpage&#x27; (página inteira), &#x27;fullwidth&#x27; (largura da página), &#x27;real&#x27; (100%), &#x27;default&#x27; ou um número representando a porcentagem</td><td>—</td></tr>
+<tr><td class="pname">layout</td><td class="ptype">VARCHAR2</td><td>Disposição das páginas.</td><td class="pval">&#x27;continuous&#x27; (padrão), &#x27;single&#x27;, &#x27;two&#x27; ou &#x27;default&#x27;</td><td><code>&#x27;continuous&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetDisplayMode(zoom =&gt; <span class="s">&#x27;fullpage&#x27;</span>, layout =&gt; <span class="s">&#x27;single&#x27;</span>);</pre></div>
+</article>
+<article class="api" id="setdocumentconfig">
+<h3>SetDocumentConfig <span class="kind">Procedure</span><a class="anchor" href="#setdocumentconfig" aria-label="link">#</a></h3>
+<p class="d">Define vários metadados e opções do documento de uma só vez, a partir de um objeto JSON.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDocumentConfig(
+    p_config <span class="k">JSON_OBJECT_T</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_config</td><td class="ptype">JSON_OBJECT_T</td><td>Configuração do documento.</td><td class="pval">JSON_OBJECT_T com as chaves opcionais: title, subject, author, keywords, creator, compression (boolean)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetDocumentConfig(
+  <span class="k">JSON_OBJECT_T</span>(&#x27;{&quot;title&quot;:&quot;Relatório Mensal&quot;,&quot;author&quot;:&quot;M&amp;S do Brasil&quot;,&quot;compression&quot;:<span class="k">true</span>}&#x27;));</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#getdocumentmetadata">GetDocumentMetadata</a>, <a href="#settitle">SetTitle</a></p>
+</article>
+<article class="api" id="setkeywords">
+<h3>SetKeywords <span class="kind">Procedure</span><a class="anchor" href="#setkeywords" aria-label="link">#</a></h3>
+<p class="d">Define as palavras-chave do documento (auxiliam buscas e indexação).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetKeywords(
+    pkeywords <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pkeywords</td><td class="ptype">VARCHAR2</td><td>Palavras-chave.</td><td class="pval">Texto livre, normalmente separado por vírgulas</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="setsubject">
+<h3>SetSubject <span class="kind">Procedure</span><a class="anchor" href="#setsubject" aria-label="link">#</a></h3>
+<p class="d">Define o assunto do documento nos metadados.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetSubject(
+    psubject <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">psubject</td><td class="ptype">VARCHAR2</td><td>Assunto.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="settitle">
+<h3>SetTitle <span class="kind">Procedure</span><a class="anchor" href="#settitle" aria-label="link">#</a></h3>
+<p class="d">Define o título do documento (exibido na barra do leitor de PDF).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTitle(
+    ptitle <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">ptitle</td><td class="ptype">VARCHAR2</td><td>Título.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<h2 class="grp" id="grp-output">Saída do documento</h2>
+<article class="api" id="closepdf">
+<h3>ClosePDF <span class="kind">Procedure</span><a class="anchor" href="#closepdf" aria-label="link">#</a></h3>
+<p class="d">Fecha a estrutura do documento (uso avançado; as APIs de saída já fazem isso).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClosePDF;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<article class="api" id="openpdf">
+<h3>OpenPDF <span class="kind">Procedure</span><a class="anchor" href="#openpdf" aria-label="link">#</a></h3>
+<p class="d">Abre explicitamente a estrutura do documento (uso avançado; Init já faz isso).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OpenPDF;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="output">
+<h3>Output <span class="kind">Procedure</span><a class="anchor" href="#output" aria-label="link">#</a></h3>
+<p class="d">Saída no estilo FPDF clássico (compatibilidade). Prefira OutputBlob ou OutputFile.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Output(
+    pname <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    pdest <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td>Nome do arquivo/documento.</td><td class="pval">Qualquer VARCHAR2</td><td><code>null</code></td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destino.</td><td class="pval">&#x27;S&#x27;, &#x27;D&#x27;, &#x27;I&#x27; ou &#x27;F&#x27;</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a>, <a href="#outputfile">OutputFile</a></p>
+</article>
+<article class="api" id="outputblob">
+<h3>OutputBlob <span class="kind">Function</span><a class="anchor" href="#outputblob" aria-label="link">#</a></h3>
+<p class="d">Sinônimo de OutputBlob: finaliza o documento e retorna o PDF como BLOB.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputBlob
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Retorno</h5><p class="d">BLOB — conteúdo do PDF.</p>
+<p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<article class="api" id="outputfile">
+<h3>OutputFile <span class="kind">Procedure</span><a class="anchor" href="#outputfile" aria-label="link">#</a></h3>
+<p class="d">Finaliza o documento e grava o PDF diretamente em um arquivo no servidor de banco de dados.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OutputFile(
+    p_filename  <span class="k">varchar2</span>,
+    p_directory <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;PDF_DIR&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_filename</td><td class="ptype">VARCHAR2</td><td>Nome do arquivo de saída.</td><td class="pval">Ex.: &#x27;relatorio.pdf&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_directory</td><td class="ptype">VARCHAR2</td><td>DIRECTORY do Oracle com permissão de escrita.</td><td class="pval">Padrão: &#x27;PDF_DIR&#x27;</td><td><code>&#x27;PDF_DIR&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.OutputFile(<span class="s">&#x27;relatorio.pdf&#x27;</span>, <span class="s">&#x27;PDF_DIR&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<article class="api" id="returnblob">
+<h3>ReturnBlob <span class="kind">Function</span><a class="anchor" href="#returnblob" aria-label="link">#</a></h3>
+<p class="d">Retorna o PDF como BLOB (compatibilidade com código legado). Prefira OutputBlob.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.ReturnBlob(
+    pname <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    pdest <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td>Nome lógico do documento.</td><td class="pval">Qualquer VARCHAR2; NULL = sem nome</td><td><code>null</code></td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destino no estilo FPDF.</td><td class="pval">&#x27;S&#x27; (string/BLOB), &#x27;D&#x27; (download), &#x27;I&#x27; (inline), &#x27;F&#x27; (arquivo)</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BLOB — conteúdo do PDF.</p>
+<p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<h2 class="grp" id="grp-manip">Manipulação de PDF existente</h2>
+<article class="api" id="addwatermark">
+<h3>AddWatermark <span class="kind">Procedure</span><a class="anchor" href="#addwatermark" aria-label="link">#</a></h3>
+<p class="d">Aplica uma marca d&#x27;água de texto sobre as páginas do PDF carregado, com opacidade, rotação e abrangência configuráveis.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddWatermark(
+    p_text     <span class="k">VARCHAR2</span>,
+    p_opacity  <span class="k">NUMBER</span> <span class="k">DEFAULT</span> 0.3,
+    p_rotation <span class="k">NUMBER</span> <span class="k">DEFAULT</span> 45,
+    p_pages    <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;ALL&#x27;</span>,
+    p_font     <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;Helvetica&#x27;</span>,
+    p_size     <span class="k">NUMBER</span> <span class="k">DEFAULT</span> 48,
+    p_color    <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;gray&#x27;</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Texto da marca d&#x27;água.</td><td class="pval">Qualquer VARCHAR2, ex.: &#x27;CONFIDENCIAL&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_opacity</td><td class="ptype">NUMBER</td><td>Opacidade da marca.</td><td class="pval">0.0 (invisível) a 1.0 (opaca); 0.3 é o padrão</td><td><code>0.3</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">NUMBER</td><td>Ângulo do texto em graus.</td><td class="pval">0 a 360; 45 (diagonal) é o padrão</td><td><code>45</code></td></tr>
+<tr><td class="pname">p_pages</td><td class="ptype">VARCHAR2</td><td>Páginas que recebem a marca.</td><td class="pval">&#x27;ALL&#x27; (padrão) ou lista/intervalos como &#x27;1&#x27;, &#x27;1,3,5&#x27;, &#x27;2-8&#x27;, &#x27;1,3-5,10&#x27;</td><td><code>&#x27;ALL&#x27;</code></td></tr>
+<tr><td class="pname">p_font</td><td class="ptype">VARCHAR2</td><td>Fonte usada.</td><td class="pval">&#x27;Helvetica&#x27; (padrão), &#x27;Arial&#x27;, &#x27;Times&#x27; ou &#x27;Courier&#x27;</td><td><code>&#x27;Helvetica&#x27;</code></td></tr>
+<tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>Tamanho da fonte em pontos.</td><td class="pval">Número &gt; 0; 48 é o padrão</td><td><code>48</code></td></tr>
+<tr><td class="pname">p_color</td><td class="ptype">VARCHAR2</td><td>Cor da marca d&#x27;água.</td><td class="pval">&#x27;gray&#x27; (padrão), &#x27;red&#x27;, &#x27;blue&#x27;, &#x27;green&#x27;, &#x27;black&#x27; ou hexadecimal RGB como &#x27;FF0000&#x27;</td><td><code>&#x27;gray&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.LoadPDF(l_pdf);
+PL_FPDF.AddWatermark(
+  p_text     =&gt; <span class="s">&#x27;CONFIDENCIAL&#x27;</span>,
+  p_opacity  =&gt; 0.3,
+  p_rotation =&gt; 45,
+  p_pages    =&gt; <span class="s">&#x27;ALL&#x27;</span>,
+  p_size     =&gt; 48,
+  p_color    =&gt; <span class="s">&#x27;gray&#x27;</span>);
+l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#getwatermarks">GetWatermarks</a>, <a href="#overlaytext">OverlayText</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<article class="api" id="clearpdfcache">
+<h3>ClearPDFCache <span class="kind">Procedure</span><a class="anchor" href="#clearpdfcache" aria-label="link">#</a></h3>
+<p class="d">Descarta os PDFs carregados e libera a memória usada pela manipulação.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearPDFCache;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#unloadpdf">UnloadPDF</a></p>
+</article>
+<article class="api" id="getactivepagecount">
+<h3>GetActivePageCount <span class="kind">Function</span><a class="anchor" href="#getactivepagecount" aria-label="link">#</a></h3>
+<p class="d">Retorna quantas páginas restarão após as remoções pendentes.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetActivePageCount
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">PLS_INTEGER — páginas não marcadas para remoção.</p>
+<p class="see"><b>Veja também:</b> <a href="#removepage">RemovePage</a>, <a href="#getpagecount">GetPageCount</a></p>
+</article>
+<article class="api" id="getpagecount">
+<h3>GetPageCount <span class="kind">Function</span><a class="anchor" href="#getpagecount" aria-label="link">#</a></h3>
+<p class="d">Retorna o total de páginas do PDF carregado (incluindo as marcadas para remoção).</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPageCount
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">PLS_INTEGER — número de páginas.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#getactivepagecount">GetActivePageCount</a></p>
+</article>
+<article class="api" id="getpdfinfo">
+<h3>GetPDFInfo <span class="kind">Function</span><a class="anchor" href="#getpdfinfo" aria-label="link">#</a></h3>
+<p class="d">Retorna informações do PDF carregado: versão, metadados e contagem de páginas.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFInfo
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Retorno</h5><p class="d">JSON_OBJECT_T — versão do PDF, título, autor, número de páginas e demais metadados.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#getpageinfo">GetPageInfo</a></p>
+</article>
+<article class="api" id="getwatermarks">
+<h3>GetWatermarks <span class="kind">Function</span><a class="anchor" href="#getwatermarks" aria-label="link">#</a></h3>
+<p class="d">Lista todas as marcas d&#x27;água aplicadas ao PDF carregado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetWatermarks
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Retorno</h5><p class="d">JSON_ARRAY_T — objetos com id, text, opacity, rotation, pageRange, font, fontSize e color.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#addwatermark">AddWatermark</a></p>
+</article>
+<article class="api" id="ispageremoved">
+<h3>IsPageRemoved <span class="kind">Function</span><a class="anchor" href="#ispageremoved" aria-label="link">#</a></h3>
+<p class="d">Indica se uma página está marcada para remoção.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPageRemoved(
+    p_page_number <span class="k">PLS_INTEGER</span>)
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página consultada.</td><td class="pval">Inteiro ≥ 1, até GetPageCount</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se a página será removida na saída.</p>
+<p class="see"><b>Veja também:</b> <a href="#removepage">RemovePage</a></p>
+</article>
+<article class="api" id="ispdfmodified">
+<h3>IsPDFModified <span class="kind">Function</span><a class="anchor" href="#ispdfmodified" aria-label="link">#</a></h3>
+<p class="d">Indica se há alterações pendentes (rotação, remoção, marca d&#x27;água, overlay) no PDF carregado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPDFModified
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se existem modificações não aplicadas.</p>
+<p class="see"><b>Veja também:</b> <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<article class="api" id="loadpdf">
+<h3>LoadPDF <span class="kind">Procedure</span><a class="anchor" href="#loadpdf" aria-label="link">#</a></h3>
+<p class="d">Carrega um PDF existente na memória da sessão para leitura e modificação. É o ponto de partida de todo o fluxo de manipulação, encerrado por OutputModifiedPDF.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDF(
+    p_pdf_blob <span class="k">BLOB</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_blob</td><td class="ptype">BLOB</td><td>Documento PDF a carregar.</td><td class="pval">BLOB não nulo, com cabeçalho %PDF válido</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20800</td><td>PDF inválido (NULL ou muito pequeno)</td></tr>
+<tr><td class="pname">-20801</td><td>Cabeçalho PDF inválido</td></tr>
+<tr><td class="pname">-20802</td><td>startxref não encontrado</td></tr>
+<tr><td class="pname">-20803</td><td>Tabela xref inválida</td></tr>
+<tr><td class="pname">-20804</td><td>Objeto Root não encontrado no trailer</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_pdf <span class="k">BLOB</span>;
+<span class="k">BEGIN</span>
+  <span class="k">SELECT</span> pdf_content <span class="k">INTO</span> l_pdf <span class="k">FROM</span> documentos <span class="k">WHERE</span> id = 123;
+  PL_FPDF.LoadPDF(l_pdf);
+  DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Páginas: &#x27;</span> || PL_FPDF.GetPageCount());
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#getpagecount">GetPageCount</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<article class="api" id="outputmodifiedpdf">
+<h3>OutputModifiedPDF <span class="kind">Function</span><a class="anchor" href="#outputmodifiedpdf" aria-label="link">#</a></h3>
+<p class="d">Aplica todas as modificações pendentes (rotações, remoções, marcas d&#x27;água e overlays) e retorna o PDF resultante.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputModifiedPDF
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Retorno</h5><p class="d">BLOB — PDF modificado.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<article class="api" id="removepage">
+<h3>RemovePage <span class="kind">Procedure</span><a class="anchor" href="#removepage" aria-label="link">#</a></h3>
+<p class="d">Marca uma página do PDF carregado para remoção. A exclusão é lógica: só é aplicada em OutputModifiedPDF.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemovePage(
+    p_page_number <span class="k">PLS_INTEGER</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página a remover.</td><td class="pval">Inteiro ≥ 1, até GetPageCount</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+<tr><td class="pname">-20810</td><td>Número de página inválido</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#ispageremoved">IsPageRemoved</a>, <a href="#getactivepagecount">GetActivePageCount</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<article class="api" id="rotatepage">
+<h3>RotatePage <span class="kind">Procedure</span><a class="anchor" href="#rotatepage" aria-label="link">#</a></h3>
+<p class="d">Rotaciona uma página do PDF carregado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RotatePage(
+    p_page_number <span class="k">PLS_INTEGER</span>,
+    p_rotation    <span class="k">NUMBER</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página a rotacionar.</td><td class="pval">Inteiro ≥ 1, até GetPageCount</td><td>—</td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">NUMBER</td><td>Ângulo de rotação aplicado.</td><td class="pval">0, 90, 180 ou 270</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+<tr><td class="pname">-20810</td><td>Número de página inválido</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.RotatePage(p_page_number =&gt; 1, p_rotation =&gt; 90);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#removepage">RemovePage</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<h2 class="grp" id="grp-overlay">Overlays</h2>
+<article class="api" id="clearoverlays">
+<h3>ClearOverlays <span class="kind">Procedure</span><a class="anchor" href="#clearoverlays" aria-label="link">#</a></h3>
+<p class="d">Remove todas as sobreposições, de uma página específica ou de todo o documento.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearOverlays(
+    p_page_number <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página a limpar.</td><td class="pval">Inteiro ≥ 1, até GetPageCount; NULL (padrão) limpa todas as páginas</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#removeoverlay">RemoveOverlay</a>, <a href="#getoverlays">GetOverlays</a></p>
+</article>
+<article class="api" id="getoverlays">
+<h3>GetOverlays <span class="kind">Function</span><a class="anchor" href="#getoverlays" aria-label="link">#</a></h3>
+<p class="d">Lista as sobreposições aplicadas, opcionalmente filtrando por página.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetOverlays(
+    p_page_number <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Filtro de página.</td><td class="pval">Inteiro ≥ 1, até GetPageCount; NULL (padrão) retorna as de todas as páginas</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">JSON_ARRAY_T — objetos com overlayId, overlayType (&#x27;TEXT&#x27; ou &#x27;IMAGE&#x27;), pageNumber, x, y, content, opacity, rotation e zOrder.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#overlaytext">OverlayText</a>, <a href="#removeoverlay">RemoveOverlay</a></p>
+</article>
+<article class="api" id="overlayimage">
+<h3>OverlayImage <span class="kind">Procedure</span><a class="anchor" href="#overlayimage" aria-label="link">#</a></h3>
+<p class="d">Sobrepõe uma imagem em posição exata de uma página do PDF carregado — logotipos, assinaturas digitalizadas e selos.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OverlayImage(
+    p_page_number <span class="k">PLS_INTEGER</span>,
+    p_image_blob  <span class="k">BLOB</span>,
+    p_x           <span class="k">NUMBER</span>,
+    p_y           <span class="k">NUMBER</span>,
+    p_width       <span class="k">NUMBER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_height      <span class="k">NUMBER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_options     <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página que recebe a imagem.</td><td class="pval">Inteiro ≥ 1, até GetPageCount</td><td>—</td></tr>
+<tr><td class="pname">p_image_blob</td><td class="ptype">BLOB</td><td>Conteúdo da imagem.</td><td class="pval">BLOB em formato JPEG ou PNG</td><td>—</td></tr>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>Posição X em pontos PDF.</td><td class="pval">0 a 612 em A4 retrato</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Posição Y em pontos PDF (da base).</td><td class="pval">0 a 792 em A4 retrato</td><td>—</td></tr>
+<tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Largura em pontos.</td><td class="pval">Número &gt; 0; NULL (padrão) usa a largura original</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Altura em pontos.</td><td class="pval">Número &gt; 0; NULL (padrão) usa a altura original ou mantém a proporção</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Configurações da imagem.</td><td class="pval">JSON_OBJECT_T com as chaves opcionais: opacity (0.0–1.0), rotation (0–360), maintainAspect (true/false), scaleToFit (true/false), zOrder (inteiro)</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+<tr><td class="pname">-20810</td><td>Número de página inválido</td></tr>
+<tr><td class="pname">-20821</td><td>Coordenadas inválidas</td></tr>
+<tr><td class="pname">-20823</td><td>Formato de imagem inválido (use JPEG ou PNG)</td></tr>
+<tr><td class="pname">-20824</td><td>Dimensões de imagem inválidas</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.OverlayImage(
+  p_page_number =&gt; 1,
+  p_image_blob  =&gt; l_logo,
+  p_x =&gt; 450, p_y =&gt; 750,
+  p_width =&gt; 100, p_height =&gt; <span class="k">NULL</span>,
+  p_options =&gt; <span class="k">JSON_OBJECT_T</span>(&#x27;{&quot;opacity&quot;:0.9,&quot;maintainAspect&quot;:<span class="k">true</span>}&#x27;));</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#overlaytext">OverlayText</a>, <a href="#image">Image</a>, <a href="#getoverlays">GetOverlays</a></p>
+</article>
+<article class="api" id="overlaytext">
+<h3>OverlayText <span class="kind">Procedure</span><a class="anchor" href="#overlaytext" aria-label="link">#</a></h3>
+<p class="d">Sobrepõe texto em uma posição exata de uma página do PDF carregado — carimbos, protocolos e assinaturas. As coordenadas são em pontos PDF, com Y crescendo de baixo para cima.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OverlayText(
+    p_page_number <span class="k">PLS_INTEGER</span>,
+    p_text        <span class="k">VARCHAR2</span>,
+    p_x           <span class="k">NUMBER</span>,
+    p_y           <span class="k">NUMBER</span>,
+    p_options     <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Página que recebe o texto.</td><td class="pval">Inteiro ≥ 1, até GetPageCount</td><td>—</td></tr>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Texto sobreposto.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>Posição X em pontos PDF (1 pt = 1/72 pol), a partir da esquerda.</td><td class="pval">0 a 612 em A4 retrato</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Posição Y em pontos PDF, a partir da base da página.</td><td class="pval">0 a 792 em A4 retrato</td><td>—</td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Configurações visuais do texto.</td><td class="pval">JSON_OBJECT_T com as chaves opcionais: font (&#x27;Helvetica&#x27;, &#x27;Arial&#x27;, &#x27;Times&#x27;, &#x27;Courier&#x27;), fontSize (número, 12), color (hexadecimal RGB, &#x27;000000&#x27;), opacity (0.0–1.0), rotation (0–360), align (&#x27;left&#x27;, &#x27;center&#x27;, &#x27;right&#x27;), width (número para quebra automática), bold (true/false), zOrder (inteiro; maior fica por cima)</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
+<tr><td class="pname">-20810</td><td>Número de página inválido</td></tr>
+<tr><td class="pname">-20821</td><td>Coordenadas de posição inválidas</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.OverlayText(
+  p_page_number =&gt; 1,
+  p_text        =&gt; <span class="s">&#x27;APROVADO&#x27;</span>,
+  p_x =&gt; 400, p_y =&gt; 700,
+  p_options =&gt; <span class="k">JSON_OBJECT_T</span>(&#x27;{&quot;fontSize&quot;:24,&quot;color&quot;:&quot;FF0000&quot;,&quot;opacity&quot;:0.8,&quot;bold&quot;:<span class="k">true</span>}&#x27;));</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#overlayimage">OverlayImage</a>, <a href="#getoverlays">GetOverlays</a>, <a href="#addwatermark">AddWatermark</a></p>
+</article>
+<article class="api" id="removeoverlay">
+<h3>RemoveOverlay <span class="kind">Procedure</span><a class="anchor" href="#removeoverlay" aria-label="link">#</a></h3>
+<p class="d">Remove uma sobreposição específica pelo seu identificador.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemoveOverlay(
+    p_overlay_id <span class="k">VARCHAR2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_overlay_id</td><td class="ptype">VARCHAR2</td><td>Identificador da sobreposição.</td><td class="pval">Valor overlayId retornado por GetOverlays, ex.: &#x27;OVL_001&#x27;</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#getoverlays">GetOverlays</a>, <a href="#clearoverlays">ClearOverlays</a></p>
+</article>
+<h2 class="grp" id="grp-multi">Multi-PDF (merge, split, extract)</h2>
+<article class="api" id="extractpages">
+<h3>ExtractPages <span class="kind">Function</span><a class="anchor" href="#extractpages" aria-label="link">#</a></h3>
+<p class="d">Cria um novo PDF contendo apenas as páginas selecionadas de um documento carregado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.ExtractPages(
+    p_pdf_id  <span class="k">VARCHAR2</span>,
+    p_pages   <span class="k">VARCHAR2</span>,
+    p_options <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identificador do documento de origem.</td><td class="pval">O mesmo usado em LoadPDFWithID</td><td>—</td></tr>
+<tr><td class="pname">p_pages</td><td class="ptype">VARCHAR2</td><td>Páginas a extrair.</td><td class="pval">Lista e intervalos separados por vírgula, ex.: &#x27;1&#x27;, &#x27;1,5,9&#x27;, &#x27;1,5-10,15&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Opções da extração.</td><td class="pval">JSON_OBJECT_T opcional; chaves reservadas para uso futuro</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BLOB — PDF com as páginas extraídas.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>ID do PDF não encontrado</td></tr>
+<tr><td class="pname">-20838</td><td>Especificação de páginas inválida</td></tr>
+<tr><td class="pname">-20839</td><td>Número de página fora do intervalo</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>l_resumo := PL_FPDF.ExtractPages(<span class="s">&#x27;corpo&#x27;</span>, <span class="s">&#x27;1,5-10,15&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#splitpdf">SplitPDF</a>, <a href="#mergepdfs">MergePDFs</a></p>
+</article>
+<article class="api" id="getloadedpdfs">
+<h3>GetLoadedPDFs <span class="kind">Function</span><a class="anchor" href="#getloadedpdfs" aria-label="link">#</a></h3>
+<p class="d">Lista os documentos atualmente carregados com identificador.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLoadedPDFs
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Retorno</h5><p class="d">JSON_ARRAY_T — objetos com o id e as informações de cada PDF carregado.</p>
+<p class="see"><b>Veja também:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#unloadpdf">UnloadPDF</a></p>
+</article>
+<article class="api" id="loadpdfwithid">
+<h3>LoadPDFWithID <span class="kind">Procedure</span><a class="anchor" href="#loadpdfwithid" aria-label="link">#</a></h3>
+<p class="d">Carrega um PDF na memória associando-o a um identificador, permitindo manter vários documentos abertos simultaneamente para mesclar, dividir ou extrair páginas.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDFWithID(
+    p_pdf_id   <span class="k">VARCHAR2</span>,
+    p_pdf_blob <span class="k">BLOB</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identificador do documento na sessão.</td><td class="pval">Texto único, ex.: &#x27;capa&#x27;, &#x27;anexo1&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_pdf_blob</td><td class="ptype">BLOB</td><td>Documento a carregar.</td><td class="pval">BLOB com PDF válido</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20800</td><td>PDF inválido</td></tr>
+<tr><td class="pname">-20801</td><td>Cabeçalho PDF inválido</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.LoadPDFWithID(l_capa,  <span class="s">&#x27;capa&#x27;</span>);
+PL_FPDF.LoadPDFWithID(l_corpo, <span class="s">&#x27;corpo&#x27;</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#mergepdfs">MergePDFs</a>, <a href="#splitpdf">SplitPDF</a>, <a href="#extractpages">ExtractPages</a>, <a href="#unloadpdf">UnloadPDF</a>, <a href="#getloadedpdfs">GetLoadedPDFs</a></p>
+</article>
+<article class="api" id="mergepdfs">
+<h3>MergePDFs <span class="kind">Function</span><a class="anchor" href="#mergepdfs" aria-label="link">#</a></h3>
+<p class="d">Mescla vários PDFs carregados em um único documento, na ordem informada.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.MergePDFs(
+    p_pdf_ids <span class="k">JSON_ARRAY_T</span>,
+    p_options <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_ids</td><td class="ptype">JSON_ARRAY_T</td><td>Identificadores dos documentos, na ordem desejada.</td><td class="pval">JSON_ARRAY_T de textos, ex.: JSON_ARRAY_T(&#x27;[&quot;capa&quot;,&quot;corpo&quot;,&quot;anexo&quot;]&#x27;)</td><td>—</td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Opções da mesclagem.</td><td class="pval">JSON_OBJECT_T opcional; chaves reservadas para uso futuro</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BLOB — PDF resultante da mesclagem.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>ID do PDF não encontrado</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.LoadPDFWithID(l_capa,  <span class="s">&#x27;capa&#x27;</span>);
+PL_FPDF.LoadPDFWithID(l_corpo, <span class="s">&#x27;corpo&#x27;</span>);
+l_final := PL_FPDF.MergePDFs(<span class="k">JSON_ARRAY_T</span>(&#x27;[&quot;capa&quot;,&quot;corpo&quot;]&#x27;));</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#splitpdf">SplitPDF</a>, <a href="#extractpages">ExtractPages</a></p>
+</article>
+<article class="api" id="splitpdf">
+<h3>SplitPDF <span class="kind">Function</span><a class="anchor" href="#splitpdf" aria-label="link">#</a></h3>
+<p class="d">Divide um PDF carregado em vários documentos, conforme os intervalos de páginas informados.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.SplitPDF(
+    p_pdf_id      <span class="k">VARCHAR2</span>,
+    p_page_ranges <span class="k">JSON_ARRAY_T</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identificador do documento a dividir.</td><td class="pval">O mesmo usado em LoadPDFWithID</td><td>—</td></tr>
+<tr><td class="pname">p_page_ranges</td><td class="ptype">JSON_ARRAY_T</td><td>Intervalos que definem cada parte gerada.</td><td class="pval">JSON_ARRAY_T de textos: &#x27;1-10&#x27;, &#x27;11-20&#x27;, &#x27;21-&#x27; (até o fim), &#x27;5&#x27; (página única)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">JSON_ARRAY_T — uma entrada por parte gerada, com o intervalo e o PDF correspondente.</p>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>ID do PDF não encontrado</td></tr>
+<tr><td class="pname">-20838</td><td>Especificação de páginas inválida</td></tr>
+<tr><td class="pname">-20839</td><td>Número de página fora do intervalo</td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>l_partes := PL_FPDF.SplitPDF(<span class="s">&#x27;corpo&#x27;</span>, <span class="k">JSON_ARRAY_T</span>(&#x27;[&quot;1-10&quot;,&quot;11-20&quot;,&quot;21-&quot;]&#x27;));</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#extractpages">ExtractPages</a>, <a href="#mergepdfs">MergePDFs</a></p>
+</article>
+<article class="api" id="unloadpdf">
+<h3>UnloadPDF <span class="kind">Procedure</span><a class="anchor" href="#unloadpdf" aria-label="link">#</a></h3>
+<p class="d">Remove da memória um documento carregado por LoadPDFWithID.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.UnloadPDF(
+    p_pdf_id <span class="k">VARCHAR2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identificador do documento.</td><td class="pval">O mesmo usado em LoadPDFWithID</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>ID do PDF não encontrado</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<h2 class="grp" id="grp-security">Segurança e criptografia</h2>
+<article class="api" id="decryptpdf">
+<h3>DecryptPDF <span class="kind">Function</span><a class="anchor" href="#decryptpdf" aria-label="link">#</a></h3>
+<p class="d">Remove a proteção de um PDF criptografado, exigindo a senha correta.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.DecryptPDF(
+    p_pdf      <span class="k">BLOB</span>,
+    p_password <span class="k">VARCHAR2</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Documento criptografado.</td><td class="pval">BLOB com PDF protegido</td><td>—</td></tr>
+<tr><td class="pname">p_password</td><td class="ptype">VARCHAR2</td><td>Senha de usuário ou de proprietário.</td><td class="pval">Texto correspondente a uma das senhas do documento</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BLOB — PDF sem criptografia.</p>
+<p class="see"><b>Veja também:</b> <a href="#encryptpdf">EncryptPDF</a>, <a href="#isencrypted">IsEncrypted</a></p>
+</article>
+<article class="api" id="encryptpdf">
+<h3>EncryptPDF <span class="kind">Function</span><a class="anchor" href="#encryptpdf" aria-label="link">#</a></h3>
+<p class="d">Criptografa um PDF já existente, aplicando senhas e permissões. É a forma recomendada de proteger documentos gerados ou recebidos.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.EncryptPDF(
+    p_pdf            <span class="k">BLOB</span>,
+    p_user_password  <span class="k">VARCHAR2</span>,
+    p_owner_password <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_permissions    <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_encryption     <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;RC4-128&#x27;</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Documento a proteger.</td><td class="pval">BLOB com PDF válido, não criptografado</td><td>—</td></tr>
+<tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>Senha solicitada para abrir o documento.</td><td class="pval">Texto; vazio permite abrir sem senha, mantendo as restrições</td><td>—</td></tr>
+<tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td>Senha de proprietário, que permite alterar permissões.</td><td class="pval">Texto; NULL (padrão) usa a mesma senha de usuário</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_permissions</td><td class="ptype">JSON_OBJECT_T</td><td>Permissões concedidas ao leitor.</td><td class="pval">JSON_OBJECT_T com as chaves booleanas: print, modify, copy, annotate, fill_forms, extract, assemble, print_high. Ausentes assumem o padrão restritivo</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td>Algoritmo de criptografia.</td><td class="pval">&#x27;RC4-128&#x27; (padrão) ou &#x27;RC4-40&#x27; (legado, compatível com leitores antigos)</td><td><code>&#x27;RC4-128&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BLOB — PDF criptografado.</p>
+<h5>Exemplo</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_perms <span class="k">JSON_OBJECT_T</span> := <span class="k">JSON_OBJECT_T</span>();
+<span class="k">BEGIN</span>
+  l_perms.put(<span class="s">&#x27;print&#x27;</span>, <span class="k">TRUE</span>);
+  l_perms.put(<span class="s">&#x27;copy&#x27;</span>,  <span class="k">FALSE</span>);
+  l_seguro := PL_FPDF.EncryptPDF(
+    p_pdf            =&gt; l_pdf,
+    p_user_password  =&gt; <span class="s">&#x27;senhaLeitura&#x27;</span>,
+    p_owner_password =&gt; <span class="s">&#x27;senhaAdmin&#x27;</span>,
+    p_permissions    =&gt; l_perms,
+    p_encryption     =&gt; <span class="s">&#x27;RC4-128&#x27;</span>);
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#decryptpdf">DecryptPDF</a>, <a href="#isencrypted">IsEncrypted</a>, <a href="#setencryption">SetEncryption</a>, <a href="#setpermissions">SetPermissions</a></p>
+</article>
+<article class="api" id="getpdfversion">
+<h3>GetPDFVersion <span class="kind">Function</span><a class="anchor" href="#getpdfversion" aria-label="link">#</a></h3>
+<p class="d">Retorna a versão de PDF configurada para a saída.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFVersion
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Retorno</h5><p class="d">VARCHAR2 — versão, ex.: &#x27;1.7&#x27;.</p>
+<p class="see"><b>Veja também:</b> <a href="#setpdfversion">SetPDFVersion</a></p>
+</article>
+<article class="api" id="getsecurityinfo">
+<h3>GetSecurityInfo <span class="kind">Function</span><a class="anchor" href="#getsecurityinfo" aria-label="link">#</a></h3>
+<p class="d">Retorna os detalhes de segurança de um PDF criptografado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetSecurityInfo(
+    p_pdf <span class="k">BLOB</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Documento a inspecionar.</td><td class="pval">BLOB com PDF válido</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">JSON_OBJECT_T — algoritmo, tamanho da chave e permissões concedidas.</p>
+<p class="see"><b>Veja também:</b> <a href="#isencrypted">IsEncrypted</a>, <a href="#encryptpdf">EncryptPDF</a></p>
+</article>
+<article class="api" id="isencrypted">
+<h3>IsEncrypted <span class="kind">Function</span><a class="anchor" href="#isencrypted" aria-label="link">#</a></h3>
+<p class="d">Verifica se um PDF está criptografado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsEncrypted(
+    p_pdf <span class="k">BLOB</span>)
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Documento a verificar.</td><td class="pval">BLOB com PDF válido</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se o documento possui criptografia.</p>
+<p class="see"><b>Veja também:</b> <a href="#getsecurityinfo">GetSecurityInfo</a>, <a href="#decryptpdf">DecryptPDF</a></p>
+</article>
+<article class="api" id="setencryption">
+<h3>SetEncryption <span class="kind">Procedure</span><a class="anchor" href="#setencryption" aria-label="link">#</a></h3>
+<p class="d">Define a criptografia de um documento em construção; aplicada quando o PDF for finalizado por OutputBlob.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetEncryption(
+    p_encryption     <span class="k">VARCHAR2</span>,
+    p_user_password  <span class="k">VARCHAR2</span>,
+    p_owner_password <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td>Algoritmo de criptografia.</td><td class="pval">&#x27;RC4-128&#x27; ou &#x27;RC4-40&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>Senha de abertura.</td><td class="pval">Texto</td><td>—</td></tr>
+<tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td>Senha de proprietário.</td><td class="pval">Texto; NULL (padrão) = igual à de usuário</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Init; PL_FPDF.AddPage;
+PL_FPDF.SetEncryption(<span class="s">&#x27;RC4-128&#x27;</span>, <span class="s">&#x27;senhaLeitura&#x27;</span>, <span class="s">&#x27;senhaAdmin&#x27;</span>);
+PL_FPDF.SetPermissions(p_print =&gt; <span class="k">TRUE</span>, p_copy =&gt; <span class="k">FALSE</span>);
+l_pdf := PL_FPDF.OutputBlob();</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setpermissions">SetPermissions</a>, <a href="#encryptpdf">EncryptPDF</a></p>
+</article>
+<article class="api" id="setpdfversion">
+<h3>SetPDFVersion <span class="kind">Procedure</span><a class="anchor" href="#setpdfversion" aria-label="link">#</a></h3>
+<p class="d">Define a versão declarada no cabeçalho do PDF gerado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPDFVersion(
+    p_version <span class="k">VARCHAR2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_version</td><td class="ptype">VARCHAR2</td><td>Versão do arquivo PDF.</td><td class="pval">&#x27;1.4&#x27;, &#x27;1.5&#x27;, &#x27;1.6&#x27; ou &#x27;1.7&#x27;</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#getpdfversion">GetPDFVersion</a></p>
+</article>
+<article class="api" id="setpermissions">
+<h3>SetPermissions <span class="kind">Procedure</span><a class="anchor" href="#setpermissions" aria-label="link">#</a></h3>
+<p class="d">Define as permissões do documento em construção, aplicadas junto com a criptografia definida em SetEncryption.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPermissions(
+    p_print      <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
+    p_modify     <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_copy       <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_annotate   <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
+    p_fill_forms <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
+    p_extract    <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_assemble   <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_print_high <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_print</td><td class="ptype">BOOLEAN</td><td>Permite imprimir.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>TRUE</code></td></tr>
+<tr><td class="pname">p_modify</td><td class="ptype">BOOLEAN</td><td>Permite alterar o conteúdo.</td><td class="pval">TRUE ou FALSE; FALSE é o padrão</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_copy</td><td class="ptype">BOOLEAN</td><td>Permite copiar texto e imagens.</td><td class="pval">TRUE ou FALSE; FALSE é o padrão</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_annotate</td><td class="ptype">BOOLEAN</td><td>Permite adicionar comentários e anotações.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>TRUE</code></td></tr>
+<tr><td class="pname">p_fill_forms</td><td class="ptype">BOOLEAN</td><td>Permite preencher campos de formulário.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>TRUE</code></td></tr>
+<tr><td class="pname">p_extract</td><td class="ptype">BOOLEAN</td><td>Permite extrair conteúdo para acessibilidade.</td><td class="pval">TRUE ou FALSE; FALSE é o padrão</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_assemble</td><td class="ptype">BOOLEAN</td><td>Permite inserir, remover e girar páginas.</td><td class="pval">TRUE ou FALSE; FALSE é o padrão</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_print_high</td><td class="ptype">BOOLEAN</td><td>Permite impressão em alta resolução.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>TRUE</code></td></tr>
+</tbody></table></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetPermissions(
+  p_print  =&gt; <span class="k">TRUE</span>,
+  p_copy   =&gt; <span class="k">FALSE</span>,
+  p_modify =&gt; <span class="k">FALSE</span>);</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setencryption">SetEncryption</a>, <a href="#encryptpdf">EncryptPDF</a></p>
+</article>
+<h2 class="grp" id="grp-diag">Diagnóstico e utilidades</h2>
+<article class="api" id="debugdisabled">
+<h3>DebugDisabled <span class="kind">Procedure</span><a class="anchor" href="#debugdisabled" aria-label="link">#</a></h3>
+<p class="d">Desativa as mensagens de depuração.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.DebugDisabled;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setloglevel">SetLogLevel</a></p>
+</article>
+<article class="api" id="debugenabled">
+<h3>DebugEnabled <span class="kind">Procedure</span><a class="anchor" href="#debugenabled" aria-label="link">#</a></h3>
+<p class="d">Ativa as mensagens de depuração do package.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.DebugEnabled;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#setloglevel">SetLogLevel</a></p>
+</article>
+<article class="api" id="error">
+<h3>Error <span class="kind">Procedure</span><a class="anchor" href="#error" aria-label="link">#</a></h3>
+<p class="d">Levanta um erro padronizado do PL_FPDF. Uso interno e em extensões.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Error(
+    pmsg <span class="k">varchar2</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">pmsg</td><td class="ptype">VARCHAR2</td><td>Mensagem do erro.</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+</article>
+<article class="api" id="getloglevel">
+<h3>GetLogLevel <span class="kind">Function</span><a class="anchor" href="#getloglevel" aria-label="link">#</a></h3>
+<p class="d">Retorna o nível de log configurado.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLogLevel
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">PLS_INTEGER — nível atual (0 a 4).</p>
+<p class="see"><b>Veja também:</b> <a href="#setloglevel">SetLogLevel</a></p>
+</article>
+<article class="api" id="getscalefactor">
+<h3>GetScaleFactor <span class="kind">Function</span><a class="anchor" href="#getscalefactor" aria-label="link">#</a></h3>
+<p class="d">Retorna o fator de conversão entre a unidade do documento e pontos PDF.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetScaleFactor
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Retorno</h5><p class="d">NUMBER — fator de escala (ex.: 2.8346 para milímetros).</p>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="helloworld">
+<h3>helloworld <span class="kind">Procedure</span><a class="anchor" href="#helloworld" aria-label="link">#</a></h3>
+<p class="d">Gera um PDF mínimo de demonstração — útil para validar a instalação.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.helloworld;</pre></div>
+<h5>Exemplo</h5><div class="code"><pre>PL_FPDF.helloworld;</pre></div>
+<p class="see"><b>Veja também:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="setloglevel">
+<h3>SetLogLevel <span class="kind">Procedure</span><a class="anchor" href="#setloglevel" aria-label="link">#</a></h3>
+<p class="d">Define o nível de detalhamento das mensagens de log do package.</p>
+<h5>Sintaxe</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLogLevel(
+    p_level <span class="k">pls_integer</span>);</pre></div>
+<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
+<tr><td class="pname">p_level</td><td class="ptype">PLS_INTEGER</td><td>Nível de log.</td><td class="pval">0 (desligado), 1 (erro), 2 (aviso), 3 (info) ou 4 (debug)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>Veja também:</b> <a href="#getloglevel">GetLogLevel</a>, <a href="#debugenabled">DebugEnabled</a></p>
+</article>
+</main>
+</div>
+<footer>
+  <p><a href="index.html">Início</a> · <a href="api.html">Índice de uso</a> ·
+  <a href="https://github.com/Maxwbh/pl_fpdf">Repositório</a> ·
+  <a href="mailto:contato@msbrasil.inf.br">Contato</a></p>
+  <p>Mantido com o apoio de <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
+  · Maxwell da Silva Oliveira (<a href="https://github.com/maxwbh">@maxwbh</a>) · MIT License</p>
+  <p style="font-size:12px;opacity:.75">Página gerada a partir de <code>src/PL_FPDF.pks</code>
+  por <code>scripts/gen_docs/generate.py</code></p>
+</footer>
+<a class="top" href="#" aria-label="Voltar ao topo">↑</a>
+<script>
+(function(){
+  var f = document.querySelector('.filter');
+  if (f) f.addEventListener('input', function(){
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.side-group').forEach(function(g){
+      var vis = 0;
+      g.querySelectorAll('li').forEach(function(li){
+        var hit = li.textContent.toLowerCase().indexOf(q) !== -1;
+        li.style.display = hit ? '' : 'none';
+        if (hit) vis++;
+      });
+      g.style.display = vis ? '' : 'none';
+    });
+  });
+  var links = [].slice.call(document.querySelectorAll('.side-group a'));
+  var obs = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (!e.isIntersecting) return;
+      links.forEach(function(a){
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    });
+  }, {rootMargin: '-70px 0px -75% 0px'});
+  document.querySelectorAll('article.api').forEach(function(a){ obs.observe(a); });
+})();
+</script>
+</body>
+</html>
