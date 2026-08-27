@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [Unreleased]
+
+### Corrigido
+
+- **Limite de 32 KB por página removido.** O conteúdo de cada página era acumulado
+  em `VARCHAR2(32767)`; páginas densas (tabelas com algumas centenas de células)
+  estouravam `ORA-06502` em `p_out`. O buffer de página passou a ser CLOB
+  temporário, como o buffer do documento já era desde a v2.
+
+### Desempenho
+
+- **Construção de página deixou de ser O(n²).** `pages(page) := pages(page) || ...`
+  recopiava a página inteira a cada instrução emitida. Agora um acumulador
+  `VARCHAR2` recebe as instruções e só descarrega no CLOB quando enche, o que
+  também reduz de uma chamada `DBMS_LOB` por instrução para uma a cada ~32 KB.
+- Escrita do stream da página passou a ser feita em blocos, sem materializar a
+  página inteira em `VARCHAR2`.
+
+### Interno
+
+- `p_free_pages` libera os CLOBs temporários das páginas em `Reset` e nas duas
+  rotas de inicialização, evitando vazamento de LOB de sessão entre documentos.
+- Substituição do alias `{nb}` reescrita para percorrer o CLOB em blocos, com
+  retenção de cauda para o caso de o marcador cair na fronteira entre blocos.
+- Novo teste de regressão `tests/test_core_large_page.sql`.
+
+Nenhuma assinatura pública mudou.
+
 ## [Unreleased] - Planned 📋
 
 ### 🎯 Advanced Page Operations

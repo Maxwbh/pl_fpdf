@@ -122,6 +122,15 @@ PROMPT -------------------------------------------------------------------------
 
 PROMPT
 PROMPT ================================================================================
+PROMPT SECTION 3b: Nucleo - paginas grandes (regressao do limite de 32 KB)
+PROMPT ================================================================================
+PROMPT
+PROMPT Running: test_core_large_page.sql
+PROMPT --------------------------------------------------------------------------------
+@@test_core_large_page.sql
+
+PROMPT
+PROMPT ================================================================================
 PROMPT SECTION 4: Security - RC4 Encryption (v3.2)
 PROMPT ================================================================================
 PROMPT
@@ -156,7 +165,8 @@ PROMPT   6. test_phase_4_4_output.sql     - Output Modified PDF tests
 PROMPT   7. test_phase_4_5_overlay.sql    - Text/Image Overlay tests (20 tests)
 PROMPT   8. test_phase_4_6_merge_split.sql- Merge/Split tests (20 tests)
 PROMPT   9. validate_phase_4_complete.sql - Phase 4 integration validation
-PROMPT  10. test_phase_security.sql - RC4 encryption (v3.2)
+PROMPT  10. test_core_large_page.sql - Nucleo: paginas grandes
+PROMPT  11. test_phase_security.sql - RC4 encryption (v3.2)
 PROMPT
 PROMPT Total Test Files: 9
 PROMPT Estimated Total Test Cases: ~150+

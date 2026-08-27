@@ -53,6 +53,7 @@ type tbool is table of boolean index by pls_integer;
 type tn is table of number index by pls_integer;
 type tv4000 is table of varchar2(4000) index by pls_integer;
 type tv32k is table of varchar2(32767) index by pls_integer;
+type tclob is table of clob index by pls_integer;
 
 type charSet is table of pls_integer index by car;
 
@@ -112,7 +113,12 @@ type ArrayCharWidths is table of charSet index by word;
  -- Task 1.7: Refactored to CLOB for better performance and no size limits
  pdfDoc CLOB;               -- buffer holding in-memory final PDF document (CLOB) 									   
  imgBlob blob;              -- allows creation of persistent blobs for images
- pages tv32k;               -- array containing pages 
+ pages tclob;               -- conteudo de cada pagina (CLOB temporario, sem limite de 32k)
+ -- Acumulador de escrita: p_out concatena aqui e so descarrega no CLOB quando enche.
+ -- Evita uma chamada LOB por instrucao e a recopia O(n^2) da pagina inteira.
+ g_page_buf varchar2(32767);
+ g_page_buf_page pls_integer;          -- pagina a que o acumulador pertence
+ co_page_buf_limit constant pls_integer := 32000;
  state word;                -- current document state
  b_compress flag := false;  -- compression flag 
  DefOrientation car;        -- default orientation
@@ -1391,6 +1397,57 @@ begin
 end p_getfontpath;
 
 ----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+-- p_ensure_page_clob : garante que a pagina possui um CLOB temporario alocado.
+----------------------------------------------------------------------------------------
+procedure p_ensure_page_clob(p_page in pls_integer) is
+begin
+  if not pages.exists(p_page) then
+    pages(p_page) := null;              -- cria a entrada; so entao pode ir como OUT
+  end if;
+  if pages(p_page) is null then
+    dbms_lob.createtemporary(pages(p_page), true, dbms_lob.session);
+  end if;
+end p_ensure_page_clob;
+
+----------------------------------------------------------------------------------------
+-- p_free_pages : libera os CLOBs temporarios de todas as paginas e zera o acumulador.
+--                Evita vazamento de LOB de sessao entre documentos.
+----------------------------------------------------------------------------------------
+procedure p_free_pages is
+  i pls_integer := pages.first;
+begin
+  while i is not null loop
+    if pages(i) is not null and dbms_lob.istemporary(pages(i)) = 1 then
+      dbms_lob.freetemporary(pages(i));
+    end if;
+    i := pages.next(i);
+  end loop;
+  pages.delete;
+  g_page_buf := null;
+  g_page_buf_page := null;
+end p_free_pages;
+
+----------------------------------------------------------------------------------------
+-- p_flush_page_buf : descarrega o acumulador VARCHAR2 no CLOB da pagina correspondente.
+--                    Chamar antes de trocar de pagina e antes de ler o conteudo.
+----------------------------------------------------------------------------------------
+procedure p_flush_page_buf is
+  l_len pls_integer;
+begin
+  if g_page_buf is null or g_page_buf_page is null then
+    g_page_buf := null;
+    return;
+  end if;
+  l_len := length(g_page_buf);
+  if l_len > 0 then
+    p_ensure_page_clob(g_page_buf_page);
+    dbms_lob.writeappend(pages(g_page_buf_page), l_len, g_page_buf);
+  end if;
+  g_page_buf := null;
+end p_flush_page_buf;
+
+----------------------------------------------------------------------------------------
 procedure p_out(pstr in varchar2 default null, pCRLF in boolean default true) is 
 lv_CRLF varchar2(2);
   lv_output varchar2(32767);
@@ -1404,8 +1461,16 @@ begin
 
   -- Add a line to the document
   if(state = 2) then
-    -- Page content - append to page buffer (still VARCHAR2 array)
-    pages(page) := pages(page) || lv_output;
+    -- Conteudo de pagina: acumula em VARCHAR2 e descarrega no CLOB quando enche.
+    -- Sem teto de 32k por pagina e sem recopiar a pagina a cada instrucao.
+    if g_page_buf_page is not null and g_page_buf_page != page then
+      p_flush_page_buf;                      -- trocou de pagina: fecha a anterior
+    end if;
+    if nvl(lengthb(g_page_buf), 0) + nvl(lengthb(lv_output), 0) > co_page_buf_limit then
+      p_flush_page_buf;
+    end if;
+    g_page_buf_page := page;
+    g_page_buf := g_page_buf || lv_output;
   else
     -- Main document - append to CLOB buffer
     if lv_output is not null then
@@ -1444,6 +1509,32 @@ begin
   -- Task 2.1: Use UTF8ToPDFString for proper encoding
 	return '(' || UTF8ToPDFString(pstr, true) || ')';
 end p_textstring;
+
+----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+-- p_putstream_clob : escreve o conteudo de uma pagina (CLOB) no documento em blocos,
+--                    sem materializar a pagina inteira em VARCHAR2.
+----------------------------------------------------------------------------------------
+procedure p_putstream_clob(pdata in clob) is
+  l_off   pls_integer := 1;
+  l_size  pls_integer := 8000;    -- chars; <= 32767 bytes em UTF-8
+  l_total number := dbms_lob.getlength(pdata);
+  l_part  varchar2(32767);
+begin
+  p_out('stream');
+  while l_off <= l_total loop
+    l_part := dbms_lob.substr(pdata, l_size, l_off);
+    if l_part is not null then
+      p_out(l_part, false);
+    end if;
+    l_off := l_off + l_size;
+  end loop;
+  p_out('');
+  p_out('endstream');
+exception
+  when others then
+    error('p_putstream_clob : '||sqlerrm);
+end p_putstream_clob;
 
 ----------------------------------------------------------------------------------------
 procedure p_putstream(pstr in varchar2) is 
@@ -1936,10 +2027,47 @@ procedure p_putpages is
    v_2n number;
    v_3n number;
 begin
+   -- Garante que todo conteudo acumulado ja esta nos CLOBs das paginas
+   p_flush_page_buf;
+
    -- Replace number of pages
 	 if not empty(AliasNbPages) then
 		   for i in 1..nb loop
-		      pages(i) := str_replace(AliasNbPages,nb,pages(i));
+		      if pages.exists(i) and dbms_lob.getlength(pages(i)) > 0 then
+		         declare
+		           l_new    clob;
+		           l_off    pls_integer := 1;
+		           l_size   pls_integer := 8000;   -- chars; <= 32767 bytes em UTF-8
+		           l_carry  varchar2(32767);   -- cauda retida: o alias pode cruzar blocos
+		           l_keep   pls_integer := nvl(length(AliasNbPages), 0) - 1;
+		           l_part   varchar2(32767);
+		           l_total  number := dbms_lob.getlength(pages(i));
+		           l_emit   varchar2(32767);
+		         begin
+		           dbms_lob.createtemporary(l_new, true, dbms_lob.session);
+		           while l_off <= l_total loop
+		             l_part := l_carry || dbms_lob.substr(pages(i), l_size, l_off);
+		             l_part := str_replace(AliasNbPages, nb, l_part);
+		             l_off  := l_off + l_size;
+		             if l_off <= l_total and l_keep > 0 and length(l_part) > l_keep then
+		               -- retem o final que pode conter um alias partido
+		               l_carry := substr(l_part, length(l_part) - l_keep + 1);
+		               l_emit  := substr(l_part, 1, length(l_part) - l_keep);
+		             else
+		               l_carry := null;
+		               l_emit  := l_part;
+		             end if;
+		             if l_emit is not null then
+		               dbms_lob.writeappend(l_new, length(l_emit), l_emit);
+		             end if;
+		           end loop;
+		           if l_carry is not null then
+		             dbms_lob.writeappend(l_new, length(l_carry), l_carry);
+		           end if;
+		           dbms_lob.freetemporary(pages(i));
+		           pages(i) := l_new;
+		         end;
+		      end if;
 		   end loop;
 	 end if; 
 	 
@@ -2008,8 +2136,8 @@ begin
 		  -- Page content
 		  -- Pas de compression : oracle ne sait pas faire.
 	    p_newobj();
-	    p_out('<<' || filter || '/Length ' || strlen(pages(i)) || '>>');
-	    p_putstream(pages(i));
+	    p_out('<<' || filter || '/Length ' || dbms_lob.getlength(pages(i)) || '>>');
+	    p_putstream_clob(pages(i));
 	    p_out('endobj');
    end loop;
 
@@ -2094,8 +2222,10 @@ end p_enddoc;
 procedure p_beginpage(orientation in varchar2) is
 Myorientation word := orientation;
 begin
+	p_flush_page_buf;            -- fecha o acumulador da pagina anterior
 	page := page + 1;
-	pages(page):='';
+	p_ensure_page_clob(page);    -- CLOB temporario da nova pagina
+	dbms_lob.trim(pages(page), 0);
 	state:=2;
 	x:=lMargin;
 	y:=tMargin;
@@ -3426,7 +3556,7 @@ begin
       dbms_lob.freetemporary(pdfDoc);
     end if;
 
-    pages.delete;
+    p_free_pages;   -- libera CLOBs temporarios e descarta a colecao
     fonts.delete;
     FontFiles.delete;
     images.delete;
@@ -3931,6 +4061,7 @@ begin
     dbms_lob.freetemporary(pdfDoc);
   end if;
   dbms_lob.createtemporary(pdfDoc, true, dbms_lob.session);
+  p_free_pages;   -- libera CLOBs de paginas de um documento anterior
 	state:=0;
 	InFooter:=false;
 	lasth:=0;
