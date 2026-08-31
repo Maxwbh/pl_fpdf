@@ -378,10 +378,6 @@ Este projeto só existe porque outros o tornaram possível, e é justo nomeá-lo
 A este alicerce, este projeto acrescentou a modernização para Oracle 19c/23c e as
 versões 2.x/3.x — mas a fundação é de vocês. **Muito obrigado.**
 
-O porte de 2017 saiu sob GPL, e Pierre-Gilles Levallois autorizou o
-relicenciamento sob MIT. É essa autorização que sustenta a licença deste
-repositório.
-
 ---
 
 ## Créditos
@@ -398,9 +394,6 @@ repositório.
 **MIT.** O arquivo [LICENSE](LICENSE) é a licença desta biblioteca: use,
 modifique, distribua e embarque em produto comercial, mantendo o aviso de
 copyright.
-
-A base de geração descende de um porte PL/SQL de 2017; os créditos de linhagem
-estão logo abaixo.
 
 ---
 
