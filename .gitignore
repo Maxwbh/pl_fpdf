@@ -1,0 +1,15 @@
+# Artefatos gerados pelo gerador de documentação
+dev/scripts/gen_docs/__pycache__/
+dev/scripts/gen_docs/parsed.json
+__pycache__/
+*.pyc
+
+# PDFs gerados: os do runner (dev/amostras/) e os que cada referência em Python
+# monta para validar (dev/scripts/*/amostras/). Todos são reconstruíveis.
+amostras/
+
+# Progresso do runner entre rodadas (por banco/usuário, não versionável)
+.plfpdf_estado.json
+
+# Instrucoes de trabalho, locais. Nao vao para o repositorio.
+CLAUDE.md

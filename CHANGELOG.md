@@ -7,6 +7,32 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.3.0] - 2026-08-31
+
+### Adicionado
+- Instalação em **um arquivo**: `dist/pl_fpdf_install.sql`, sem clone
+- `PL_FPDF_UTIL` — o package foi separado em dois; 3.147 linhas sem relação com PDF saíram do principal
+- Documentação e site em inglês
+- Exemplos completos, sem imagem: boleto (FEBRABAN) e ingresso de evento
+
+### Corrigido
+- `AddWatermark` não desenhava: a marca pedia uma fonte que nenhuma página declara
+- `Reset` não limpava os metadados — `/Keywords` e `/Author` de um documento reapareciam em todos os seguintes da mesma sessão
+- PDF cifrado abria com a senha, mas sem páginas
+- Mais 14 defeitos, cada um com teste ou verificação estática que impede o retorno
+
+### Alterado
+- **Incompatível:** `Triangle` honra o `porientation`, que antes era aceito e ignorado
+- Buffer estourado agora recusa com erro próprio (`-20841`, `-20866`) em vez de truncar em silêncio
+- Licença MIT, com autorização de relicenciamento do autor do porte de 2017
+
+### Removido
+- Dez invólucros herdados do PHP e sete rotinas de demonstração do porte original
+
+> Sintoma, causa e conserto de cada defeito: no comentário do código e na verificação que o guarda.
+
+---
+
 ## [Unreleased] - Planned 📋
 
 ### 🎯 Advanced Page Operations
@@ -168,5 +194,5 @@ Original PL/SQL port of PHP FPDF library.
 ## Links
 
 - [Roadmap](docs/ROADMAP.md)
-- [API Reference](docs/api/API_REFERENCE.md)
+- [API Reference](docs/API_REFERENCE.md)
 - [Contributing](CONTRIBUTING.md)

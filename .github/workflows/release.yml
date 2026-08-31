@@ -1,0 +1,137 @@
+name: Publicar release
+
+# Dispara na tag `v*`. O que sai é UM arquivo: dist/pl_fpdf_install.sql, com o
+# SHA-256 ao lado.
+#
+# Por que release, e não só o link para o `dist/` no master:
+#
+# Esta biblioteca entra num SCHEMA DE BANCO. Quem instala em produção abre um
+# chamado de mudança, e num chamado se anexa artefato IMUTÁVEL com checksum —
+# "o que estava no master naquele dia" não se anexa. E sem release não há como
+# alguém instalar a 3.3.0 depois que a 4.0 sair: o link raw serve sempre o
+# topo do ramo, e o histórico fica inalcançável para quem não usa git.
+#
+# O `dist/` no repositório continua valendo para quem quer só experimentar.
+# São camadas diferentes, não alternativas.
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag a publicar (ex.: v3.3.0)'
+        required: true
+
+permissions:
+  contents: write        # necessário para criar o release
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # A tag diz uma versão; o co_version diz outra. Publicar as duas
+      # divergentes entrega um arquivo que se apresenta como o que não é —
+      # e o instalador imprime a sua própria versão no fim.
+      - name: A tag bate com o co_version
+        run: |
+          set -e
+          tag="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          tag_ver="${tag#v}"
+          ver=$(grep -oP "co_version CONSTANT VARCHAR2\(10\) := '\K[0-9.]+" src/PL_FPDF.pks)
+          echo "tag=$tag_ver  co_version=$ver"
+          if [ "$tag_ver" != "$ver" ]; then
+            echo "FALHA: a tag diz $tag_ver e o co_version diz $ver."
+            echo "Suba o co_version, ou marque a tag certa — nao publique os dois."
+            exit 1
+          fi
+          echo "VERSAO=$ver" >> "$GITHUB_ENV"
+
+      # dist/ é gerado de src/. Se estiver atrasado, o release sairia com um
+      # instalador que não corresponde ao código da tag.
+      - name: dist/pl_fpdf_install.sql está em dia com src/
+        run: python dev/scripts/build_release.py --check
+
+      - name: O CHANGELOG tem a seção desta versão
+        run: |
+          set -e
+          grep -q "^## \[$VERSAO\]" CHANGELOG.md || {
+            echo "FALHA: nao ha secao '## [$VERSAO]' no CHANGELOG.md."
+            echo "O corpo do release sai de la; sem ela o release iria vazio."
+            exit 1; }
+
+      # O corpo do release é a seção do CHANGELOG, sem retrabalho: ela já é
+      # escrita com o defeito, a causa e o conserto.
+      - name: Montar as notas e o checksum
+        run: |
+          set -e
+          awk -v v="$VERSAO" '
+            $0 ~ "^## \\["v"\\]" { dentro=1; next }
+            dentro && /^## \[/    { exit }
+            dentro                { print }
+          ' CHANGELOG.md > NOTAS.md
+
+          # O corpo de um release para em 125.000 caracteres. Esta versao usa
+          # 57.000, mas o CHANGELOG desta base e escrito por extenso — defeito,
+          # causa e conserto — e cresce rapido. Estourar o limite faria o `gh`
+          # falhar DEPOIS de a tag ja estar publicada, que e o pior momento.
+          if [ "$(wc -c < NOTAS.md)" -gt 100000 ]; then
+            echo "notas com $(wc -c < NOTAS.md) caracteres: cortando"
+            head -c 95000 NOTAS.md > NOTAS.curta
+            {
+              echo ""
+              echo "..."
+              echo ""
+              echo "> Notas encurtadas. O texto completo desta versao esta no"
+              echo "> [CHANGELOG.md](https://github.com/Maxwbh/pl_fpdf/blob/master/CHANGELOG.md)."
+            } >> NOTAS.curta
+            mv NOTAS.curta NOTAS.md
+          fi
+
+          sha256sum dist/pl_fpdf_install.sql | awk '{print $1}' > SHA256.txt
+          sha=$(cat SHA256.txt)
+          linhas=$(wc -l < dist/pl_fpdf_install.sql)
+
+          {
+            echo ""
+            echo "---"
+            echo ""
+            echo "## Instalação"
+            echo ""
+            echo 'Um arquivo, sem clone. Abra na SQL Window do PL/SQL Developer (F8)'
+            echo 'ou rode no SQL*Plus — é só SQL, sem comando de ferramenta.'
+            echo ""
+            echo '```sql'
+            echo "SELECT PL_FPDF.co_version FROM DUAL;  -- $VERSAO"
+            echo '```'
+            echo ""
+            echo "| | |"
+            echo "|---|---|"
+            echo "| Arquivo | \`pl_fpdf_install.sql\` ($linhas linhas) |"
+            echo "| SHA-256 | \`$sha\` |"
+            echo "| Oracle  | 19c ou superior |"
+            echo "| Licença | MIT |"
+          } >> NOTAS.md
+
+          echo "--- notas montadas ---"; head -5 NOTAS.md
+
+      - name: Publicar
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -e
+          tag="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
+          gh release create "$tag" \
+            --title "PL_FPDF $VERSAO" \
+            --notes-file NOTAS.md \
+            dist/pl_fpdf_install.sql \
+            SHA256.txt

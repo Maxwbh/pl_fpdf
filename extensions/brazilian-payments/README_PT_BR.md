@@ -6,6 +6,18 @@
 
 > **Extensão opcional para PL_FPDF - Suporte a PIX e Boleto Bancário**
 
+> [!IMPORTANT]
+> **Fora do escopo do PL_FPDF, e sem cobertura de testes aqui.**
+> O PL_FPDF é uma biblioteca de **desenho de PDF**: ela posiciona texto, formas,
+> QR Code e código de barras. **Regra de cobrança** — montar o código de barras
+> a partir de banco, vencimento, valor e campo livre, dígito verificador, fator
+> de vencimento, as regras de cada banco — é assunto de um projeto próprio.
+>
+> Esta extensão continua aqui e continua funcionando, mas **não é instalada nem
+> exercitada pela suíte** do PL_FPDF, e deve migrar para um projeto separado.
+> Para o **layout** de um boleto, que é o que a biblioteca faz, veja
+> [`examples/boleto.sql`](../../examples/boleto.sql).
+
 [**English**](README.md)
 
 ---

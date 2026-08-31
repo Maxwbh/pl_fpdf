@@ -1,9 +1,10 @@
 # PL_FPDF — Referência Completa de Uso
 
-**Versão:** 3.2.0 | **Oracle:** 19c+ | **Licença:** MIT
+**Versão:** 3.3.0 | **Oracle:** 19c+ | **Licença:** MIT
 
 > Guia oficial de todas as funcionalidades do PL_FPDF: o que cada API faz e como usá-la.
-> Versão navegável no site: [maxwbh.github.io/pl_fpdf/api.html](https://maxwbh.github.io/pl_fpdf/api.html)
+> Versão navegável no site: [maxwbh.github.io/pl_fpdf/api.html](https://maxwbh.github.io/pl_fpdf/api.html) ·
+> English version: [DOCUMENTATION_EN.md](DOCUMENTATION_EN.md)
 
 ## Índice
 
@@ -66,12 +67,17 @@ Convenções recorrentes na biblioteca:
 
 ## 1. Instalação e ciclo de vida
 
-```sql
--- Instalar
-@deploy_all.sql
+Baixe `dist/pl_fpdf_install.sql` e execute: é um arquivo só, com os dois
+packages na ordem de dependência, e só SQL — roda igual na SQL Window do PL/SQL
+Developer e no SQL\*Plus.
 
+```sql
 -- Verificar
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.2.0
+SELECT PL_FPDF.co_version FROM DUAL;  -- 3.3.0
+
+-- Os dois objetos precisam sair VALID
+SELECT object_name, object_type, status FROM user_objects
+ WHERE object_name IN ('PL_FPDF', 'PL_FPDF_UTIL');
 ```
 
 ### Init — inicia um documento novo
@@ -236,7 +242,9 @@ PL_FPDF.SetLineWidth(0.5);
 
 PL_FPDF.Line(10, 30, 200, 30);
 PL_FPDF.Rect(10, 40, 60, 25, 'DF');   -- '' contorno | 'F' preenchido | 'DF' ambos
-PL_FPDF.Triangle(50, 100, 20, 'D');
+PL_FPDF.Triangle(50, 100, 20, 'up', 'D');  -- ponta para cima, so contorno
+                                      -- (o 4o argumento e a ORIENTACAO,
+                                      --  o 5o e o estilo)
 PL_FPDF.Poly(l_pontos, TRUE, 'D');    -- polígono por tabela de pontos
 
 PL_FPDF.SetDash(2, 2);                       -- tracejado simples
@@ -263,6 +271,25 @@ l_img := PL_FPDF.getImageFromUrl('https://exemplo.com/logo.png');
 ```
 
 Formatos: **PNG** e **JPEG**.
+
+### O que o overlay de imagem aceita
+
+`OverlayImage` (seção 13) recebe o BLOB direto e cobre mais casos:
+
+| Caso | Como sai |
+|------|----------|
+| JPEG | entra inteiro, `/DCTDecode` — quem decodifica é o leitor |
+| PNG RGB, cinza ou indexado | passa direto, comprimido, de 1 a **16** bits |
+| PNG com **canal alfa** | a transparência vira um `/SMask`, porque o PDF não a guarda dentro do pixel |
+| PNG **entrelaçado** (Adam7) | as sete passagens são remontadas |
+
+Os dois últimos exigem reprocessar os pixels, e a imagem sai **sem
+compressão** — o arquivo fica maior. Esse caminho tem teto de **4 megapixels**;
+acima disso `ORA-20823` pede que a imagem seja regravada sem alfa (ou achatada
+sobre um fundo) e sem entrelaçar.
+
+Seguem recusados: entrelaçado com menos de 8 bits por componente, e indexado
+**e** entrelaçado ao mesmo tempo.
 
 ---
 
@@ -293,7 +320,11 @@ BEGIN
 END;
 
 -- Na geração:
-PL_FPDF.SetHeaderProc('meu_pkg.meu_header', tv4000a('Título','Subtítulo'));
+-- tv4000a é um associative array indexado pelo NOME do parâmetro:
+-- declare uma variável e preencha por chave (não existe construtor tv4000a(...)).
+--   l_p PL_FPDF.tv4000a;
+--   l_p('p_titulo') := 'Título';
+PL_FPDF.SetHeaderProc('meu_pkg.meu_header', l_p);
 PL_FPDF.SetFooterProc('meu_pkg.meu_footer');
 PL_FPDF.SetAliasNbPages;   -- habilita o placeholder {nb} = total de páginas
 ```
@@ -319,13 +350,29 @@ PL_FPDF.AddQRCode(
 PL_FPDF.AddBarcode(
   p_x => 30, p_y => 50, p_width => 150, p_height => 20,
   p_code      => 'ABC123456',
-  p_type      => 'CODE128',      -- 'CODE128', 'CODE39', 'EAN13', 'EAN8', 'ITF14'
+  p_type      => 'CODE128',      -- 'CODE128', 'CODE39', 'EAN13', 'EAN8', 'ITF', 'ITF14'
   p_show_text => TRUE
 );
 ```
 
-> PIX "pronto para pagamento" (EMV completo) e Boleto FEBRABAN estão na
-> [extensão brazilian-payments](../extensions/brazilian-payments/README_PT_BR.md).
+O `ITF` é o do **boleto bancário**: Interleaved 2 of 5 puro, qualquer quantidade
+par de dígitos, sem dígito verificador de simbologia — o de controle do boleto
+fica dentro dos 44, na posição 5. O `ITF14` é o caso particular de 14 dígitos,
+com verificador próprio.
+
+> **O `p_code` chega pronto.** O `AddBarcode` desenha os dígitos que você passa;
+> ele não os calcula. Montar o código de barras de um boleto a partir de banco,
+> vencimento, valor e campo livre é regra de cobrança, e fica fora desta
+> biblioteca.
+
+> **Exemplo completo:** [`examples/boleto.sql`](../examples/boleto.sql) desenha
+> o layout de um boleto inteiro — duas vias, 50 caixas, três variantes de
+> Helvetica e o código de barras de 44 dígitos —, tudo em PL/SQL e sem nenhuma
+> imagem.
+
+> **QR e código de barras juntos:** [`examples/ticket.sql`](../examples/ticket.sql)
+> desenha um ingresso de evento com o mesmo código em duas simbologias — QR
+> Code e Code 39 —, em duas páginas e com painéis coloridos.
 
 ---
 
@@ -339,7 +386,7 @@ PL_FPDF.SetKeywords('relatorio, oracle, pdf');
 PL_FPDF.SetCreator('Meu ERP');
 
 PL_FPDF.SetDisplayMode('fullpage', 'single');  -- zoom e layout iniciais no leitor
-PL_FPDF.SetCompression(TRUE);                  -- comprime o conteúdo
+PL_FPDF.SetCompression(TRUE);                  -- comprime o conteúdo das páginas
 
 -- Em lote, via JSON:
 PL_FPDF.SetDocumentConfig(JSON_OBJECT_T('{"title":"Relatório","author":"M&S"}'));
@@ -354,23 +401,81 @@ l_info := PL_FPDF.GetPageInfo(1);              -- dimensões/rotação da págin
 
 | API | Quando usar |
 |-----|-------------|
-| `Output_Blob` / `OutputBlob` **RETURN BLOB** | Padrão: devolve o PDF para gravar em tabela, enviar por e-mail, APEX etc. |
+| `OutputBlob` / `OutputBlob` **RETURN BLOB** | Padrão: devolve o PDF para gravar em tabela, enviar por e-mail, APEX etc. |
 | `OutputFile(p_filename, p_directory)` | Grava direto num DIRECTORY Oracle |
 | `ReturnBlob(pname, pdest)` | Compatibilidade com código legado |
 | `Output(pname, pdest)` | Compatibilidade FPDF clássica |
 
 ```sql
-l_pdf := PL_FPDF.Output_Blob;
+l_pdf := PL_FPDF.OutputBlob;
 INSERT INTO documentos (pdf) VALUES (l_pdf);
 -- ou
 PL_FPDF.OutputFile('relatorio.pdf', 'PDF_DIR');
 ```
+
+### Entregar o PDF a um navegador
+
+O `Output` com `'I'`, `'D'` ou `'S'` **não existe mais** desde a 2.x: levanta
+`ORA-20306`. Aqueles modos mandavam os cabeçalhos HTTP por você. Agora a
+biblioteca devolve o BLOB e **quem entrega é a sua aplicação** — inclusive o
+cabeçalho.
+
+Isso importa mais do que parece. Sem `Content-Type: application/pdf`, o
+navegador pode tratar a resposta como HTML e mostrar o **fonte do PDF na tela**
+— `%PDF-1.3`, `3 0 obj`, `stream`. Parece corrupção de caracteres e não é: o
+arquivo está perfeito, só chegou rotulado errado.
+
+E o sintoma engana porque **depende do navegador**. Firefox e Edge farejam a
+assinatura `%PDF-` e corrigem sozinhos; Chrome e Opera obedecem ao tipo
+declarado. O mesmo relatório abre num e quebra no outro, e some quando o
+servidor manda `X-Content-Type-Options: nosniff`.
+
+**Pelo gateway PL/SQL (mod_plsql):**
+
+```sql
+DECLARE
+  l_pdf BLOB;
+BEGIN
+  -- ... monta o documento ...
+  l_pdf := PL_FPDF.OutputBlob();
+
+  owa_util.mime_header('application/pdf', FALSE);
+  htp.p('Content-Length: ' || DBMS_LOB.GETLENGTH(l_pdf));
+  htp.p('Content-Disposition: inline; filename="relatorio.pdf"');
+  owa_util.http_header_close();
+  wpg_docload.download_file(l_pdf);
+END;
+```
+
+`inline` abre no navegador; `attachment` força o download.
+
+**Por ORDS:** declare o handler como recurso de mídia e devolva
+`application/pdf` na coluna de content type.
+
+**Por APEX:** `apex_util.download`, ou defina o Content-Type no processo e
+encerre com `apex_application.stop_apex_engine`.
+
+Duas armadilhas que produzem exatamente o mesmo sintoma:
+
+| | |
+|---|---|
+| **Escrita antes do cabeçalho** | Um `htp.p` de depuração, ou uma mensagem de um `EXCEPTION`, vai para o buffer **antes** dos cabeçalhos e corrompe a resposta inteira |
+| **`Content-Length` errado** | Se não bater com o tamanho real, ou faltar, alguns navegadores voltam a adivinhar o tipo |
+
+Para conferir em dez segundos: F12 → aba **Network** → recarregue → clique na
+requisição → **Response Headers**. Se o `Content-Type` não for
+`application/pdf`, é isso.
 
 ---
 
 ## 12. Manipulação de PDF existente
 
 Fluxo: `LoadPDF` → inspecionar/modificar → `OutputModifiedPDF`.
+
+Vale para PDF de qualquer produtor, inclusive **PDF 1.5+** — onde a referência
+cruzada é um stream comprimido e os objetos ficam dentro de *object streams*. O
+conteúdo das páginas é copiado byte a byte, sem re-renderizar: fontes, imagens e
+anotações chegam intactas.
 
 ```sql
 DECLARE
@@ -482,10 +587,19 @@ BEGIN
     p_user_password  => 'senhaLeitura',
     p_owner_password => 'senhaAdmin',     -- NULL = igual à de usuário
     p_permissions    => l_perms,
-    p_encryption     => 'RC4-128'         -- ou 'RC4-40' (legado)
+    p_encryption     => 'AES-256'         -- ou 'AES-128', 'RC4-128', 'RC4-40'
   );
 END;
 ```
+
+> **Prefira AES.** O RC4 está quebrado há anos e o PDF 2.0 o removeu da
+> especificação; leitores novos avisam ou recusam. `'RC4-128'` continua sendo o
+> padrão do parâmetro apenas por compatibilidade com quem já chamava assim.
+>
+> Origem em **PDF 1.5+** é achatada: os objetos que moram dentro de *object
+> streams* viram objetos de primeiro nível e a saída leva xref clássica. Vale
+> para os dois sentidos — ao decifrar, o object stream é decifrado antes de ser
+> descomprimido.
 
 ### Demais APIs
 
@@ -494,11 +608,13 @@ END;
 | `DecryptPDF(p_pdf, p_password)` | Remove a proteção (exige a senha) |
 | `IsEncrypted(p_pdf)` | TRUE se o BLOB está criptografado |
 | `GetSecurityInfo(p_pdf)` | JSON: algoritmo, tamanho de chave, permissões |
-| `SetEncryption(p_encryption, p_user_password, p_owner_password)` | Define criptografia **antes** do `Output_Blob` (documento novo) |
+| `SetEncryption(p_encryption, p_user_password, p_owner_password)` | Define criptografia **antes** do `OutputBlob` (documento novo) |
 | `SetPermissions(p_print, p_modify, p_copy, p_annotate, p_fill_forms, p_extract, p_assemble, p_print_high)` | Permissões do documento novo |
 | `SetPDFVersion('1.7')` / `GetPDFVersion` | Versão do arquivo PDF gerado |
 
-> AES-256 e assinatura digital estão no [roadmap](ROADMAP.md).
+> **Senha não é assinatura.** A criptografia acima protege o arquivo — quem
+> abre, quem imprime, quem copia. Ela não atesta autoria nem detecta
+> adulteração. Assinatura digital está no [roadmap](ROADMAP.md).
 
 ---
 
@@ -508,10 +624,7 @@ END;
 PL_FPDF.SetLogLevel(3);              -- 0=off … níveis de verbosidade
 PL_FPDF.DebugEnabled;                -- atalhos
 PL_FPDF.DebugDisabled;
-PL_FPDF.helloworld;                  -- smoke test clássico
 ```
-
-Suíte de testes: `@tests/run_all_tests.sql` (veja [tests/README](../tests/README.md)).
 
 ---
 
@@ -520,16 +633,16 @@ Suíte de testes: `@tests/run_all_tests.sql` (veja [tests/README](../tests/READM
 ```sql
 -- ANTES (v0.9.4)                    -- AGORA (v2.0+)
 PL_FPDF.fpdf('P','mm','A4');         PL_FPDF.Init('P','mm','A4');
-l_pdf := PL_FPDF.Output('S');        l_pdf := PL_FPDF.Output_Blob;
+l_pdf := PL_FPDF.Output('S');        l_pdf := PL_FPDF.OutputBlob;
 PL_FPDF.Output('F', caminho);        PL_FPDF.OutputFile(nome, directory);
 ```
 
 | v0.9.4 | v2.0+ |
 |--------|-------|
 | `fpdf()` | `Init()` (o `fpdf()` segue disponível por compatibilidade) |
-| `Output('S')` | `Output_Blob` |
+| `Output('S')` | `OutputBlob` |
 | UTF-8 limitado | UTF-8 completo + TrueType |
-| Sem criptografia | RC4 (AES no roadmap) |
+| Sem criptografia | AES-256, AES-128 e RC4 |
 
 ---
 
@@ -537,12 +650,21 @@ PL_FPDF.Output('F', caminho);        PL_FPDF.OutputFile(nome, directory);
 
 | Faixa | Área | Exemplos |
 |-------|------|----------|
-| -20105/-20106 | Páginas | não inicializado; página inexistente |
-| -20110 | Texto | rotação inválida (só 0/90/180/270) |
-| -20800…-20804 | LoadPDF | PDF inválido, header/xref/trailer corrompidos |
-| -20809/-20810 | Manipulação | nenhum PDF carregado; página inválida |
-| -20821…-20824 | Overlays | coordenadas/formato/dimensões inválidos |
-| -20831…-20839 | Multi-PDF | ID não encontrado; especificação de páginas inválida |
+| -20005 | Ciclo de vida | uso antes do `Init` |
+| -20101…-20107 | Páginas | formato desconhecido, orientação, rotação, página inexistente |
+| -20110/-20111 | Texto | rotação inválida (só 0/90/180/270) |
+| -20301…-20303 | Imagens | header inválido, falha ao buscar da URL, formato não suportado |
+| -20800…-20810 | LoadPDF | PDF inválido, header/xref/trailer corrompidos; nenhum PDF carregado |
+| -20821…-20825 | Overlays | coordenadas, opacidade, imagem ou dimensões inválidas |
+| -20831…-20844 | Multi-PDF | ID não encontrado; especificação de páginas inválida |
+| -20843/-20847/-20848 | PDF 1.5+ | xref em stream, object stream ou predictor que não dá para ler |
+| -20850…-20865 | Segurança | senha, método de criptografia, PDF já protegido |
+| -20870…-20879 | QR Code | conteúdo vazio, tamanho, nível de correção, capacidade |
+| -20880…-20889 | Código de barras | código vazio, dimensões, simbologia, dígitos |
+| -20890…-20894 | `FlateDecode` | stream inválido ou saída acima do teto |
+
+A lista completa, erro a erro e por API, está em
+[API_REFERENCE.md](API_REFERENCE.md).
 
 ---
 

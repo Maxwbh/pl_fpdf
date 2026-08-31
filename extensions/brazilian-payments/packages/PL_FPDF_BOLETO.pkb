@@ -438,8 +438,12 @@ BEGIN
   -- Generate barcode using internal function
   l_codigo := GetCodigoBarras(p_boleto_data);
 
-  -- Render using PL_FPDF generic barcode function (ITF14)
-  PL_FPDF.AddBarcode(p_x, p_y, p_width, p_height, l_codigo, 'ITF14', FALSE);
+  -- ITF puro, e nao ITF14: o codigo de barras do boleto tem 44 digitos, e o
+  -- ITF14 exige 13 ou 14 — esta chamada levantava ORA-20887 SEMPRE, ou seja,
+  -- o codigo de barras de um boleto nunca chegou a ser desenhado. O digito de
+  -- controle do boleto fica DENTRO dos 44, na posicao 5, e nao e calculado
+  -- pela simbologia.
+  PL_FPDF.AddBarcode(p_x, p_y, p_width, p_height, l_codigo, 'ITF', FALSE);
 
 EXCEPTION
   WHEN OTHERS THEN

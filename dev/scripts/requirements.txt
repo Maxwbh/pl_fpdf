@@ -1,0 +1,25 @@
+# Dependências dos scripts de apoio do PL_FPDF.
+# Nada disso é necessário para usar a biblioteca no banco — só para rodar os
+# testes e as validações a partir do Python.
+
+# scripts/run_tests.py — conecta no Oracle (thin mode: dispensa Oracle Client)
+oracledb>=2.0
+
+# leitura e renderização dos PDFs gerados (MuPDF)
+pymupdf>=1.24
+
+# decodificação real de QR Code e códigos de barras
+zxing-cpp>=2.2
+pillow>=10.0
+
+# scripts/docx_to_plfpdf — gerador de PL/SQL a partir de .docx
+python-docx>=1.1
+
+# scripts/qr_reference e scripts/barcode_reference — referências validadas
+# (não têm dependências além das acima)
+
+# referencia das larguras das fontes: os AFM da Adobe vem com o
+# matplotlib, e as tabelas do reportlab sao a segunda fonte que as confere
+matplotlib>=3.7
+reportlab>=4.0
+fonttools>=4.40

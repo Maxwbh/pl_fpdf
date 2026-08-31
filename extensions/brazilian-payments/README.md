@@ -6,6 +6,18 @@
 
 > **Optional extension for PL_FPDF - Brazilian PIX and Boleto Bancário support**
 
+> [!IMPORTANT]
+> **Out of scope for PL_FPDF, and not covered by its test suite.**
+> PL_FPDF is a **PDF drawing** library: it places text, shapes, QR codes and
+> barcodes. **Billing rules** — building the barcode from bank, due date,
+> amount and free field, check digits, due-date factor, each bank's own rules —
+> belong to a project of their own.
+>
+> This extension stays here and keeps working, but it is **neither installed
+> nor exercised by the PL_FPDF suite**, and should move to a separate project.
+> For the **layout** of a bank slip, which is what the library does, see
+> [`examples/boleto.sql`](../../examples/boleto.sql).
+
 [**Português (Brasil)**](README_PT_BR.md)
 
 ---

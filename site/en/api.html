@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PL_FPDF — API Usage Index</title>
+<meta name="description" content="Complete usage index for PL_FPDF: every official API for generating, editing, overlaying, merging/splitting and encrypting PDF in PL/SQL on Oracle Database, with examples.">
+<link rel="canonical" href="https://maxwbh.github.io/pl_fpdf/en/api.html">
+<link rel="alternate" hreflang="pt-BR" href="https://maxwbh.github.io/pl_fpdf/api.html">
+<link rel="alternate" hreflang="en" href="https://maxwbh.github.io/pl_fpdf/en/api.html">
+<link rel="alternate" hreflang="x-default" href="https://maxwbh.github.io/pl_fpdf/api.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PL_FPDF — API Usage Index">
+<meta property="og:description" content="Every official PL_FPDF feature with examples: generating, editing, overlays, merge/split and PDF encryption in PL/SQL.">
+<meta property="og:url" content="https://maxwbh.github.io/pl_fpdf/en/api.html">
+<meta property="og:image" content="https://maxwbh.github.io/pl_fpdf/assets/social-preview.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1422; --bg2:#101f36; --panel:#0a121e; --panelbar:#0e1929;
+    --cardbg:rgba(18,32,54,.62); --cardbd:#243d5e; --cardbd-h:#33578a;
+    --fg:#f2f6fb; --muted:#9db8d4; --faint:#69829f;
+    --accent:#e8503a; --accent2:#ff7a55; --blue:#6fb3e8;
+    --code:#7fd1a8; --line:#1d3350; --chipbg:rgba(111,179,232,.09); --chipbd:#2d4c74;
+    --gridline:rgba(111,179,232,.055);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f3f7fc; --bg2:#e7eef8; --panel:#0d1828; --panelbar:#101d30;
+      --cardbg:rgba(255,255,255,.78); --cardbd:#d4e0ef; --cardbd-h:#a9c2de;
+      --fg:#0f1f33; --muted:#41607f; --faint:#6d87a3;
+      --accent:#d8452f; --accent2:#f06544; --blue:#2779c0;
+      --line:#d8e2ef; --chipbg:rgba(39,121,192,.07); --chipbd:#c3d5e8;
+      --gridline:rgba(39,90,148,.065);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--fg);line-height:1.65;font-family:'Inter',-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+       background:linear-gradient(165deg,var(--bg),var(--bg2))}
+  .backdrop{position:fixed;inset:0;z-index:-1;pointer-events:none}
+  .backdrop::before{content:"";position:absolute;inset:0;
+    background-image:linear-gradient(var(--gridline) 1px,transparent 1px),linear-gradient(90deg,var(--gridline) 1px,transparent 1px);
+    background-size:44px 44px;
+    -webkit-mask-image:radial-gradient(1100px 600px at 50% 0%,#000 30%,transparent 75%);
+    mask-image:radial-gradient(1100px 600px at 50% 0%,#000 30%,transparent 75%)}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+  a{color:inherit}
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      background:rgba(11,20,34,.68);border-bottom:1px solid var(--line)}
+  @media (prefers-color-scheme: light){ nav{background:rgba(243,247,252,.75)} }
+  .nav-in{display:flex;align-items:center;gap:24px;height:62px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;text-decoration:none}
+  .brand .f{color:var(--accent)}
+  .mark{width:26px;height:26px}
+  .nav-in .right{margin-left:auto;display:flex;gap:18px}
+  .nav-in .right a{text-decoration:none;font-size:14px;color:var(--muted);font-weight:500}
+  .nav-in .right a:hover{color:var(--fg)}
+
+  header.page{padding:54px 0 10px}
+  .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;letter-spacing:2.2px;
+          text-transform:uppercase;color:var(--accent);margin:0 0 10px}
+  .kicker::before{content:"";width:26px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  h1{font-size:clamp(28px,4vw,40px);letter-spacing:-1px;margin:0 0 10px;font-weight:800}
+  .lead{color:var(--muted);max-width:680px;margin:0 0 26px;font-size:16px}
+  .lead a{color:var(--fg)}
+
+  .toc{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:10px;margin:8px 0 30px}
+  .toc a{display:flex;align-items:center;gap:9px;border:1px solid var(--cardbd);background:var(--cardbg);
+         border-radius:10px;padding:10px 14px;font-size:13.5px;font-weight:500;color:var(--muted);
+         text-decoration:none;transition:border-color .15s,color .15s}
+  .toc a:hover{border-color:var(--accent);color:var(--fg)}
+  .toc .n{color:var(--accent);font-weight:700;font-family:'JetBrains Mono',monospace;font-size:12px}
+
+  section{padding:34px 0 4px;scroll-margin-top:76px}
+  h2{font-size:22px;letter-spacing:-.5px;margin:0 0 6px;font-weight:800;display:flex;align-items:center;gap:10px}
+  h2 .n{color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:15px}
+  .desc{color:var(--muted);font-size:14.5px;margin:0 0 16px;max-width:720px}
+
+  .tbl{border:1px solid var(--cardbd);border-radius:12px;overflow-x:auto;margin:0 0 16px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  thead th{text-align:left;background:var(--cardbg);color:var(--faint);font-weight:600;
+           font-size:12px;letter-spacing:.6px;text-transform:uppercase;padding:9px 14px}
+  td{padding:8px 14px;border-top:1px solid var(--cardbd);color:var(--muted);vertical-align:top}
+  td:first-child{white-space:nowrap;font-family:'JetBrains Mono',Consolas,monospace;font-size:12.5px;color:var(--fg)}
+
+  .window{background:var(--panel);border:1px solid #223a5a;border-radius:12px;overflow:hidden;margin:0 0 10px}
+  .win-bar{display:flex;align-items:center;gap:7px;padding:9px 13px;border-bottom:1px solid #1c3050;background:var(--panelbar)}
+  .win-bar i{width:9px;height:9px;border-radius:50%;display:block}
+  .win-t{margin-left:6px;font-size:11.5px;color:#54718f;font-family:'JetBrains Mono',monospace;
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+  pre{margin:0;padding:14px 18px;overflow-x:auto;font-family:'JetBrains Mono',Consolas,monospace;
+      font-size:12.5px;line-height:1.7;color:var(--code)}
+  pre .k{color:#6fb3e8} pre .s{color:#e8c07d} pre .c{color:#54718f} pre .n{color:#d0a8ff}
+
+  .note{border:1px solid var(--cardbd);border-left:3px solid var(--accent);background:var(--cardbg);
+        border-radius:0 10px 10px 0;padding:10px 16px;font-size:13.5px;color:var(--muted);margin:0 0 14px}
+  .note a{color:var(--fg)}
+
+  footer{margin-top:60px;border-top:1px solid var(--line);padding:26px 0 36px;text-align:center;font-size:13.5px;color:var(--faint)}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--fg)}
+  .top{position:fixed;right:22px;bottom:22px;width:42px;height:42px;border-radius:50%;
+       display:flex;align-items:center;justify-content:center;text-decoration:none;
+       background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:19px;
+       box-shadow:0 8px 22px rgba(232,80,58,.4)}
+</style>
+</head>
+<body>
+<div class="backdrop" aria-hidden="true"></div>
+
+<nav><div class="wrap nav-in">
+  <a class="brand" href="index.html">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M28 18h32l16 16v44a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6z" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M60 18v16h16" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M34 56h32M34 68h22" stroke="var(--blue)" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    PL_<span class="f">FPDF</span> <span style="color:var(--faint);font-weight:500;font-size:14px">/ API</span>
+  </a>
+  <div class="right">
+    <a href="index.html">Home</a>
+    <a href="reference.html">API Reference</a>
+    <a href="../api.html" hreflang="pt-BR" title="Versão em português">PT</a>
+    <a href="https://github.com/Maxwbh/pl_fpdf">GitHub</a>
+  </div>
+</div></nav>
+
+<div class="wrap">
+
+<header class="page">
+  <p class="kicker">v3.3.0 · Oracle 19c+</p>
+  <h1>API Usage Index</h1>
+  <p class="lead">Every official PL_FPDF feature — what each one does and how to call it.
+  Full parameter and error detail in the
+  <a href="reference.html">API reference</a>.</p>
+
+  <div class="toc">
+    <a href="#init"><span class="n">01</span> Life cycle</a>
+    <a href="#paginas"><span class="n">02</span> Pages and position</a>
+    <a href="#fontes"><span class="n">03</span> Fonts and UTF-8</a>
+    <a href="#texto"><span class="n">04</span> Writing text</a>
+    <a href="#desenho"><span class="n">05</span> Colours and drawing</a>
+    <a href="#imagens"><span class="n">06</span> Images and links</a>
+    <a href="#headers"><span class="n">07</span> Header/footer</a>
+    <a href="#codigos"><span class="n">08</span> QR and barcodes</a>
+    <a href="#meta"><span class="n">09</span> Metadata</a>
+    <a href="#saida"><span class="n">10</span> Output</a>
+    <a href="#manip"><span class="n">11</span> Editing PDF</a>
+    <a href="#overlay"><span class="n">12</span> Overlays</a>
+    <a href="#multi"><span class="n">13</span> Merge / Split</a>
+    <a href="#seguranca"><span class="n">14</span> Security</a>
+  </div>
+
+  <p class="note"><b>How to pass parameters:</b> every API accepts positional notation
+  (<code>Cell(0, 10, 'Hello', '1', 1, 'C')</code>) or named
+  (<code>Cell(pw =&gt; 0, ph =&gt; 10, ptxt =&gt; 'Hello', palign =&gt; 'C')</code>) — named is the
+  recommended one. Parameters with a <i>default</i> may be omitted; measurements use the unit
+  given to <code>Init</code>; colours are RGB 0–255; page ranges accept <code>'ALL'</code> or
+  <code>'1,3-5,21-'</code>; extra options travel in a <code>JSON_OBJECT_T</code>.</p>
+</header>
+
+<section id="init">
+  <h2><span class="n">01</span> Life cycle</h2>
+  <p class="desc">Every document starts with <code>Init</code>; the state lives in the session (package-only).</p>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>Init(orient, unit, format, encoding)</td><td>Starts a document: 'P'/'L' · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
+    <tr><td>Reset</td><td>Clears the state and frees temporary CLOBs</td></tr>
+    <tr><td>IsInitialized</td><td>TRUE if a document is in progress</td></tr>
+    <tr><td>co_version</td><td>Constant holding the installed version</td></tr>
+  </tbody></table></div>
+  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">hello.sql</span></div>
+<pre><span class="k">DECLARE</span> l_pdf BLOB;
+<span class="k">BEGIN</span>
+  PL_FPDF.Init(
+    p_orientation =&gt; <span class="s">'P'</span>,     <span class="c">-- 'P' portrait | 'L' landscape</span>
+    p_unit        =&gt; <span class="s">'mm'</span>,    <span class="c">-- 'mm' | 'cm' | 'pt' | 'in'</span>
+    p_format      =&gt; <span class="s">'A4'</span>);   <span class="c">-- 'A4' | 'A3' | 'A5' | 'Letter' | 'Legal'</span>
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">16</span>);  <span class="c">-- family, style ''/B/I/BI/U, size in pt</span>
+  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">'Hello, World!'</span>, <span class="s">'0'</span>, <span class="n">1</span>, <span class="s">'C'</span>);
+  l_pdf := PL_FPDF.OutputBlob();
+<span class="k">END</span>;</pre></div>
+</section>
+
+<section id="paginas">
+  <h2><span class="n">02</span> Pages and positioning</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>AddPage(orient, format, rotation)</td><td>New page; NULL inherits from Init; rotation 0/90/180/270</td></tr>
+    <tr><td>SetPage(n) · GetCurrentPage · PageNo</td><td>Go back to an existing page · active page · current number</td></tr>
+    <tr><td>SetMargins(l,t,r) and variants</td><td>Margins (SetLeftMargin / SetTopMargin / SetRightMargin)</td></tr>
+    <tr><td>SetAutoPageBreak(auto, margin)</td><td>Automatic break on reaching the bottom margin</td></tr>
+    <tr><td>Ln(h) · GetX/SetX · GetY/SetY · SetXY</td><td>Control of the writing cursor</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">pages.sql</span></div>
+<pre>PL_FPDF.SetMargins(left =&gt; <span class="n">20</span>, top =&gt; <span class="n">15</span>, right =&gt; <span class="n">20</span>);  <span class="c">-- right omitted = same as left</span>
+PL_FPDF.SetAutoPageBreak(pauto =&gt; TRUE, pMargin =&gt; <span class="n">15</span>);    <span class="c">-- breaks 15mm from the bottom</span>
+PL_FPDF.AddPage(p_orientation =&gt; <span class="s">'L'</span>);                     <span class="c">-- only what changes; the rest inherits from Init</span>
+PL_FPDF.SetXY(x =&gt; <span class="n">20</span>, y =&gt; <span class="n">40</span>);                           <span class="c">-- cursor in the document unit</span></pre></div>
+</section>
+
+<section id="fontes">
+  <h2><span class="n">03</span> Fonts and UTF-8</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>SetFont(family, style, size)</td><td>Core: Arial/Helvetica, Times, Courier · styles '', B, I, BI, U</td></tr>
+    <tr><td>SetFontSize(pt)</td><td>Changes the size only</td></tr>
+    <tr><td>AddTTFFont(name, blob, enc, embed)</td><td>TrueType from a BLOB, with embedding</td></tr>
+    <tr><td>LoadTTFFromFile(name, file, directory)</td><td>TrueType from an Oracle DIRECTORY</td></tr>
+    <tr><td>IsTTFFontLoaded · GetTTFFontInfo · ClearTTFFontCache</td><td>Font cache management</td></tr>
+    <tr><td>SetUTF8Enabled(bool) · IsUTF8Enabled</td><td>Native accented characters (default: on)</td></tr>
+  </tbody></table></div>
+</section>
+
+<section id="texto">
+  <h2><span class="n">04</span> Writing text</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>Cell(w,h,txt,border,ln,align,fill,link)</td><td>Rectangular block — the most used API</td></tr>
+    <tr><td>MultiCell(w,h,txt,border,align,fill)</td><td>Paragraph with automatic wrapping (the function returns the line count)</td></tr>
+    <tr><td>Write(h, txt, link)</td><td>Inline flowing text (mix fonts mid-sentence)</td></tr>
+    <tr><td>Text(x, y, txt)</td><td>Absolute position, without moving the cursor</td></tr>
+    <tr><td>CellRotated(...) · WriteRotated(...)</td><td>Text rotated 0/90/180/270</td></tr>
+    <tr><td>GetStringWidth(txt) · SetLineSpacing</td><td>Measuring in order to centre · line spacing</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">cell_parameters.sql</span></div>
+<pre>PL_FPDF.Cell(
+  pw      =&gt; <span class="n">0</span>,        <span class="c">-- width; 0 = up to the right margin</span>
+  ph      =&gt; <span class="n">10</span>,       <span class="c">-- cell height</span>
+  ptxt    =&gt; <span class="s">'Total: 1,234.56'</span>,
+  pborder =&gt; <span class="s">'LTB'</span>,    <span class="c">-- '0' | '1' | any combination of L,T,R,B</span>
+  pln     =&gt; <span class="n">1</span>,        <span class="c">-- 0 cursor to the right | 1 next line | 2 below</span>
+  palign  =&gt; <span class="s">'R'</span>,      <span class="c">-- 'L' | 'C' | 'R'</span>
+  pfill   =&gt; <span class="n">1</span>,        <span class="c">-- 1 = background in the SetFillColor colour</span>
+  plink   =&gt; <span class="s">''</span>);      <span class="c">-- URL or internal link (AddLink)</span>
+
+l_lines := PL_FPDF.MultiCell(<span class="n">0</span>, <span class="n">6</span>, l_paragraph, <span class="s">'1'</span>, <span class="s">'J'</span>);  <span class="c">-- 'J' justified; returns the line count</span>
+PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span class="s">'VERTICAL'</span>, p_rotation =&gt; <span class="n">90</span>);   <span class="c">-- 0/90/180/270</span></pre></div>
+</section>
+
+<section id="desenho">
+  <h2><span class="n">05</span> Colours and drawing</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>SetDrawColor / SetFillColor / SetTextColor (r,g,b)</td><td>RGB 0–255 colours for stroke, fill and text</td></tr>
+    <tr><td>SetLineWidth · SetDash · SetLineDashPattern</td><td>Thickness and dashes</td></tr>
+    <tr><td>Line(x1,y1,x2,y2) · Rect(x,y,w,h,style)</td><td>Line · rectangle ('' outline, 'F' filled, 'DF' both)</td></tr>
+    <tr><td>Poly(points, close, style) · Triangle(...)</td><td>Polygons and triangles</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">drawing.sql</span></div>
+<pre>PL_FPDF.SetDrawColor(r =&gt; <span class="n">200</span>, g =&gt; <span class="n">0</span>, b =&gt; <span class="n">0</span>);   <span class="c">-- RGB 0-255; r alone = shade of grey</span>
+PL_FPDF.SetFillColor(<span class="n">240</span>, <span class="n">240</span>, <span class="n">240</span>);
+PL_FPDF.SetLineWidth(<span class="n">0.5</span>);                          <span class="c">-- in the document unit</span>
+PL_FPDF.Rect(px =&gt; <span class="n">10</span>, py =&gt; <span class="n">40</span>, pw =&gt; <span class="n">60</span>, ph =&gt; <span class="n">25</span>, pstyle =&gt; <span class="s">'DF'</span>);  <span class="c">-- '' outline | 'F' filled | 'DF' both</span>
+PL_FPDF.SetLineDashPattern(<span class="s">'[3 2] 0'</span>);              <span class="c">-- 3 on, 2 off (PDF points)</span></pre></div>
+</section>
+
+<section id="imagens">
+  <h2><span class="n">06</span> Images and links</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>Image(file, x, y, w, h, type, link)</td><td>PNG/JPEG; w or h = 0 keeps the aspect ratio</td></tr>
+    <tr><td>getImageFromUrl(url)</td><td>Downloads an image via UTL_HTTP to use in the document</td></tr>
+    <tr><td>AddLink · SetLink(link, y, page)</td><td>Internal links (indexes, tables of contents)</td></tr>
+    <tr><td>Link(x,y,w,h,url)</td><td>An arbitrary clickable area</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">image.sql</span></div>
+<pre>PL_FPDF.Image(
+  pFile   =&gt; <span class="s">'logo.png'</span>,  <span class="c">-- file in the DIRECTORY</span>
+  pX      =&gt; <span class="n">10</span>, pY =&gt; <span class="n">10</span>,
+  pWidth  =&gt; <span class="n">40</span>,          <span class="c">-- fixed width…</span>
+  pHeight =&gt; <span class="n">0</span>,           <span class="c">-- …0 = proportional height</span>
+  pType   =&gt; NULL,        <span class="c">-- NULL auto-detects PNG/JPEG</span>
+  pLink   =&gt; <span class="s">'https://msbrasil.inf.br'</span>);  <span class="c">-- clickable image (optional)</span></pre></div>
+</section>
+
+<section id="headers">
+  <h2><span class="n">07</span> Automatic header and footer</h2>
+  <p class="desc">Register procedures of your own to run on every page, with parameters.</p>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>SetHeaderProc(proc, params)</td><td>Procedure called at the top of every page</td></tr>
+    <tr><td>SetFooterProc(proc, params)</td><td>Procedure called in the footer</td></tr>
+    <tr><td>SetAliasNbPages('{nb}')</td><td>Placeholder for the page total ("Page 2/{nb}")</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">footer.sql</span></div>
+<pre><span class="c">-- a procedure of yours, called on every page:</span>
+PL_FPDF.SetFooterProc(footerprocname =&gt; <span class="s">'my_pkg.my_footer'</span>);
+<span class="c">-- with parameters: tv4000a is an associative array indexed by the parameter NAME</span>
+<span class="c">--   l_p PL_FPDF.tv4000a;  (there is no tv4000a(...) constructor)</span>
+l_p(<span class="s">'p_title'</span>)  := <span class="s">'Monthly Report'</span>;
+l_p(<span class="s">'p_period'</span>) := <span class="s">'Aug/2026'</span>;
+PL_FPDF.SetHeaderProc(
+  headerprocname =&gt; <span class="s">'my_pkg.my_header'</span>,
+  paramTable     =&gt; l_p);
+PL_FPDF.SetAliasNbPages(<span class="s">'{nb}'</span>);  <span class="c">-- use '{nb}' in the text = total pages</span></pre></div>
+</section>
+
+<section id="codigos">
+  <h2><span class="n">08</span> QR Code and barcode</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>AddQRCode(x, y, size, data, format, correction)</td><td>Formats TEXT, URL, PIX, VCARD, WIFI, EMAIL · correction L/M/Q/H</td></tr>
+    <tr><td>AddBarcode(x, y, w, h, code, type, text)</td><td>CODE128, CODE39, EAN13, EAN8, ITF14</td></tr>
+  </tbody></table></div>
+  <p class="note">PIX with a full EMV payload and FEBRABAN Boleto, ready to use, live in the
+  <a href="https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments">brazilian-payments extension</a> — both are Brazilian payment standards.</p>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">qr_barcode.sql</span></div>
+<pre>PL_FPDF.AddQRCode(
+  p_x =&gt; <span class="n">150</span>, p_y =&gt; <span class="n">20</span>, p_size =&gt; <span class="n">40</span>,   <span class="c">-- position and side (document unit)</span>
+  p_data             =&gt; <span class="s">'https://msbrasil.inf.br'</span>,
+  p_format           =&gt; <span class="s">'URL'</span>,          <span class="c">-- TEXT | URL | PIX | VCARD | WIFI | EMAIL</span>
+  p_error_correction =&gt; <span class="s">'M'</span>);           <span class="c">-- L 7% | M 15% | Q 25% | H 30%</span>
+
+PL_FPDF.AddBarcode(
+  p_x =&gt; <span class="n">30</span>, p_y =&gt; <span class="n">70</span>, p_width =&gt; <span class="n">150</span>, p_height =&gt; <span class="n">20</span>,
+  p_code      =&gt; <span class="s">'7891234567895'</span>,
+  p_type      =&gt; <span class="s">'EAN13'</span>,               <span class="c">-- CODE128 | CODE39 | EAN13 | EAN8 | ITF14</span>
+  p_show_text =&gt; TRUE);                 <span class="c">-- human-readable number below the bars</span></pre></div>
+</section>
+
+<section id="meta">
+  <h2><span class="n">09</span> Metadata and configuration</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>SetTitle / SetSubject / SetAuthor / SetKeywords / SetCreator</td><td>Document metadata</td></tr>
+    <tr><td>SetDisplayMode(zoom, layout)</td><td>How the reader opens the PDF</td></tr>
+    <tr><td>SetCompression(bool)</td><td>Content compression</td></tr>
+    <tr><td>SetDocumentConfig(json) · GetDocumentMetadata</td><td>Batch configuration and reading via JSON</td></tr>
+    <tr><td>GetPageInfo(n)</td><td>Dimensions and rotation of a page (JSON)</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">metadata.sql</span></div>
+<pre>PL_FPDF.SetTitle(<span class="s">'Monthly Report'</span>);
+PL_FPDF.SetAuthor(<span class="s">'M&amp;S do Brasil'</span>);
+PL_FPDF.SetDisplayMode(zoom =&gt; <span class="s">'fullpage'</span>, layout =&gt; <span class="s">'single'</span>);  <span class="c">-- how the reader opens it</span>
+PL_FPDF.SetCompression(TRUE);
+<span class="c">-- or everything at once:</span>
+PL_FPDF.SetDocumentConfig(JSON_OBJECT_T(<span class="s">'{"title":"Report","author":"M&amp;S"}'</span>));</pre></div>
+</section>
+
+<section id="saida">
+  <h2><span class="n">10</span> Output — producing the PDF</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>When to use it</th></tr></thead><tbody>
+    <tr><td>OutputBlob → BLOB</td><td>The default: store in a table, e-mail, APEX, ORDS</td></tr>
+    <tr><td>OutputFile(file, directory)</td><td>Write into an Oracle DIRECTORY</td></tr>
+    <tr><td>ReturnBlob · Output</td><td>Compatibility with legacy code / classic FPDF</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">output.sql</span></div>
+<pre>l_pdf := PL_FPDF.OutputBlob();                        <span class="c">-- BLOB for a table/e-mail/APEX</span>
+PL_FPDF.OutputFile(
+  p_filename  =&gt; <span class="s">'report.pdf'</span>,
+  p_directory =&gt; <span class="s">'PDF_DIR'</span>);                           <span class="c">-- Oracle DIRECTORY with write permission</span></pre></div>
+</section>
+
+<section id="manip">
+  <h2><span class="n">11</span> Editing an existing PDF</h2>
+  <p class="desc">The flow: <code>LoadPDF</code> → inspect/modify → <code>OutputModifiedPDF</code>.</p>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>LoadPDF(blob)</td><td>Loads and parses an existing PDF</td></tr>
+    <tr><td>GetPageCount · GetPDFInfo</td><td>Page total · metadata/version (JSON)</td></tr>
+    <tr><td>RotatePage(n, degrees) · RemovePage(n)</td><td>Rotation 0/90/180/270 · page removal</td></tr>
+    <tr><td>AddWatermark(text, opacity, rotation, pages, font, size, colour)</td><td>Watermark on 'ALL' or '1,3-5'</td></tr>
+    <tr><td>GetWatermarks · GetActivePageCount · IsPageRemoved · IsPDFModified</td><td>State queries (JSON)</td></tr>
+    <tr><td>OutputModifiedPDF → BLOB · ClearPDFCache</td><td>Produces the final PDF · frees memory</td></tr>
+  </tbody></table></div>
+  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">edit.sql</span></div>
+<pre>PL_FPDF.LoadPDF(l_pdf);
+PL_FPDF.RotatePage(p_page_number =&gt; <span class="n">1</span>, p_rotation =&gt; <span class="n">90</span>);  <span class="c">-- 0/90/180/270</span>
+PL_FPDF.AddWatermark(
+  p_text     =&gt; <span class="s">'CONFIDENTIAL'</span>,
+  p_opacity  =&gt; <span class="n">0.3</span>,      <span class="c">-- 0.0 transparent … 1.0 opaque</span>
+  p_rotation =&gt; <span class="n">45</span>,       <span class="c">-- the classic diagonal</span>
+  p_pages    =&gt; <span class="s">'ALL'</span>,    <span class="c">-- or '1,3-5'</span>
+  p_size     =&gt; <span class="n">48</span>,       <span class="c">-- points</span>
+  p_color    =&gt; <span class="s">'gray'</span>);
+PL_FPDF.RemovePage(<span class="n">3</span>);
+l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
+</section>
+
+<section id="overlay">
+  <h2><span class="n">12</span> Overlays — content on top of an existing PDF</h2>
+  <p class="desc">Stamps, logos and sign-off marks at exact coordinates (PDF points; Y counts upwards).</p>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>OverlayText(page, text, x, y, options)</td><td>JSON options: font, fontSize, color, opacity, rotation, align, bold, zOrder</td></tr>
+    <tr><td>OverlayImage(page, blob, x, y, w, h, options)</td><td>JPEG/PNG; opacity, rotation, maintainAspect, scaleToFit</td></tr>
+    <tr><td>GetOverlays(page) · RemoveOverlay(id) · ClearOverlays(page)</td><td>Management of the overlays</td></tr>
+  </tbody></table></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">overlay.sql</span></div>
+<pre>PL_FPDF.OverlayText(
+  p_page_number =&gt; <span class="n">1</span>,
+  p_text        =&gt; <span class="s">'APPROVED'</span>,
+  p_x =&gt; <span class="n">400</span>, p_y =&gt; <span class="n">700</span>,               <span class="c">-- PDF points; Y counts from the bottom up</span>
+  p_options     =&gt; JSON_OBJECT_T(<span class="s">'{
+    "fontSize":24, "color":"FF0000", "opacity":0.8,
+    "rotation":0, "align":"left", "bold":true }'</span>));
+
+PL_FPDF.OverlayImage(
+  p_page_number =&gt; <span class="n">1</span>, p_image_blob =&gt; l_logo,
+  p_x =&gt; <span class="n">450</span>, p_y =&gt; <span class="n">750</span>,
+  p_width =&gt; <span class="n">100</span>, p_height =&gt; NULL,      <span class="c">-- NULL = proportional / original</span>
+  p_options =&gt; JSON_OBJECT_T(<span class="s">'{"opacity":0.9,"maintainAspect":true}'</span>));</pre></div>
+</section>
+
+<section id="multi">
+  <h2><span class="n">13</span> Multi-PDF: merge, split and extraction</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>LoadPDFWithID(blob, id) · UnloadPDF(id) · GetLoadedPDFs</td><td>Several PDFs in memory, each with an ID</td></tr>
+    <tr><td>MergePDFs(ids JSON) → BLOB</td><td>Merges in the order of the array</td></tr>
+    <tr><td>SplitPDF(id, ranges JSON) → JSON</td><td>Splits by range ("1-10", "11-20", "21-")</td></tr>
+    <tr><td>ExtractPages(id, '1,5-10,15') → BLOB</td><td>A new PDF with only the pages given</td></tr>
+  </tbody></table></div>
+  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">merge.sql</span></div>
+<pre>PL_FPDF.LoadPDFWithID(l_cover, <span class="s">'cover'</span>);
+PL_FPDF.LoadPDFWithID(l_body, <span class="s">'body'</span>);
+l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T(<span class="s">'["cover","body"]'</span>));</pre></div>
+</section>
+
+<section id="seguranca">
+  <h2><span class="n">14</span> Security and encryption (v3.2)</h2>
+  <div class="tbl"><table><thead><tr><th>API</th><th>What it does</th></tr></thead><tbody>
+    <tr><td>EncryptPDF(pdf, user_password, owner_password, permissions, algorithm)</td><td>Protects a finished BLOB — 'AES-256', 'AES-128', 'RC4-128' or 'RC4-40'</td></tr>
+    <tr><td>DecryptPDF(pdf, password)</td><td>Removes the protection</td></tr>
+    <tr><td>IsEncrypted(pdf) · GetSecurityInfo(pdf)</td><td>Checks and inspects (algorithm, key, permissions)</td></tr>
+    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Encryption and permissions for a <b>new</b> document, before OutputBlob</td></tr>
+    <tr><td>SetPDFVersion('1.7') · GetPDFVersion</td><td>Version of the generated file</td></tr>
+  </tbody></table></div>
+  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">protect.sql</span></div>
+<pre>l_perms := JSON_OBJECT_T();
+l_perms.put(<span class="s">'print'</span>, TRUE);          <span class="c">-- also: modify, copy, annotate,</span>
+l_perms.put(<span class="s">'copy'</span>,  FALSE);         <span class="c">--   fill_forms, extract, assemble, print_high</span>
+
+l_seguro := PL_FPDF.EncryptPDF(
+  p_pdf            =&gt; l_pdf,
+  p_user_password  =&gt; <span class="s">'readPassword'</span>,   <span class="c">-- asked for on opening</span>
+  p_owner_password =&gt; <span class="s">'adminPassword'</span>,  <span class="c">-- NULL = same as the user one</span>
+  p_permissions    =&gt; l_perms,
+  p_encryption     =&gt; <span class="s">'AES-256'</span>);      <span class="c">-- or 'AES-128', 'RC4-128', 'RC4-40'</span></pre></div>
+  <p class="note"><b>A password is not a signature.</b> The encryption above protects the file
+  (who opens it, who prints it, who copies from it) — it does not attest authorship nor detect
+  tampering. <b>Digital signatures</b> (PAdES, ICP-Brasil certificates) do not exist in the
+  library yet.</p>
+</section>
+
+<footer>
+  <p>
+    <a href="index.html">Home</a> ·
+    <a href="reference.html">Full reference</a> ·
+    <a href="../api.html" hreflang="pt-BR">Versão em português</a> ·
+    <a href="https://github.com/Maxwbh/pl_fpdf/discussions">Discussions</a> ·
+    <a href="mailto:contato@msbrasil.inf.br">Contact</a>
+  </p>
+  <p>Maintained with the support of <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
+  · Maxwell da Silva Oliveira (<a href="https://github.com/maxwbh">@maxwbh</a>) · MIT License</p>
+</footer>
+
+</div>
+<a class="top" href="#" aria-label="Back to top">↑</a>
+</body>
+</html>

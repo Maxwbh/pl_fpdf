@@ -1,0 +1,2237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PL_FPDF — API Reference</title>
+<meta name="description" content="Detailed API reference for PL_FPDF: syntax, parameters with accepted values, return, errors and examples for every function and procedure of the PL/SQL package for PDF in Oracle Database.">
+<link rel="canonical" href="https://maxwbh.github.io/pl_fpdf/en/reference.html">
+<link rel="alternate" hreflang="pt-BR" href="https://maxwbh.github.io/pl_fpdf/reference.html">
+<link rel="alternate" hreflang="en" href="https://maxwbh.github.io/pl_fpdf/en/reference.html">
+<link rel="alternate" hreflang="x-default" href="https://maxwbh.github.io/pl_fpdf/reference.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="PL_FPDF — API Reference">
+<meta property="og:description" content="Detailed API reference for PL_FPDF: syntax, parameters with accepted values, return, errors and examples for every function and procedure of the PL/SQL package for PDF in Oracle Database.">
+<meta property="og:url" content="https://maxwbh.github.io/pl_fpdf/en/reference.html">
+<meta property="og:image" content="https://maxwbh.github.io/pl_fpdf/assets/social-preview.png">
+<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0b1422; --bg2:#101f36; --panel:#0a121e; --panelbar:#0e1929;
+    --cardbg:rgba(18,32,54,.62); --cardbd:#243d5e; --cardbd-h:#33578a;
+    --fg:#f2f6fb; --muted:#9db8d4; --faint:#69829f;
+    --accent:#e8503a; --accent2:#ff7a55; --blue:#6fb3e8;
+    --code:#7fd1a8; --line:#1d3350; --chipbg:rgba(111,179,232,.09);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --bg:#f3f7fc; --bg2:#e7eef8; --panel:#0d1828; --panelbar:#101d30;
+      --cardbg:rgba(255,255,255,.82); --cardbd:#d4e0ef; --cardbd-h:#a9c2de;
+      --fg:#0f1f33; --muted:#41607f; --faint:#6d87a3;
+      --accent:#d8452f; --accent2:#f06544; --blue:#2779c0;
+      --line:#d8e2ef; --chipbg:rgba(39,121,192,.07);
+    }
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;color:var(--fg);line-height:1.6;
+       font-family:'Inter',-apple-system,'Segoe UI',Roboto,Arial,sans-serif;
+       background:linear-gradient(165deg,var(--bg),var(--bg2))}
+  a{color:inherit}
+  nav{position:sticky;top:0;z-index:60;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+      background:rgba(11,20,34,.72);border-bottom:1px solid var(--line)}
+  @media (prefers-color-scheme: light){ nav{background:rgba(243,247,252,.8)} }
+  .nav-in{display:flex;align-items:center;gap:22px;height:60px;max-width:1400px;margin:0 auto;padding:0 22px}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;text-decoration:none}
+  .brand .f{color:var(--accent)}
+  .mark{width:26px;height:26px}
+  .nav-in .right{margin-left:auto;display:flex;gap:18px}
+  .nav-in .right a{text-decoration:none;font-size:14px;color:var(--muted);font-weight:500}
+  .nav-in .right a:hover{color:var(--fg)}
+
+  .layout{display:grid;grid-template-columns:270px minmax(0,1fr);gap:34px;
+          max-width:1400px;margin:0 auto;padding:0 22px}
+  .sidebar{position:sticky;top:60px;height:calc(100vh - 60px);overflow-y:auto;padding:22px 0 40px}
+  .side-in{padding-right:8px}
+  .filter{width:100%;padding:9px 12px;margin-bottom:16px;border-radius:9px;
+          border:1px solid var(--cardbd);background:var(--cardbg);color:var(--fg);font-size:13.5px;font-family:inherit}
+  .filter::placeholder{color:var(--faint)}
+  .side-group h4{margin:16px 0 6px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--accent)}
+  .side-group ul{list-style:none;margin:0;padding:0}
+  .side-group li a{display:block;padding:3px 8px;border-radius:6px;font-size:13px;color:var(--muted);
+                   text-decoration:none;font-family:'JetBrains Mono',monospace}
+  .side-group li a:hover{background:var(--chipbg);color:var(--fg)}
+  .side-group li a.active{color:var(--accent);font-weight:600}
+
+  .content{padding:26px 0 60px;min-width:0}
+  header.page{margin-bottom:26px}
+  .kicker{display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;letter-spacing:2.2px;
+          text-transform:uppercase;color:var(--accent);margin:0 0 8px}
+  .kicker::before{content:"";width:24px;height:2px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+  h1{font-size:clamp(26px,3.6vw,38px);letter-spacing:-1px;margin:0 0 10px;font-weight:800}
+  .lead{color:var(--muted);max-width:720px;margin:0;font-size:15.5px}
+  .lead a{color:var(--fg)}
+
+  h2.grp{font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--accent);
+         margin:44px 0 14px;padding-bottom:8px;border-bottom:1px solid var(--line)}
+
+  .api{border:1px solid var(--cardbd);border-radius:14px;background:var(--cardbg);
+       padding:22px 24px;margin:0 0 18px;scroll-margin-top:76px}
+  .api h3{margin:0 0 8px;font-size:20px;font-weight:800;letter-spacing:-.3px;
+          font-family:'JetBrains Mono',monospace;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .kind{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.8px;
+        text-transform:uppercase;color:var(--blue);border:1px solid var(--cardbd);
+        border-radius:999px;padding:2px 10px;background:var(--chipbg)}
+  .anchor{margin-left:auto;color:var(--faint);text-decoration:none;font-size:15px}
+  .anchor:hover{color:var(--accent)}
+  .api h5{margin:18px 0 8px;font-size:11.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint)}
+  .api p.d{margin:0;color:var(--muted);font-size:14.5px}
+  .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
+  .api p.see a{color:var(--blue);text-decoration:none}
+  .api p.see a:hover{text-decoration:underline}
+
+  .code{background:var(--panel);border:1px solid #223a5a;border-radius:10px;overflow:hidden;margin:0 0 8px}
+  .code pre{margin:0;padding:14px 16px;overflow-x:auto;font-family:'JetBrains Mono',Consolas,monospace;
+            font-size:12.5px;line-height:1.65;color:var(--code)}
+  .code .k{color:#6fb3e8} .code .s{color:#e8c07d} .code .c{color:#54718f}
+
+  .tbl{border:1px solid var(--cardbd);border-radius:10px;overflow-x:auto;margin:0 0 6px}
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  thead th{text-align:left;background:var(--chipbg);color:var(--faint);font-weight:600;
+           font-size:11px;letter-spacing:.7px;text-transform:uppercase;padding:8px 12px;white-space:nowrap}
+  td{padding:8px 12px;border-top:1px solid var(--cardbd);color:var(--muted);vertical-align:top}
+  td.pname{font-family:'JetBrains Mono',monospace;color:var(--fg);white-space:nowrap;font-size:12.5px}
+  td.ptype{font-family:'JetBrains Mono',monospace;color:var(--blue);white-space:nowrap;font-size:12px}
+  td.pval{min-width:200px}
+  td code{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--fg)}
+
+  footer{border-top:1px solid var(--line);padding:24px 22px 40px;text-align:center;
+         font-size:13.5px;color:var(--faint);max-width:1400px;margin:0 auto}
+  footer a{color:var(--muted);text-decoration:none}
+  footer a:hover{color:var(--fg)}
+  .top{position:fixed;right:20px;bottom:20px;width:40px;height:40px;border-radius:50%;
+       display:flex;align-items:center;justify-content:center;text-decoration:none;
+       background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:18px;
+       box-shadow:0 8px 22px rgba(232,80,58,.4);z-index:60}
+
+  @media (max-width: 620px){
+    .nav-in{gap:12px;padding:0 14px}
+    .nav-in .right{gap:12px}
+    .nav-in .right a.hide-s{display:none}
+    .brand span[style]{display:none}
+    .layout{padding:0 14px}
+  }
+  @media (max-width: 1000px){
+    .layout{grid-template-columns:1fr;gap:0}
+    .sidebar{position:static;height:auto;overflow:visible;padding:16px 0 0;
+             border-bottom:1px solid var(--line);margin-bottom:10px}
+    .side-group ul{display:flex;flex-wrap:wrap;gap:4px}
+    .side-group li a{padding:3px 10px;border:1px solid var(--cardbd);border-radius:999px;font-size:12px}
+  }
+</style>
+</head>
+<body>
+<nav><div class="nav-in">
+  <a class="brand" href="index.html">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <path d="M28 18h32l16 16v44a6 6 0 0 1-6 6H28a6 6 0 0 1-6-6V24a6 6 0 0 1 6-6z" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M60 18v16h16" fill="none" stroke="var(--accent)" stroke-width="7" stroke-linejoin="round"/>
+      <path d="M34 56h32M34 68h22" stroke="var(--blue)" stroke-width="7" stroke-linecap="round"/>
+    </svg>
+    PL_<span class="f">FPDF</span> <span style="color:var(--faint);font-weight:500;font-size:14px">/ Reference</span>
+  </a>
+  <div class="right">
+    <a href="index.html">Home</a>
+    <a class="hide-s" href="api.html">Usage index</a>
+    <a href="../reference.html" hreflang="pt-BR" title="Versão em português">PT</a>
+    <a href="https://github.com/Maxwbh/pl_fpdf">GitHub</a>
+  </div>
+</div></nav>
+<div class="layout">
+
+<aside class="sidebar"><div class="side-in"><input class="filter" type="search" placeholder="Filter API…" aria-label="Filter API">
+<div class="side-group"><h4>Lifecycle</h4><ul>
+<li><a href="#fpdf">fpdf</a></li>
+<li><a href="#init">Init</a></li>
+<li><a href="#isinitialized">IsInitialized</a></li>
+<li><a href="#reset">Reset</a></li>
+</ul></div>
+<div class="side-group"><h4>Pages and positioning</h4><ul>
+<li><a href="#acceptpagebreak">AcceptPageBreak</a></li>
+<li><a href="#addpage">AddPage</a></li>
+<li><a href="#getcurrentpage">GetCurrentPage</a></li>
+<li><a href="#getx">GetX</a></li>
+<li><a href="#gety">GetY</a></li>
+<li><a href="#ln">Ln</a></li>
+<li><a href="#pageno">PageNo</a></li>
+<li><a href="#setautopagebreak">SetAutoPageBreak</a></li>
+<li><a href="#setleftmargin">SetLeftMargin</a></li>
+<li><a href="#setmargins">SetMargins</a></li>
+<li><a href="#setpage">SetPage</a></li>
+<li><a href="#setrightmargin">SetRightMargin</a></li>
+<li><a href="#settopmargin">SetTopMargin</a></li>
+<li><a href="#setx">SetX</a></li>
+<li><a href="#setxy">SetXY</a></li>
+<li><a href="#sety">SetY</a></li>
+</ul></div>
+<div class="side-group"><h4>Fonts and UTF-8</h4><ul>
+<li><a href="#addfont">AddFont</a></li>
+<li><a href="#addttffont">AddTTFFont</a></li>
+<li><a href="#clearttffontcache">ClearTTFFontCache</a></li>
+<li><a href="#getttffontinfo">GetTTFFontInfo</a></li>
+<li><a href="#isttffontloaded">IsTTFFontLoaded</a></li>
+<li><a href="#isutf8enabled">IsUTF8Enabled</a></li>
+<li><a href="#loadttffromfile">LoadTTFFromFile</a></li>
+<li><a href="#setfont">SetFont</a></li>
+<li><a href="#setfontsize">SetFontSize</a></li>
+<li><a href="#setutf8enabled">SetUTF8Enabled</a></li>
+<li><a href="#utf8topdfstring">UTF8ToPDFString</a></li>
+</ul></div>
+<div class="side-group"><h4>Writing text</h4><ul>
+<li><a href="#cell">Cell</a></li>
+<li><a href="#cellrotated">CellRotated</a></li>
+<li><a href="#getcurrentfontfamily">GetCurrentFontFamily</a></li>
+<li><a href="#getcurrentfontsize">GetCurrentFontSize</a></li>
+<li><a href="#getcurrentfontstyle">GetCurrentFontStyle</a></li>
+<li><a href="#getlinespacing">GetLineSpacing</a></li>
+<li><a href="#getstringwidth">GetStringWidth</a></li>
+<li><a href="#multicell">MultiCell</a></li>
+<li><a href="#setlinespacing">SetLineSpacing</a></li>
+<li><a href="#text">Text</a></li>
+<li><a href="#write">Write</a></li>
+<li><a href="#writerotated">WriteRotated</a></li>
+</ul></div>
+<div class="side-group"><h4>Colours and drawing</h4><ul>
+<li><a href="#line">Line</a></li>
+<li><a href="#poly">Poly</a></li>
+<li><a href="#rect">Rect</a></li>
+<li><a href="#setdash">SetDash</a></li>
+<li><a href="#setdrawcolor">SetDrawColor</a></li>
+<li><a href="#setfillcolor">SetFillColor</a></li>
+<li><a href="#setlinedashpattern">SetLineDashPattern</a></li>
+<li><a href="#setlinewidth">SetLineWidth</a></li>
+<li><a href="#settextcolor">SetTextColor</a></li>
+<li><a href="#triangle">Triangle</a></li>
+</ul></div>
+<div class="side-group"><h4>Images</h4><ul>
+<li><a href="#getimagefromurl">getImageFromUrl</a></li>
+<li><a href="#image">image</a></li>
+</ul></div>
+<div class="side-group"><h4>Links</h4><ul>
+<li><a href="#addlink">AddLink</a></li>
+<li><a href="#link">Link</a></li>
+<li><a href="#setlink">SetLink</a></li>
+</ul></div>
+<div class="side-group"><h4>Header and footer</h4><ul>
+<li><a href="#footer">Footer</a></li>
+<li><a href="#header">Header</a></li>
+<li><a href="#setaliasnbpages">SetAliasNbPages</a></li>
+<li><a href="#setfooterproc">SetFooterProc</a></li>
+<li><a href="#setheaderproc">SetHeaderProc</a></li>
+</ul></div>
+<div class="side-group"><h4>QR codes and barcodes</h4><ul>
+<li><a href="#addbarcode">AddBarcode</a></li>
+<li><a href="#addqrcode">AddQRCode</a></li>
+</ul></div>
+<div class="side-group"><h4>Metadata and document setup</h4><ul>
+<li><a href="#getdocumentmetadata">GetDocumentMetadata</a></li>
+<li><a href="#getpageinfo">GetPageInfo</a></li>
+<li><a href="#setauthor">SetAuthor</a></li>
+<li><a href="#setcompression">SetCompression</a></li>
+<li><a href="#setcreator">SetCreator</a></li>
+<li><a href="#setdisplaymode">SetDisplayMode</a></li>
+<li><a href="#setdocumentconfig">SetDocumentConfig</a></li>
+<li><a href="#setkeywords">SetKeywords</a></li>
+<li><a href="#setsubject">SetSubject</a></li>
+<li><a href="#settitle">SetTitle</a></li>
+</ul></div>
+<div class="side-group"><h4>Document output</h4><ul>
+<li><a href="#closepdf">ClosePDF</a></li>
+<li><a href="#openpdf">OpenPDF</a></li>
+<li><a href="#output">Output</a></li>
+<li><a href="#outputblob">OutputBlob</a></li>
+<li><a href="#outputfile">OutputFile</a></li>
+<li><a href="#returnblob">ReturnBlob</a></li>
+</ul></div>
+<div class="side-group"><h4>Manipulating an existing PDF</h4><ul>
+<li><a href="#addwatermark">AddWatermark</a></li>
+<li><a href="#clearpdfcache">ClearPDFCache</a></li>
+<li><a href="#flatedecode">FlateDecode</a></li>
+<li><a href="#flateencode">FlateEncode</a></li>
+<li><a href="#getactivepagecount">GetActivePageCount</a></li>
+<li><a href="#getpagecount">GetPageCount</a></li>
+<li><a href="#getpdfinfo">GetPDFInfo</a></li>
+<li><a href="#getwatermarks">GetWatermarks</a></li>
+<li><a href="#ispageremoved">IsPageRemoved</a></li>
+<li><a href="#ispdfmodified">IsPDFModified</a></li>
+<li><a href="#loadpdf">LoadPDF</a></li>
+<li><a href="#outputmodifiedpdf">OutputModifiedPDF</a></li>
+<li><a href="#removepage">RemovePage</a></li>
+<li><a href="#rotatepage">RotatePage</a></li>
+</ul></div>
+<div class="side-group"><h4>Overlays</h4><ul>
+<li><a href="#clearoverlays">ClearOverlays</a></li>
+<li><a href="#getoverlays">GetOverlays</a></li>
+<li><a href="#overlayimage">OverlayImage</a></li>
+<li><a href="#overlaytext">OverlayText</a></li>
+<li><a href="#removeoverlay">RemoveOverlay</a></li>
+</ul></div>
+<div class="side-group"><h4>Multi-PDF (merge, split, extract)</h4><ul>
+<li><a href="#extractpages">ExtractPages</a></li>
+<li><a href="#getloadedpdfs">GetLoadedPDFs</a></li>
+<li><a href="#loadpdfwithid">LoadPDFWithID</a></li>
+<li><a href="#mergepdfs">MergePDFs</a></li>
+<li><a href="#splitpdf">SplitPDF</a></li>
+<li><a href="#unloadpdf">UnloadPDF</a></li>
+</ul></div>
+<div class="side-group"><h4>Security and encryption</h4><ul>
+<li><a href="#decryptpdf">DecryptPDF</a></li>
+<li><a href="#encryptpdf">EncryptPDF</a></li>
+<li><a href="#getpdfversion">GetPDFVersion</a></li>
+<li><a href="#getsecurityinfo">GetSecurityInfo</a></li>
+<li><a href="#isencrypted">IsEncrypted</a></li>
+<li><a href="#setencryption">SetEncryption</a></li>
+<li><a href="#setpdfversion">SetPDFVersion</a></li>
+<li><a href="#setpermissions">SetPermissions</a></li>
+</ul></div>
+<div class="side-group"><h4>Diagnostics and utilities</h4><ul>
+<li><a href="#debugdisabled">DebugDisabled</a></li>
+<li><a href="#debugenabled">DebugEnabled</a></li>
+<li><a href="#error">Error</a></li>
+<li><a href="#getloglevel">GetLogLevel</a></li>
+<li><a href="#getscalefactor">GetScaleFactor</a></li>
+<li><a href="#setloglevel">SetLogLevel</a></li>
+</ul></div>
+</div></aside>
+<main class="content">
+<header class="page">
+      <p class="kicker">v3.3.0 · Oracle 19c+</p>
+      <h1>API Reference</h1>
+      <p class="lead">Detailed documentation of every public function and procedure of the <code>PL_FPDF</code> package: syntax, parameters with accepted values, return, errors and an example.
+      For a task-oriented guide, see the <a href="api.html">usage index</a>.</p>
+    </header>
+<h2 class="grp" id="grp-lifecycle">Lifecycle</h2>
+<article class="api" id="fpdf">
+<h3>fpdf <span class="kind">Procedure</span><a class="anchor" href="#fpdf" aria-label="link">#</a></h3>
+<p class="d">Initialises the document in the classic FPDF style. Kept for compatibility with v0.9.4; use Init in new code.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.fpdf(
+    orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;P&#x27;</span>,
+    unit        <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;mm&#x27;</span>,
+    format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;A4&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">orientation</td><td class="ptype">VARCHAR2</td><td>Orientation.</td><td class="pval">&#x27;P&#x27; (default) or &#x27;L&#x27;</td><td><code>&#x27;P&#x27;</code></td></tr>
+<tr><td class="pname">unit</td><td class="ptype">VARCHAR2</td><td>Unit of measurement.</td><td class="pval">&#x27;mm&#x27; (default), &#x27;cm&#x27;, &#x27;pt&#x27; or &#x27;in&#x27;</td><td><code>&#x27;mm&#x27;</code></td></tr>
+<tr><td class="pname">format</td><td class="ptype">VARCHAR2</td><td>Page format.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27; (default), &#x27;A5&#x27;, &#x27;Letter&#x27; or &#x27;Legal&#x27;</td><td><code>&#x27;A4&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="init">
+<h3>Init <span class="kind">Procedure</span><a class="anchor" href="#init" aria-label="link">#</a></h3>
+<p class="d">Initialises a new PDF document. This must be the first call of any generation; it sets the orientation, unit of measurement, page format and encoding used by every other API.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Init(
+    p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;P&#x27;</span>,
+    p_unit        <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;mm&#x27;</span>,
+    p_format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;A4&#x27;</span>,
+    p_encoding    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_orientation</td><td class="ptype">VARCHAR2</td><td>Default page orientation.</td><td class="pval">&#x27;P&#x27; (portrait, the default) or &#x27;L&#x27; (landscape)</td><td><code>&#x27;P&#x27;</code></td></tr>
+<tr><td class="pname">p_unit</td><td class="ptype">VARCHAR2</td><td>Unit of measurement for every coordinate and dimension in the document.</td><td class="pval">&#x27;mm&#x27; (default), &#x27;cm&#x27;, &#x27;pt&#x27; or &#x27;in&#x27;</td><td><code>&#x27;mm&#x27;</code></td></tr>
+<tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Default page format.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27; (default), &#x27;A5&#x27;, &#x27;Letter&#x27; or &#x27;Legal&#x27;</td><td><code>&#x27;A4&#x27;</code></td></tr>
+<tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Character encoding of the text.</td><td class="pval">&#x27;UTF-8&#x27; (default) or &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre><span class="k">BEGIN</span>
+  PL_FPDF.Init(p_orientation =&gt; <span class="s">&#x27;P&#x27;</span>, p_unit =&gt; <span class="s">&#x27;mm&#x27;</span>, p_format =&gt; <span class="s">&#x27;A4&#x27;</span>);
+  PL_FPDF.AddPage();
+  <span class="c">-- ...</span>
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>See also:</b> <a href="#reset">Reset</a>, <a href="#isinitialized">IsInitialized</a>, <a href="#addpage">AddPage</a></p>
+</article>
+<article class="api" id="isinitialized">
+<h3>IsInitialized <span class="kind">Function</span><a class="anchor" href="#isinitialized" aria-label="link">#</a></h3>
+<p class="d">Tells whether a document is currently being built in this session.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsInitialized
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if Init has been called and the document has not been finalised.</p>
+<h5>Example</h5><div class="code"><pre><span class="k">IF</span> <span class="k">NOT</span> PL_FPDF.IsInitialized <span class="k">THEN</span>
+  PL_FPDF.Init;
+<span class="k">END</span> <span class="k">IF</span>;</pre></div>
+<p class="see"><b>See also:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="reset">
+<h3>Reset <span class="kind">Procedure</span><a class="anchor" href="#reset" aria-label="link">#</a></h3>
+<p class="d">Returns the PDF engine to its initial state, freeing temporary CLOBs and clearing every internal array. Use it between documents generated in the same job, or at the end of long routines.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Reset;</pre></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Reset;</pre></div>
+<p class="see"><b>See also:</b> <a href="#init">Init</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<h2 class="grp" id="grp-pages">Pages and positioning</h2>
+<article class="api" id="acceptpagebreak">
+<h3>AcceptPageBreak <span class="kind">Function</span><a class="anchor" href="#acceptpagebreak" aria-label="link">#</a></h3>
+<p class="d">Reports whether an automatic page break should happen at the current point. The engine calls it internally; you can read it for your own pagination logic.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AcceptPageBreak
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if the automatic page break is enabled.</p>
+<p class="see"><b>See also:</b> <a href="#setautopagebreak">SetAutoPageBreak</a></p>
+</article>
+<article class="api" id="addpage">
+<h3>AddPage <span class="kind">Procedure</span><a class="anchor" href="#addpage" aria-label="link">#</a></h3>
+<p class="d">Adds a new page to the document and makes it the current one. NULL parameters inherit the values set in Init, which lets you mix orientations and formats within the same PDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddPage(
+    p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    p_format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    p_rotation    <span class="k">pls_integer</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_orientation</td><td class="ptype">VARCHAR2</td><td>Orientation for this page only.</td><td class="pval">&#x27;P&#x27;, &#x27;L&#x27; or NULL (inherits from Init)</td><td><code>null</code></td></tr>
+<tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Page format for this page only.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27;, &#x27;A5&#x27;, &#x27;Letter&#x27;, &#x27;Legal&#x27; or NULL (inherits from Init)</td><td><code>null</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Display rotation applied by the PDF reader.</td><td class="pval">0 (default), 90, 180 or 270</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20005</td><td>Document not initialised (call Init first)</td></tr>
+<tr><td class="pname">-20107</td><td>Invalid orientation (only &#x27;P&#x27; or &#x27;L&#x27;)</td></tr>
+<tr><td class="pname">-20103</td><td>Unknown page format</td></tr>
+<tr><td class="pname">-20101</td><td>Invalid dimensions for the custom format</td></tr>
+<tr><td class="pname">-20104</td><td>Invalid rotation (only 0, 90, 180 or 270)</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.AddPage;                                      <span class="c">-- inherits everything from Init</span>
+PL_FPDF.AddPage(p_orientation =&gt; <span class="s">&#x27;L&#x27;</span>);                <span class="c">-- this one in landscape</span>
+PL_FPDF.AddPage(p_format =&gt; <span class="s">&#x27;A5&#x27;</span>, p_rotation =&gt; 90);  <span class="c">-- A5, rotated</span></pre></div>
+<p class="see"><b>See also:</b> <a href="#init">Init</a>, <a href="#setpage">SetPage</a>, <a href="#getcurrentpage">GetCurrentPage</a></p>
+</article>
+<article class="api" id="getcurrentpage">
+<h3>GetCurrentPage <span class="kind">Function</span><a class="anchor" href="#getcurrentpage" aria-label="link">#</a></h3>
+<p class="d">Returns the number of the current page — the one receiving content.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentPage
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Returns</h5><p class="d">PLS_INTEGER — number of the active page.</p>
+<p class="see"><b>See also:</b> <a href="#setpage">SetPage</a>, <a href="#pageno">PageNo</a></p>
+</article>
+<article class="api" id="getx">
+<h3>GetX <span class="kind">Function</span><a class="anchor" href="#getx" aria-label="link">#</a></h3>
+<p class="d">Returns the current X position of the cursor.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetX
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — X coordinate.</p>
+<p class="see"><b>See also:</b> <a href="#setx">SetX</a>, <a href="#setxy">SetXY</a></p>
+</article>
+<article class="api" id="gety">
+<h3>GetY <span class="kind">Function</span><a class="anchor" href="#gety" aria-label="link">#</a></h3>
+<p class="d">Returns the current Y position of the cursor.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetY
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — Y coordinate.</p>
+<p class="see"><b>See also:</b> <a href="#sety">SetY</a></p>
+</article>
+<article class="api" id="ln">
+<h3>Ln <span class="kind">Procedure</span><a class="anchor" href="#ln" aria-label="link">#</a></h3>
+<p class="d">Moves the cursor to the next line, back at the left margin.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Ln(
+    h <span class="k">number</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">h</td><td class="ptype">NUMBER</td><td>Height of the jump.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); NULL (default) uses the height of the last cell written</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Ln(6);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setxy">SetXY</a></p>
+</article>
+<article class="api" id="pageno">
+<h3>PageNo <span class="kind">Function</span><a class="anchor" href="#pageno" aria-label="link">#</a></h3>
+<p class="d">Returns the current page number during generation; typically used in footers.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.PageNo
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — number of the current page.</p>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo || <span class="s">&#x27;/{nb}&#x27;</span>, 0, 0, <span class="s">&#x27;C&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setaliasnbpages">SetAliasNbPages</a>, <a href="#setfooterproc">SetFooterProc</a></p>
+</article>
+<article class="api" id="setautopagebreak">
+<h3>SetAutoPageBreak <span class="kind">Procedure</span><a class="anchor" href="#setautopagebreak" aria-label="link">#</a></h3>
+<p class="d">Turns the automatic page break on or off and sets how far from the bottom edge it happens.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAutoPageBreak(
+    pauto   <span class="k">boolean</span>,
+    pMargin <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pauto</td><td class="ptype">BOOLEAN</td><td>Enables the automatic page break.</td><td class="pval">TRUE or FALSE</td><td>—</td></tr>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Bottom margin that triggers the break.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 is the default</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetAutoPageBreak(pauto =&gt; <span class="k">TRUE</span>, pMargin =&gt; 15);</pre></div>
+<p class="see"><b>See also:</b> <a href="#acceptpagebreak">AcceptPageBreak</a>, <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="setleftmargin">
+<h3>SetLeftMargin <span class="kind">Procedure</span><a class="anchor" href="#setleftmargin" aria-label="link">#</a></h3>
+<p class="d">Sets the left margin only.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLeftMargin(
+    pMargin <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Left margin.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="setmargins">
+<h3>SetMargins <span class="kind">Procedure</span><a class="anchor" href="#setmargins" aria-label="link">#</a></h3>
+<p class="d">Sets the left, top and right margins of the document. The bottom margin is controlled by SetAutoPageBreak.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetMargins(
+    left  <span class="k">number</span>,
+    top   <span class="k">number</span>,
+    right <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">left</td><td class="ptype">NUMBER</td><td>Left margin.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">top</td><td class="ptype">NUMBER</td><td>Top margin.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">right</td><td class="ptype">NUMBER</td><td>Right margin.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); -1 (default) reuses the left margin value</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetMargins(left =&gt; 20, top =&gt; 15, right =&gt; 20);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setleftmargin">SetLeftMargin</a>, <a href="#settopmargin">SetTopMargin</a>, <a href="#setrightmargin">SetRightMargin</a>, <a href="#setautopagebreak">SetAutoPageBreak</a></p>
+</article>
+<article class="api" id="setpage">
+<h3>SetPage <span class="kind">Procedure</span><a class="anchor" href="#setpage" aria-label="link">#</a></h3>
+<p class="d">Chooses which existing page receives the content of the next calls, so you can go back to an earlier page — to fill in a table of contents once the final page numbers are known, for instance.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPage(
+    p_page_number <span class="k">pls_integer</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page that becomes the current one.</td><td class="pval">Integer &gt;= 1, up to GetPageCount</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20005</td><td>Document not initialised (call Init first)</td></tr>
+<tr><td class="pname">-20106</td><td>The given page does not exist</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetPage(1);
+PL_FPDF.SetXY(20, 40);
+PL_FPDF.Cell(0, 8, <span class="s">&#x27;Filled in afterwards&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#addpage">AddPage</a>, <a href="#getcurrentpage">GetCurrentPage</a></p>
+</article>
+<article class="api" id="setrightmargin">
+<h3>SetRightMargin <span class="kind">Procedure</span><a class="anchor" href="#setrightmargin" aria-label="link">#</a></h3>
+<p class="d">Sets the right margin only.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetRightMargin(
+    pMargin <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Right margin.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="settopmargin">
+<h3>SetTopMargin <span class="kind">Procedure</span><a class="anchor" href="#settopmargin" aria-label="link">#</a></h3>
+<p class="d">Sets the top margin only.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTopMargin(
+    pMargin <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pMargin</td><td class="ptype">NUMBER</td><td>Top margin.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setmargins">SetMargins</a></p>
+</article>
+<article class="api" id="setx">
+<h3>SetX <span class="kind">Procedure</span><a class="anchor" href="#setx" aria-label="link">#</a></h3>
+<p class="d">Sets the X position of the cursor.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetX(
+    px <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>New X coordinate.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); negative values count from the right edge</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#getx">GetX</a></p>
+</article>
+<article class="api" id="setxy">
+<h3>SetXY <span class="kind">Procedure</span><a class="anchor" href="#setxy" aria-label="link">#</a></h3>
+<p class="d">Sets both X and Y of the cursor in a single call.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetXY(
+    x <span class="k">number</span>,
+    y <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">x</td><td class="ptype">NUMBER</td><td>X coordinate.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">y</td><td class="ptype">NUMBER</td><td>Y coordinate.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetXY(x =&gt; 20, y =&gt; 40);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setx">SetX</a>, <a href="#sety">SetY</a></p>
+</article>
+<article class="api" id="sety">
+<h3>SetY <span class="kind">Procedure</span><a class="anchor" href="#sety" aria-label="link">#</a></h3>
+<p class="d">Sets the Y position of the cursor, and moves X back to the left margin.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetY(
+    py <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>New Y coordinate.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); negative values count from the bottom edge — e.g. -15 for a footer</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetY(-15);  <span class="c">-- 15 units above the end of the page</span></pre></div>
+<p class="see"><b>See also:</b> <a href="#gety">GetY</a>, <a href="#setxy">SetXY</a></p>
+</article>
+<h2 class="grp" id="grp-fonts">Fonts and UTF-8</h2>
+<article class="api" id="addfont">
+<h3>AddFont <span class="kind">Procedure</span><a class="anchor" href="#addfont" aria-label="link">#</a></h3>
+<p class="d">Registers an additional font (FPDF compatibility). For TrueType with UTF-8, prefer AddTTFFont.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddFont(
+    family   <span class="k">varchar2</span>,
+    style    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    filename <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">family</td><td class="ptype">VARCHAR2</td><td>Family name to register.</td><td class="pval">Free text; used later in SetFont</td><td>—</td></tr>
+<tr><td class="pname">style</td><td class="ptype">VARCHAR2</td><td>Style tied to the file.</td><td class="pval">&#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27; or &#x27;BI&#x27;</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">filename</td><td class="ptype">VARCHAR2</td><td>Font definition file.</td><td class="pval">File name; empty uses the standard FPDF convention</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="addttffont">
+<h3>AddTTFFont <span class="kind">Procedure</span><a class="anchor" href="#addttffont" aria-label="link">#</a></h3>
+<p class="d">Loads a TrueType font from a BLOB — from an assets table, say — and makes it available to SetFont, with full UTF-8 support.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddTTFFont(
+    p_font_name <span class="k">varchar2</span>,
+    p_font_blob <span class="k">blob</span>,
+    p_encoding  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>,
+    p_embed     <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Name by which the font will be referenced in SetFont.</td><td class="pval">Free text, e.g. &#x27;Roboto&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_font_blob</td><td class="ptype">BLOB</td><td>Binary content of the .ttf file.</td><td class="pval">Non-null BLOB holding a valid TrueType font</td><td>—</td></tr>
+<tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Font encoding.</td><td class="pval">&#x27;UTF-8&#x27; (default) or &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
+<tr><td class="pname">p_embed</td><td class="ptype">BOOLEAN</td><td>Embeds the font in the PDF, which guarantees the look in any reader and grows the file.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_ttf <span class="k">BLOB</span>;
+<span class="k">BEGIN</span>
+  <span class="k">SELECT</span> file <span class="k">INTO</span> l_ttf <span class="k">FROM</span> fonts <span class="k">WHERE</span> name = <span class="s">&#x27;Roboto-Regular&#x27;</span>;
+  PL_FPDF.AddTTFFont(p_font_name =&gt; <span class="s">&#x27;Roboto&#x27;</span>, p_font_blob =&gt; l_ttf, p_embed =&gt; <span class="k">TRUE</span>);
+  PL_FPDF.SetFont(<span class="s">&#x27;Roboto&#x27;</span>, <span class="s">&#x27;&#x27;</span>, 12);
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadttffromfile">LoadTTFFromFile</a>, <a href="#isttffontloaded">IsTTFFontLoaded</a>, <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="clearttffontcache">
+<h3>ClearTTFFontCache <span class="kind">Procedure</span><a class="anchor" href="#clearttffontcache" aria-label="link">#</a></h3>
+<p class="d">Discards every loaded TrueType font, freeing session memory.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearTTFFontCache;</pre></div>
+<p class="see"><b>See also:</b> <a href="#addttffont">AddTTFFont</a></p>
+</article>
+<article class="api" id="getttffontinfo">
+<h3>GetTTFFontInfo <span class="kind">Function</span><a class="anchor" href="#getttffontinfo" aria-label="link">#</a></h3>
+<p class="d">Returns the metadata of a loaded TrueType font.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetTTFFontInfo(
+    p_font_name <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> RECTTFFONT;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Font name.</td><td class="pval">The same one used when loading</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">recTTFFont — record with the font&#x27;s metrics and information.</p>
+<p class="see"><b>See also:</b> <a href="#addttffont">AddTTFFont</a></p>
+</article>
+<article class="api" id="isttffontloaded">
+<h3>IsTTFFontLoaded <span class="kind">Function</span><a class="anchor" href="#isttffontloaded" aria-label="link">#</a></h3>
+<p class="d">Checks whether a TrueType font has already been loaded in this session.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsTTFFontLoaded(
+    p_font_name <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Font name.</td><td class="pval">The same one used when loading</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if the font is in the cache.</p>
+<p class="see"><b>See also:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#clearttffontcache">ClearTTFFontCache</a></p>
+</article>
+<article class="api" id="isutf8enabled">
+<h3>IsUTF8Enabled <span class="kind">Function</span><a class="anchor" href="#isutf8enabled" aria-label="link">#</a></h3>
+<p class="d">Tells whether UTF-8 mode is active.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsUTF8Enabled
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if UTF-8 is enabled.</p>
+<p class="see"><b>See also:</b> <a href="#setutf8enabled">SetUTF8Enabled</a></p>
+</article>
+<article class="api" id="loadttffromfile">
+<h3>LoadTTFFromFile <span class="kind">Procedure</span><a class="anchor" href="#loadttffromfile" aria-label="link">#</a></h3>
+<p class="d">Loads a TrueType font from a file inside an Oracle DIRECTORY.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadTTFFromFile(
+    p_font_name <span class="k">varchar2</span>,
+    p_file_path <span class="k">varchar2</span>,
+    p_directory <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;FONTS_DIR&#x27;</span>,
+    p_encoding  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>Name to use in SetFont.</td><td class="pval">Free text</td><td>—</td></tr>
+<tr><td class="pname">p_file_path</td><td class="ptype">VARCHAR2</td><td>Name of the .ttf file inside the directory.</td><td class="pval">E.g. &#x27;Roboto-Regular.ttf&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_directory</td><td class="ptype">VARCHAR2</td><td>Oracle DIRECTORY with read permission.</td><td class="pval">Default: &#x27;FONTS_DIR&#x27;</td><td><code>&#x27;FONTS_DIR&#x27;</code></td></tr>
+<tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Font encoding.</td><td class="pval">&#x27;UTF-8&#x27; (default) or &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.LoadTTFFromFile(<span class="s">&#x27;Roboto&#x27;</span>, <span class="s">&#x27;Roboto-Regular.ttf&#x27;</span>, <span class="s">&#x27;FONTS_DIR&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#addttffont">AddTTFFont</a></p>
+</article>
+<article class="api" id="setfont">
+<h3>SetFont <span class="kind">Procedure</span><a class="anchor" href="#setfont" aria-label="link">#</a></h3>
+<p class="d">Sets the font family, style and size used by the next text writes.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFont(
+    pfamily <span class="k">varchar2</span>,
+    pstyle  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    psize   <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pfamily</td><td class="ptype">VARCHAR2</td><td>Font family.</td><td class="pval">&#x27;Arial&#x27;/&#x27;Helvetica&#x27;, &#x27;Times&#x27;, &#x27;Courier&#x27;, &#x27;Symbol&#x27;, &#x27;ZapfDingbats&#x27; or the name of a TrueType font loaded with AddTTFFont/LoadTTFFromFile</td><td>—</td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Text style.</td><td class="pval">&#x27;&#x27; (regular), &#x27;B&#x27; (bold), &#x27;I&#x27; (italic), &#x27;BI&#x27; (bold italic) or &#x27;U&#x27; (underlined)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Size in points.</td><td class="pval">Number &gt; 0; 0 (default) keeps the current size</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, 16);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setfontsize">SetFontSize</a>, <a href="#addttffont">AddTTFFont</a>, <a href="#getstringwidth">GetStringWidth</a></p>
+</article>
+<article class="api" id="setfontsize">
+<h3>SetFontSize <span class="kind">Procedure</span><a class="anchor" href="#setfontsize" aria-label="link">#</a></h3>
+<p class="d">Changes only the size of the current font.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFontSize(
+    psize <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Size in points.</td><td class="pval">Number &gt; 0</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="setutf8enabled">
+<h3>SetUTF8Enabled <span class="kind">Procedure</span><a class="anchor" href="#setutf8enabled" aria-label="link">#</a></h3>
+<p class="d">Turns UTF-8 handling of text on or off.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetUTF8Enabled(
+    p_enabled <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_enabled</td><td class="ptype">BOOLEAN</td><td>Enables UTF-8.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#isutf8enabled">IsUTF8Enabled</a>, <a href="#utf8topdfstring">UTF8ToPDFString</a></p>
+</article>
+<article class="api" id="utf8topdfstring">
+<h3>UTF8ToPDFString <span class="kind">Function</span><a class="anchor" href="#utf8topdfstring" aria-label="link">#</a></h3>
+<p class="d">Converts UTF-8 text to the PDF&#x27;s internal representation. Called internally; useful when debugging accented characters.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.UTF8ToPDFString(
+    p_text   <span class="k">varchar2</span>,
+    p_escape <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>)
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Text to convert.</td><td class="pval">Any VARCHAR2 in UTF-8</td><td>—</td></tr>
+<tr><td class="pname">p_escape</td><td class="ptype">BOOLEAN</td><td>Escapes the PDF special characters (parentheses and backslash).</td><td class="pval">TRUE or FALSE</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">VARCHAR2 — the converted text.</p>
+<p class="see"><b>See also:</b> <a href="#setutf8enabled">SetUTF8Enabled</a></p>
+</article>
+<h2 class="grp" id="grp-text">Writing text</h2>
+<article class="api" id="cell">
+<h3>Cell <span class="kind">Procedure</span><a class="anchor" href="#cell" aria-label="link">#</a></h3>
+<p class="d">Writes a rectangular block of text, with optional borders, alignment, fill and link. It is the API most used to build reports and tables.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Cell(
+    pw      <span class="k">number</span>,
+    ph      <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ptxt    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    pborder <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    pln     <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    palign  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    pfill   <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    plink   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Cell width.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 stretches to the right margin</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Cell height.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 is the default</td><td><code>0</code></td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Text to write.</td><td class="pval">Any VARCHAR2; empty draws the cell alone</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Borders to draw.</td><td class="pval">&#x27;0&#x27; (none), &#x27;1&#x27; (full frame) or a combination of &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27; — e.g. &#x27;LTB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">pln</td><td class="ptype">NUMBER</td><td>Where the cursor goes afterwards.</td><td class="pval">0 = to the right of the cell (default), 1 = start of the next line, 2 = below the cell</td><td><code>0</code></td></tr>
+<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Text alignment.</td><td class="pval">&#x27;L&#x27; (left), &#x27;C&#x27; (centre), &#x27;R&#x27; (right) or &#x27;&#x27; (default, left)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td>Fills the background with the SetFillColor colour.</td><td class="pval">0 = transparent (default), 1 = filled</td><td><code>0</code></td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>Makes the cell clickable.</td><td class="pval">URL (&#x27;https://...&#x27;) or the identifier returned by AddLink</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetFillColor(240, 240, 240);
+PL_FPDF.Cell(
+  pw      =&gt; 0,
+  ph      =&gt; 10,
+  ptxt    =&gt; <span class="s">&#x27;Total: 1,234.56&#x27;</span>,
+  pborder =&gt; <span class="s">&#x27;LTB&#x27;</span>,
+  pln     =&gt; 1,
+  palign  =&gt; <span class="s">&#x27;R&#x27;</span>,
+  pfill   =&gt; 1);</pre></div>
+<p class="see"><b>See also:</b> <a href="#multicell">MultiCell</a>, <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a>, <a href="#setfillcolor">SetFillColor</a></p>
+</article>
+<article class="api" id="cellrotated">
+<h3>CellRotated <span class="kind">Procedure</span><a class="anchor" href="#cellrotated" aria-label="link">#</a></h3>
+<p class="d">Cell with the text rotated — useful for vertical table headers and labels.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.CellRotated(
+    p_width    <span class="k">number</span>,
+    p_height   <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    p_text     <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    p_border   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    p_ln       <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    p_align    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    p_fill     <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    p_link     <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>,
+    p_rotation <span class="k">pls_integer</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Cell width.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 stretches to the right margin</td><td>—</td></tr>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Cell height.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td><code>0</code></td></tr>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Text to write.</td><td class="pval">Any VARCHAR2</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_border</td><td class="ptype">VARCHAR2</td><td>Borders.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; or a combination of &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">p_ln</td><td class="ptype">NUMBER</td><td>Cursor position afterwards.</td><td class="pval">0 = to the right, 1 = next line, 2 = below</td><td><code>0</code></td></tr>
+<tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td>Alignment.</td><td class="pval">&#x27;L&#x27;, &#x27;C&#x27; or &#x27;R&#x27;</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_fill</td><td class="ptype">NUMBER</td><td>Fill.</td><td class="pval">0 or 1</td><td><code>0</code></td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td>Optional link.</td><td class="pval">URL or an AddLink identifier</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Rotation angle of the text.</td><td class="pval">0 (default), 90, 180 or 270 — any other value raises an error</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20110</td><td>Invalid rotation value (use 0, 90, 180 or 270)</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.CellRotated(40, 10, <span class="s">&#x27;VERTICAL&#x27;</span>, p_rotation =&gt; 90);</pre></div>
+<p class="see"><b>See also:</b> <a href="#cell">Cell</a>, <a href="#writerotated">WriteRotated</a></p>
+</article>
+<article class="api" id="getcurrentfontfamily">
+<h3>GetCurrentFontFamily <span class="kind">Function</span><a class="anchor" href="#getcurrentfontfamily" aria-label="link">#</a></h3>
+<p class="d">Returns the family of the current font.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontFamily
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Returns</h5><p class="d">VARCHAR2 — the family name.</p>
+<p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="getcurrentfontsize">
+<h3>GetCurrentFontSize <span class="kind">Function</span><a class="anchor" href="#getcurrentfontsize" aria-label="link">#</a></h3>
+<p class="d">Returns the size of the current font.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontSize
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — size in points.</p>
+<p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="getcurrentfontstyle">
+<h3>GetCurrentFontStyle <span class="kind">Function</span><a class="anchor" href="#getcurrentfontstyle" aria-label="link">#</a></h3>
+<p class="d">Returns the style of the current font.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontStyle
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Returns</h5><p class="d">VARCHAR2 — &#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27;, &#x27;BI&#x27; or &#x27;U&#x27;.</p>
+<p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
+</article>
+<article class="api" id="getlinespacing">
+<h3>GetLineSpacing <span class="kind">Function</span><a class="anchor" href="#getlinespacing" aria-label="link">#</a></h3>
+<p class="d">Returns the current line spacing.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLineSpacing
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — the configured spacing.</p>
+<p class="see"><b>See also:</b> <a href="#setlinespacing">SetLineSpacing</a></p>
+</article>
+<article class="api" id="getstringwidth">
+<h3>GetStringWidth <span class="kind">Function</span><a class="anchor" href="#getstringwidth" aria-label="link">#</a></h3>
+<p class="d">Measures how wide a piece of text will be in the current font and size — use it to centre by hand, size columns, or decide where to break.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetStringWidth(
+    pstr <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pstr</td><td class="ptype">VARCHAR2</td><td>Text to measure.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">NUMBER — width in the document&#x27;s unit.</p>
+<h5>Example</h5><div class="code"><pre>l_w := PL_FPDF.GetStringWidth(l_title);
+PL_FPDF.SetX((210 - l_w) / 2);   <span class="c">-- centred on A4 portrait (210 mm)</span></pre></div>
+<p class="see"><b>See also:</b> <a href="#setfont">SetFont</a>, <a href="#cell">Cell</a></p>
+</article>
+<article class="api" id="multicell">
+<h3>MultiCell <span class="kind">Function</span><a class="anchor" href="#multicell" aria-label="link">#</a></h3>
+<p class="d">Writes a paragraph with automatic line breaking inside a given width. It exists as a function, returning the number of lines, and as a procedure.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.MultiCell(
+    pw      <span class="k">number</span>,
+    ph      <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ptxt    <span class="k">varchar2</span>,
+    pborder <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    palign  <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;J&#x27;</span>,
+    pfill   <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    phMax   <span class="k">number</span> <span class="k">DEFAULT</span> 0)
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.MultiCell(
+    pwidth     <span class="k">number</span>,
+    pheight    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ptext      <span class="k">varchar2</span>,
+    pbrdr      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;0&#x27;</span>,
+    palignment <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;J&#x27;</span>,
+    pfillin    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    phMaximum  <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Block width.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 stretches to the right margin</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Height of each line.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td><code>0</code></td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Paragraph text; line breaks are honoured.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Block borders.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; or a combination of &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Alignment.</td><td class="pval">&#x27;J&#x27; (justified, default), &#x27;L&#x27;, &#x27;C&#x27; or &#x27;R&#x27;</td><td><code>&#x27;J&#x27;</code></td></tr>
+<tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td>Fills the background.</td><td class="pval">0 (default) or 1</td><td><code>0</code></td></tr>
+<tr><td class="pname">phMax</td><td class="ptype">NUMBER</td><td>Maximum block height; text beyond it is truncated.</td><td class="pval">Number; 0 (default) = no limit</td><td><code>0</code></td></tr>
+<tr><td class="pname">pwidth</td><td class="ptype">NUMBER</td><td>Block width (procedure version).</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 to the right margin</td><td>—</td></tr>
+<tr><td class="pname">pheight</td><td class="ptype">NUMBER</td><td>Height of each line (procedure version).</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td><code>0</code></td></tr>
+<tr><td class="pname">ptext</td><td class="ptype">VARCHAR2</td><td>Paragraph text (procedure version).</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">pbrdr</td><td class="ptype">VARCHAR2</td><td>Borders (procedure version).</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; or &#x27;LTRB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">palignment</td><td class="ptype">VARCHAR2</td><td>Alignment (procedure version).</td><td class="pval">&#x27;J&#x27;, &#x27;L&#x27;, &#x27;C&#x27; or &#x27;R&#x27;</td><td><code>&#x27;J&#x27;</code></td></tr>
+<tr><td class="pname">pfillin</td><td class="ptype">NUMBER</td><td>Fill (procedure version).</td><td class="pval">0 or 1</td><td><code>0</code></td></tr>
+<tr><td class="pname">phMaximum</td><td class="ptype">NUMBER</td><td>Maximum height (procedure version).</td><td class="pval">Number; 0 = no limit</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">NUMBER (function version) — how many lines were produced.</p>
+<h5>Example</h5><div class="code"><pre>l_lines := PL_FPDF.MultiCell(
+  pw      =&gt; 0,
+  ph      =&gt; 6,
+  ptxt    =&gt; l_description,
+  pborder =&gt; <span class="s">&#x27;1&#x27;</span>,
+  palign  =&gt; <span class="s">&#x27;J&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#cell">Cell</a>, <a href="#write">Write</a></p>
+</article>
+<article class="api" id="setlinespacing">
+<h3>SetLineSpacing <span class="kind">Procedure</span><a class="anchor" href="#setlinespacing" aria-label="link">#</a></h3>
+<p class="d">Sets the line spacing used by Write and MultiCell.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineSpacing(
+    pls <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pls</td><td class="ptype">NUMBER</td><td>Spacing factor or height.</td><td class="pval">Number &gt; 0</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#getlinespacing">GetLineSpacing</a></p>
+</article>
+<article class="api" id="text">
+<h3>Text <span class="kind">Procedure</span><a class="anchor" href="#text" aria-label="link">#</a></h3>
+<p class="d">Writes text at absolute coordinates, without moving the cursor or breaking lines.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Text(
+    px   <span class="k">number</span>,
+    py   <span class="k">number</span>,
+    ptxt <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X coordinate where the text starts.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y coordinate of the baseline.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Text to write.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#cell">Cell</a>, <a href="#write">Write</a></p>
+</article>
+<article class="api" id="write">
+<h3>Write <span class="kind">Procedure</span><a class="anchor" href="#write" aria-label="link">#</a></h3>
+<p class="d">Writes text as a flow, continuing where the previous one stopped and breaking lines automatically — which lets you switch fonts and styles in the middle of a sentence.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Write(
+    pH    <span class="k">varchar2</span>,
+    ptxt  <span class="k">varchar2</span>,
+    plink <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pH</td><td class="ptype">VARCHAR2</td><td>Line height.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Text to write.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>Optional link applied to the text.</td><td class="pval">URL or an AddLink identifier; NULL (default) = no link</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Write(6, <span class="s">&#x27;Document generated by &#x27;</span>);
+PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>);
+PL_FPDF.Write(6, <span class="s">&#x27;PL_FPDF&#x27;</span>, <span class="s">&#x27;https://maxwbh.github.io/pl_fpdf/&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#cell">Cell</a>, <a href="#multicell">MultiCell</a>, <a href="#writerotated">WriteRotated</a></p>
+</article>
+<article class="api" id="writerotated">
+<h3>WriteRotated <span class="kind">Procedure</span><a class="anchor" href="#writerotated" aria-label="link">#</a></h3>
+<p class="d">Write with the text rotated.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.WriteRotated(
+    p_height   <span class="k">number</span>,
+    p_text     <span class="k">varchar2</span>,
+    p_link     <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    p_rotation <span class="k">pls_integer</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Line height.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Text to write.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td>Optional link.</td><td class="pval">URL or an AddLink identifier; NULL = no link</td><td><code>null</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Rotation angle.</td><td class="pval">0 (default), 90, 180 or 270</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20110</td><td>Invalid rotation value</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a></p>
+</article>
+<h2 class="grp" id="grp-draw">Colours and drawing</h2>
+<article class="api" id="line">
+<h3>Line <span class="kind">Procedure</span><a class="anchor" href="#line" aria-label="link">#</a></h3>
+<p class="d">Draws a straight line between two points.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Line(
+    x1 <span class="k">number</span>,
+    y1 <span class="k">number</span>,
+    x2 <span class="k">number</span>,
+    y2 <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">x1</td><td class="ptype">NUMBER</td><td>X of the start point.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">y1</td><td class="ptype">NUMBER</td><td>Y of the start point.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">x2</td><td class="ptype">NUMBER</td><td>X of the end point.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">y2</td><td class="ptype">NUMBER</td><td>Y of the end point.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Line(10, 30, 200, 30);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setdrawcolor">SetDrawColor</a>, <a href="#setlinewidth">SetLineWidth</a></p>
+</article>
+<article class="api" id="poly">
+<h3>Poly <span class="kind">Procedure</span><a class="anchor" href="#poly" aria-label="link">#</a></h3>
+<p class="d">Draws a polygon from a collection of points.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Poly(
+    points tab_points,
+    pclose <span class="k">boolean</span>,
+    pstyle <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">points</td><td class="ptype">TAB_POINTS</td><td>Points of the polygon.</td><td class="pval">tab_points collection with X/Y pairs in the document&#x27;s unit</td><td>—</td></tr>
+<tr><td class="pname">pclose</td><td class="ptype">BOOLEAN</td><td>Closes the polygon, joining the last point to the first.</td><td class="pval">TRUE or FALSE</td><td>—</td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Rendering style.</td><td class="pval">&#x27;&#x27; or &#x27;D&#x27; (outline), &#x27;F&#x27; (filled), &#x27;DF&#x27; (both)</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#line">Line</a>, <a href="#triangle">Triangle</a></p>
+</article>
+<article class="api" id="rect">
+<h3>Rect <span class="kind">Procedure</span><a class="anchor" href="#rect" aria-label="link">#</a></h3>
+<p class="d">Draws a rectangle: outlined, filled, or both.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Rect(
+    px     <span class="k">number</span>,
+    py     <span class="k">number</span>,
+    pw     <span class="k">number</span>,
+    ph     <span class="k">number</span>,
+    pstyle <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Width.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Height.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Rendering style.</td><td class="pval">&#x27;&#x27; or &#x27;D&#x27; (outline only, the default), &#x27;F&#x27; (fill only), &#x27;DF&#x27;/&#x27;FD&#x27; (outline + fill)</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Rect(px =&gt; 10, py =&gt; 40, pw =&gt; 60, ph =&gt; 25, pstyle =&gt; <span class="s">&#x27;DF&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setdrawcolor">SetDrawColor</a>, <a href="#setfillcolor">SetFillColor</a></p>
+</article>
+<article class="api" id="setdash">
+<h3>SetDash <span class="kind">Procedure</span><a class="anchor" href="#setdash" aria-label="link">#</a></h3>
+<p class="d">Sets a simple dashed-line pattern.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDash(
+    pblack <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    pwhite <span class="k">number</span> <span class="k">DEFAULT</span> 0);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pblack</td><td class="ptype">NUMBER</td><td>Length of the dash.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 (default) goes back to a solid line</td><td><code>0</code></td></tr>
+<tr><td class="pname">pwhite</td><td class="ptype">NUMBER</td><td>Length of the gap.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 (default) goes back to a solid line</td><td><code>0</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetDash(2, 2);   <span class="c">-- dashed</span>
+PL_FPDF.SetDash(0, 0);   <span class="c">-- back to solid</span></pre></div>
+<p class="see"><b>See also:</b> <a href="#setlinedashpattern">SetLineDashPattern</a></p>
+</article>
+<article class="api" id="setdrawcolor">
+<h3>SetDrawColor <span class="kind">Procedure</span><a class="anchor" href="#setdrawcolor" aria-label="link">#</a></h3>
+<p class="d">Sets the colour of the lines and outlines drawn next.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDrawColor(
+    r <span class="k">number</span>,
+    g <span class="k">number</span> <span class="k">DEFAULT</span> -1,
+    b <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">r</td><td class="ptype">NUMBER</td><td>Red component, or the grey level when g and b are omitted.</td><td class="pval">0 to 255</td><td>—</td></tr>
+<tr><td class="pname">g</td><td class="ptype">NUMBER</td><td>Green component.</td><td class="pval">0 to 255; -1 (default) means greyscale, using r</td><td><code>-1</code></td></tr>
+<tr><td class="pname">b</td><td class="ptype">NUMBER</td><td>Blue component.</td><td class="pval">0 to 255; -1 (default) means greyscale, using r</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetDrawColor(200, 0, 0);   <span class="c">-- red</span>
+PL_FPDF.SetDrawColor(128);         <span class="c">-- mid grey</span></pre></div>
+<p class="see"><b>See also:</b> <a href="#setfillcolor">SetFillColor</a>, <a href="#settextcolor">SetTextColor</a>, <a href="#setlinewidth">SetLineWidth</a></p>
+</article>
+<article class="api" id="setfillcolor">
+<h3>SetFillColor <span class="kind">Procedure</span><a class="anchor" href="#setfillcolor" aria-label="link">#</a></h3>
+<p class="d">Sets the fill colour of cells (pfill = 1), rectangles and shapes.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFillColor(
+    r <span class="k">number</span>,
+    g <span class="k">number</span> <span class="k">DEFAULT</span> -1,
+    b <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">r</td><td class="ptype">NUMBER</td><td>Red component, or the grey level.</td><td class="pval">0 to 255</td><td>—</td></tr>
+<tr><td class="pname">g</td><td class="ptype">NUMBER</td><td>Green component.</td><td class="pval">0 to 255; -1 = greyscale</td><td><code>-1</code></td></tr>
+<tr><td class="pname">b</td><td class="ptype">NUMBER</td><td>Blue component.</td><td class="pval">0 to 255; -1 = greyscale</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetFillColor(240, 240, 240);</pre></div>
+<p class="see"><b>See also:</b> <a href="#cell">Cell</a>, <a href="#rect">Rect</a></p>
+</article>
+<article class="api" id="setlinedashpattern">
+<h3>SetLineDashPattern <span class="kind">Procedure</span><a class="anchor" href="#setlinedashpattern" aria-label="link">#</a></h3>
+<p class="d">Sets the dash pattern using the PDF&#x27;s own syntax, for fine control.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineDashPattern(
+    pdash <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;[] 0&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pdash</td><td class="ptype">VARCHAR2</td><td>Pattern in PDF format.</td><td class="pval">&#x27;[] 0&#x27; (solid, the default), &#x27;[3 2] 0&#x27; (3 on, 2 off), &#x27;[1 2 3 2] 0&#x27; and so on</td><td><code>&#x27;[] 0&#x27;</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setdash">SetDash</a></p>
+</article>
+<article class="api" id="setlinewidth">
+<h3>SetLineWidth <span class="kind">Procedure</span><a class="anchor" href="#setlinewidth" aria-label="link">#</a></h3>
+<p class="d">Sets the thickness of the lines drawn next.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineWidth(
+    width <span class="k">number</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">width</td><td class="ptype">NUMBER</td><td>Line thickness.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); the PDF default is about 0.2 mm</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#line">Line</a>, <a href="#rect">Rect</a></p>
+</article>
+<article class="api" id="settextcolor">
+<h3>SetTextColor <span class="kind">Procedure</span><a class="anchor" href="#settextcolor" aria-label="link">#</a></h3>
+<p class="d">Sets the colour of the text written next.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTextColor(
+    r <span class="k">number</span>,
+    g <span class="k">number</span> <span class="k">DEFAULT</span> -1,
+    b <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">r</td><td class="ptype">NUMBER</td><td>Red component, or the grey level.</td><td class="pval">0 to 255</td><td>—</td></tr>
+<tr><td class="pname">g</td><td class="ptype">NUMBER</td><td>Green component.</td><td class="pval">0 to 255; -1 = greyscale</td><td><code>-1</code></td></tr>
+<tr><td class="pname">b</td><td class="ptype">NUMBER</td><td>Blue component.</td><td class="pval">0 to 255; -1 = greyscale</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setfont">SetFont</a>, <a href="#cell">Cell</a></p>
+</article>
+<article class="api" id="triangle">
+<h3>Triangle <span class="kind">Procedure</span><a class="anchor" href="#triangle" aria-label="link">#</a></h3>
+<p class="d">Draws an isosceles triangle with a base of 2xpsize and a height of psize, pointing in the direction given.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Triangle(
+    px           <span class="k">number</span>,
+    py           <span class="k">number</span>,
+    psize        <span class="k">number</span>,
+    porientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;left&#x27;</span>,
+    pstyle       <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X of the top-left corner of the triangle&#x27;s bounding box.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y of the top-left corner of the triangle&#x27;s bounding box.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Height of the triangle; the base is twice that.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">porientation</td><td class="ptype">VARCHAR2</td><td>Direction the tip points to.</td><td class="pval">&#x27;up&#x27;, &#x27;down&#x27;, &#x27;left&#x27; or &#x27;right&#x27; — or the initials &#x27;U&#x27;, &#x27;D&#x27;, &#x27;L&#x27;, &#x27;R&#x27;</td><td><code>&#x27;left&#x27;</code></td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Rendering style.</td><td class="pval">&#x27;&#x27; or &#x27;D&#x27; (outline), &#x27;F&#x27; (filled), &#x27;DF&#x27; (both)</td><td><code>&#x27;&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20821</td><td>Invalid orientation — use up/down/left/right or U/D/L/R</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#poly">Poly</a>, <a href="#rect">Rect</a></p>
+</article>
+<h2 class="grp" id="grp-images">Images</h2>
+<article class="api" id="getimagefromurl">
+<h3>getImageFromUrl <span class="kind">Function</span><a class="anchor" href="#getimagefromurl" aria-label="link">#</a></h3>
+<p class="d">Downloads an image from a URL through UTL_HTTP for use in the document. The database needs a network ACL for this.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.getImageFromUrl(
+    p_Url <span class="k">varchar2</span>)
+    <span class="k">RETURN</span> RECIMAGEBLOB;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_Url</td><td class="ptype">VARCHAR2</td><td>Address of the image.</td><td class="pval">http:// or https:// URL reachable from the database</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">recImageBlob — record with the image&#x27;s content and metadata.</p>
+<p class="see"><b>See also:</b> <a href="#image">Image</a></p>
+</article>
+<article class="api" id="image">
+<h3>image <span class="kind">Procedure</span><a class="anchor" href="#image" aria-label="link">#</a></h3>
+<p class="d">Places a PNG or JPEG image on the current page, with optional proportional scaling.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.image(
+    pFile   <span class="k">varchar2</span>,
+    pX      <span class="k">number</span>,
+    pY      <span class="k">number</span>,
+    pWidth  <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    pHeight <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    pType   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    pLink   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pFile</td><td class="ptype">VARCHAR2</td><td>Source of the image.</td><td class="pval">File name in an Oracle DIRECTORY, or the identifier returned by getImageFromUrl</td><td>—</td></tr>
+<tr><td class="pname">pX</td><td class="ptype">NUMBER</td><td>X of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">pY</td><td class="ptype">NUMBER</td><td>Y of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">pWidth</td><td class="ptype">NUMBER</td><td>Desired width.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the height</td><td><code>0</code></td></tr>
+<tr><td class="pname">pHeight</td><td class="ptype">NUMBER</td><td>Desired height.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the width, keeping the aspect ratio</td><td><code>0</code></td></tr>
+<tr><td class="pname">pType</td><td class="ptype">VARCHAR2</td><td>Image format.</td><td class="pval">&#x27;PNG&#x27;, &#x27;JPG&#x27;/&#x27;JPEG&#x27;, or NULL (default) to detect it automatically</td><td><code>null</code></td></tr>
+<tr><td class="pname">pLink</td><td class="ptype">VARCHAR2</td><td>Makes the image clickable.</td><td class="pval">URL or an AddLink identifier; NULL = no link</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Image(
+  pFile   =&gt; <span class="s">&#x27;logo.png&#x27;</span>,
+  pX      =&gt; 10, pY =&gt; 10,
+  pWidth  =&gt; 40,
+  pHeight =&gt; 0,                     <span class="c">-- proportional to the width</span>
+  pLink   =&gt; <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#getimagefromurl">getImageFromUrl</a>, <a href="#overlayimage">OverlayImage</a></p>
+</article>
+<h2 class="grp" id="grp-links">Links</h2>
+<article class="api" id="addlink">
+<h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="link">#</a></h3>
+<p class="d">Creates an internal link, still without a destination, and returns its identifier — used later in SetLink and in the text APIs.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AddLink
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — the link identifier.</p>
+<h5>Example</h5><div class="code"><pre>l_link := PL_FPDF.AddLink;
+PL_FPDF.SetLink(l_link, 0, 3);
+PL_FPDF.Cell(60, 8, <span class="s">&#x27;Go to chapter 3&#x27;</span>, plink =&gt; l_link);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setlink">SetLink</a>, <a href="#link">Link</a></p>
+</article>
+<article class="api" id="link">
+<h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="link">#</a></h3>
+<p class="d">Creates a clickable rectangle anywhere on the page.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
+    px    <span class="k">number</span>,
+    py    <span class="k">number</span>,
+    pw    <span class="k">number</span>,
+    ph    <span class="k">number</span>,
+    plink <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Width of the area.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Height of the area.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>Destination.</td><td class="pval">URL (&#x27;https://...&#x27;) or an AddLink identifier</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#addlink">AddLink</a>, <a href="#setlink">SetLink</a></p>
+</article>
+<article class="api" id="setlink">
+<h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="link">#</a></h3>
+<p class="d">Sets the destination of an internal link created by AddLink.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLink(
+    plink <span class="k">number</span>,
+    py    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
+    ppage <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">plink</td><td class="ptype">NUMBER</td><td>Link identifier.</td><td class="pval">The value returned by AddLink</td><td>—</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Vertical destination on the page.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in); 0 (default) = top of the page</td><td><code>0</code></td></tr>
+<tr><td class="pname">ppage</td><td class="ptype">NUMBER</td><td>Destination page.</td><td class="pval">Page number; -1 (default) = the current page</td><td><code>-1</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#addlink">AddLink</a></p>
+</article>
+<h2 class="grp" id="grp-headfoot">Header and footer</h2>
+<article class="api" id="footer">
+<h3>Footer <span class="kind">Procedure</span><a class="anchor" href="#footer" aria-label="link">#</a></h3>
+<p class="d">Footer extension point, called internally as each page is closed.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Footer;</pre></div>
+<p class="see"><b>See also:</b> <a href="#setfooterproc">SetFooterProc</a></p>
+</article>
+<article class="api" id="header">
+<h3>Header <span class="kind">Procedure</span><a class="anchor" href="#header" aria-label="link">#</a></h3>
+<p class="d">Header extension point, called internally on every new page.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Header;</pre></div>
+<p class="see"><b>See also:</b> <a href="#setheaderproc">SetHeaderProc</a></p>
+</article>
+<article class="api" id="setaliasnbpages">
+<h3>SetAliasNbPages <span class="kind">Procedure</span><a class="anchor" href="#setaliasnbpages" aria-label="link">#</a></h3>
+<p class="d">Sets the placeholder that will be replaced by the total page count when the document is finalised — so you can write &#x27;Page 2 of 10&#x27; without knowing the total in advance.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAliasNbPages(
+    palias <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;{nb}&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">palias</td><td class="ptype">VARCHAR2</td><td>Placeholder to replace.</td><td class="pval">Any text; &#x27;{nb}&#x27; is the default</td><td><code>&#x27;{nb}&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetAliasNbPages;   <span class="c">-- enables &#x27;{nb}&#x27;</span>
+PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo || <span class="s">&#x27; of {nb}&#x27;</span>, 0, 0, <span class="s">&#x27;C&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#pageno">PageNo</a></p>
+</article>
+<article class="api" id="setfooterproc">
+<h3>SetFooterProc <span class="kind">Procedure</span><a class="anchor" href="#setfooterproc" aria-label="link">#</a></h3>
+<p class="d">Registers a procedure of yours to run automatically in the footer of every page.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFooterProc(
+    footerprocname <span class="k">varchar2</span>,
+    paramTable     tv4000a <span class="k">DEFAULT</span> noParam);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">footerprocname</td><td class="ptype">VARCHAR2</td><td>Qualified name of the procedure.</td><td class="pval">&#x27;package.procedure&#x27; or &#x27;procedure&#x27;</td><td>—</td></tr>
+<tr><td class="pname">paramTable</td><td class="ptype">TV4000A</td><td>Parameters passed on to the procedure, by name.</td><td class="pval">PL_FPDF.tv4000a — an associative array INDEXED BY THE NAME of your procedure&#x27;s parameter: l_p(&#x27;p_title&#x27;) := &#x27;Report&#x27;. There is no tv4000a(...) constructor: declare a variable and fill it by key. noParam (default) = called with no parameters</td><td><code>noParam</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre><span class="c">-- your procedure:</span>
+<span class="c">--   PL_FPDF.SetY(-15);</span>
+<span class="c">--   PL_FPDF.Cell(0, 10, &#x27;Page &#x27; || PL_FPDF.PageNo || &#x27;/{nb}&#x27;, 0, 0, &#x27;C&#x27;);</span>
+PL_FPDF.SetFooterProc(<span class="s">&#x27;my_pkg.footer&#x27;</span>);
+PL_FPDF.SetAliasNbPages;</pre></div>
+<p class="see"><b>See also:</b> <a href="#setheaderproc">SetHeaderProc</a>, <a href="#setaliasnbpages">SetAliasNbPages</a>, <a href="#footer">Footer</a></p>
+</article>
+<article class="api" id="setheaderproc">
+<h3>SetHeaderProc <span class="kind">Procedure</span><a class="anchor" href="#setheaderproc" aria-label="link">#</a></h3>
+<p class="d">Registers a procedure of yours to run automatically at the top of every page.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetHeaderProc(
+    headerprocname <span class="k">varchar2</span>,
+    paramTable     tv4000a <span class="k">DEFAULT</span> noParam);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">headerprocname</td><td class="ptype">VARCHAR2</td><td>Qualified name of the procedure.</td><td class="pval">&#x27;package.procedure&#x27; or &#x27;procedure&#x27;; it must be reachable by the database user</td><td>—</td></tr>
+<tr><td class="pname">paramTable</td><td class="ptype">TV4000A</td><td>Parameters passed on to the procedure, by name.</td><td class="pval">PL_FPDF.tv4000a — an associative array INDEXED BY THE NAME of your procedure&#x27;s parameter: l_p(&#x27;p_title&#x27;) := &#x27;Report&#x27;. There is no tv4000a(...) constructor: declare a variable and fill it by key. noParam (default) = called with no parameters</td><td><code>noParam</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_p PL_FPDF.tv4000a;   <span class="c">-- associative array: no constructor, filled by key</span>
+<span class="k">BEGIN</span>
+  PL_FPDF.Init(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;mm&#x27;</span>, <span class="s">&#x27;A4&#x27;</span>);
+
+  <span class="c">-- without parameters</span>
+  PL_FPDF.SetHeaderProc(<span class="s">&#x27;my_pkg.header&#x27;</span>);
+
+  <span class="c">-- with parameters: the key is the NAME of your procedure&#x27;s parameter</span>
+  l_p(<span class="s">&#x27;p_title&#x27;</span>)  := <span class="s">&#x27;Monthly Report&#x27;</span>;
+  l_p(<span class="s">&#x27;p_period&#x27;</span>) := <span class="s">&#x27;Aug/2026&#x27;</span>;
+  PL_FPDF.SetHeaderProc(<span class="s">&#x27;my_pkg.header&#x27;</span>, l_p);
+  <span class="c">-- produces: Begin my_pkg.header(p_title=&gt;&#x27;Monthly Report&#x27;, p_period=&gt;&#x27;Aug/2026&#x27;); end;</span>
+
+  PL_FPDF.AddPage();
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>See also:</b> <a href="#setfooterproc">SetFooterProc</a>, <a href="#header">Header</a></p>
+</article>
+<h2 class="grp" id="grp-codes">QR codes and barcodes</h2>
+<article class="api" id="addbarcode">
+<h3>AddBarcode <span class="kind">Procedure</span><a class="anchor" href="#addbarcode" aria-label="link">#</a></h3>
+<p class="d">Draws a linear barcode on the current page, with an optional human-readable caption.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddBarcode(
+    p_x         <span class="k">number</span>,
+    p_y         <span class="k">number</span>,
+    p_width     <span class="k">number</span>,
+    p_height    <span class="k">number</span>,
+    p_code      <span class="k">varchar2</span>,
+    p_type      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;CODE128&#x27;</span>,
+    p_show_text <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>X of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Y of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Total width of the code.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Height of the bars.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_code</td><td class="ptype">VARCHAR2</td><td>Data to encode.</td><td class="pval">It must match the chosen symbology: EAN13 = 13 digits, EAN8 = 8 digits, ITF = any even number of digits (a Brazilian bank slip uses 44), ITF14 = 14 digits, CODE39 = uppercase alphanumeric, CODE128 = ASCII</td><td>—</td></tr>
+<tr><td class="pname">p_type</td><td class="ptype">VARCHAR2</td><td>Barcode symbology.</td><td class="pval">&#x27;CODE128&#x27; (default), &#x27;CODE39&#x27;, &#x27;EAN13&#x27;, &#x27;EAN8&#x27;, &#x27;ITF&#x27; or &#x27;ITF14&#x27;</td><td><code>&#x27;CODE128&#x27;</code></td></tr>
+<tr><td class="pname">p_show_text</td><td class="ptype">BOOLEAN</td><td>Prints the readable value below the bars.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>true</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20880</td><td>Empty code</td></tr>
+<tr><td class="pname">-20881</td><td>Width and height must be positive</td></tr>
+<tr><td class="pname">-20882</td><td>Unsupported symbology</td></tr>
+<tr><td class="pname">-20883</td><td>CODE39 does not accept the given character</td></tr>
+<tr><td class="pname">-20884</td><td>CODE128 (Code B) accepts only ASCII 32 to 126</td></tr>
+<tr><td class="pname">-20885</td><td>EAN requires the digit count of the symbology</td></tr>
+<tr><td class="pname">-20886</td><td>EAN: invalid check digit</td></tr>
+<tr><td class="pname">-20887</td><td>ITF14 requires 13 or 14 digits</td></tr>
+<tr><td class="pname">-20888</td><td>ITF with no digits in the content</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.AddBarcode(
+  p_x =&gt; 30, p_y =&gt; 70, p_width =&gt; 150, p_height =&gt; 20,
+  p_code      =&gt; <span class="s">&#x27;7891234567895&#x27;</span>,
+  p_type      =&gt; <span class="s">&#x27;EAN13&#x27;</span>,
+  p_show_text =&gt; <span class="k">TRUE</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#addqrcode">AddQRCode</a></p>
+</article>
+<article class="api" id="addqrcode">
+<h3>AddQRCode <span class="kind">Procedure</span><a class="anchor" href="#addqrcode" aria-label="link">#</a></h3>
+<p class="d">Draws a QR code on the current page, with a configurable content format and error-correction level.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddQRCode(
+    p_x                <span class="k">number</span>,
+    p_y                <span class="k">number</span>,
+    p_size             <span class="k">number</span>,
+    p_data             <span class="k">varchar2</span>,
+    p_format           <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;TEXT&#x27;</span>,
+    p_error_correction <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;M&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>X of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Y of the top-left corner.</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>Side of the QR code (width = height).</td><td class="pval">Number in the unit set by Init (mm, cm, pt or in)</td><td>—</td></tr>
+<tr><td class="pname">p_data</td><td class="ptype">VARCHAR2</td><td>Content to encode.</td><td class="pval">Up to 2953 bytes in binary mode; the content must follow the format chosen in p_format</td><td>—</td></tr>
+<tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Content format, which tells readers how to interpret the code.</td><td class="pval">&#x27;TEXT&#x27; (default, free text), &#x27;URL&#x27;, &#x27;PIX&#x27;, &#x27;VCARD&#x27;, &#x27;WIFI&#x27; or &#x27;EMAIL&#x27;</td><td><code>&#x27;TEXT&#x27;</code></td></tr>
+<tr><td class="pname">p_error_correction</td><td class="ptype">VARCHAR2</td><td>Error-correction level: the higher it is, the better the code survives dirt and creases, and the less data fits.</td><td class="pval">&#x27;L&#x27; (7%), &#x27;M&#x27; (15%, default), &#x27;Q&#x27; (25%) or &#x27;H&#x27; (30%)</td><td><code>&#x27;M&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20870</td><td>Empty content</td></tr>
+<tr><td class="pname">-20871</td><td>Size must be greater than zero</td></tr>
+<tr><td class="pname">-20872</td><td>Invalid correction level (use L, M, Q or H)</td></tr>
+<tr><td class="pname">-20873</td><td>Content exceeds the QR code capacity at the requested level</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.AddQRCode(
+  p_x =&gt; 150, p_y =&gt; 20, p_size =&gt; 40,
+  p_data             =&gt; <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>,
+  p_format           =&gt; <span class="s">&#x27;URL&#x27;</span>,
+  p_error_correction =&gt; <span class="s">&#x27;M&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#addbarcode">AddBarcode</a></p>
+</article>
+<h2 class="grp" id="grp-meta">Metadata and document setup</h2>
+<article class="api" id="getdocumentmetadata">
+<h3>GetDocumentMetadata <span class="kind">Function</span><a class="anchor" href="#getdocumentmetadata" aria-label="link">#</a></h3>
+<p class="d">Returns the metadata currently set on the document.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetDocumentMetadata
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Returns</h5><p class="d">JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options.</p>
+<p class="see"><b>See also:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="getpageinfo">
+<h3>GetPageInfo <span class="kind">Function</span><a class="anchor" href="#getpageinfo" aria-label="link">#</a></h3>
+<p class="d">Returns information about a page of the document being built.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPageInfo(
+    p_page_number <span class="k">pls_integer</span> <span class="k">DEFAULT</span> <span class="k">null</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page to query.</td><td class="pval">Integer &gt;= 1, up to GetPageCount; NULL (default) = the current page</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">JSON_OBJECT_T — width, height, orientation and rotation of the page.</p>
+<p class="see"><b>See also:</b> <a href="#getcurrentpage">GetCurrentPage</a>, <a href="#getpdfinfo">GetPDFInfo</a></p>
+</article>
+<article class="api" id="setauthor">
+<h3>SetAuthor <span class="kind">Procedure</span><a class="anchor" href="#setauthor" aria-label="link">#</a></h3>
+<p class="d">Sets the document author in the metadata.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAuthor(
+    pauthor <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pauthor</td><td class="ptype">VARCHAR2</td><td>Author.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="setcompression">
+<h3>SetCompression <span class="kind">Procedure</span><a class="anchor" href="#setcompression" aria-label="link">#</a></h3>
+<p class="d">Turns compression of the page content stream on or off. When on, each page comes out with /Filter [/ASCIIHexDecode /FlateDecode] — a deflate written inside the package itself, in hexadecimal because the document is assembled as text. Hexadecimal doubles the compressed size, so compression is only applied when the stream still ends up smaller than the original; a page that does not benefit comes out unfiltered. Text usually drops below a fifth.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetCompression(
+    p_compress <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">false</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_compress</td><td class="ptype">BOOLEAN</td><td>Enables compression.</td><td class="pval">TRUE or FALSE; FALSE is the default</td><td><code>false</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#flateencode">FlateEncode</a>, <a href="#flatedecode">FlateDecode</a></p>
+</article>
+<article class="api" id="setcreator">
+<h3>SetCreator <span class="kind">Procedure</span><a class="anchor" href="#setcreator" aria-label="link">#</a></h3>
+<p class="d">Sets the creating application in the document metadata.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetCreator(
+    pcreator <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pcreator</td><td class="ptype">VARCHAR2</td><td>Name of the generating system.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="setdisplaymode">
+<h3>SetDisplayMode <span class="kind">Procedure</span><a class="anchor" href="#setdisplaymode" aria-label="link">#</a></h3>
+<p class="d">Tells the PDF reader how to display the document when it opens.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDisplayMode(
+    zoom   <span class="k">varchar2</span>,
+    layout <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;continuous&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">zoom</td><td class="ptype">VARCHAR2</td><td>Initial zoom level.</td><td class="pval">&#x27;fullpage&#x27; (whole page), &#x27;fullwidth&#x27; (page width), &#x27;real&#x27; (100%), &#x27;default&#x27;, or a number standing for the percentage</td><td>—</td></tr>
+<tr><td class="pname">layout</td><td class="ptype">VARCHAR2</td><td>Page layout.</td><td class="pval">&#x27;continuous&#x27; (default), &#x27;single&#x27;, &#x27;two&#x27; or &#x27;default&#x27;</td><td><code>&#x27;continuous&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetDisplayMode(zoom =&gt; <span class="s">&#x27;fullpage&#x27;</span>, layout =&gt; <span class="s">&#x27;single&#x27;</span>);</pre></div>
+</article>
+<article class="api" id="setdocumentconfig">
+<h3>SetDocumentConfig <span class="kind">Procedure</span><a class="anchor" href="#setdocumentconfig" aria-label="link">#</a></h3>
+<p class="d">Sets several document metadata fields and options at once, from a JSON object.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDocumentConfig(
+    p_config <span class="k">JSON_OBJECT_T</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_config</td><td class="ptype">JSON_OBJECT_T</td><td>Document configuration.</td><td class="pval">JSON_OBJECT_T with the optional keys: title, subject, author, keywords, creator, compression (boolean)</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetDocumentConfig(
+  <span class="k">JSON_OBJECT_T</span>(<span class="s">&#x27;{&quot;title&quot;:&quot;Monthly Report&quot;,&quot;author&quot;:&quot;M&amp;S do Brasil&quot;,&quot;compression&quot;:true}&#x27;</span>));</pre></div>
+<p class="see"><b>See also:</b> <a href="#getdocumentmetadata">GetDocumentMetadata</a>, <a href="#settitle">SetTitle</a></p>
+</article>
+<article class="api" id="setkeywords">
+<h3>SetKeywords <span class="kind">Procedure</span><a class="anchor" href="#setkeywords" aria-label="link">#</a></h3>
+<p class="d">Sets the document keywords, which help search and indexing.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetKeywords(
+    pkeywords <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pkeywords</td><td class="ptype">VARCHAR2</td><td>Keywords.</td><td class="pval">Free text, usually comma separated</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="setsubject">
+<h3>SetSubject <span class="kind">Procedure</span><a class="anchor" href="#setsubject" aria-label="link">#</a></h3>
+<p class="d">Sets the document subject in the metadata.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetSubject(
+    psubject <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">psubject</td><td class="ptype">VARCHAR2</td><td>Subject.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<article class="api" id="settitle">
+<h3>SetTitle <span class="kind">Procedure</span><a class="anchor" href="#settitle" aria-label="link">#</a></h3>
+<p class="d">Sets the document title, shown in the PDF reader&#x27;s title bar.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTitle(
+    ptitle <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">ptitle</td><td class="ptype">VARCHAR2</td><td>Title.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
+</article>
+<h2 class="grp" id="grp-output">Document output</h2>
+<article class="api" id="closepdf">
+<h3>ClosePDF <span class="kind">Procedure</span><a class="anchor" href="#closepdf" aria-label="link">#</a></h3>
+<p class="d">Closes the document structure (advanced use; the output APIs already do it).</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClosePDF;</pre></div>
+<p class="see"><b>See also:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<article class="api" id="openpdf">
+<h3>OpenPDF <span class="kind">Procedure</span><a class="anchor" href="#openpdf" aria-label="link">#</a></h3>
+<p class="d">Explicitly opens the document structure (advanced use; Init already does it).</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OpenPDF;</pre></div>
+<p class="see"><b>See also:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="output">
+<h3>Output <span class="kind">Procedure</span><a class="anchor" href="#output" aria-label="link">#</a></h3>
+<p class="d">Classic FPDF-style output (compatibility). Prefer OutputBlob or OutputFile.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Output(
+    pname <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    pdest <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td>File or document name.</td><td class="pval">Any VARCHAR2</td><td><code>null</code></td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destination.</td><td class="pval">&#x27;S&#x27;, &#x27;D&#x27;, &#x27;I&#x27; or &#x27;F&#x27;</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#outputblob">OutputBlob</a>, <a href="#outputfile">OutputFile</a></p>
+</article>
+<article class="api" id="outputblob">
+<h3>OutputBlob <span class="kind">Function</span><a class="anchor" href="#outputblob" aria-label="link">#</a></h3>
+<p class="d">Synonym of OutputBlob: finalises the document and returns the PDF as a BLOB.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputBlob
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Returns</h5><p class="d">BLOB — the PDF content.</p>
+<p class="see"><b>See also:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<article class="api" id="outputfile">
+<h3>OutputFile <span class="kind">Procedure</span><a class="anchor" href="#outputfile" aria-label="link">#</a></h3>
+<p class="d">Finalises the document and writes the PDF straight to a file on the database server.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OutputFile(
+    p_filename  <span class="k">varchar2</span>,
+    p_directory <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;PDF_DIR&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_filename</td><td class="ptype">VARCHAR2</td><td>Name of the output file.</td><td class="pval">E.g. &#x27;report.pdf&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_directory</td><td class="ptype">VARCHAR2</td><td>Oracle DIRECTORY with write permission.</td><td class="pval">Default: &#x27;PDF_DIR&#x27;</td><td><code>&#x27;PDF_DIR&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.OutputFile(<span class="s">&#x27;report.pdf&#x27;</span>, <span class="s">&#x27;PDF_DIR&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<article class="api" id="returnblob">
+<h3>ReturnBlob <span class="kind">Function</span><a class="anchor" href="#returnblob" aria-label="link">#</a></h3>
+<p class="d">Returns the PDF as a BLOB (legacy compatibility). Prefer OutputBlob.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.ReturnBlob(
+    pname <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
+    pdest <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td>Logical name of the document.</td><td class="pval">Any VARCHAR2; NULL = no name</td><td><code>null</code></td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>FPDF-style destination.</td><td class="pval">&#x27;S&#x27; (string/BLOB), &#x27;D&#x27; (download), &#x27;I&#x27; (inline), &#x27;F&#x27; (file)</td><td><code>null</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — the PDF content.</p>
+<p class="see"><b>See also:</b> <a href="#outputblob">OutputBlob</a></p>
+</article>
+<h2 class="grp" id="grp-manip">Manipulating an existing PDF</h2>
+<article class="api" id="addwatermark">
+<h3>AddWatermark <span class="kind">Procedure</span><a class="anchor" href="#addwatermark" aria-label="link">#</a></h3>
+<p class="d">Registers a text watermark, drawn by OutputModifiedPDF() into the page content stream: every affected page gets a content object and a /Resources of its own, so a /Resources shared between pages is never contaminated. The mark is centred and rotated about the centre of the page, always in Helvetica.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddWatermark(
+    p_text     <span class="k">VARCHAR2</span>,
+    p_opacity  <span class="k">NUMBER</span> <span class="k">DEFAULT</span> 0.3,
+    p_rotation <span class="k">NUMBER</span> <span class="k">DEFAULT</span> 45,
+    p_pages    <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;ALL&#x27;</span>,
+    p_font     <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;Helvetica&#x27;</span>,
+    p_size     <span class="k">NUMBER</span> <span class="k">DEFAULT</span> 48,
+    p_color    <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;gray&#x27;</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Watermark text.</td><td class="pval">Any VARCHAR2, e.g. &#x27;CONFIDENTIAL&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_opacity</td><td class="ptype">NUMBER</td><td>Opacity of the mark.</td><td class="pval">0.0 (invisible) to 1.0 (opaque); 0.3 is the default</td><td><code>0.3</code></td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">NUMBER</td><td>Text angle in degrees.</td><td class="pval">0 to 360; 45 (diagonal) is the default</td><td><code>45</code></td></tr>
+<tr><td class="pname">p_pages</td><td class="ptype">VARCHAR2</td><td>Pages that receive the mark.</td><td class="pval">&#x27;ALL&#x27; (default), or a list/ranges such as &#x27;1&#x27;, &#x27;1,3,5&#x27;, &#x27;2-8&#x27;, &#x27;1,3-5,10&#x27;</td><td><code>&#x27;ALL&#x27;</code></td></tr>
+<tr><td class="pname">p_font</td><td class="ptype">VARCHAR2</td><td>Font used.</td><td class="pval">&#x27;Helvetica&#x27; (default), &#x27;Arial&#x27;, &#x27;Times&#x27; or &#x27;Courier&#x27;</td><td><code>&#x27;Helvetica&#x27;</code></td></tr>
+<tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>Font size in points.</td><td class="pval">Number &gt; 0; 48 is the default</td><td><code>48</code></td></tr>
+<tr><td class="pname">p_color</td><td class="ptype">VARCHAR2</td><td>Colour of the watermark.</td><td class="pval">&#x27;gray&#x27; (default), &#x27;red&#x27;, &#x27;blue&#x27;, &#x27;green&#x27;, &#x27;black&#x27;, or an RGB hex value such as &#x27;FF0000&#x27;</td><td><code>&#x27;gray&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.LoadPDF(l_pdf);
+PL_FPDF.AddWatermark(
+  p_text     =&gt; <span class="s">&#x27;CONFIDENTIAL&#x27;</span>,
+  p_opacity  =&gt; 0.3,
+  p_rotation =&gt; 45,
+  p_pages    =&gt; <span class="s">&#x27;ALL&#x27;</span>,
+  p_size     =&gt; 48,
+  p_color    =&gt; <span class="s">&#x27;gray&#x27;</span>);
+l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
+<p class="see"><b>See also:</b> <a href="#getwatermarks">GetWatermarks</a>, <a href="#overlaytext">OverlayText</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<article class="api" id="clearpdfcache">
+<h3>ClearPDFCache <span class="kind">Procedure</span><a class="anchor" href="#clearpdfcache" aria-label="link">#</a></h3>
+<p class="d">Discards the loaded PDFs and frees the memory used by manipulation.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearPDFCache;</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#unloadpdf">UnloadPDF</a></p>
+</article>
+<article class="api" id="flatedecode">
+<h3>FlateDecode <span class="kind">Function</span><a class="anchor" href="#flatedecode" aria-label="link">#</a></h3>
+<p class="d">Decompresses a PDF /FlateDecode stream (zlib, RFC 1950). Implemented in pure PL/SQL, because UTL_COMPRESS will not do: it only accepts a gzip trailer with a correct CRC-32, and that CRC is of the DECOMPRESSED content — to know it you would have to decompress first. Useful in its own right, and it is what lets the copier read cross-reference streams and object streams.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.FlateDecode(
+    p_stream    <span class="k">BLOB</span>,
+    p_max_bytes <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> 8388608)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_stream</td><td class="ptype">BLOB</td><td>Compressed stream.</td><td class="pval">BLOB with zlib data — what the PDF marks as /FlateDecode</td><td>—</td></tr>
+<tr><td class="pname">p_max_bytes</td><td class="ptype">PLS_INTEGER</td><td>Output ceiling, in bytes.</td><td class="pval">Number &gt; 0; 8388608 (8 MB) is the default. A compressed stream is UNTRUSTED input: a few KB can expand into gigabytes (a zip bomb) and bring the session down with ORA-04036. With the ceiling it raises -20893 and says where it stopped</td><td><code>8388608</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — the decompressed content.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20890</td><td>Truncated stream</td></tr>
+<tr><td class="pname">-20891</td><td>Malformed DEFLATE data</td></tr>
+<tr><td class="pname">-20892</td><td>Invalid zlib header</td></tr>
+<tr><td class="pname">-20893</td><td>Output exceeded p_max_bytes (corrupt input or a zip bomb)</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>l_plain := PL_FPDF.FlateDecode(l_compressed);</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadpdf">LoadPDF</a></p>
+</article>
+<article class="api" id="flateencode">
+<h3>FlateEncode <span class="kind">Function</span><a class="anchor" href="#flateencode" aria-label="link">#</a></h3>
+<p class="d">Compresses data into a PDF /FlateDecode stream (zlib, RFC 1950). Written in pure PL/SQL: a single block with FIXED Huffman and greedy LZ77 — it compresses less than zlib&#x27;s dynamic Huffman, and far more than nothing. When the data is incompressible it falls back to a stored block, so the output never exceeds the input plus the block overhead.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.FlateEncode(
+    p_data <span class="k">BLOB</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_data</td><td class="ptype">BLOB</td><td>Content to compress.</td><td class="pval">BLOB of any size; NULL is treated as empty</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — zlib stream: header, DEFLATE and Adler-32.</p>
+<p class="see"><b>See also:</b> <a href="#flatedecode">FlateDecode</a>, <a href="#setcompression">SetCompression</a></p>
+</article>
+<article class="api" id="getactivepagecount">
+<h3>GetActivePageCount <span class="kind">Function</span><a class="anchor" href="#getactivepagecount" aria-label="link">#</a></h3>
+<p class="d">Returns how many pages will remain once the pending removals are applied.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetActivePageCount
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Returns</h5><p class="d">PLS_INTEGER — pages not marked for removal.</p>
+<p class="see"><b>See also:</b> <a href="#removepage">RemovePage</a>, <a href="#getpagecount">GetPageCount</a></p>
+</article>
+<article class="api" id="getpagecount">
+<h3>GetPageCount <span class="kind">Function</span><a class="anchor" href="#getpagecount" aria-label="link">#</a></h3>
+<p class="d">Returns the total page count of the loaded PDF, including the pages marked for removal.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPageCount
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Returns</h5><p class="d">PLS_INTEGER — number of pages.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#getactivepagecount">GetActivePageCount</a></p>
+</article>
+<article class="api" id="getpdfinfo">
+<h3>GetPDFInfo <span class="kind">Function</span><a class="anchor" href="#getpdfinfo" aria-label="link">#</a></h3>
+<p class="d">Returns information about the loaded PDF: version, metadata and page count.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFInfo
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Returns</h5><p class="d">JSON_OBJECT_T — PDF version, title, author, page count and the remaining metadata.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#getpageinfo">GetPageInfo</a></p>
+</article>
+<article class="api" id="getwatermarks">
+<h3>GetWatermarks <span class="kind">Function</span><a class="anchor" href="#getwatermarks" aria-label="link">#</a></h3>
+<p class="d">Lists every watermark applied to the loaded PDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetWatermarks
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Returns</h5><p class="d">JSON_ARRAY_T — objects with id, text, opacity, rotation, pageRange, font, fontSize and color.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#addwatermark">AddWatermark</a></p>
+</article>
+<article class="api" id="ispageremoved">
+<h3>IsPageRemoved <span class="kind">Function</span><a class="anchor" href="#ispageremoved" aria-label="link">#</a></h3>
+<p class="d">Tells whether a page is marked for removal.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPageRemoved(
+    p_page_number <span class="k">PLS_INTEGER</span>)
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page to query.</td><td class="pval">Integer &gt;= 1, up to GetPageCount</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if the page will be removed from the output.</p>
+<p class="see"><b>See also:</b> <a href="#removepage">RemovePage</a></p>
+</article>
+<article class="api" id="ispdfmodified">
+<h3>IsPDFModified <span class="kind">Function</span><a class="anchor" href="#ispdfmodified" aria-label="link">#</a></h3>
+<p class="d">Tells whether there are pending changes — rotation, removal, watermark, overlay — on the loaded PDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPDFModified
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if there are changes not yet applied.</p>
+<p class="see"><b>See also:</b> <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<article class="api" id="loadpdf">
+<h3>LoadPDF <span class="kind">Procedure</span><a class="anchor" href="#loadpdf" aria-label="link">#</a></h3>
+<p class="d">Loads an existing PDF into session memory for reading and modification. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDF(
+    p_pdf_blob <span class="k">BLOB</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_blob</td><td class="ptype">BLOB</td><td>PDF document to load.</td><td class="pval">Non-null BLOB with a valid %PDF header</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20800</td><td>Invalid PDF (NULL or too small)</td></tr>
+<tr><td class="pname">-20801</td><td>Invalid PDF header</td></tr>
+<tr><td class="pname">-20802</td><td>startxref not found</td></tr>
+<tr><td class="pname">-20803</td><td>Invalid xref table</td></tr>
+<tr><td class="pname">-20804</td><td>Root object not found in the trailer</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_pdf <span class="k">BLOB</span>;
+<span class="k">BEGIN</span>
+  <span class="k">SELECT</span> pdf_content <span class="k">INTO</span> l_pdf <span class="k">FROM</span> documents <span class="k">WHERE</span> id = 123;
+  PL_FPDF.LoadPDF(l_pdf);
+  DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Pages: &#x27;</span> || PL_FPDF.GetPageCount());
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#getpagecount">GetPageCount</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<article class="api" id="outputmodifiedpdf">
+<h3>OutputModifiedPDF <span class="kind">Function</span><a class="anchor" href="#outputmodifiedpdf" aria-label="link">#</a></h3>
+<p class="d">Produces the PDF with the changes applied, copying the kept pages object by object: content, fonts, images and annotations arrive intact, with no re-rendering. It applies RemovePage and RotatePage, and draws watermarks and text and image overlays into the content stream: every affected page gets a content object and a /Resources of its own.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputModifiedPDF
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Returns</h5><p class="d">BLOB — the modified PDF.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+<tr><td class="pname">-20819</td><td>PDF has no pending changes</td></tr>
+<tr><td class="pname">-20820</td><td>Every page was removed</td></tr>
+<tr><td class="pname">-20843</td><td>Malformed cross-reference stream (unreadable /W, /Index or /Filter)</td></tr>
+<tr><td class="pname">-20847</td><td>Malformed object stream (/N, /First or an offset outside the stream)</td></tr>
+<tr><td class="pname">-20848</td><td>Unsupported predictor, or an invalid row in the cross-reference stream</td></tr>
+<tr><td class="pname">-20823</td><td>Invalid or unsupported image (interlaced below 8 bits, indexed and interlaced, or above 4 megapixels with alpha/interlacing)</td></tr>
+<tr><td class="pname">-20846</td><td>The page /Resources does not allow overlaying (shared indirect sub-dictionary)</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<article class="api" id="removepage">
+<h3>RemovePage <span class="kind">Procedure</span><a class="anchor" href="#removepage" aria-label="link">#</a></h3>
+<p class="d">Marks a page of the loaded PDF for removal. The deletion is logical: it is only applied by OutputModifiedPDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemovePage(
+    p_page_number <span class="k">PLS_INTEGER</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page to remove.</td><td class="pval">Integer &gt;= 1, up to GetPageCount</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+<tr><td class="pname">-20810</td><td>Invalid page number</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#ispageremoved">IsPageRemoved</a>, <a href="#getactivepagecount">GetActivePageCount</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<article class="api" id="rotatepage">
+<h3>RotatePage <span class="kind">Procedure</span><a class="anchor" href="#rotatepage" aria-label="link">#</a></h3>
+<p class="d">Rotates a page of the loaded PDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RotatePage(
+    p_page_number <span class="k">PLS_INTEGER</span>,
+    p_rotation    <span class="k">NUMBER</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page to rotate.</td><td class="pval">Integer &gt;= 1, up to GetPageCount</td><td>—</td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">NUMBER</td><td>Rotation angle applied.</td><td class="pval">0, 90, 180 or 270</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+<tr><td class="pname">-20810</td><td>Invalid page number</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.RotatePage(p_page_number =&gt; 1, p_rotation =&gt; 90);</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#removepage">RemovePage</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
+</article>
+<h2 class="grp" id="grp-overlay">Overlays</h2>
+<article class="api" id="clearoverlays">
+<h3>ClearOverlays <span class="kind">Procedure</span><a class="anchor" href="#clearoverlays" aria-label="link">#</a></h3>
+<p class="d">Removes every overlay, from one page or from the whole document.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearOverlays(
+    p_page_number <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page to clear.</td><td class="pval">Integer &gt;= 1, up to GetPageCount; NULL (default) clears every page</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#removeoverlay">RemoveOverlay</a>, <a href="#getoverlays">GetOverlays</a></p>
+</article>
+<article class="api" id="getoverlays">
+<h3>GetOverlays <span class="kind">Function</span><a class="anchor" href="#getoverlays" aria-label="link">#</a></h3>
+<p class="d">Lists the overlays applied, optionally filtered by page.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetOverlays(
+    p_page_number <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page filter.</td><td class="pval">Integer &gt;= 1, up to GetPageCount; NULL (default) returns the overlays of every page</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">JSON_ARRAY_T — objects with overlayId, overlayType (&#x27;TEXT&#x27; or &#x27;IMAGE&#x27;), pageNumber, x, y, content, opacity, rotation and zOrder.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#overlaytext">OverlayText</a>, <a href="#removeoverlay">RemoveOverlay</a></p>
+</article>
+<article class="api" id="overlayimage">
+<h3>OverlayImage <span class="kind">Procedure</span><a class="anchor" href="#overlayimage" aria-label="link">#</a></h3>
+<p class="d">Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. Neither format is decompressed: JPEG goes in whole as /DCTDecode, and a PNG&#x27;s IDAT blocks are already zlib, which is the PDF&#x27;s /FlateDecode. Not supported, and refused with -20823 rather than drawn wrong: PNG with an alpha channel, interlaced PNG (Adam7) and 16-bit depth.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OverlayImage(
+    p_page_number <span class="k">PLS_INTEGER</span>,
+    p_image_blob  <span class="k">BLOB</span>,
+    p_x           <span class="k">NUMBER</span>,
+    p_y           <span class="k">NUMBER</span>,
+    p_width       <span class="k">NUMBER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_height      <span class="k">NUMBER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_options     <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page that receives the image.</td><td class="pval">Integer &gt;= 1, up to GetPageCount</td><td>—</td></tr>
+<tr><td class="pname">p_image_blob</td><td class="ptype">BLOB</td><td>Image content.</td><td class="pval">BLOB in JPEG or PNG format</td><td>—</td></tr>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>X position in PDF points.</td><td class="pval">0 to 612 on A4 portrait</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Y position in PDF points, from the bottom.</td><td class="pval">0 to 792 on A4 portrait</td><td>—</td></tr>
+<tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Width in points.</td><td class="pval">Number &gt; 0; NULL (default) uses the original width</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Height in points.</td><td class="pval">Number &gt; 0; NULL (default) uses the original height, or keeps the aspect ratio</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Image settings.</td><td class="pval">JSON_OBJECT_T with the optional keys: opacity (0.0-1.0), rotation (0-360), maintainAspect (true/false), scaleToFit (true/false), zOrder (integer)</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+<tr><td class="pname">-20810</td><td>Invalid page number</td></tr>
+<tr><td class="pname">-20821</td><td>Invalid coordinates</td></tr>
+<tr><td class="pname">-20823</td><td>Invalid image format (use JPEG or PNG)</td></tr>
+<tr><td class="pname">-20824</td><td>Invalid image dimensions</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.OverlayImage(
+  p_page_number =&gt; 1,
+  p_image_blob  =&gt; l_logo,
+  p_x =&gt; 450, p_y =&gt; 750,
+  p_width =&gt; 100, p_height =&gt; <span class="k">NULL</span>,
+  p_options =&gt; <span class="k">JSON_OBJECT_T</span>(<span class="s">&#x27;{&quot;opacity&quot;:0.9,&quot;maintainAspect&quot;:true}&#x27;</span>));</pre></div>
+<p class="see"><b>See also:</b> <a href="#overlaytext">OverlayText</a>, <a href="#image">Image</a>, <a href="#getoverlays">GetOverlays</a></p>
+</article>
+<article class="api" id="overlaytext">
+<h3>OverlayText <span class="kind">Procedure</span><a class="anchor" href="#overlaytext" aria-label="link">#</a></h3>
+<p class="d">Places text at an exact position on a page of the loaded PDF — stamps, protocol numbers, signatures. Coordinates are in PDF points, with Y growing upwards from the bottom. Drawn by OutputModifiedPDF() into the content stream. When width is given it defines the text BOX: lines wrap inside it and align is relative to [x, x+width]. Without width there is nothing to wrap, and align becomes relative to the point itself — &#x27;center&#x27; centres the text on x, &#x27;right&#x27; ends it at x.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OverlayText(
+    p_page_number <span class="k">PLS_INTEGER</span>,
+    p_text        <span class="k">VARCHAR2</span>,
+    p_x           <span class="k">NUMBER</span>,
+    p_y           <span class="k">NUMBER</span>,
+    p_options     <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>Page that receives the text.</td><td class="pval">Integer &gt;= 1, up to GetPageCount</td><td>—</td></tr>
+<tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Text to overlay.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+<tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>X position in PDF points (1 pt = 1/72 in), from the left.</td><td class="pval">0 to 612 on A4 portrait</td><td>—</td></tr>
+<tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>Y position in PDF points, from the bottom of the page.</td><td class="pval">0 to 792 on A4 portrait</td><td>—</td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Visual settings of the text.</td><td class="pval">JSON_OBJECT_T with the optional keys: font (&#x27;Helvetica&#x27;/&#x27;Arial&#x27;, &#x27;Times&#x27; or &#x27;Courier&#x27;; any other name falls back to Helvetica), fontSize (number, 12), color (RGB hex, &#x27;000000&#x27;), opacity (0.0-1.0), rotation (0-360), align (&#x27;left&#x27;, &#x27;center&#x27;, &#x27;right&#x27;), width (box width in points: sets the line breaking and the reference for align), bold (true/false), zOrder (integer; higher goes on top, being drawn last)</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20809</td><td>No PDF loaded</td></tr>
+<tr><td class="pname">-20810</td><td>Invalid page number</td></tr>
+<tr><td class="pname">-20821</td><td>Invalid position coordinates</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.OverlayText(
+  p_page_number =&gt; 1,
+  p_text        =&gt; <span class="s">&#x27;APPROVED&#x27;</span>,
+  p_x =&gt; 400, p_y =&gt; 700,
+  p_options =&gt; <span class="k">JSON_OBJECT_T</span>(<span class="s">&#x27;{&quot;fontSize&quot;:24,&quot;color&quot;:&quot;FF0000&quot;,&quot;opacity&quot;:0.8,&quot;bold&quot;:true}&#x27;</span>));</pre></div>
+<p class="see"><b>See also:</b> <a href="#overlayimage">OverlayImage</a>, <a href="#getoverlays">GetOverlays</a>, <a href="#addwatermark">AddWatermark</a></p>
+</article>
+<article class="api" id="removeoverlay">
+<h3>RemoveOverlay <span class="kind">Procedure</span><a class="anchor" href="#removeoverlay" aria-label="link">#</a></h3>
+<p class="d">Removes one specific overlay by its identifier.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemoveOverlay(
+    p_overlay_id <span class="k">VARCHAR2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_overlay_id</td><td class="ptype">VARCHAR2</td><td>Overlay identifier.</td><td class="pval">The overlayId value returned by GetOverlays, e.g. &#x27;OVL_001&#x27;</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#getoverlays">GetOverlays</a>, <a href="#clearoverlays">ClearOverlays</a></p>
+</article>
+<h2 class="grp" id="grp-multi">Multi-PDF (merge, split, extract)</h2>
+<article class="api" id="extractpages">
+<h3>ExtractPages <span class="kind">Function</span><a class="anchor" href="#extractpages" aria-label="link">#</a></h3>
+<p class="d">Creates a new PDF holding only the selected pages of a loaded document. The requested order is honoured and a page may repeat; only the objects reachable from the chosen pages are copied, so the result is smaller than the source.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.ExtractPages(
+    p_pdf_id  <span class="k">VARCHAR2</span>,
+    p_pages   <span class="k">VARCHAR2</span>,
+    p_options <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identifier of the source document.</td><td class="pval">The same one used in LoadPDFWithID</td><td>—</td></tr>
+<tr><td class="pname">p_pages</td><td class="ptype">VARCHAR2</td><td>Pages to extract.</td><td class="pval">Comma-separated list and ranges, e.g. &#x27;1&#x27;, &#x27;1,5,9&#x27;, &#x27;1,5-10,15&#x27;, &#x27;5,1&#x27; (reversed order) or &#x27;ALL&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Extraction options.</td><td class="pval">Optional JSON_OBJECT_T; keys reserved for future use</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — PDF with the extracted pages.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>PDF ID not found</td></tr>
+<tr><td class="pname">-20838</td><td>Invalid page specification</td></tr>
+<tr><td class="pname">-20839</td><td>Page number out of range</td></tr>
+<tr><td class="pname">-20841</td><td>Object dictionary too large to renumber</td></tr>
+<tr><td class="pname">-20843</td><td>Malformed cross-reference stream (unreadable /W, /Index or /Filter)</td></tr>
+<tr><td class="pname">-20847</td><td>Malformed object stream (/N, /First or an offset outside the stream)</td></tr>
+<tr><td class="pname">-20848</td><td>Unsupported predictor, or an invalid row in the cross-reference stream</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>l_summary := PL_FPDF.ExtractPages(<span class="s">&#x27;body&#x27;</span>, <span class="s">&#x27;1,5-10,15&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#splitpdf">SplitPDF</a>, <a href="#mergepdfs">MergePDFs</a></p>
+</article>
+<article class="api" id="getloadedpdfs">
+<h3>GetLoadedPDFs <span class="kind">Function</span><a class="anchor" href="#getloadedpdfs" aria-label="link">#</a></h3>
+<p class="d">Lists the documents currently loaded under an identifier.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLoadedPDFs
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Returns</h5><p class="d">JSON_ARRAY_T — objects with the id and the information of each loaded PDF.</p>
+<p class="see"><b>See also:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#unloadpdf">UnloadPDF</a></p>
+</article>
+<article class="api" id="loadpdfwithid">
+<h3>LoadPDFWithID <span class="kind">Procedure</span><a class="anchor" href="#loadpdfwithid" aria-label="link">#</a></h3>
+<p class="d">Loads a PDF into memory under an identifier, so several documents can be held open at once to merge, split or extract pages.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDFWithID(
+    p_pdf_id   <span class="k">VARCHAR2</span>,
+    p_pdf_blob <span class="k">BLOB</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identifier of the document within the session.</td><td class="pval">Unique text, e.g. &#x27;cover&#x27;, &#x27;annex1&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_pdf_blob</td><td class="ptype">BLOB</td><td>Document to load.</td><td class="pval">BLOB with a valid PDF</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20800</td><td>Invalid PDF</td></tr>
+<tr><td class="pname">-20801</td><td>Invalid PDF header</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.LoadPDFWithID(l_cover, <span class="s">&#x27;cover&#x27;</span>);
+PL_FPDF.LoadPDFWithID(l_body,  <span class="s">&#x27;body&#x27;</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#mergepdfs">MergePDFs</a>, <a href="#splitpdf">SplitPDF</a>, <a href="#extractpages">ExtractPages</a>, <a href="#unloadpdf">UnloadPDF</a>, <a href="#getloadedpdfs">GetLoadedPDFs</a></p>
+</article>
+<article class="api" id="mergepdfs">
+<h3>MergePDFs <span class="kind">Function</span><a class="anchor" href="#mergepdfs" aria-label="link">#</a></h3>
+<p class="d">Merges several loaded PDFs into a single document, in the order given. The objects of each source — pages, fonts, images, annotations — are copied with their indirect references renumbered: nothing is re-rendered and the original content arrives intact. The same identifier may appear more than once.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.MergePDFs(
+    p_pdf_ids <span class="k">JSON_ARRAY_T</span>,
+    p_options <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_ids</td><td class="ptype">JSON_ARRAY_T</td><td>Identifiers of the documents, in the desired order.</td><td class="pval">JSON_ARRAY_T of strings, e.g. JSON_ARRAY_T(&#x27;[&quot;cover&quot;,&quot;body&quot;,&quot;annex&quot;]&#x27;)</td><td>—</td></tr>
+<tr><td class="pname">p_options</td><td class="ptype">JSON_OBJECT_T</td><td>Merge options.</td><td class="pval">Optional JSON_OBJECT_T; keys reserved for future use</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — the merged PDF.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20832</td><td>No PDF ID given</td></tr>
+<tr><td class="pname">-20833</td><td>PDF ID not loaded</td></tr>
+<tr><td class="pname">-20834</td><td>Merge failed</td></tr>
+<tr><td class="pname">-20841</td><td>Object dictionary too large to renumber</td></tr>
+<tr><td class="pname">-20843</td><td>Malformed cross-reference stream (unreadable /W, /Index or /Filter)</td></tr>
+<tr><td class="pname">-20847</td><td>Malformed object stream (/N, /First or an offset outside the stream)</td></tr>
+<tr><td class="pname">-20848</td><td>Unsupported predictor, or an invalid row in the cross-reference stream</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.LoadPDFWithID(l_cover, <span class="s">&#x27;cover&#x27;</span>);
+PL_FPDF.LoadPDFWithID(l_body,  <span class="s">&#x27;body&#x27;</span>);
+l_final := PL_FPDF.MergePDFs(<span class="k">JSON_ARRAY_T</span>(<span class="s">&#x27;[&quot;cover&quot;,&quot;body&quot;]&#x27;</span>));</pre></div>
+<p class="see"><b>See also:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#splitpdf">SplitPDF</a>, <a href="#extractpages">ExtractPages</a></p>
+</article>
+<article class="api" id="splitpdf">
+<h3>SplitPDF <span class="kind">Function</span><a class="anchor" href="#splitpdf" aria-label="link">#</a></h3>
+<p class="d">Splits a loaded PDF into several documents, following the ranges given. Each part carries only the objects reachable from its own pages, which is why it ends up far smaller than the source. The ranges may not overlap.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.SplitPDF(
+    p_pdf_id      <span class="k">VARCHAR2</span>,
+    p_page_ranges <span class="k">JSON_ARRAY_T</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_ARRAY_T</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Identifier of the document to split.</td><td class="pval">The same one used in LoadPDFWithID</td><td>—</td></tr>
+<tr><td class="pname">p_page_ranges</td><td class="ptype">JSON_ARRAY_T</td><td>Ranges defining each part produced.</td><td class="pval">JSON_ARRAY_T of strings: &#x27;1-10&#x27;, &#x27;11-20&#x27;, &#x27;5&#x27; (a single page), &#x27;1,3,5&#x27; (a list) or &#x27;ALL&#x27;</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">JSON_ARRAY_T — one entry per range, with the part&#x27;s PDF in base64, without line breaks.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>PDF ID not found</td></tr>
+<tr><td class="pname">-20835</td><td>No range given</td></tr>
+<tr><td class="pname">-20836</td><td>Overlapping ranges</td></tr>
+<tr><td class="pname">-20838</td><td>Invalid page specification</td></tr>
+<tr><td class="pname">-20839</td><td>Page number out of range</td></tr>
+<tr><td class="pname">-20843</td><td>Malformed cross-reference stream (unreadable /W, /Index or /Filter)</td></tr>
+<tr><td class="pname">-20847</td><td>Malformed object stream (/N, /First or an offset outside the stream)</td></tr>
+<tr><td class="pname">-20848</td><td>Unsupported predictor, or an invalid row in the cross-reference stream</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>l_parts := PL_FPDF.SplitPDF(<span class="s">&#x27;body&#x27;</span>, <span class="k">JSON_ARRAY_T</span>(<span class="s">&#x27;[&quot;1-10&quot;,&quot;11-20&quot;,&quot;21-30&quot;]&#x27;</span>));</pre></div>
+<p class="see"><b>See also:</b> <a href="#extractpages">ExtractPages</a>, <a href="#mergepdfs">MergePDFs</a></p>
+</article>
+<article class="api" id="unloadpdf">
+<h3>UnloadPDF <span class="kind">Procedure</span><a class="anchor" href="#unloadpdf" aria-label="link">#</a></h3>
+<p class="d">Drops from memory a document loaded by LoadPDFWithID.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.UnloadPDF(
+    p_pdf_id <span class="k">VARCHAR2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf_id</td><td class="ptype">VARCHAR2</td><td>Document identifier.</td><td class="pval">The same one used in LoadPDFWithID</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20831</td><td>PDF ID not found</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
+</article>
+<h2 class="grp" id="grp-security">Security and encryption</h2>
+<article class="api" id="decryptpdf">
+<h3>DecryptPDF <span class="kind">Function</span><a class="anchor" href="#decryptpdf" aria-label="link">#</a></h3>
+<p class="d">Removes the protection from an encrypted PDF, given the right password. It supports RC4-40, RC4-128, AES-128 (AESV2) and AES-256 (AESV3), with either the user or the owner password. The filter is read from the document&#x27;s /CFM, not assumed. A PDF 1.5+ source is flattened, and object streams are decrypted before being decompressed.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.DecryptPDF(
+    p_pdf      <span class="k">BLOB</span>,
+    p_password <span class="k">VARCHAR2</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Encrypted document.</td><td class="pval">BLOB with a protected PDF</td><td>—</td></tr>
+<tr><td class="pname">p_password</td><td class="ptype">VARCHAR2</td><td>User or owner password.</td><td class="pval">Text matching one of the document&#x27;s passwords</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — the PDF without encryption.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20853</td><td>The PDF is not encrypted</td></tr>
+<tr><td class="pname">-20854</td><td>Password missing or invalid</td></tr>
+<tr><td class="pname">-20857</td><td>Invalid AES stream or inconsistent padding</td></tr>
+<tr><td class="pname">-20861</td><td>Incomplete /Encrypt dictionary (AESV3 without /UE)</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#encryptpdf">EncryptPDF</a>, <a href="#isencrypted">IsEncrypted</a></p>
+</article>
+<article class="api" id="encryptpdf">
+<h3>EncryptPDF <span class="kind">Function</span><a class="anchor" href="#encryptpdf" aria-label="link">#</a></h3>
+<p class="d">Encrypts an existing PDF, applying passwords and permissions. This is the recommended way to protect documents you generate or receive. A PDF 1.5+ source (cross-reference streams, object streams) is flattened: the objects inside object streams become top-level objects, and the output carries a classic cross-reference table.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.EncryptPDF(
+    p_pdf            <span class="k">BLOB</span>,
+    p_user_password  <span class="k">VARCHAR2</span>,
+    p_owner_password <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_permissions    <span class="k">JSON_OBJECT_T</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>,
+    p_encryption     <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;RC4-128&#x27;</span>)
+    <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Document to protect.</td><td class="pval">BLOB with a valid, unencrypted PDF</td><td>—</td></tr>
+<tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>Password asked for when opening the document.</td><td class="pval">Text; empty allows opening without a password while keeping the restrictions</td><td>—</td></tr>
+<tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td>Owner password, which allows changing permissions.</td><td class="pval">Text; NULL (default) reuses the user password</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_permissions</td><td class="ptype">JSON_OBJECT_T</td><td>Permissions granted to the reader.</td><td class="pval">JSON_OBJECT_T with the boolean keys: print, modify, copy, annotate, fill_forms, extract, assemble, print_high. Missing keys take the restrictive default</td><td><code>NULL</code></td></tr>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td>Encryption algorithm.</td><td class="pval">&#x27;AES-256&#x27; and &#x27;AES-128&#x27; (recommended), &#x27;RC4-128&#x27; (the default, kept for compatibility) or &#x27;RC4-40&#x27; (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it</td><td><code>&#x27;RC4-128&#x27;</code></td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BLOB — the encrypted PDF.</p>
+<h5>Errors</h5><div class="tbl"><table><thead><tr><th>Code</th><th>Condition</th></tr></thead><tbody>
+<tr><td class="pname">-20850</td><td>Invalid encryption method</td></tr>
+<tr><td class="pname">-20851</td><td>User password is required</td></tr>
+<tr><td class="pname">-20859</td><td>The PDF is already encrypted</td></tr>
+<tr><td class="pname">-20863</td><td>AES does not reproduce the FIPS-197 vector on this database</td></tr>
+<tr><td class="pname">-20864</td><td>Stream beyond the RC4 ceiling in RAW (internal use)</td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre><span class="k">DECLARE</span>
+  l_perms <span class="k">JSON_OBJECT_T</span> := <span class="k">JSON_OBJECT_T</span>();
+<span class="k">BEGIN</span>
+  l_perms.put(<span class="s">&#x27;print&#x27;</span>, <span class="k">TRUE</span>);
+  l_perms.put(<span class="s">&#x27;copy&#x27;</span>,  <span class="k">FALSE</span>);
+  l_secure := PL_FPDF.EncryptPDF(
+    p_pdf            =&gt; l_pdf,
+    p_user_password  =&gt; <span class="s">&#x27;readPassword&#x27;</span>,
+    p_owner_password =&gt; <span class="s">&#x27;adminPassword&#x27;</span>,
+    p_permissions    =&gt; l_perms,
+    p_encryption     =&gt; <span class="s">&#x27;RC4-128&#x27;</span>);
+<span class="k">END</span>;</pre></div>
+<p class="see"><b>See also:</b> <a href="#decryptpdf">DecryptPDF</a>, <a href="#isencrypted">IsEncrypted</a>, <a href="#setencryption">SetEncryption</a>, <a href="#setpermissions">SetPermissions</a></p>
+</article>
+<article class="api" id="getpdfversion">
+<h3>GetPDFVersion <span class="kind">Function</span><a class="anchor" href="#getpdfversion" aria-label="link">#</a></h3>
+<p class="d">Returns the PDF version configured for the output.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFVersion
+    <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
+<h5>Returns</h5><p class="d">VARCHAR2 — the version, e.g. &#x27;1.7&#x27;.</p>
+<p class="see"><b>See also:</b> <a href="#setpdfversion">SetPDFVersion</a></p>
+</article>
+<article class="api" id="getsecurityinfo">
+<h3>GetSecurityInfo <span class="kind">Function</span><a class="anchor" href="#getsecurityinfo" aria-label="link">#</a></h3>
+<p class="d">Returns the security details of an encrypted PDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetSecurityInfo(
+    p_pdf <span class="k">BLOB</span>)
+    <span class="k">RETURN</span> <span class="k">JSON_OBJECT_T</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Document to inspect.</td><td class="pval">BLOB with a valid PDF</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">JSON_OBJECT_T — algorithm, key length and the permissions granted.</p>
+<p class="see"><b>See also:</b> <a href="#isencrypted">IsEncrypted</a>, <a href="#encryptpdf">EncryptPDF</a></p>
+</article>
+<article class="api" id="isencrypted">
+<h3>IsEncrypted <span class="kind">Function</span><a class="anchor" href="#isencrypted" aria-label="link">#</a></h3>
+<p class="d">Checks whether a PDF is encrypted.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsEncrypted(
+    p_pdf <span class="k">BLOB</span>)
+    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>Document to check.</td><td class="pval">BLOB with a valid PDF</td><td>—</td></tr>
+</tbody></table></div>
+<h5>Returns</h5><p class="d">BOOLEAN — TRUE if the document carries encryption.</p>
+<p class="see"><b>See also:</b> <a href="#getsecurityinfo">GetSecurityInfo</a>, <a href="#decryptpdf">DecryptPDF</a></p>
+</article>
+<article class="api" id="setencryption">
+<h3>SetEncryption <span class="kind">Procedure</span><a class="anchor" href="#setencryption" aria-label="link">#</a></h3>
+<p class="d">Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetEncryption(
+    p_encryption     <span class="k">VARCHAR2</span>,
+    p_user_password  <span class="k">VARCHAR2</span>,
+    p_owner_password <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td>Encryption algorithm.</td><td class="pval">&#x27;RC4-128&#x27; or &#x27;RC4-40&#x27;</td><td>—</td></tr>
+<tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>Opening password.</td><td class="pval">Text</td><td>—</td></tr>
+<tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td>Owner password.</td><td class="pval">Text; NULL (default) = same as the user password</td><td><code>NULL</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.Init; PL_FPDF.AddPage;
+PL_FPDF.SetEncryption(<span class="s">&#x27;RC4-128&#x27;</span>, <span class="s">&#x27;readPassword&#x27;</span>, <span class="s">&#x27;adminPassword&#x27;</span>);
+PL_FPDF.SetPermissions(p_print =&gt; <span class="k">TRUE</span>, p_copy =&gt; <span class="k">FALSE</span>);
+l_pdf := PL_FPDF.OutputBlob();</pre></div>
+<p class="see"><b>See also:</b> <a href="#setpermissions">SetPermissions</a>, <a href="#encryptpdf">EncryptPDF</a></p>
+</article>
+<article class="api" id="setpdfversion">
+<h3>SetPDFVersion <span class="kind">Procedure</span><a class="anchor" href="#setpdfversion" aria-label="link">#</a></h3>
+<p class="d">Sets the version declared in the header of the generated PDF.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPDFVersion(
+    p_version <span class="k">VARCHAR2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_version</td><td class="ptype">VARCHAR2</td><td>PDF file version.</td><td class="pval">&#x27;1.4&#x27;, &#x27;1.5&#x27;, &#x27;1.6&#x27; or &#x27;1.7&#x27;</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#getpdfversion">GetPDFVersion</a></p>
+</article>
+<article class="api" id="setpermissions">
+<h3>SetPermissions <span class="kind">Procedure</span><a class="anchor" href="#setpermissions" aria-label="link">#</a></h3>
+<p class="d">Sets the permissions of the document being built, applied together with the encryption defined in SetEncryption.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPermissions(
+    p_print      <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
+    p_modify     <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_copy       <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_annotate   <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
+    p_fill_forms <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
+    p_extract    <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_assemble   <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">FALSE</span>,
+    p_print_high <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_print</td><td class="ptype">BOOLEAN</td><td>Allows printing.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>TRUE</code></td></tr>
+<tr><td class="pname">p_modify</td><td class="ptype">BOOLEAN</td><td>Allows changing the content.</td><td class="pval">TRUE or FALSE; FALSE is the default</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_copy</td><td class="ptype">BOOLEAN</td><td>Allows copying text and images.</td><td class="pval">TRUE or FALSE; FALSE is the default</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_annotate</td><td class="ptype">BOOLEAN</td><td>Allows adding comments and annotations.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>TRUE</code></td></tr>
+<tr><td class="pname">p_fill_forms</td><td class="ptype">BOOLEAN</td><td>Allows filling in form fields.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>TRUE</code></td></tr>
+<tr><td class="pname">p_extract</td><td class="ptype">BOOLEAN</td><td>Allows extracting content for accessibility.</td><td class="pval">TRUE or FALSE; FALSE is the default</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_assemble</td><td class="ptype">BOOLEAN</td><td>Allows inserting, removing and rotating pages.</td><td class="pval">TRUE or FALSE; FALSE is the default</td><td><code>FALSE</code></td></tr>
+<tr><td class="pname">p_print_high</td><td class="ptype">BOOLEAN</td><td>Allows high-resolution printing.</td><td class="pval">TRUE or FALSE; TRUE is the default</td><td><code>TRUE</code></td></tr>
+</tbody></table></div>
+<h5>Example</h5><div class="code"><pre>PL_FPDF.SetPermissions(
+  p_print  =&gt; <span class="k">TRUE</span>,
+  p_copy   =&gt; <span class="k">FALSE</span>,
+  p_modify =&gt; <span class="k">FALSE</span>);</pre></div>
+<p class="see"><b>See also:</b> <a href="#setencryption">SetEncryption</a>, <a href="#encryptpdf">EncryptPDF</a></p>
+</article>
+<h2 class="grp" id="grp-diag">Diagnostics and utilities</h2>
+<article class="api" id="debugdisabled">
+<h3>DebugDisabled <span class="kind">Procedure</span><a class="anchor" href="#debugdisabled" aria-label="link">#</a></h3>
+<p class="d">Turns the debug messages off.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.DebugDisabled;</pre></div>
+<p class="see"><b>See also:</b> <a href="#setloglevel">SetLogLevel</a></p>
+</article>
+<article class="api" id="debugenabled">
+<h3>DebugEnabled <span class="kind">Procedure</span><a class="anchor" href="#debugenabled" aria-label="link">#</a></h3>
+<p class="d">Turns the package&#x27;s debug messages on.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.DebugEnabled;</pre></div>
+<p class="see"><b>See also:</b> <a href="#setloglevel">SetLogLevel</a></p>
+</article>
+<article class="api" id="error">
+<h3>Error <span class="kind">Procedure</span><a class="anchor" href="#error" aria-label="link">#</a></h3>
+<p class="d">Raises a standard PL_FPDF error. For internal use and for extensions.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Error(
+    pmsg <span class="k">varchar2</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">pmsg</td><td class="ptype">VARCHAR2</td><td>Error message.</td><td class="pval">Any VARCHAR2</td><td>—</td></tr>
+</tbody></table></div>
+</article>
+<article class="api" id="getloglevel">
+<h3>GetLogLevel <span class="kind">Function</span><a class="anchor" href="#getloglevel" aria-label="link">#</a></h3>
+<p class="d">Returns the configured log level.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLogLevel
+    <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
+<h5>Returns</h5><p class="d">PLS_INTEGER — the current level (0 to 4).</p>
+<p class="see"><b>See also:</b> <a href="#setloglevel">SetLogLevel</a></p>
+</article>
+<article class="api" id="getscalefactor">
+<h3>GetScaleFactor <span class="kind">Function</span><a class="anchor" href="#getscalefactor" aria-label="link">#</a></h3>
+<p class="d">Returns the conversion factor between the document&#x27;s unit and PDF points.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetScaleFactor
+    <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
+<h5>Returns</h5><p class="d">NUMBER — the scale factor, e.g. 2.8346 for millimetres.</p>
+<p class="see"><b>See also:</b> <a href="#init">Init</a></p>
+</article>
+<article class="api" id="setloglevel">
+<h3>SetLogLevel <span class="kind">Procedure</span><a class="anchor" href="#setloglevel" aria-label="link">#</a></h3>
+<p class="d">Sets how detailed the package&#x27;s log messages are.</p>
+<h5>Syntax</h5>
+<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLogLevel(
+    p_level <span class="k">pls_integer</span>);</pre></div>
+<h5>Parameters</h5><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th>Accepted values</th><th>Default</th></tr></thead><tbody>
+<tr><td class="pname">p_level</td><td class="ptype">PLS_INTEGER</td><td>Log level.</td><td class="pval">0 (off), 1 (error), 2 (warning), 3 (info) or 4 (debug)</td><td>—</td></tr>
+</tbody></table></div>
+<p class="see"><b>See also:</b> <a href="#getloglevel">GetLogLevel</a>, <a href="#debugenabled">DebugEnabled</a></p>
+</article>
+</main>
+</div>
+<footer>
+  <p><a href="index.html">Home</a> · <a href="api.html">Usage index</a> ·
+  <a href="../reference.html" hreflang="pt-BR">Versão em português</a> ·
+  <a href="https://github.com/Maxwbh/pl_fpdf">Repository</a> ·
+  <a href="mailto:contato@msbrasil.inf.br">Contact</a></p>
+  <p>Mantido com o apoio de <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
+  · Maxwell da Silva Oliveira (<a href="https://github.com/maxwbh">@maxwbh</a>) · MIT License</p>
+  <p style="font-size:12px;opacity:.75">Reference maintained alongside the code in <code>src/PL_FPDF.pks</code>.</p>
+</footer>
+<a class="top" href="#" aria-label="Back to top">↑</a>
+<script>
+(function(){
+  var f = document.querySelector('.filter');
+  if (f) f.addEventListener('input', function(){
+    var q = this.value.toLowerCase();
+    document.querySelectorAll('.side-group').forEach(function(g){
+      var vis = 0;
+      g.querySelectorAll('li').forEach(function(li){
+        var hit = li.textContent.toLowerCase().indexOf(q) !== -1;
+        li.style.display = hit ? '' : 'none';
+        if (hit) vis++;
+      });
+      g.style.display = vis ? '' : 'none';
+    });
+  });
+  var links = [].slice.call(document.querySelectorAll('.side-group a'));
+  var obs = new IntersectionObserver(function(es){
+    es.forEach(function(e){
+      if (!e.isIntersecting) return;
+      links.forEach(function(a){
+        a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+      });
+    });
+  }, {rootMargin: '-70px 0px -75% 0px'});
+  document.querySelectorAll('article.api').forEach(function(a){ obs.observe(a); });
+})();
+</script>
+</body>
+</html>

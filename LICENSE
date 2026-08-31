@@ -1,5 +1,6 @@
 MIT License
 
+Copyright (c) 2017 Pierre-Gilles Levallois
 Copyright (c) 2026 Maxwell da Silva Oliveira
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -19,3 +20,17 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+
+--------------------------------------------------------------------------------
+Relicensing note
+--------------------------------------------------------------------------------
+
+The PL/SQL port this codebase descends from was published in 2017 by
+Pierre-Gilles Levallois under the GPL. Its author granted permission to
+relicense that work under the MIT License. The grant is held by the maintainer
+and is not distributed with this repository.
+
+This software is therefore distributed under the MIT License above, in full.
+
+Lineage and full credits: see README.md.

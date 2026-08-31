@@ -1,7 +1,7 @@
 CREATE OR REPLACE PACKAGE PL_FPDF AS
 /*******************************************************************************
 *                                                                              *
-*                            PL_FPDF v3.2.0                                    *
+*                            PL_FPDF v3.3.0                                    *
 *                Oracle PL/SQL PDF Generation and Manipulation                *
 *                                                                              *
 ********************************************************************************
@@ -47,6 +47,48 @@ CREATE OR REPLACE PACKAGE PL_FPDF AS
 * ✓ Remove pages / Remover páginas                                            *
 * ✓ Add watermarks / Adicionar marcas d'água                                  *
 * ✓ Output modified PDFs / Gerar PDFs modificados                             *
+*                                                                              *
+********************************************************************************
+*                                                                              *
+* NOTAS DE IMPLEMENTAÇÃO / IMPLEMENTATION NOTES:                               *
+*                                                                              *
+* Buffers de escrita / Write buffers                                           *
+* ──────────────────────────────────────────────────────────────────           *
+* O conteúdo de cada página e a estrutura do arquivo são acumulados em         *
+* VARCHAR2 e descarregados em CLOB temporário a cada ~32 KB. Não há limite     *
+* de tamanho por página, e o custo de montar a página é linear.                *
+*   Page content and file structure are accumulated in VARCHAR2 and flushed    *
+*   to a temporary CLOB every ~32 KB. No per-page size limit; linear cost.     *
+*                                                                              *
+* Independência de NLS / NLS independence                                      *
+* ──────────────────────────────────────────────────────────────────           *
+* A conversão numérica usa NLS explícito ('.' como separador decimal, exigido  *
+* pelo PDF). A biblioteca NÃO altera NLS_NUMERIC_CHARACTERS da sessão do       *
+* chamador — funciona igual com a sessão em pt-BR (vírgula) ou en-US (ponto).  *
+*   Numeric conversion uses an explicit NLS parameter; the caller's session    *
+*   settings are never modified.                                               *
+*                                                                              *
+* Callbacks de header/rodapé / Header-footer callbacks                         *
+* ──────────────────────────────────────────────────────────────────           *
+* SetHeaderProc/SetFooterProc recebem o NOME de uma rotina, executada           *
+* dinamicamente a cada página. O nome e os nomes dos parâmetros são validados   *
+* como identificadores SQL (DBMS_ASSERT) no momento da configuração.           *
+* Requer EXECUTE em SYS.DBMS_ASSERT (concedido a PUBLIC por padrão).            *
+*   The callback name and parameter names are validated as SQL identifiers      *
+*   at configuration time. Requires EXECUTE on SYS.DBMS_ASSERT.                 *
+*                                                                              *
+* Diagnóstico / Diagnostics                                                     *
+* ──────────────────────────────────────────────────────────────────           *
+* Erros são levantados como ORA-20100 com o backtrace da origem e preservando   *
+* a pilha original (keeperrorstack), o que mantém rastreável o erro real.       *
+*   Errors are raised as ORA-20100 including the backtrace and keeping the      *
+*   original error stack.                                                       *
+*                                                                              *
+* Estado de sessão / Session state                                             *
+* ──────────────────────────────────────────────────────────────────           *
+* O estado vive no package (package-only: sem tabelas, types ou sequences).    *
+* Use Reset para liberar os LOBs temporários ao fim de jobs longos.            *
+*   State lives in the package. Call Reset to free temporary LOBs.             *
 *                                                                              *
 ********************************************************************************
 *                                                                              *
@@ -117,7 +159,7 @@ type recImageBlob is record (
 );
 
 -- Global constants / Constantes globais
-co_version CONSTANT VARCHAR2(10) := '3.2.0';  -- PL_FPDF Version / Versão
+co_version CONSTANT VARCHAR2(10) := '3.3.0';  -- PL_FPDF Version / Versão
 noParam tv4000a;
 
 /*******************************************************************************
@@ -164,7 +206,7 @@ noParam tv4000a;
 *    └─ Table()          - Create table / Criar tabela                        *
 *                                                                              *
 * 8. OUTPUT / SAÍDA                                                            *
-*    ├─ Output_Blob()    - Get PDF as BLOB / Obter PDF como BLOB              *
+*    ├─ OutputBlob()    - Get PDF as BLOB / Obter PDF como BLOB              *
 *    └─ OutputFile()     - Save to file / Salvar em arquivo                   *
 *                                                                              *
 * 9. PHASE 4: PDF READING & MANIPULATION / LEITURA E MANIPULAÇÃO              *
@@ -446,7 +488,10 @@ Procedure SetLineSpacing (pls in number);
 -- Allows to create a polygon with a table of points
 -- pclose define if the polygon is closed or not
 procedure Poly(points in tab_points, pclose in boolean, pstyle in varchar2 default '');
-procedure Triangle(px in number, py in number, psize in number, 
+-- Triangulo isosceles: base 2*psize, altura psize, ponta para porientation.
+-- (px, py) e o canto superior esquerdo da caixa que envolve o triangulo.
+-- Levanta -20821 se a orientacao nao for up/down/left/right (ou U/D/L/R).
+procedure Triangle(px in number, py in number, psize in number,
                    porientation in varchar2 default 'left', pstyle in varchar2 default '');
 
 procedure SetLineDashPattern(pdash in varchar2 default '[] 0');
@@ -600,11 +645,11 @@ procedure ClosePDF;
 *   p_format - Page format ('A4', 'Letter', 'Legal', 'width,height', NULL=current)
 *   p_rotation - Page rotation in degrees (0, 90, 180, 270)
 * Raises:
-*   -20100: PDF not initialized
-*   -20101: Invalid orientation
-*   -20102: Page dimensions too large (>10000mm)
-*   -20103: Invalid custom format
-*   -20104: Invalid rotation value
+*   -20005: PDF not initialized (call Init first)
+*   -20107: Invalid orientation (only 'P' or 'L')
+*   -20103: Unknown page format
+*   -20101: Invalid custom format dimensions
+*   -20104: Invalid rotation value (only 0, 90, 180, 270)
 * Example:
 *   PL_FPDF.AddPage('P', 'A4', 0);
 *   PL_FPDF.AddPage('L', '210,297', 90);  -- Custom format with rotation
@@ -622,7 +667,7 @@ procedure AddPage(
 * Parameters:
 *   p_page_number - Page number to set as current (must exist)
 * Raises:
-*   -20105: PDF not initialized
+*   -20005: PDF not initialized (call Init first)
 *   -20106: Page does not exist
 * Example:
 *   PL_FPDF.SetPage(1);  -- Go back to page 1
@@ -658,27 +703,14 @@ function GetScaleFactor return number;
 * Returns: recImageBlob with image data and metadata
 * Supported Formats: PNG, JPEG/JPG
 * Raises:
-*   -20220: Unsupported image format
-*   -20221: Invalid image header
-*   -20222: Unable to fetch image from URL
+*   -20301: Invalid image header (PNG or JPEG)
+*   -20302: Unable to fetch image from URL
+*   -20303: Unsupported image format (only PNG and JPEG)
 * Example:
 *   l_img := PL_FPDF.getImageFromUrl('http://example.com/image.png');
 *******************************************************************************/
 function getImageFromUrl(p_Url in varchar2) return recImageBlob;
 
---
--- Sample codes.
---
-procedure helloworld;
-procedure testImg;
-procedure test(pdest in varchar2 default 'D');
-procedure MyRepetitiveHeader(param1 in varchar2, param2 in varchar2);
-procedure MyRepetitiveFooter;
-procedure testHeader;
---------------------------------------------------------------------------------
--- Displays page number at the bottom of page
---------------------------------------------------------------------------------
-procedure lpc_footer;
 
 --------------------------------------------------------------------------------
 
@@ -821,7 +853,9 @@ procedure AddQRCode(
 *   p_width - Barcode width (in current units)
 *   p_height - Barcode height (in current units)
 *   p_code - Data to encode
-*   p_type - Barcode type: 'ITF14', 'CODE128', 'CODE39', 'EAN13', 'EAN8'
+*   p_type - Barcode type: 'CODE128', 'CODE39', 'EAN13', 'EAN8', 'ITF14',
+*            or 'ITF' (Interleaved 2 of 5, any even digit count — the bank
+*            boleto barcode has 44) / Simbologia
 *   p_show_text - Show human-readable text below barcode
 * Example:
 *   PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
@@ -1036,8 +1070,15 @@ FUNCTION IsPDFModified RETURN BOOLEAN;
 *   p_color - Color name / Nome da cor ('gray', 'red', 'blue'), default 'gray'
 *
 * Note / Nota:
-*   EN: Watermarks stored in memory. Use OutputModifiedPDF() to apply
-*   PT: Marcas d'água armazenadas em memória. Use OutputModifiedPDF() para aplicar
+*   EN: Rendered by OutputModifiedPDF() into the page content stream: each
+*       affected page gets its own content object and its own /Resources, so a
+*       /Resources shared between pages is never contaminated. Centred and
+*       rotated about the page centre; the font is always Helvetica.
+*   PT: Desenhada por OutputModifiedPDF() no fluxo de conteúdo: cada página
+*       afetada ganha um objeto de conteúdo próprio e um /Resources próprio, de
+*       modo que um /Resources compartilhado entre páginas nunca é contaminado.
+*       Centralizada e girada em torno do centro da página; a fonte é sempre
+*       Helvetica.
 *
 * Example / Exemplo:
 *   PL_FPDF.LoadPDF(l_pdf);
@@ -1101,25 +1142,37 @@ FUNCTION GetWatermarks RETURN JSON_ARRAY_T;
 * Function: OutputModifiedPDF / Gerar PDF Modificado
 *
 * Description / Descrição:
-*   EN: Generate modified PDF with all changes applied (rotations, removals, watermarks)
-*   PT: Gerar PDF modificado com todas as alterações aplicadas (rotações, remoções, marcas d'água)
+*   EN: Generate the modified PDF, copying the kept pages object by object.
+*       Content, fonts, images and annotations are copied verbatim: nothing is
+*       re-rendered. Applies RemovePage and RotatePage.
+*   PT: Gerar o PDF modificado copiando as páginas mantidas objeto a objeto.
+*       Conteúdo, fontes, imagens e anotações são copiados sem alteração: nada
+*       é re-renderizado. Aplica RemovePage e RotatePage.
 *
 * Returns / Retorna:
 *   BLOB - Modified PDF document / Documento PDF modificado
 *
 * Process / Processo:
 *   EN: 1. Validates PDF is loaded and modified
-*       2. Builds list of active (non-removed) pages
-*       3. Generates new PDF structure with modified pages
-*       4. Applies rotations to pages
-*       5. Rebuilds page tree excluding removed pages
-*       6. Generates new xref table and trailer
+*       2. Indexes the source (xref chain + flattened page tree)
+*       3. Selects the pages not marked by RemovePage, in the original order
+*       4. Copies every object reachable from those pages, renumbering the
+*          indirect references; stream payloads are copied byte for byte
+*       5. Emits a new Catalog, a new /Pages node, xref and trailer
 *   PT: 1. Valida se PDF está carregado e modificado
-*       2. Constrói lista de páginas ativas (não removidas)
-*       3. Gera nova estrutura PDF com páginas modificadas
-*       4. Aplica rotações às páginas
-*       5. Reconstrói árvore de páginas excluindo páginas removidas
-*       6. Gera nova tabela xref e trailer
+*       2. Indexa a origem (cadeia de xref + árvore de páginas achatada)
+*       3. Seleciona as páginas não marcadas por RemovePage, na ordem original
+*       4. Copia todo objeto alcançável a partir dessas páginas, renumerando as
+*          referências indiretas; o payload dos streams é copiado byte a byte
+*       5. Emite um novo Catalog, um novo nó /Pages, xref e trailer
+*
+* Limitations / Limitações:
+*   EN: Watermarks and text and image overlays are all rendered. PDF 1.5+
+*       cross-reference streams and object streams are read (the PNG
+*       predictor included); a malformed one raises -20843/-20847/-20848.
+*   PT: Marcas d'água e overlays de texto e de imagem são todos desenhados.
+*       xref em stream e object streams (PDF 1.5+) são lidos, inclusive com
+*       o predictor PNG; um malformado levanta -20843/-20847/-20848.
 *
 * Raises / Erros:
 *   -20809: No PDF loaded (call LoadPDF first) / Nenhum PDF carregado
@@ -1127,6 +1180,23 @@ FUNCTION GetWatermarks RETURN JSON_ARRAY_T;
 *           PDF não foi modificado (sem alterações para aplicar)
 *   -20820: All pages have been removed (cannot generate empty PDF) /
 *           Todas as páginas foram removidas (não pode gerar PDF vazio)
+*   -20841: Object dictionary too large to renumber /
+*           Dicionário de objeto grande demais para renumerar
+*   -20843: Malformed cross-reference stream / xref em stream malformada
+*   -20847: Malformed object stream / object stream malformado
+*   -20848: Unsupported predictor in the xref stream /
+*           predictor não suportado na xref em stream
+*   -20823: Invalid or unsupported image / Imagem inválida ou não suportada
+*           EN: alpha and interlaced PNG are supported; refused are interlaced
+*               below 8 bits per component, indexed AND interlaced, and images
+*               above 4 megapixels on the pixel-reprocessing path
+*           PT: PNG com alfa e entrelaçado são suportados; recusados são o
+*               entrelaçado abaixo de 8 bits por componente, o indexado E
+*               entrelaçado, e imagens acima de 4 megapixels no caminho que
+*               reprocessa pixels
+*   -20846: Page /Resources cannot be overlaid (shared indirect sub-dictionary) /
+*           /Resources da página não permite sobreposição (sub-dicionário
+*           indireto compartilhado)
 *
 * Example / Exemplo:
 *   DECLARE
@@ -1140,7 +1210,6 @@ FUNCTION GetWatermarks RETURN JSON_ARRAY_T;
 *     -- Apply modifications / Aplicar modificações
 *     PL_FPDF.RotatePage(1, 90);
 *     PL_FPDF.RemovePage(3);
-*     PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
 *
 *     -- Generate modified PDF / Gerar PDF modificado
 *     l_modified_pdf := PL_FPDF.OutputModifiedPDF();
@@ -1175,6 +1244,76 @@ FUNCTION OutputModifiedPDF RETURN BLOB;
 *******************************************************************************/
 PROCEDURE ClearPDFCache;
 
+/*******************************************************************************
+* Function: FlateDecode / Descomprimir stream
+*
+* Description / Descrição:
+*   EN: Decompress a PDF /FlateDecode stream (zlib, RFC 1950). Implemented in
+*       pure PL/SQL: UTL_COMPRESS cannot be used here because it only accepts a
+*       gzip trailer with a correct CRC-32, and that CRC is of the DECOMPRESSED
+*       data — knowing it would require decompressing first.
+*   PT: Descomprime um stream /FlateDecode do PDF (zlib, RFC 1950). Implementado
+*       em PL/SQL puro: o UTL_COMPRESS não serve porque só aceita rodapé gzip com
+*       CRC-32 correto, e esse CRC é do conteúdo DESCOMPRIMIDO — para saber o
+*       CRC seria preciso descomprimir antes.
+*
+* Parameters / Parâmetros:
+*   p_stream - Compressed stream / Stream comprimido (BLOB)
+*   p_max_bytes - Output ceiling, 8 MB by default. A compressed stream is
+*                 untrusted input: a few KB can expand to gigabytes (zip bomb)
+*                 and take the session down. Raises -20893 instead. /
+*                 Teto da saída, 8 MB por padrão. Um stream comprimido é
+*                 entrada não confiável: alguns KB podem virar gigabytes (zip
+*                 bomb) e derrubar a sessão. Levanta -20893 em vez disso.
+*
+* Returns / Retorna:
+*   BLOB - Decompressed content / Conteúdo descomprimido
+*
+* Raises / Erros:
+*   -20890: Truncated stream / Stream truncado
+*   -20891: Malformed DEFLATE data / Dados DEFLATE malformados
+*   -20892: Invalid zlib header / Cabeçalho zlib inválido
+*   -20893: Output exceeded p_max_bytes / Saída passou de p_max_bytes
+*
+* Example / Exemplo:
+*   l_claro := PL_FPDF.FlateDecode(l_comprimido);
+*
+* Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+*******************************************************************************/
+FUNCTION FlateDecode(
+  p_stream    IN BLOB,
+  p_max_bytes IN PLS_INTEGER DEFAULT 8388608
+) RETURN BLOB;
+
+/*******************************************************************************
+* Function: FlateEncode / Comprimir stream
+*
+* Description:
+*   EN: Compress data into a PDF /FlateDecode stream (zlib, RFC 1950). Written
+*       in pure PL/SQL: a single fixed-Huffman block with greedy LZ77. It
+*       compresses less than zlib's dynamic Huffman and far more than nothing,
+*       and never returns more than the input plus the stored-block overhead.
+*
+*   PT: Comprime dados num stream /FlateDecode do PDF (zlib, RFC 1950). Escrito
+*       em PL/SQL puro: um bloco unico com Huffman fixa e LZ77 guloso. Comprime
+*       menos que a Huffman dinamica do zlib e muito mais que nada, e nunca
+*       devolve mais que a entrada somada ao custo do bloco armazenado.
+*
+* Parameters:
+*   p_data - Content to compress / Conteudo a comprimir (BLOB)
+*
+* Returns:
+*   BLOB - zlib stream / Stream zlib (cabecalho, DEFLATE e Adler-32)
+*
+* Example / Exemplo:
+*   l_comprimido := PL_FPDF.FlateEncode(l_claro);
+*
+* Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+*******************************************************************************/
+FUNCTION FlateEncode(
+  p_data IN BLOB
+) RETURN BLOB;
+
 --------------------------------------------------------------------------------
 -- PHASE 4.5: TEXT & IMAGE OVERLAY (v3.0.0-a.6)
 --------------------------------------------------------------------------------
@@ -1185,6 +1324,19 @@ PROCEDURE ClearPDFCache;
 * Description / Descrição:
 *   EN: Add text overlay at specific position on PDF page with full formatting control
 *   PT: Adicionar sobreposição de texto em posição específica com controle completo de formatação
+*
+*   EN: Rendered by OutputModifiedPDF() into the page content stream. x and y
+*       are in PDF points, from the bottom-left. When width is given it defines
+*       the text BOX: lines wrap inside it and align is relative to
+*       [x, x+width]. Without width there is nothing to wrap, and align becomes
+*       relative to the point itself — 'center' centres the text on x, 'right'
+*       ends it at x.
+*   PT: Desenhada por OutputModifiedPDF() no fluxo de conteúdo. x e y vão em
+*       pontos PDF, a partir do canto inferior esquerdo. Quando width é
+*       informado ele define a CAIXA do texto: as linhas quebram dentro dela e o
+*       align é relativo a [x, x+width]. Sem width não há o que quebrar, e o
+*       align passa a ser relativo ao próprio ponto — 'center' centraliza o
+*       texto em x, 'right' o termina em x.
 *
 * Parameters / Parâmetros:
 *   p_page_number - Page number (1-based) / Número da página (base 1)
@@ -1209,8 +1361,8 @@ PROCEDURE ClearPDFCache;
 * Raises / Erros:
 *   -20809: No PDF loaded / Nenhum PDF carregado
 *   -20810: Invalid page number / Número de página inválido
-*   -20821: Invalid position coordinates / Coordenadas de posição inválidas
-*   -20822: Invalid font specification / Especificação de fonte inválida
+*   -20821: Invalid position coordinates or opacity out of 0.0..1.0 /
+*           Coordenadas de posição inválidas, ou opacidade fora de 0.0..1.0
 *
 * Example / Exemplo:
 *   DECLARE
@@ -1246,6 +1398,19 @@ PROCEDURE OverlayText(
 * Description / Descrição:
 *   EN: Add image overlay at specific position on PDF page with sizing control
 *   PT: Adicionar sobreposição de imagem em posição específica com controle de tamanho
+*
+*   EN: Rendered by OutputModifiedPDF() into the page content stream. Neither
+*       format is decompressed: JPEG goes in whole as /DCTDecode, and a PNG's
+*       IDAT blocks are already zlib, which is the PDF's /FlateDecode — they
+*       are concatenated and declared with /Predictor 15. NOT supported, and
+*       refused with -20823 rather than drawn wrong: PNG with an alpha channel
+*       (color types 4 and 6), interlaced PNG (Adam7) and 16-bit depth.
+*   PT: Desenhada por OutputModifiedPDF() no fluxo de conteúdo. Nenhum dos dois
+*       formatos é descomprimido: o JPEG entra inteiro como /DCTDecode, e os
+*       blocos IDAT do PNG já são zlib, que é o /FlateDecode do PDF — são
+*       concatenados e declarados com /Predictor 15. NÃO suportados, e
+*       recusados com -20823 em vez de desenhados errado: PNG com canal alfa
+*       (color types 4 e 6), PNG entrelaçado (Adam7) e profundidade de 16 bits.
 *
 * Parameters / Parâmetros:
 *   p_page_number - Page number (1-based) / Número da página (base 1)
@@ -1467,8 +1632,16 @@ PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2);
 * Function: MergePDFs / Mesclar PDFs
 *
 * Description / Descrição:
-*   EN: Merge multiple loaded PDFs into single document in specified order
-*   PT: Mesclar múltiplos PDFs carregados em único documento na ordem especificada
+*   EN: Merge multiple loaded PDFs into a single document, in the given order.
+*       Every object of every source is copied (pages, fonts, images,
+*       annotations) with its indirect references renumbered, and a new page
+*       tree is built. Nothing is re-rendered: the original content arrives
+*       intact. The same ID may appear more than once.
+*   PT: Mesclar múltiplos PDFs carregados em um único documento, na ordem dada.
+*       Todos os objetos de cada origem são copiados (páginas, fontes, imagens,
+*       anotações) com as referências indiretas renumeradas, e uma nova árvore
+*       de páginas é montada. Nada é re-renderizado: o conteúdo original chega
+*       intacto. O mesmo ID pode aparecer mais de uma vez.
 *
 * Parameters / Parâmetros:
 *   p_pdf_ids - JSON array of PDF IDs to merge / Array JSON de IDs de PDF
@@ -1482,6 +1655,12 @@ PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2);
 *   -20832: No PDF IDs provided / Nenhum ID de PDF fornecido
 *   -20833: PDF ID in list not loaded / ID de PDF na lista não carregado
 *   -20834: Merge failed / Mesclagem falhou
+*   -20841: Object dictionary too large to renumber /
+*           Dicionário de objeto grande demais para renumerar
+*   -20843: Malformed cross-reference stream / xref em stream malformada
+*   -20847: Malformed object stream / object stream malformado
+*   -20848: Unsupported predictor in the xref stream /
+*           predictor não suportado na xref em stream
 *
 * Example / Exemplo:
 *   DECLARE
@@ -1508,22 +1687,34 @@ FUNCTION MergePDFs(
 * Function: SplitPDF / Dividir PDF
 *
 * Description / Descrição:
-*   EN: Split loaded PDF into multiple documents by page ranges
-*   PT: Dividir PDF carregado em múltiplos documentos por intervalos de páginas
+*   EN: Split the loaded PDF into several documents, one per page range. Each
+*       part carries only the objects reachable from its own pages, so the
+*       parts are much smaller than the source. Ranges must not overlap.
+*   PT: Dividir o PDF carregado em vários documentos, um por intervalo. Cada
+*       parte leva apenas os objetos alcançáveis a partir das suas páginas, e
+*       por isso fica bem menor que a origem. Os intervalos não podem se
+*       sobrepor.
 *
 * Parameters / Parâmetros:
 *   p_pdf_id - PDF identifier to split / Identificador do PDF
 *   p_page_ranges - JSON array of page range strings / Array de intervalos
-*                   Examples: '1-5', '6-10', '11', 'ALL'
+*                   Examples: '1-5', '6-10', '11', '1,3,5', 'ALL'
 *
 * Returns / Retorna:
-*   JSON_ARRAY_T - Array with base64 encoded PDFs / Array com PDFs em base64
+*   JSON_ARRAY_T - Array with base64 encoded PDFs, one per range, without line
+*                  breaks / Array com PDFs em base64, um por intervalo, sem
+*                  quebras de linha
 *
 * Raises / Erros:
 *   -20831: PDF ID not found / ID do PDF não encontrado
-*   -20835: Invalid page range / Intervalo de páginas inválido
+*   -20835: No page ranges provided / Nenhum intervalo fornecido
 *   -20836: Overlapping page ranges / Intervalos sobrepostos
-*   -20837: Page range exceeds document / Intervalo excede documento
+*   -20838: Invalid page specification / Especificação de páginas inválida
+*   -20839: Page number out of range / Número de página fora do intervalo
+*   -20843: Malformed cross-reference stream / xref em stream malformada
+*   -20847: Malformed object stream / object stream malformado
+*   -20848: Unsupported predictor in the xref stream /
+*           predictor não suportado na xref em stream
 *
 * Example / Exemplo:
 *   DECLARE
@@ -1551,12 +1742,20 @@ FUNCTION SplitPDF(
 * Function: ExtractPages / Extrair Páginas
 *
 * Description / Descrição:
-*   EN: Extract specific pages from loaded PDF to create new document
-*   PT: Extrair páginas específicas do PDF carregado para criar novo documento
+*   EN: Extract the given pages from a loaded PDF into a new document. The
+*       requested order is kept ('5,1' returns page 5 then page 1) and a page
+*       may repeat. Only the objects reachable from the selected pages are
+*       copied, so the result is smaller than the source.
+*   PT: Extrair as páginas indicadas de um PDF carregado para um novo
+*       documento. A ordem pedida é respeitada ('5,1' devolve a página 5 e
+*       depois a 1) e uma página pode repetir. Só os objetos alcançáveis a
+*       partir das páginas escolhidas são copiados, então o resultado fica
+*       menor que a origem.
 *
 * Parameters / Parâmetros:
 *   p_pdf_id - PDF identifier / Identificador do PDF
-*   p_pages - Page specification: '1,3,5-7,10' or 'ALL' / Especificação
+*   p_pages - Page specification: '1', '1,3,5-7,10', '5,1' or 'ALL' /
+*             Especificação: '1', '1,3,5-7,10', '5,1' ou 'ALL'
 *   p_options - Optional configuration / Configuração opcional (future use)
 *
 * Returns / Retorna:
@@ -1566,6 +1765,12 @@ FUNCTION SplitPDF(
 *   -20831: PDF ID not found / ID do PDF não encontrado
 *   -20838: Invalid page specification / Especificação de páginas inválida
 *   -20839: Page number out of range / Número de página fora do intervalo
+*   -20841: Object dictionary too large to renumber /
+*           Dicionário de objeto grande demais para renumerar
+*   -20843: Malformed cross-reference stream / xref em stream malformada
+*   -20847: Malformed object stream / object stream malformado
+*   -20848: Unsupported predictor in the xref stream /
+*           predictor não suportado na xref em stream
 *
 * Example / Exemplo:
 *   DECLARE
@@ -1586,7 +1791,7 @@ FUNCTION ExtractPages(
 ) RETURN BLOB;
 
 --------------------------------------------------------------------------------
--- Phase 5: Security / Segurança (v3.2.0)
+-- Phase 5: Security / Segurança (v3.3.0)
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
@@ -1610,6 +1815,14 @@ FUNCTION ExtractPages(
 *   -20850: Invalid encryption method / Método de criptografia inválido
 *   -20851: Password required / Senha obrigatória
 *   -20852: Encryption failed / Falha na criptografia
+*
+* Note / Nota:
+*   EN: A PDF 1.5+ source (cross-reference stream, object streams) is
+*       flattened: objects living inside object streams become top-level
+*       objects and the output carries a classic cross-reference table.
+*   PT: Origem em PDF 1.5+ (xref em stream, object streams) é achatada: os
+*       objetos de dentro dos object streams viram objetos de primeiro nível
+*       e a saída leva xref clássica.
 *
 * Example / Exemplo:
 *   l_encrypted := PL_FPDF.EncryptPDF(
@@ -1646,6 +1859,12 @@ FUNCTION EncryptPDF(
 *   -20853: PDF is not encrypted / PDF não está criptografado
 *   -20854: Invalid password / Senha inválida
 *   -20855: Decryption failed / Falha na descriptografia
+*
+* Note / Nota:
+*   EN: A PDF 1.5+ source is flattened, and the object streams are decrypted
+*       before being decompressed.
+*   PT: Origem em PDF 1.5+ é achatada, e os object streams são decifrados
+*       antes de descomprimidos.
 *
 * Example / Exemplo:
 *   l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');

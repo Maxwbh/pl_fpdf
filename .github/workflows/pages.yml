@@ -1,0 +1,44 @@
+name: Publicar o site
+
+# O site saiu da raiz do repositório e passou a viver em `site/`. O GitHub Pages
+# só sabe servir a raiz ou `docs/` sozinho — qualquer outra pasta precisa de um
+# workflow que publique o conteúdo. É este.
+#
+# Uma vez, na mão: Settings → Pages → Source = "GitHub Actions".
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'site/**'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Publicação é estado, não fila: se dois pushes chegarem juntos, o último vence
+# e o anterior é cancelado.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  publicar:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+      - id: deploy
+        uses: actions/deploy-pages@v4

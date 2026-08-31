@@ -39,11 +39,235 @@ jobs:
           t.rows[1].cells[1].text = '2'
           d.save('/tmp/sample.docx')
           EOF
-          python scripts/docx_to_plfpdf/docx_to_plfpdf.py /tmp/sample.docx -o /tmp/sample.sql
+          python dev/scripts/docx_to_plfpdf/docx_to_plfpdf.py /tmp/sample.docx -o /tmp/sample.sql
           grep -q "PL_FPDF.Init" /tmp/sample.sql
-          grep -q "PL_FPDF.Output_Blob" /tmp/sample.sql
+          grep -q "PL_FPDF.OutputBlob" /tmp/sample.sql
           grep -q "q'\[CI Sample\]'" /tmp/sample.sql
           echo "OK: generator produced $(wc -l < /tmp/sample.sql) lines of PL/SQL"
+
+  api-docs:
+    name: Referência da API consistente com o package
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Globais declaradas depois do primeiro subprograma quebram a compilação
+      # com PLS-00103, e a mensagem do Oracle não diz o que está errado.
+      - name: Nenhuma global declarada após o primeiro subprograma (PLS-00103)
+        run: python dev/scripts/plsql_lint/check_declarations.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      # Um '/*' órfão já engoliu AddQRCode e AddBarcode inteiros (892 linhas de
+      # comentário acidental) — o código parecia normal e o Oracle via comentário.
+      - name: Todo subprograma da spec tem corpo no body (PLS-00323)
+        run: python dev/scripts/plsql_lint/check_spec_body.py src/PL_FPDF.pks src/PL_FPDF.pkb
+        # e o utilitario, que tem spec propria
+      - name: Todo subprograma da spec do utilitario tem corpo no body
+        run: python dev/scripts/plsql_lint/check_spec_body.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
+
+      # O vizinho do de baixo, e faltava: chamada a algo que NAO EXISTE. A
+      # etapa que unificou as metricas removeu as onze getFontXxx e deixou um
+      # chamador para tras, 7900 linhas abaixo dos outros. Os onze lints
+      # passaram, o CI ficou verde nas tres vagas, e o PLS-00201 so apareceu no
+      # COMPILE contra o banco — o lugar mais caro de descobrir.
+      - name: Nada é chamado sem existir (PLS-00201)
+        run: |
+          set -e
+          python dev/scripts/plsql_lint/check_undeclared.py src/PL_FPDF.pks src/PL_FPDF.pkb
+          python dev/scripts/plsql_lint/check_undeclared.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
+
+      # O compilador para na primeira dependência de ordem, então sem esta
+      # verificação cada rodada de compilação revela só um caso.
+      - name: Nenhuma chamada a subprograma definido mais abaixo (PLS-00313)
+        run: python dev/scripts/plsql_lint/check_call_order.py src/PL_FPDF.pks src/PL_FPDF.pkb
+      - name: Nenhuma chamada a subprograma definido mais abaixo, no utilitario
+        run: python dev/scripts/plsql_lint/check_call_order.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
+
+      # SUBSTRB/LENGTHB/INSTRB em CLOB compilam sem reclamação e só quebram em
+      # execução, com ORA-22998, que não diz onde está. Foi assim que a amostra
+      # da marca d'água falhou.
+      # Inclui os testes: o mesmo ORA-00902 (STANDARD_HASH com LOB) reapareceu
+      # num dev/tests/diag_*.sql porque a verificação só olhava src/.
+      - name: Nenhuma função de byte em CLOB nem LOB em STANDARD_HASH
+        run: python dev/scripts/plsql_lint/check_clob_bytes.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb src/PL_FPDF.pks src/PL_FPDF_UTIL.pks dev/tests/*.sql
+
+      # Os códigos ORA-208xx cresceram sem dono e acabaram significando duas
+      # coisas ao mesmo tempo — ORA-20843 era "QR vazio" E "xref em stream".
+      - name: Cada faixa de ORA-208xx pertence a um assunto só
+        run: python dev/scripts/plsql_lint/check_error_codes.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      # CHR(n) não devolve um byte: devolve o caractere daquele ponto de
+      # código. Em AL32UTF8, todo valor de 128 a 255 sai com DOIS bytes — e a
+      # cifra produz metade dos bytes nessa faixa. O PDF continuava válido e só
+      # o título saía embaralhado.
+      - name: Nenhum byte virando caractere com CHR
+        run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      # NVL(tabela(i), x) NAO evita NO_DATA_FOUND: o indice e lido primeiro. A
+      # linha parece defensiva e falha na primeira posicao nao visitada.
+      - name: Nenhum NVL sobre elemento de tabela indexada
+        run: python dev/scripts/plsql_lint/check_assoc_nvl.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      # PLS_INTEGER tem sinal e estoura em 2147483647. Valor de 32 bits SEM
+      # sinal passa disso, e o ORA-01426 e de EXECUCAO: chega sem nome de
+      # variavel e embrulhado no WHEN OTHERS de quem chamou.
+      - name: Nenhuma multiplicação de PLS_INTEGER por constante grande
+        run: python dev/scripts/plsql_lint/check_pls_overflow.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      # A xref em stream lida errado nao estoura: devolve um offset plausivel, e
+      # o objeto que sai de la e OUTRO objeto, com dicionario valido. Quem pega
+      # isso e o MuPDF, comparando objeto a objeto.
+      # zxing-cpp e Pillow entram junto: a régua do boleto renderiza a página e
+      # exige que um leitor externo leia os 44 dígitos. Sem eles a etapa morre
+      # no import, DEPOIS de todas as verificações de geometria passarem.
+      # matplotlib e reportlab entram por causa das larguras das fontes: o
+      # primeiro distribui os AFM da Adobe, o segundo traz as mesmas metricas
+      # por outro caminho, e a referencia so gera se os dois concordarem.
+      - name: Instalar o MuPDF, o leitor e as fontes para as referências
+        run: pip install "pymupdf>=1.24" zxing-cpp pillow matplotlib reportlab fonttools
+
+      - name: Referência da xref em stream confere com o MuPDF
+        run: python dev/scripts/pdfxref_reference/validate.py
+
+      - name: Referência do INFLATE confere com o zlib
+        run: python dev/scripts/pdfinflate_reference/validate.py
+
+      # O outro lado: sem um deflate, SetCompression era um no-op. O que sai
+      # daqui e comparado BYTE A BYTE com o que o banco produz — um deflate
+      # "equivalente mas diferente" so seria conferido descomprimindo, e o
+      # inflate desta mesma casa toleraria o erro.
+      - name: Referência do DEFLATE confere com o zlib
+        run: python dev/scripts/pdfdeflate_reference/validate.py
+
+      # Texto certo nao e desenho certo: valor que transborda a caixa, corpo
+      # trocado, coluna desalinhada e dois textos empilhados passam por
+      # qualquer conferencia de conteudo. A regua confere geometria, e e a
+      # mesma que o runner aplica ao PDF que sai do banco.
+      - name: Régua do boleto fecha (métricas do Helvetica e zxing)
+        run: python dev/scripts/boleto_reference/validate.py
+
+      # O ingresso cobre o que o boleto nao cobre: cor de painel, cor de texto,
+      # duas simbologias na mesma pagina e mais de uma pagina. Painel que saiu
+      # branco continua "desenhado", e texto claro sobre fundo claro some.
+      - name: Régua do ingresso fecha (cor, QR e Code 39)
+        run: python dev/scripts/ticket_reference/validate.py
+
+      # O body cresceu por acréscimo, e acréscimo deixa restos: rotina
+      # substituída que continuou compilando, constante de uma tabela que mudou
+      # de forma. Nada disso quebra — e é por isso que fica.
+      - name: Nada declarado no body sem ninguém usar
+        run: python dev/scripts/plsql_lint/check_dead_code.py src/PL_FPDF.pks src/PL_FPDF.pkb
+      - name: Nada declarado no utilitario sem ninguém usar
+        run: python dev/scripts/plsql_lint/check_dead_code.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
+
+      # O fonte de 2017 era GPL e o projeto e MIT. Enquanto houver codigo de la
+      # aqui, as duas coisas nao fecham, e a reimplementacao leva meses. Este
+      # numero so pode descer: um copiar-e-colar bem-intencionado devolveria em
+      # uma tarde o que se ganhou num mes, e nada acusaria — compila, os testes
+      # passam, a regua fecha.
+      # As larguras das 14 fontes sao DADO, e dado tem fonte primaria. Duas,
+      # aqui, que se conferem glifo a glifo: os AFM da Adobe e as tabelas do
+      # reportlab. Uma so nao bastaria — os AFM da URW sao anteriores ao Euro.
+      - name: As larguras das fontes conferem com o AFM da Adobe
+        run: PYTHONPATH=dev/scripts/font_reference python dev/scripts/font_reference/validate.py
+      - name: O bloco de larguras no .pkb esta em dia
+        run: PYTHONPATH=dev/scripts/font_reference python dev/scripts/font_reference/gerar.py --check
+
+      # Dentro de (...) num fluxo de conteudo, a barra invertida inicia
+      # sequencia de escape. A operacao estava escrita CINCO vezes, e TRES
+      # procuravam por '\\' trocando por '\\\\' — que em PL/SQL e procurar DUAS
+      # barras e trocar por QUATRO. Uma barra sozinha passava intacta, e o PDF
+      # continuava abrindo: so o texto saia trocado. Pegava PL_FPDF.Text e os
+      # metadados do documento.
+      - name: Uma só rotina escapa string de PDF, e está certa
+        run: python dev/scripts/plsql_lint/check_escape_pdf.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      - name: A heranca do fonte original nao aumentou
+        run: python dev/scripts/plsql_lint/check_heranca.py
+
+      # Os scripts resolviam caminho relativo ao diretorio ATUAL. Funcionava
+      # porque o CI e todo mundo rodavam da raiz — e quebrou no primeiro que
+      # nao rodou: FileNotFoundError em 'examples/boleto.sql' ao chamar o
+      # runner de dentro de dev/scripts. Pior: o check_links passava dizendo
+      # "0 links em 0 arquivos", aprovando sem verificar nada.
+      # Este passo roda de OUTRO diretorio, que e a condicao que expunha os dois.
+      - name: Os scripts funcionam de qualquer diretório
+        run: |
+          set -e
+          cd /tmp
+          R="$GITHUB_WORKSPACE"
+          python "$R/dev/scripts/run_tests.py" --status
+          python "$R/dev/scripts/gen_docs/check_links.py"
+          python "$R/dev/scripts/gen_docs/check_refs.py"
+          python "$R/dev/scripts/build_run_all.py" --check
+          python "$R/dev/scripts/build_release.py" --check
+          python "$R/dev/scripts/plsql_lint/check_examples_sync.py"
+          python "$R/dev/scripts/plsql_lint/check_test_calls.py"
+          python "$R/dev/scripts/plsql_lint/check_v_estatico.py"
+          python "$R/dev/scripts/plsql_lint/check_lob_temp.py"
+          python "$R/dev/scripts/plsql_lint/check_tables.py"
+          python "$R/dev/scripts/plsql_lint/check_escape_pdf.py" "$R/src/PL_FPDF.pkb"
+          python "$R/dev/scripts/plsql_lint/check_undeclared.py" "$R/src/PL_FPDF.pks" "$R/src/PL_FPDF.pkb"
+          python "$R/dev/scripts/gen_docs/check_paridade.py"
+
+      - name: Toda referência PL_FPDF.* na documentação existe no package
+        run: python dev/scripts/gen_docs/check_refs.py
+
+      # Link quebrado em documentação não dá erro em lugar nenhum: o arquivo
+      # continua válido e quem clica é que descobre. O CHANGELOG apontava para
+      # um docs/api/API_REFERENCE.md que deixou de existir.
+      - name: Todo link e imagem relativa da documentação aponta para arquivo existente
+        run: python dev/scripts/gen_docs/check_links.py
+
+      - name: dev/tests/run_all_tests.sql está atualizado
+        run: python dev/scripts/build_run_all.py --check
+
+      # O `dist/pl_fpdf_install.sql` é o que se baixa por link direto, sem
+      # clone. Se ele ficar para trás de `src/`, quem instala recebe a versão
+      # anterior sem nenhum sinal de que recebeu.
+      - name: dist/pl_fpdf_install.sql está atualizado
+        run: python dev/scripts/build_release.py --check
+
+      # As tabelas do QR e dos códigos de barras foram transcritas à mão da
+      # referência; uma linha do co_bc128 perdeu o separador e só um vetor de
+      # teste no banco revelou.
+      - name: Tabelas do QR e barcode conferem com as referências validadas
+        run: python dev/scripts/plsql_lint/check_tables.py
+
+      # ORA-06550 é erro de compilação: uma chamada errada derruba o arquivo
+      # de teste inteiro, não só aquele caso.
+      - name: Chamadas a PL_FPDF.* nos testes batem com a spec
+        run: python dev/scripts/plsql_lint/check_test_calls.py
+
+      # Role nao vale dentro de PL/SQL: V$ em SQL estatico e PLS-00201 em tempo
+      # de COMPILACAO, e o EXCEPTION que deveria pular o caso nunca roda. Custou
+      # uma rodada no test_regressoes_revisao.sql.
+      - name: Nenhuma view V$/DBA_ em SQL estático dentro de PL/SQL
+        run: |
+          python dev/scripts/plsql_lint/check_v_estatico.py
+          python dev/scripts/plsql_lint/check_v_estatico.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+
+      # Vazamento de LOB temporario nao se observa de dentro do schema: USER_*
+      # nao expoe a contagem e as instancias vazadas nao tem locator. Entao a
+      # guarda le o FONTE — sem banco, sem privilegio, sem rede. O SplitPDF
+      # deixava um CLOB de duracao de sessao por intervalo.
+      - name: Todo LOB temporário recebido de uma função é liberado
+        run: python dev/scripts/plsql_lint/check_lob_temp.py
+
+      # O mesmo desenho vive no exemplo (documentacao) e na amostra do runner
+      # (o que roda contra o banco). Eles ja divergiram: o conserto do rodape
+      # do ingresso teve de ser aplicado nos dois, e nada garantia que fosse.
+      - name: Exemplos desenham igual à amostra que os testa
+        run: python dev/scripts/plsql_lint/check_examples_sync.py
+
+      # As paginas escritas a mao nao tem gerador que as mantenha juntas: aqui
+      # se cobra que a EN tenha as mesmas secoes, as mesmas linhas de tabela e
+      # os mesmos exemplos chamando as mesmas APIs que a PT.
+      - name: As páginas do site em inglês acompanham as portuguesas
+        run: python dev/scripts/gen_docs/check_paridade.py
 
   package-sanity:
     name: Package version consistency
@@ -69,8 +293,8 @@ jobs:
           check "CHANGELOG.md"           CHANGELOG.md    "## \[$ver\]"
           check "README.md (badge PT)"   README.md       "badge/versão-$ver"
           check "README_EN.md (badge EN)" README_EN.md   "badge/version-$ver"
-          check "index.html (chip hero)" index.html      ">v$ver<"
-          check "index.html (JSON-LD)"   index.html      "\"softwareVersion\": \"$ver\""
+          check "site/index.html (chip hero)" site/index.html      ">v$ver<"
+          check "site/index.html (JSON-LD)"   site/index.html      "\"softwareVersion\": \"$ver\""
           check "PL_FPDF.pkb (header)"   src/PL_FPDF.pkb "PL_FPDF v$ver"
 
           echo "OK: versão $ver consistente em todos os arquivos"
