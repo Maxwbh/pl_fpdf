@@ -343,13 +343,18 @@ independentes, e ela **contradisse** a ordem que este mesmo documento teria
 proposto por intuicao. O item que a intuicao punha em terceiro caiu para o
 backlog quando o numero apareceu.
 
+O **como** de cada item — logica, caso de uso, criterio de aceite e as
+armadilhas conhecidas — esta em `docs/HISTORIAS.md`, uma historia por lacuna.
+Esta secao fica com o **o que** e o **em que ordem**.
+
 ### Como foi medido
 
-**Fonte A — o que um fornecedor comercial acha que precisa demonstrar.**
-Contagem de casos de exemplo por tema na distribuicao publica do PL/PDF
-(174 casos distintos). Um fornecedor escreve exemplo para o que o cliente
-pergunta; a distribuicao dos exemplos e um retrato barato da demanda que ele
-atende. Contaram-se **nomes de arquivo**, nada mais.
+**Fonte A — o que o mercado precisa ver demonstrado.** Levantamento de
+demanda sobre um catalogo comercial de referencia do mesmo nicho: 174 casos
+de exemplo, agrupados por tema. Quem vende suporte escreve exemplo para o que
+o cliente pergunta, entao a distribuicao dos exemplos e um retrato barato da
+demanda atendida. O levantamento e **quantitativo e de superficie** — conta
+casos por tema, nada alem disso.
 
 **Fonte B — o que esta base ja exercita.** APIs distintas chamadas em
 `examples/` e `dev/tests/`: **69 das 138 publicas**. Metade da superficie
@@ -380,8 +385,8 @@ desta base de fato usam (106 distintos).
 | PDF marcado (tagged/PDF-UA)  |  1 | Nao |
 
 > **A correcao que o numero impos.** "PDF marcado" tinha sido proposto como o
-> terceiro item, pelo argumento de licitacao publica. Ele e o **penultimo** em
-> demonstracao de fornecedor — 1 caso em 174, empatado com o ultimo. O
+> terceiro item, pelo argumento de licitacao publica. Ele e o **penultimo** da
+> fonte A — 1 caso em 174, empatado com o ultimo. O
 > argumento de licitacao continua valido e nao foi verificado contra texto
 > legal: a Lei Brasileira de Inclusao e o eMAG obrigam acessibilidade de
 > **sitio web**; nao se achou norma que exija PDF/UA em documento de
@@ -418,32 +423,8 @@ caractere acentuado — e alinhamento a direita, centralizacao e quebra de
 linha erram junto. **Medir antes de mexer:** um bloco que compare
 `GetStringWidth('a')` com o valor do AFM para as 128 posicoes altas.
 
-**Como desenvolver**
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-01.
 
-1. Referencia em Python primeiro, como manda o metodo da base: tabela
-   Unicode -> WinAnsi (cp1252) das 224 posicoes imprimiveis, gerada de fonte
-   primaria e conferida contra um PDF produzido por biblioteca externa e lido
-   de volta com MuPDF. Vai em `dev/scripts/winansi_reference/`.
-2. Uma funcao `p_para_winansi(p_texto)` no PL/SQL que trabalhe em **RAW** —
-   `UTL_RAW.CAST_TO_RAW` na entrada, `UTL_RAW.CAST_TO_VARCHAR2` na saida —
-   pela armadilha ja paga: remontar binario byte a byte num VARCHAR2 nao
-   recupera o binario.
-3. Caractere fora do WinAnsi (o `—` travessao, aspas curvas, qualquer coisa
-   fora do cp1252): **recusar com erro proprio**, nao trocar em silencio por
-   `?`. O principio 2 da base — recusar em vez de entregar errado — e o que
-   separa "saiu torto" de "o programa avisou".
-4. Chamar na saida de texto, **so quando a fonte for core**. Fonte TTF
-   embutida tem a propria codificacao e nao passa por aqui.
-5. `SetUTF8Enabled` passa a significar algo: hoje `g_utf8_enabled`
-   (`src/PL_FPDF.pkb:303`) e escrito e lido pelo par getter/setter e **nada
-   mais o consulta** — o ajuste nao tem efeito. Ou ele governa esta conversao,
-   ou some da spec.
-6. Lint que impeca a volta: nenhuma escrita de texto com fonte core sem passar
-   pela conversao.
-
-**Teste:** um PDF com as 224 posicoes do cp1252, lido de volta e comparado
-caractere a caractere; mais um caso que confirme a **recusa** do caractere
-fora da tabela.
 
 ---
 
@@ -467,27 +448,8 @@ TTF e a **unica forma de acertar acento**, porque o item 1 esta quebrado. Os
 dois andam juntos: consertado o item 1, quem so precisa de portugues fica nas
 fontes core e nem embute; quem embute, embute barato.
 
-**Como desenvolver**
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-02.
 
-1. Ler o que ja existe: `pdf_ttf*` desta base ja faz o parse das tabelas.
-   O subset acrescenta a poda, nao um leitor novo.
-2. Referencia em Python: montar o subset com `fontTools`, gravar num PDF e
-   confirmar com MuPDF que **os mesmos glifos** saem do arquivo podado.
-3. No PL/SQL, o subset minimo util e: manter `glyf`/`loca` so dos glifos
-   usados, remapear `cmap` para eles, recalcular `hmtx`/`hhea.numberOfHMetrics`
-   e **regravar a soma de verificacao de `head` (`checkSumAdjustment`)** —
-   leitor rigoroso recusa a fonte sem isso.
-4. Dois cuidados que esta base ja pagou noutro contexto: a conta de
-   `checkSumAdjustment` e de **32 bits sem sinal** e estoura `PLS_INTEGER`
-   (`ORA-01426`) — faca em `NUMBER`; e todo o corte de tabela e binario, entao
-   e **RAW**, nao VARCHAR2.
-5. Coletar os glifos de fato usados exige saber o texto **antes** de fechar o
-   documento. Como o `Output` desta base ja monta no fim, da para acumular um
-   conjunto por fonte durante a escrita e podar na hora de emitir o
-   `/FontFile2`.
-
-**Teste:** gerar o mesmo documento com e sem subset, conferir que o texto
-extraido e identico e que o arquivo encolheu na ordem medida acima.
 
 ---
 
@@ -497,28 +459,8 @@ extraido e identico e que o arquivo encolheu na ordem medida acima.
 na fonte A. E a unica estrutura desta lista que o PDF resolve com um
 dicionario simples, sem codificacao nem binario.
 
-**Como desenvolver**
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-03.
 
-1. `/Outlines` do ISO 32000 e uma lista duplamente encadeada de dicionarios:
-   cada item tem `/Title`, `/Parent`, `/Prev`, `/Next`, `/First`, `/Last`,
-   `/Count` e um `/Dest` apontando para a pagina. O catalogo ganha
-   `/Outlines` e, opcionalmente, `/PageMode /UseOutlines` para o leitor abrir
-   com o painel visivel.
-2. API sugerida, no estilo que a base ja usa:
-   `AddBookmark(p_titulo, p_nivel default 1, p_pagina default null)` — pagina
-   nula significa a corrente. O nivel monta a hierarquia; guarde os itens numa
-   tabela indexada e **so encadeie na emissao**, quando todos os `/Dest` ja
-   sao conhecidos.
-3. O sumario **visivel** (a pagina com os titulos e os numeros) e outro
-   problema, e o mais chato: o numero da pagina de um capitulo so se sabe
-   depois de paginar tudo. O caminho conhecido e o que o `{nb}` desta base ja
-   usa — escrever um marcador e substituir na emissao.
-4. `/Title` e string PDF e sofre do **mesmo** problema do item 1: acento em
-   titulo de marcador precisa de WinAnsi ou de UTF-16BE com BOM. Mais uma
-   razao para o item 1 vir antes.
-
-**Teste:** gerar com tres niveis, reabrir e conferir a arvore e o destino de
-cada item.
 
 ---
 
@@ -538,7 +480,7 @@ conteudo — nao e um modulo que se acrescenta ao lado.
 
 **Reavaliar se** aparecer exigencia contratual real, ou norma que se possa
 citar. Nesse caso ele sobe direto, porque nenhuma biblioteca PL/SQL livre faz
-isso.
+isso. Analise completa em `docs/HISTORIAS.md`, HU-04.
 
 ---
 
@@ -549,9 +491,8 @@ outras 69 compilam e ninguem as chama neste repositorio — nao ha como saber se
 funcionam. Nao e o mesmo que estarem quebradas, e e exatamente a situacao em
 que `AddWatermark` passou meses marcado como pronto sem desenhar nada.
 
-Antes de acrescentar superficie nova, vale medir a existente: um levantamento
-do que nao tem chamador, e teste minimo para o que sobrar. Barato, e ataca a
-classe de defeito que mais custou a esta base.
+Antes de acrescentar superficie nova, vale medir a existente. Levantamento e
+criterio em `docs/HISTORIAS.md`, HU-05.
 
 ---
 
