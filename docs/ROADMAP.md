@@ -372,7 +372,7 @@ desta base de fato usam (106 distintos).
 | Celula / linha / tabela      | 31 | Parcial — `Cell` e `MultiCell`; sem tabela com quebra automatica |
 | XHTML -> PDF                 | 14 | *Fora de escopo — outro produto* |
 | Codigo de barras             | 12 | **Sim** |
-| Grafico                      | 10 | Nao |
+| Grafico                      | 10 | *Fora de escopo — outro produto* |
 | Assinatura digital / carimbo |  9 | *Fora de escopo — outro produto* |
 | Sumario (TOC)                |  8 | Nao |
 | Desenho vetorial             |  7 | **Sim** |
@@ -384,10 +384,11 @@ desta base de fato usam (106 distintos).
 | Marcadores (bookmarks)       |  1 | Nao |
 | PDF marcado (tagged/PDF-UA)  |  1 | Nao |
 
-> **Demanda alta nao e o mesmo que escopo.** Os dois itens marcados como fora
-> de escopo tem 14 e 9 casos — 2o e 5o lugares da medicao. Eles saem assim
-> mesmo, e a decisao esta no fim desta secao, em "Fora de escopo". Medir a
-> demanda e uma coisa; decidir que produto se esta construindo e outra.
+> **Demanda alta nao e o mesmo que escopo.** Os tres itens marcados como fora
+> de escopo somam 33 casos e ocupam o 2o, o 4o e o 5o lugares da medicao —
+> mais que o primeiro colocado sozinho. Saem assim mesmo, e a decisao esta no
+> fim desta secao, em "Fora de escopo". Medir a demanda e uma coisa; decidir
+> que produto se esta construindo e outra.
 
 > **A correcao que o numero impos.** "PDF marcado" tinha sido proposto como o
 > terceiro item, pelo argumento de licitacao publica. Ele e o **penultimo** da
@@ -509,7 +510,6 @@ traz a contagem da fonte A, que e o que sustenta a nota de valor.
 | Feature | Complexidade | Valor | Casos |
 |---------|--------------|-------|------:|
 | Table auto-pagination | Media | **Alto** | 31 |
-| Grafico (barra, linha, pizza) | Media | Medio | 10 |
 | Formulario AcroForm | Media | Medio | 6 |
 | Annotations (comments) | Media | Baixo | 5 |
 | PDF marcado (tagged/PDF-UA) | Alta | Baixo *(reavaliar com norma)* | 1 |
@@ -525,6 +525,7 @@ re-deriva da mesma medicao daqui a seis meses e refaz a discussao.
 | Item | Casos | Por que sai |
 |------|------:|-------------|
 | XHTML -> PDF | 14 | E **outro produto**, e a funcionalidade ja existe pronta e facil fora daqui. Reimplementar um subconjunto de HTML e CSS dentro do PL/SQL entrega uma versao pior de algo que a pessoa resolve melhor por outro caminho. |
+| Grafico (barra, linha, pizza) | 10 | E **outro produto**. Grafico e visualizacao de dado — escala de eixo, legenda, posicionamento de rotulo, paleta —, um dominio inteiro que por acaso termina numa imagem. E o encaixe **ja existe**: quem gera o grafico onde for melhor coloca a imagem com `AddImage` ou `OverlayImage`, que esta base ja faz e ja valida por pixel. Construir um motor de grafico aqui competiria com ferramenta madura para entregar menos. |
 | Assinatura digital | 9 | E **outro produto**. Assinatura e infraestrutura de certificado, cadeia, carimbo do tempo e politica de assinatura — nao e geracao de PDF. Quem faz isso serio nao quer que a biblioteca de desenho tambem assine. |
 
 O criterio e o mesmo que ja tirou o `PL_FPDF_BOLETO` daqui: **montar** os 44
@@ -558,9 +559,11 @@ desenhar um PDF, ou e outro dominio que por acaso termina num PDF?*
    escopo e sempre a mesma: *isto e desenhar um PDF, ou e outro dominio que
    por acaso termina num PDF?* Montar os 44 digitos do boleto e regra de
    cobranca; desenhar o codigo de barras e nosso. Assinatura digital e
-   infraestrutura de certificado; XHTML -> PDF e um motor de layout que ja
-   existe pronto fora daqui. Demanda medida alta nao derruba este principio —
-   derruba so a duvida sobre se alguem pediria.
+   infraestrutura de certificado; XHTML -> PDF e um motor de layout; grafico
+   e visualizacao de dado — os tres ja existem prontos fora daqui, e para os
+   dois ultimos o encaixe e uma imagem, que esta base ja coloca. Demanda
+   medida alta nao derruba este principio — derruba so a duvida sobre se
+   alguem pediria.
 
 ---
 
