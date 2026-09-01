@@ -510,17 +510,40 @@ traz a contagem da fonte A, que e o que sustenta a nota de valor.
 | Feature | Complexidade | Valor | Casos |
 |---------|--------------|-------|------:|
 | Table auto-pagination | Media | **Alto** | 31 |
-| Formulario AcroForm | Media | Medio | 6 |
-| Annotations (comments) | Media | Baixo | 5 |
+| Formulario AcroForm | Media | Medio † | 6 |
+| Annotations (comments) | Media | Baixo † | 5 |
 | PDF marcado (tagged/PDF-UA) | Alta | Baixo *(reavaliar com norma)* | 1 |
 | JavaScript actions | Alta | Baixo | 0 |
 | Layers (OCG) | Media | Baixo | 0 |
 
+† **Itens separados, esforco conjunto.** Os dois sao a **mesma maquina**:
+anotacao e campo de formulario sao entradas do mesmo `/Annots`, e a base ja o
+monta — `src/PL_FPDF.pkb:2219` abre o array e a linha 2232 ja emite
+`<</Type /Annot /Subtype /Link /Rect [...`. Um campo de formulario e um
+`/Subtype /Widget` no mesmo lugar.
+
+Ficam separados na tabela porque sao entregas distintas, com casos de uso e
+criterios de aceite proprios — juntar as duas numa linha so esconderia que uma
+pode ser entregue sem a outra. Mas quem pegar uma **deve pegar as duas na mesma
+investida**: o caro aqui e entender e generalizar o `/Annots` (dicionario por
+subtipo, `/Rect` em coordenadas de pagina, *appearance stream*, e o que
+acontece com tudo isso no `MergePDFs` e no `RemovePage`). Feito esse trabalho,
+o segundo subtipo custa uma fracao do primeiro. Feitos em rodadas separadas,
+paga-se o entendimento duas vezes — e a segunda passagem tende a refatorar o
+que a primeira deixou rigido demais.
+
+Fronteira interna, para nao repetir a discussao: **criar** o campo, o `/Rect`,
+o `/AP` e o valor inicial e nosso; **ler** o valor de um PDF carregado e nosso.
+Acao JavaScript de validacao e calculo nao e — esta na linha propria do
+backlog, e e outro dominio. Fluxo de aprovacao e quem preenche o que, tambem
+nao.
+
 ### Fora de escopo — decidido, nao esquecido
 
-Duas entradas com demanda **alta e medida** sairam do backlog em set/2026 por
-decisao de escopo. Ficam registradas aqui de proposito: apagadas, alguem as
-re-deriva da mesma medicao daqui a seis meses e refaz a discussao.
+Tres entradas com demanda **alta e medida** — 33 casos somados, mais que o
+primeiro colocado sozinho — sairam do backlog em set/2026 por decisao de
+escopo. Ficam registradas aqui de proposito: apagadas, alguem as re-deriva
+da mesma medicao daqui a seis meses e refaz a discussao.
 
 | Item | Casos | Por que sai |
 |------|------:|-------------|
