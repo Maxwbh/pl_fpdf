@@ -370,10 +370,10 @@ desta base de fato usam (106 distintos).
 | Tema | Casos (fonte A) | Temos? |
 |------|----------------:|--------|
 | Celula / linha / tabela      | 31 | Parcial — `Cell` e `MultiCell`; sem tabela com quebra automatica |
-| XHTML -> PDF                 | 14 | Nao |
+| XHTML -> PDF                 | 14 | *Fora de escopo — outro produto* |
 | Codigo de barras             | 12 | **Sim** |
 | Grafico                      | 10 | Nao |
-| Assinatura digital / carimbo |  9 | Nao |
+| Assinatura digital / carimbo |  9 | *Fora de escopo — outro produto* |
 | Sumario (TOC)                |  8 | Nao |
 | Desenho vetorial             |  7 | **Sim** |
 | Formulario AcroForm          |  6 | Nao |
@@ -383,6 +383,11 @@ desta base de fato usam (106 distintos).
 | Codificacao e acento         |  4 | **Parcial, e com defeito** |
 | Marcadores (bookmarks)       |  1 | Nao |
 | PDF marcado (tagged/PDF-UA)  |  1 | Nao |
+
+> **Demanda alta nao e o mesmo que escopo.** Os dois itens marcados como fora
+> de escopo tem 14 e 9 casos — 2o e 5o lugares da medicao. Eles saem assim
+> mesmo, e a decisao esta no fim desta secao, em "Fora de escopo". Medir a
+> demanda e uma coisa; decidir que produto se esta construindo e outra.
 
 > **A correcao que o numero impos.** "PDF marcado" tinha sido proposto como o
 > terceiro item, pelo argumento de licitacao publica. Ele e o **penultimo** da
@@ -504,14 +509,28 @@ traz a contagem da fonte A, que e o que sustenta a nota de valor.
 | Feature | Complexidade | Valor | Casos |
 |---------|--------------|-------|------:|
 | Table auto-pagination | Media | **Alto** | 31 |
-| HTML to PDF (subset) | Alta | Alto | 14 |
 | Grafico (barra, linha, pizza) | Media | Medio | 10 |
-| Assinatura digital | Alta | Medio | 9 |
 | Formulario AcroForm | Media | Medio | 6 |
 | Annotations (comments) | Media | Baixo | 5 |
 | PDF marcado (tagged/PDF-UA) | Alta | Baixo *(reavaliar com norma)* | 1 |
 | JavaScript actions | Alta | Baixo | 0 |
 | Layers (OCG) | Media | Baixo | 0 |
+
+### Fora de escopo — decidido, nao esquecido
+
+Duas entradas com demanda **alta e medida** sairam do backlog em set/2026 por
+decisao de escopo. Ficam registradas aqui de proposito: apagadas, alguem as
+re-deriva da mesma medicao daqui a seis meses e refaz a discussao.
+
+| Item | Casos | Por que sai |
+|------|------:|-------------|
+| XHTML -> PDF | 14 | E **outro produto**, e a funcionalidade ja existe pronta e facil fora daqui. Reimplementar um subconjunto de HTML e CSS dentro do PL/SQL entrega uma versao pior de algo que a pessoa resolve melhor por outro caminho. |
+| Assinatura digital | 9 | E **outro produto**. Assinatura e infraestrutura de certificado, cadeia, carimbo do tempo e politica de assinatura — nao e geracao de PDF. Quem faz isso serio nao quer que a biblioteca de desenho tambem assine. |
+
+O criterio e o mesmo que ja tirou o `PL_FPDF_BOLETO` daqui: **montar** os 44
+digitos e regra de cobranca, nao desenho de PDF; **desenhar** o codigo de
+barras e. A pergunta que separa os dois lados e sempre a mesma — *isto e
+desenhar um PDF, ou e outro dominio que por acaso termina num PDF?*
 
 > **Correcao da revisao.** "Headers/Footers automaticos" saiu do backlog:
 > `SetHeaderProc` e `SetFooterProc` existem, sao chamados na quebra de pagina e
@@ -535,6 +554,13 @@ traz a contagem da fonte A, que e o que sustenta a nota de valor.
 6. **Recusar em vez de entregar errado** - Quando algo nao e suportado, levantar
    erro com mensagem clara. Um PDF marcado como protegido que nao esta, ou uma
    imagem que sai como ruido, custa mais caro que uma excecao.
+7. **Desenhar PDF, nao o dominio de quem chama** - A pergunta que decide o
+   escopo e sempre a mesma: *isto e desenhar um PDF, ou e outro dominio que
+   por acaso termina num PDF?* Montar os 44 digitos do boleto e regra de
+   cobranca; desenhar o codigo de barras e nosso. Assinatura digital e
+   infraestrutura de certificado; XHTML -> PDF e um motor de layout que ja
+   existe pronto fora daqui. Demanda medida alta nao derruba este principio —
+   derruba so a duvida sobre se alguem pediria.
 
 ---
 
