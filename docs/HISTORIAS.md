@@ -52,7 +52,7 @@ for i in 0..255 loop
 end loop;
 ```
 
-A chave e `chr(i)`. O `CLAUDE.md` desta base ja documenta que **`CHR(n)` nao
+A chave e `chr(i)`. O `docs/MANUTENCAO.md` desta base ja documenta que **`CHR(n)` nao
 devolve um byte**: devolve o caractere daquele ponto de codigo no charset do
 banco, e em AL32UTF8 todo valor de 128 a 255 sai com dois bytes — ou nem sai,
 porque 0x80..0xFF sozinho nao e UTF-8 valido.

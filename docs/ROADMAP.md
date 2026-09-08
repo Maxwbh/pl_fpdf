@@ -422,7 +422,7 @@ com fonte core. Esta mascarado porque os exemplos evitam acento.
 
 **Hipotese a verificar contra o banco, nao confirmada.** `p_larguras_de`
 (`src/PL_FPDF.pkb:693`) monta a tabela de larguras com `mySet(chr(i))` para
-`i in 0..255`. O `CHR(n)` em AL32UTF8 e a armadilha que o `CLAUDE.md` ja
+`i in 0..255`. O `CHR(n)` em AL32UTF8 e a armadilha que o `docs/MANUTENCAO.md` ja
 documenta: de 128 a 255 ele nao devolve um byte. Se as chaves de 128 a 255
 saem invalidas ou colididas, `GetStringWidth` erra a largura de todo
 caractere acentuado — e alinhamento a direita, centralizacao e quebra de
