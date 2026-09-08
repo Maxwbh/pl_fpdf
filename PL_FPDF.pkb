@@ -230,8 +230,7 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
- co_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
+ -- Declaradas na spec; redeclarar aqui daria PLS-00371.
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -1572,6 +1571,7 @@ procedure p_putimages is
   v txt;
   trns txt;
   pal  txt;
+  l_off pls_integer;
 begin
   if (b_compress) then
     filter := '/Filter /FlateDecode ';
@@ -1589,7 +1589,7 @@ begin
 		p_out('/Width ' || info.w);
 		p_out('/Height ' || info.h);
 		if(info.cs = 'Indexed') then
-			p_out('/ColorSpace [/Indexed /DeviceRGB ' || to_char(strlen(info.pal) / 3 - 1) || ' ' || to_char(n+1) || ' 0 R]');
+			p_out('/ColorSpace [/Indexed /DeviceRGB ' || to_char(length(info.pal) / 6 - 1) || ' ' || to_char(n+1) || ' 0 R]');
 		else
 			p_out('/ColorSpace /' || info.cs);
 			if(info.cs = 'DeviceCMYK') then
@@ -1599,10 +1599,18 @@ begin
 
 		p_out('/BitsPerComponent ' || info.bpc);
 		if(info.f is not null) then
-			p_out('/Filter /' || info.f);
+			p_out('/Filter [/ASCIIHexDecode /' || info.f || ']');
 		end if;
 		if(info.parms is not null) then
-			p_out(info.parms);
+			-- Com /Filter em array, o /DecodeParms também tem de ser array: um
+			-- por filtro, na mesma ordem. null para o /ASCIIHexDecode, que não
+			-- tem parâmetro, e o dicionário para o /FlateDecode. Com um
+			-- dicionário solto, o leitor aplica o /Predictor ao filtro errado e a
+			-- imagem decodifica desalinhada: abre sem erro e desenha as cores
+			-- trocadas de lugar. Foi pego rasterizando o PDF num leitor
+			-- independente e comparando os pixels: 10 de 16 saíam errados.
+			p_out(replace(info.parms, '/DecodeParms ', '/DecodeParms [null ')
+			      || ']');
 		end if;
 		
 		if(info.trns.first is not null ) then
@@ -1613,8 +1621,15 @@ begin
 			p_out('/Mask (' || trns || ')');
 		end if;
 
-		p_out('/Length ' || dbms_lob.getlength(info.data) || '>>');
-		p_putstream(info.data);
+		p_out('/Length ' || (dbms_lob.getlength(info.data) * 2 + 1) || '>>');
+		p_out('stream');
+		l_off := 1;
+		while l_off <= dbms_lob.getlength(info.data) loop
+			p_out(rawtohex(dbms_lob.substr(info.data, 2000, l_off)), false);
+			l_off := l_off + 2000;
+		end loop;
+		p_out('>');
+		p_out('endstream');
 		images(v).data := null;
 		p_out('endobj');
 
@@ -1627,8 +1642,11 @@ begin
 			 else
 			   pal := info.pal;
 			 end if;
-			p_out('<<' || filter || '/Length ' || strlen(pal) || '>>');
-			p_putstream(pal);
+			p_out('<</Filter /ASCIIHexDecode /Length ' || (length(pal) + 1) || '>>');
+			p_out('stream');
+			p_out(pal, false);
+			p_out('>');
+			p_out('endstream');
 			p_out('endobj');
 		end if;
 		v := images.next(v);
@@ -1990,7 +2008,7 @@ function p_parseImage(pFile varchar2) return recImage is
   myImg recImageBlob;  -- Changed from ordsys.ordImage
   myImgInfo recImage;
   myblob blob;
-  png_signature constant varchar2(8)  := chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
+  c_png_sig constant raw(8) := hextoraw('89504E470D0A1A0A');
   amount number;
   f number default 1;
   buf varchar2(8192);
@@ -2032,16 +2050,16 @@ begin
 	-- reading the blob
 	amount := 8;
 	--Check signature
-	if(fread(myblob, f, amount) != png_signature ) then
+	if(utl_raw.compare(freadb(myblob, f, amount), c_png_sig) != 0) then
 	    Error('Not a PNG file: ' || pFile);
 	end if;
 	
 	-- Read header chunk
 	amount := 4;
-	buf := fread(myblob, f, amount);
+	bufRaw := freadb(myblob, f, amount);
 	
-	buf := fread(myblob, f, amount);	
-	if(buf != 'IHDR') then
+	bufRaw := freadb(myblob, f, amount);	
+	if(utl_raw.compare(bufRaw, utl_raw.cast_to_raw('IHDR')) != 0) then
 	   Error('Incorrect PNG file: ' || pFile);
 	end if;
 
@@ -2050,17 +2068,17 @@ begin
     myImgInfo.h := myImg.height;
 
 	-- ^^^ I have already get width and height, so go forward (read 4 Bytes twice)
-	buf := fread(myblob, f, amount);
-	buf := fread(myblob, f, amount);
+	bufRaw := freadb(myblob, f, amount);
+	bufRaw := freadb(myblob, f, amount);
 
 	amount := 1;
 	
-	myImgInfo.bpc := ord(fread(myblob, f, amount));	
+	myImgInfo.bpc := to_number(rawtohex(freadb(myblob, f, amount)), 'XX');	
 	if( myImgInfo.bpc > 8) then
 		Error('16-bit depth not supported: ' || pFile);    
 	end if;  
 	
-	ct := ord(fread(myblob, f, amount));	
+	ct := to_number(rawtohex(freadb(myblob, f, amount)), 'XX');	
 	if( ct = 0 ) then
 		myImgInfo.cs := 'DeviceGray';
 	elsif( ct = 2 ) then
@@ -2070,18 +2088,18 @@ begin
 	else
 		Error('Alpha channel not supported: ' || pFile);
     end if;
-	if( ord(fread(myblob, f, amount)) != 0 ) then
+	if( to_number(rawtohex(freadb(myblob, f, amount)), 'XX') != 0 ) then
 		Error('Unknown compression method: ' || pFile);
 	end if;
-	if( ord(fread(myblob, f, amount)) != 0 ) then
+	if( to_number(rawtohex(freadb(myblob, f, amount)), 'XX') != 0 ) then
 		Error('Unknown filter method: ' || pFile);
 	end if;
-	if( ord(fread(myblob, f, amount)) != 0 ) then
+	if( to_number(rawtohex(freadb(myblob, f, amount)), 'XX') != 0 ) then
 		Error('Interlacing not supported: ' || pFile);
 	end if;
 	
 	amount := 4;
-	buf := fread(myblob, f, amount);
+	bufRaw := freadb(myblob, f, amount);
 	
 	if (ct = 2 ) then
 	  colors := 3;
@@ -2098,26 +2116,29 @@ begin
 		if(myType = 'PLTE') then
 			-- Read palette
 			amount := n;
-			myImgInfo.pal := fread(myblob, f, amount);
+			myImgInfo.pal := rawtohex(freadb(myblob, f, amount));
 			amount := 4;
-			buf := fread(myblob, f, amount);
+			bufRaw := freadb(myblob, f, amount);
 		elsif(myType = 'tRNS') then
 			--   Read transparency info
 			amount := n;
-			buf := fread(myblob, f, amount);
+			bufRaw := freadb(myblob, f, amount);
 			if(ct = 0) then
-			    myImgInfo.trns(1) := ord(substr(buf,1,1));
+			    myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
 			elsif( ct = 2) then
-			   myImgInfo.trns(1) := ord(substr(buf,1,1));
-			   myImgInfo.trns(2) := ord(substr(buf,3,1));
-			   myImgInfo.trns(3) := ord(substr(buf,5,1));
+			   myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
+			   myImgInfo.trns(2) := to_number(rawtohex(utl_raw.substr(bufRaw,3,1)),'XX');
+			   myImgInfo.trns(3) := to_number(rawtohex(utl_raw.substr(bufRaw,5,1)),'XX');
 			else
-				if(instr(buf,chr(0)) > 0) then
-					myImgInfo.trns(1) := instr(buf,chr(0));
-				end if;
+				for k in 1..utl_raw.length(bufRaw) loop
+				  if utl_raw.substr(bufRaw,k,1) = hextoraw('00') then
+				    myImgInfo.trns(1) := k;
+				    exit;
+				  end if;
+				end loop;
 			end if;
 			amount := 4;
-			buf := fread(myblob, f, amount);
+			bufRaw := freadb(myblob, f, amount);
 		elsif(myType = 'IDAT') then
 			-- Read image data block after the loop, just mark the begin of data
 			imgDataStartsHere := f;
@@ -2127,7 +2148,7 @@ begin
 			exit;
 		else
 			amount := n + 4;
-			buf := fread(myblob, f, amount);
+			bufRaw := freadb(myblob, f, amount);
 		end if;
 		exit when n is null or n = 0;
 	end loop;
@@ -2169,7 +2190,7 @@ function p_parseImage(pFile in varchar2) return recImage is
   myImgInfo recImage;
   myblob blob;
   chunk_content blob;
-  png_signature constant varchar2(8)  := chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
+  c_png_sig constant raw(8) := hextoraw('89504E470D0A1A0A');
   signature_len integer := 8;
   chunklength_len integer := 4;
   chunktype_len integer := 4;
@@ -2182,6 +2203,7 @@ function p_parseImage(pFile in varchar2) return recImage is
   f number default 1;
   f_chunk number default 1;
   buf varchar2(8192);
+  bufRaw raw(32000);
   ct word;
   colors pls_integer;
   myType word;
@@ -2224,7 +2246,7 @@ begin
     -- reading the blob
 
     --Check signature
-    if(fread(myblob, f, signature_len) != png_signature ) then
+    if(utl_raw.compare(freadb(myblob, f, signature_len), c_png_sig) != 0) then
         Error('Not a PNG file: ' || pFile);
     end if;
 
@@ -2244,19 +2266,19 @@ begin
     end if;
     chunk_num := chunk_num + 1;
     --discard the crc
-    buf := fread(myblob, f, crc_len);
+    bufRaw := freadb(myblob, f, crc_len);
     if( chunk_num = 1 and myType != 'IHDR' ) then
       Error('Incorrect PNG file: ' || pFile);
     elsif(myType = 'IHDR') then
       -- ^^^ I have already get width and height, so go forward (read 4 Bytes twice)
-      buf := fread(chunk_content, f_chunk, widthheight_len);
+      bufRaw := freadb(chunk_content, f_chunk, widthheight_len);
 
-      myImgInfo.bpc := ord(fread(chunk_content, f_chunk, hdrflag_len));    
+      myImgInfo.bpc := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
       if( myImgInfo.bpc > 8) then
         Error('16-bit depth not supported: ' || pFile);    
       end if;  
       
-      ct := ord(fread(chunk_content, f_chunk, hdrflag_len));    
+      ct := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
       if( ct = 0 ) then
         myImgInfo.cs := 'DeviceGray';
       elsif( ct = 2 ) then
@@ -2266,13 +2288,13 @@ begin
       else
         Error('Alpha channel not supported: ' || pFile);
         end if;
-      if( ord(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Unknown compression method: ' || pFile);
       end if;
-      if( ord(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Unknown filter method: ' || pFile);
       end if;
-      if( ord(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Interlacing not supported: ' || pFile);
       end if;
       if (ct = 2 ) then
@@ -2285,20 +2307,23 @@ begin
           
         elsif(myType = 'PLTE') then
             -- Read palette
-            myImgInfo.pal := fread(chunk_content, f_chunk, chunkdata_len ) ;
+            myImgInfo.pal := rawtohex(freadb(chunk_content, f_chunk, chunkdata_len));
         elsif(myType = 'tRNS') then
             --   Read transparency info
-            buf := fread(chunk_content, f_chunk, chunkdata_len ) ;
+            bufRaw := freadb(chunk_content, f_chunk, chunkdata_len);
             if(ct = 0) then
-                myImgInfo.trns(1) := ord(substr(buf,1,1));
+                myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
             elsif( ct = 2) then
-               myImgInfo.trns(1) := ord(substr(buf,1,1));
-               myImgInfo.trns(2) := ord(substr(buf,3,1));
-               myImgInfo.trns(3) := ord(substr(buf,5,1));
+               myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
+               myImgInfo.trns(2) := to_number(rawtohex(utl_raw.substr(bufRaw,3,1)),'XX');
+               myImgInfo.trns(3) := to_number(rawtohex(utl_raw.substr(bufRaw,5,1)),'XX');
             else
-                if(instr(buf,chr(0)) > 0) then
-                    myImgInfo.trns(1) := instr(buf,chr(0));
-                end if;
+                for k in 1..utl_raw.length(bufRaw) loop
+                  if utl_raw.substr(bufRaw,k,1) = hextoraw('00') then
+                    myImgInfo.trns(1) := k;
+                    exit;
+                  end if;
+                end loop;
             end if;
         elsif(myType = 'IDAT') then
             -- Read image data block after the loop, just mark the begin of data
