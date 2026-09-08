@@ -1267,7 +1267,7 @@ PROCEDURE inf_init IS
   -- NULL, e o EXIT so dispara com TRUE. O laco rodava para sempre atribuindo
   -- NULL a indices cada vez maiores, e a tabela indexada crescia ate estourar a
   -- PGA (ORA-04036). E a mesma familia do 'IF NOT f() THEN' com BOOLEAN nulo
-  -- que ja esta anotada no CLAUDE.md.
+  -- que ja esta anotada em docs/MANUTENCAO.md.
   --
   -- Aqui p_txt nunca e NULL e l_ini so cresce, entao o laco termina por
   -- construcao, sem depender de comparacao com NULL.
