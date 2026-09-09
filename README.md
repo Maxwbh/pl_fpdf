@@ -30,29 +30,49 @@ PL_FPDF is a pure PL/SQL library for generating PDF documents directly from Orac
 - ✅ **Structured logging** with DBMS_APPLICATION_INFO
 - ✅ **Custom exceptions** with meaningful error codes
 - ✅ **Result cache** for font metrics
-- ✅ **Zero external dependencies** (no OWA, no OrdImage)
+- ✅ **No OWA, no ORDSYS.ORDImage** — PNG and JPEG are parsed in PL/SQL
+
+> Loading an image **by URL** goes through `URIFactory`, so it needs a network
+> ACL for the calling schema. Everything else runs with no access outside the
+> database.
 
 ---
 
 ## 📦 Installation
 
-### Quick Install
+### Install
+
+Two files, spec first. In SQL\*Plus or SQLcl:
 
 ```sql
-sqlplus user/password@database @deploy_all.sql
-```
-
-### Manual Installation
-
-```sql
--- 1. Install core package
 @PL_FPDF.pks
 @PL_FPDF.pkb
+```
 
--- 2. Verify installation
+In PL/SQL Developer or any other GUI, open each file in a SQL window and run it.
+
+Then verify — the status must be `VALID`:
+
+```sql
 SELECT object_name, object_type, status
-FROM user_objects
-WHERE object_name = 'PL_FPDF';
+FROM   user_objects
+WHERE  object_name = 'PL_FPDF';
+```
+
+Do not put the password on the command line; it lands in the shell history and
+in the process list. Let the client prompt for it.
+
+### Optional Extensions
+
+Brazilian payment documents (PIX and Boleto) live in
+`extensions/brazilian-payments/` and install separately, on top of the core
+package.
+
+### Performance Optimization (Recommended)
+
+```sql
+-- Native compilation, 2-3x faster
+@optimize_native_compile.sql
 ```
 
 ---
@@ -98,13 +118,36 @@ BEGIN
   PL_FPDF.SetFont('Arial', '', 12);
   PL_FPDF.Cell(0, 10, 'Sample PDF');
 
-  -- Save to Oracle directory
-  PL_FPDF.OutputFile('MY_DIRECTORY', 'sample.pdf');
+  -- Save to an Oracle directory. Filename first, directory second; the
+  -- directory defaults to PDF_DIR.
+  PL_FPDF.OutputFile('sample.pdf', 'MY_DIRECTORY');
 
   PL_FPDF.Reset();
 END;
 /
 ```
+
+### Legacy Constructor
+
+`Init()` is the entry point for new code. Code written before it existed calls
+`FPDF()` instead, and that still works — it sets the same state and leaves the
+package initialized:
+
+```sql
+BEGIN
+  PL_FPDF.FPDF('P', 'cm', 'A4');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', 'B', 16);
+  PL_FPDF.Cell(40, 10, 'Hello World!');
+  PL_FPDF.Reset();
+END;
+/
+```
+
+Whichever one you call, call it before `AddPage()`. Without it the package is
+not initialized and the next call raises `ORA-20005`. See
+[MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) for the full list of legacy entry
+points.
 
 ### Multi-Page Document
 
@@ -135,6 +178,10 @@ END;
 |----------|-------------|
 | [README_PT_BR.md](README_PT_BR.md) | Complete documentation in Portuguese |
 | [API_REFERENCE.md](API_REFERENCE.md) | Complete API reference with all functions |
+| [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) | Moving from 0.9.x to 2.0.0, and which legacy calls still work |
+| [VALIDATION_GUIDE.md](VALIDATION_GUIDE.md) | How to check that an installation is sound |
+| [PERFORMANCE_TUNING.md](PERFORMANCE_TUNING.md) | Native compilation and tuning |
+| [CHANGELOG.md](CHANGELOG.md) | What changed in each version |
 
 
 ---
@@ -143,21 +190,26 @@ END;
 
 ### Run All Tests
 
-```bash
-cd tests
-sqlplus user/pass@db @run_all_tests.sql
+The suite needs utPLSQL v3+. From the `tests` directory:
+
+```sql
+@install_tests.sql
+@run_all_tests.sql
 ```
 
-### Test Coverage
+`run_init_tests_simple.sql` and `run_legacy_init_tests_simple.sql` are anonymous
+blocks that run without utPLSQL, for checking an installation quickly.
 
-| Module | Tests | Coverage |
-|--------|-------|----------|
-| Initialization | 43 | >90% |
-| Fonts | 18 | >85% |
-| Images | 14 | >80% |
-| Output | 7 | >90% |
-| Performance | 5 | 100% |
-| **Total** | **87** | **>82%** |
+### Test Count
+
+| Module | Tests |
+|--------|-------|
+| Initialization | 37 |
+| Fonts | 18 |
+| Images | 14 |
+| Output | 7 |
+| Performance | 5 |
+| **Total** | **81** |
 
 ---
 
@@ -220,6 +272,9 @@ sqlplus user/pass@db @run_all_tests.sql
 └─────────────────────────────────────────────┘
 ```
 
+**Optional Extensions**: Brazilian payment documents (PIX/Boleto) ship as
+separate extensions under `extensions/`.
+
 ---
 
 ## 🤝 Contributing
@@ -233,7 +288,7 @@ This is a modernization project of the original PL_FPDF library. Contributions a
 ### Modernization Project
 - **Lead Developer**: Maxwell da Silva Oliveira (@maxwbh)
 - **Company**: M&S do Brasil LTDA
-- **Contact**: maxwell@msbrasil.inf.br
+- **Contact**: maxwbh@gmail.com
 - **LinkedIn**: [linkedin.com/in/maxwbh](https://linkedin.com/in/maxwbh)
 
 ---
@@ -243,6 +298,7 @@ This is a modernization project of the original PL_FPDF library. Contributions a
 
 - **Original FPDF**: http://www.fpdf.org/
 - **Original Repository**: https://github.com/Pilooz/pl_fpdf
+- **This Repository**: https://github.com/maxwbh/pl_fpdf
 
 ---
 
@@ -266,6 +322,6 @@ If you find this project useful, please give it a star on GitHub!
 
 ---
 
-**Last Updated**: December 19, 2025
+**Last Updated**: September 9, 2026
 **Version**: 2.0.0
 **Status**: Production Ready ✅

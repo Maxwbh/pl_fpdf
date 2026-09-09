@@ -529,12 +529,14 @@ END;
 
 ### 4. Run Unit Tests
 
-```bash
-cd tests
-sqlplus user/pass@db @run_all_tests.sql
+The suite needs utPLSQL v3+. From the `tests` directory:
+
+```sql
+@install_tests.sql
+@run_all_tests.sql
 ```
 
-Expected: **87 tests passing**, **>82% coverage**
+Expected: **81 tests passing**.
 
 ---
 
@@ -638,7 +640,7 @@ git checkout v0.9.4-last
 - **API_REFERENCE.md**: Complete API documentation
 - **PERFORMANCE_TUNING.md**: Optimization guide
 - **VALIDATION_GUIDE.md**: Testing guide
-- **tests/**: Unit test suite (87 tests)
+- **tests/**: Unit test suite (81 tests)
 
 ---
 
