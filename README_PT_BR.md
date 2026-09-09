@@ -3,8 +3,7 @@
 ![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
 ![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
-![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen.svg)
-![Coverage](https://img.shields.io/badge/coverage-82%25-brightgreen.svg)
+![Tests](https://img.shields.io/badge/testes-81-brightgreen.svg)
 
 > **Biblioteca moderna e de alta performance para geração de PDF em Oracle Database 19c/23c**
 
@@ -33,30 +32,37 @@ PL_FPDF é uma biblioteca PL/SQL pura para gerar documentos PDF diretamente do O
 - ✅ **Logging estruturado** com DBMS_APPLICATION_INFO
 - ✅ **Exceções customizadas** com códigos de erro significativos
 - ✅ **Cache de resultados** para métricas de fontes
-- ✅ **Zero dependências externas** (sem OWA, sem OrdImage)
+- ✅ **Sem OWA, sem ORDSYS.ORDImage** — PNG e JPEG são lidos em PL/SQL
+
+> Carregar imagem **por URL** passa pelo `URIFactory`, e isso exige ACL de rede
+> para o schema que chama. Todo o resto roda sem acesso fora do banco.
 
 ---
 
 ## 📦 Instalação
 
-### Instalação Rápida
+### Instalação
+
+Dois arquivos, a spec primeiro. No SQL\*Plus ou no SQLcl:
 
 ```sql
-sqlplus usuario/senha@banco @deploy_all.sql
-```
-
-### Instalação Manual
-
-```sql
--- 1. Instalar pacote core
 @PL_FPDF.pks
 @PL_FPDF.pkb
-
--- 2. Verificar instalação
-SELECT object_name, object_type, status
-FROM user_objects
-WHERE object_name = 'PL_FPDF';
 ```
+
+No PL/SQL Developer, ou em qualquer outra interface gráfica, abra cada arquivo
+em uma SQL Window e execute.
+
+Depois confira — o status precisa ser `VALID`:
+
+```sql
+SELECT object_name, object_type, status
+FROM   user_objects
+WHERE  object_name = 'PL_FPDF';
+```
+
+Não passe a senha na linha de comando: ela fica no histórico do shell e na
+lista de processos. Deixe o cliente perguntar.
 
 ### Extensões Opcionais
 
@@ -112,13 +118,36 @@ BEGIN
   PL_FPDF.SetFont('Arial', '', 12);
   PL_FPDF.Cell(0, 10, 'PDF de Exemplo');
 
-  -- Salvar em diretório Oracle
-  PL_FPDF.OutputFile('MEU_DIRETORIO', 'exemplo.pdf');
+  -- Salvar em um directory do Oracle. O nome do arquivo vem primeiro, o
+  -- directory depois; o directory tem PDF_DIR como padrão.
+  PL_FPDF.OutputFile('exemplo.pdf', 'MEU_DIRETORIO');
 
   PL_FPDF.Reset();
 END;
 /
 ```
+
+### Construtor Legado
+
+O `Init()` é a entrada para código novo. O código escrito antes de ele existir
+chama o `FPDF()`, e isso continua valendo — deixa o mesmo estado montado e o
+package inicializado:
+
+```sql
+BEGIN
+  PL_FPDF.FPDF('P', 'cm', 'A4');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', 'B', 16);
+  PL_FPDF.Cell(40, 10, 'Olá Mundo!');
+  PL_FPDF.Reset();
+END;
+/
+```
+
+Qualquer um dos dois serve, mas um deles precisa vir antes do `AddPage()`. Sem
+isso o package não está inicializado e a chamada seguinte levanta `ORA-20005`.
+O [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) traz a lista completa das entradas
+legadas.
 
 ### Documento Multi-Página
 
@@ -149,6 +178,10 @@ END;
 |-----------|-----------|
 | [README.md](README.md) | Documentação completa em inglês |
 | [API_REFERENCE.md](API_REFERENCE.md) | Referência completa da API com todas as funções |
+| [MIGRATION_GUIDE.md](MIGRATION_GUIDE.md) | Da 0.9.x para a 2.0.0, e quais chamadas legadas continuam valendo |
+| [VALIDATION_GUIDE.md](VALIDATION_GUIDE.md) | Como conferir se a instalação está sadia |
+| [PERFORMANCE_TUNING.md](PERFORMANCE_TUNING.md) | Compilação nativa e ajuste de desempenho |
+| [CHANGELOG.md](CHANGELOG.md) | O que mudou em cada versão |
 
 ---
 
@@ -156,21 +189,26 @@ END;
 
 ### Executar Todos os Testes
 
-```bash
-cd tests
-sqlplus usuario/senha@banco @run_all_tests.sql
+A suíte depende do utPLSQL v3+. A partir do diretório `tests`:
+
+```sql
+@install_tests.sql
+@run_all_tests.sql
 ```
 
-### Cobertura de Testes
+O `run_init_tests_simple.sql` e o `run_legacy_init_tests_simple.sql` são blocos
+anônimos que rodam sem o utPLSQL, para conferir uma instalação rapidamente.
 
-| Módulo | Testes | Cobertura |
-|--------|--------|-----------|
-| Inicialização | 43 | >90% |
-| Fontes | 18 | >85% |
-| Imagens | 14 | >80% |
-| Saída | 7 | >90% |
-| Performance | 5 | 100% |
-| **Total** | **87** | **>82%** |
+### Quantidade de Testes
+
+| Módulo | Testes |
+|--------|--------|
+| Inicialização | 37 |
+| Fontes | 18 |
+| Imagens | 14 |
+| Saída | 7 |
+| Performance | 5 |
+| **Total** | **81** |
 
 ---
 
@@ -281,6 +319,6 @@ Se você achar este projeto útil, por favor dê uma estrela no GitHub!
 
 ---
 
-**Última Atualização**: 19 de dezembro de 2025
+**Última Atualização**: 9 de setembro de 2026
 **Versão**: 2.0.0
 **Status**: Pronto para Produção ✅
