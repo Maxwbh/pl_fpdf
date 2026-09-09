@@ -1,8 +1,8 @@
 create or replace PACKAGE BODY                          PL_FPDF AS
 /*******************************************************************************
 * Logiciel : PL_FPDF                                                           *
-* Version :  0.9.4                                                             *
-* Date :     27-Dec-2017                                                       *
+* Version :  2.0.0                                                             *
+* Date :     19-Dec-2025                                                       *
 * Auteur :   Pierre-Gilles Levallois et al                              *
 * Licence :  GPL                                                               *
 *                                                                              *
@@ -30,19 +30,29 @@ create or replace PACKAGE BODY                          PL_FPDF AS
     - Known bugs :
     
     CHANGELOG : 
+    0.9.4 -> 2.0.0 :
+        - Requires Oracle 19c or later.
+        - Dropped the ORDSYS.ORDImage dependency: PNG and JPEG are read
+          straight from a BLOB.
+        - Page buffer moved from VARCHAR2 arrays to CLOB.
+        - Added Init() as the initialization entry point; fpdf() remains as
+          the legacy constructor.
+        - Added UTF-8 support, TrueType fonts and JSON configuration.
+        - Named exceptions in place of the generic ORA-20100.
+
+	0.9.3 -> 0.9.4 :
+		- Added function ReturnBlob
+		- Slight amendment to procedure fpdf to boost performance
+
     0.9.2 -> 0.9.3 : 
         - Added Sample on setHeaderProc and setFooterProc procedures.
         - Added parameter implementation to thes procedures.
         - Modify Header and footer procedure behaviour to get parameter values
         - declared subtype 'word' ans type 'tv4000a' in the specs.
-        
+
     0.9.1 -> 0.9.2 : 
         - Added procedure helloword Example.
         - Added procedure testImg Example.
-		
-	0.9.3 -> 0.9.4 :
-		- Added function ReturnBlob
-		- Slight amendment to procedure fpdf to boost performance
 
 *******************************************************************************/
 
@@ -230,8 +240,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
- co_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -3834,6 +3842,10 @@ begin
 	SetCompression(false);
 	-- Set default PDF version number
 	PDFVersion:='1.3.1';
+	-- Init() calls fpdf() and then sets this flag itself. Callers of the
+	-- legacy constructor never reach that line, so set it here as well:
+	-- without it AddPage() rejects a document fpdf() has just built.
+	g_initialized := true;
 end fpdf;
 
 ----------------------------------------------------------------------------------------
