@@ -471,6 +471,32 @@ procedure image ( pFile in varchar2,
 				  pHeight in number default 0,
 				  pType in varchar2 default null,
 				  pLink in varchar2 default null);
+
+/*******************************************************************************
+* Procedure: ImageFromBlob
+* Description: Places an image supplied as a BLOB, without going through a URL.
+*              Image() fetches through URIFactory (HTTP), which needs a network
+*              ACL a plain schema does not have; this entry point takes the PNG
+*              already loaded and reuses the same parser.
+* Parameters:
+*   p_blob  - PNG image bytes
+*   p_name  - cache key. A BLOB has no filename, so the caller picks one:
+*             distinct names for distinct images; the same name reuses the
+*             object already emitted in the PDF.
+*   pX, pY  - position in current units
+*   pWidth  - width (0 = derived from pHeight, or from the image at 72 dpi)
+*   pHeight - height (0 = derived from pWidth, or from the image at 72 dpi)
+*   pLink   - optional link over the image area
+* Example:
+*   PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);
+*******************************************************************************/
+procedure ImageFromBlob( p_blob  in blob,
+                         p_name  in varchar2,
+                         pX      in number,
+                         pY      in number,
+                         pWidth  in number default 0,
+                         pHeight in number default 0,
+                         pLink   in varchar2 default null);
 				  
 procedure Output(pname in varchar2 default null, pdest in varchar2 default null);
 function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default null) return blob;
