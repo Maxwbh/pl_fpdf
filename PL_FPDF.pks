@@ -1,8 +1,8 @@
 create or replace PACKAGE PL_FPDF AS
 /*******************************************************************************
 * Logiciel : PL_FPDF                                                           *
-* Version :  0.9.4                                                             *
-* Date :     27-Dec-2017                                                       *
+* Version :  2.0.0                                                             *
+* Date :     19-Dec-2025                                                       *
 * Auteur :   Pierre-Gilles Levallois et al                                          *
 * Licence :  GPL                                                               *
 *                                                                              *
