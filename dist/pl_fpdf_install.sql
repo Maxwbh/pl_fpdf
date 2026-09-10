@@ -6860,20 +6860,39 @@ end p_putstream;
 
 ----------------------------------------------------------------------------------------
 procedure p_putstream(pData in out NOCOPY blob) is 
+	lv_content_length number := dbms_lob.getlength(pdata);
 	offset integer := 1;
-  lv_content_length number := dbms_lob.getlength(pdata);
-	buf_size integer := 2000;
-	buf varchar2(2000);
+	buf_size integer;
+	buf raw(2000);
 begin
 	p_out('stream');
-	-- read the blob and put it in small pieces in a varchar
-	while offset < lv_content_length loop
+	-- Le o BLOB em pedacos RAW e escreve em hexadecimal.
+	--
+	-- O buffer era varchar2, que a sobrecarga de BLOB do dbms_lob.read enchia
+	-- com RAW: a conversao implicita produzia hexadecimal por acidente, e 2000
+	-- bytes viravam 4000 caracteres, mais do que o buffer comportava.
+	--
+	-- Hexadecimal, ainda assim, e a codificacao certa aqui, e a razao esta no
+	-- buffer do documento. O documento e montado como CLOB e convertido no fim
+	-- por dbms_lob.convertToBlob, entao tudo o que se escreve nele faz um
+	-- percurso de ida e volta pelo charset do banco. Medido em AL32UTF8: 256
+	-- bytes escritos por utl_raw.cast_to_varchar2 voltam como 422 -- o percurso
+	-- nao e fiel para nada acima de 0x7F. Hexadecimal e ASCII e atravessa
+	-- intacto.
+	--
+	-- Quem chama declara o /ASCIIHexDecode e dimensiona o /Length; este
+	-- procedimento controla so o que fica entre stream e endstream.
+	while offset <= lv_content_length loop
+	  -- buf_size e IN OUT: o dbms_lob.read devolve nele o que leu de fato,
+	  -- entao precisa ser atribuido a cada passagem, nao uma vez so.
+	  buf_size := 2000;
 	  dbms_lob.read(pData,buf_size,offset,buf);
-	  p_out(buf, false);
+	  p_out(rawtohex(buf), false);
 	  offset := offset + buf_size;
 	end loop;
-	-- put a CRLF at te end of the blob
-	p_out(chr(10), false);
+	-- '>' encerra o dado do /ASCIIHexDecode; o p_out acrescenta a quebra de
+	-- linha que o separa do endstream.
+	p_out('>');
 	p_out('endstream');
 exception 
   when others then
@@ -7118,11 +7137,25 @@ begin
 		end if;
 
 		p_out('/BitsPerComponent ' || info.bpc);
+		-- O stream sai em hexadecimal, entao o /ASCIIHexDecode vem sempre, e
+		-- primeiro: os filtros se aplicam na ordem em que aparecem.
 		if(info.f is not null) then
-			p_out('/Filter /' || info.f);
+			p_out('/Filter [/ASCIIHexDecode /' || info.f || ']');
+		else
+			p_out('/Filter /ASCIIHexDecode');
 		end if;
 		if(info.parms is not null) then
-			p_out(info.parms);
+			-- Com /Filter em vetor, o /DecodeParms tem de ser vetor tambem: um por
+			-- filtro, na mesma ordem. null para o /ASCIIHexDecode, que nao tem
+			-- parametro. Com um dicionario solto, o leitor aplica o /Predictor ao
+			-- filtro errado e a imagem decodifica desalinhada -- abre sem erro e
+			-- desenha as cores trocadas de lugar.
+			if(info.f is not null) then
+				p_out(replace(info.parms, '/DecodeParms ', '/DecodeParms [null ')
+				      || ']');
+			else
+				p_out(info.parms);
+			end if;
 		end if;
 		
 		if(info.trns.first is not null ) then
@@ -7133,7 +7166,9 @@ begin
 			p_out('/Mask (' || trns || ')');
 		end if;
 
-		p_out('/Length ' || dbms_lob.getlength(info.data) || '>>');
+		-- /Length conta o hexadecimal escrito: dois digitos por byte, mais o '>'
+		-- que encerra o /ASCIIHexDecode.
+		p_out('/Length ' || (dbms_lob.getlength(info.data) * 2 + 1) || '>>');
 		p_putstream(info.data);
 		images(v).data := null;
 		p_out('endobj');
