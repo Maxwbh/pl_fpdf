@@ -44,6 +44,7 @@ TESTES = [
     ('test_regressoes_revisao.sql',    'Regressões da revisão de ago/2026'),
     ('test_stream_imagem.sql',         'Escrita do stream de imagem'),
     ('test_winansi.sql',               'Texto acentuado (WinAnsi)'),
+    ('test_compat_legado.sql',         'Compatibilidade com 0.9.4 e 2.0.0'),
 ]
 
 CABECALHO = """--------------------------------------------------------------------------------
