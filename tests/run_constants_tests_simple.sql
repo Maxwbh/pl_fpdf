@@ -112,3 +112,82 @@ exception
     dbms_output.put_line('   [FAIL] ' || sqlerrm);
 end;
 /
+
+
+/*******************************************************************************
+* 3. Image path, through ImageFromBlob
+*
+* The PNG below is a 2x2 indexed image with a 4-colour palette, built and
+* verified with an independent reader. Indexed on purpose: the palette is the
+* part the binary changes touched most.
+*
+* This goes through ImageFromBlob, not Image(), because Image() fetches over
+* HTTP through URIFactory and that needs a network ACL. Nothing here reaches
+* outside the schema.
+*
+* What is asserted:
+*   - no ORA-29275 while walking the chunks;
+*   - the stream carries /ASCIIHexDecode, which is how binary crosses the CLOB
+*     the document is assembled in;
+*   - /DecodeParms is an array. With /Filter as an array it must be, one entry
+*     per filter. A bare dictionary applies /Predictor 15 to /ASCIIHexDecode
+*     instead of /FlateDecode, and the image decodes misaligned: the file opens
+*     without error and draws the colours in the wrong places.
+*******************************************************************************/
+declare
+  l_hex  varchar2(4000);
+  l_png  blob;
+  l_pdf  blob;
+  l_ok   pls_integer := 0;
+  l_fail pls_integer := 0;
+begin
+  dbms_output.put_line('== 3. Image through ImageFromBlob');
+
+    l_hex := '89504E470D0A1A0A0000000D494844520000000200000002080300000045';
+    l_hex := l_hex || '68FD160000000C504C5445FF000000FF000000FFFFFF00D6028F7B000000';
+    l_hex := l_hex || '0E4944415478DA63606064606206000011000783CA64640000000049454E';
+    l_hex := l_hex || '44AE426082';
+  l_png := hextoraw(l_hex);
+
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.ImageFromBlob(l_png, 'TEST_PNG', 10, 10, 40);
+  l_pdf := PL_FPDF.OutputBlob;
+
+  if dbms_lob.instr(l_pdf, utl_raw.cast_to_raw('/ASCIIHexDecode')) > 0 then
+    dbms_output.put_line('   [OK]   stream carries /ASCIIHexDecode');
+    l_ok := l_ok + 1;
+  else
+    dbms_output.put_line('   [FAIL] /ASCIIHexDecode missing - binary would not '
+                         || 'survive the document CLOB');
+    l_fail := l_fail + 1;
+  end if;
+
+  if dbms_lob.instr(l_pdf, utl_raw.cast_to_raw('/DecodeParms [')) > 0 then
+    dbms_output.put_line('   [OK]   /DecodeParms is an array, matching /Filter');
+    l_ok := l_ok + 1;
+  else
+    dbms_output.put_line('   [FAIL] /DecodeParms is not an array - /Predictor '
+                         || 'would land on the wrong filter');
+    l_fail := l_fail + 1;
+  end if;
+
+  if dbms_lob.getlength(l_pdf) > 0 then
+    dbms_output.put_line('   [OK]   PDF with image generated, '
+                         || dbms_lob.getlength(l_pdf) || ' bytes');
+    l_ok := l_ok + 1;
+  end if;
+
+  dbms_output.put_line('   --- ' || l_ok || ' ok, ' || l_fail || ' failed');
+exception
+  when others then
+    -- p_parseImage has a when others that rewraps everything as ORA-20100, so
+    -- the cause only shows in the message text, never in SQLCODE.
+    if instr(sqlerrm, 'ORA-29275') > 0 then
+      dbms_output.put_line('   [FAIL] ORA-29275 - binary is still being read '
+                           || 'through VARCHAR2');
+    else
+      dbms_output.put_line('   [FAIL] ' || sqlerrm);
+    end if;
+end;
+/

@@ -2205,7 +2205,8 @@ end p_parseImage;
 --------------------------------------------------------------------------------
 -- Parse an image (Updated for Task 1.6: Native BLOB support)
 --------------------------------------------------------------------------------
-function p_parseImage(pFile in varchar2) return recImage is
+function p_parseImage(pFile in varchar2,
+                      p_blob in blob default null) return recImage is
   myImg recImageBlob;  -- Changed from ordsys.ordImage to recImageBlob
   myImgInfo recImage;
   myblob blob;
@@ -2260,8 +2261,18 @@ begin
   dbms_lob.open(myImgInfo.data,dbms_lob.LOB_READWRITE);
 
   -- Fetch and parse image using native BLOB handling
-  myImg := getImageFromUrl(pFile);
-  myblob := myImg.image_blob;  -- Use BLOB field directly
+  if p_blob is null then
+    myImg := getImageFromUrl(pFile);
+  else
+    -- Paliativo: recebe o PNG pronto, sem HTTP nem ACL de rede. O
+    -- parse_png_header le largura, altura e tipo de cor em RAW, que e o
+    -- unico dado que o getImageFromUrl fornecia alem do proprio BLOB.
+    myImg.image_blob := p_blob;
+    if not parse_png_header(p_blob, myImg) then
+      Error('Not a PNG image: ' || pFile);
+    end if;
+  end if;
+  myblob := myImg.image_blob;
   myImgInfo.i := 1;
     -- reading the blob
 
@@ -4494,6 +4505,62 @@ exception
   when others then
    error('image : '||sqlerrm);
 end image;
+
+----------------------------------------------------------------------------------------
+-- ImageFromBlob : coloca uma imagem recebida como BLOB, sem passar por URL.
+--
+-- O Image() busca por URIFactory, ou seja, HTTP, e isso exige ACL de rede que
+-- um schema comum nao tem. Esta entrada recebe o PNG pronto e reaproveita o
+-- mesmo parser; o unico caminho que difere e a obtencao do BLOB.
+--
+-- p_name e a chave do cache de imagens, que e indexado por nome. Um BLOB nao
+-- tem nome, entao o chamador escolhe: nomes distintos para imagens distintas,
+-- e o mesmo nome reaproveita o objeto ja emitido no PDF.
+----------------------------------------------------------------------------------------
+procedure ImageFromBlob( p_blob  in blob,
+                         p_name  in varchar2,
+                         pX      in number,
+                         pY      in number,
+                         pWidth  in number default 0,
+                         pHeight in number default 0,
+                         pLink   in varchar2 default null) is
+  myW  number := pWidth;
+  myH  number := pHeight;
+  info recImage;
+begin
+  if (p_blob is null or dbms_lob.getlength(p_blob) = 0) then
+    Error('ImageFromBlob : imagem vazia para ' || p_name);
+  end if;
+
+  if ( not imageExists(p_name) ) then
+    info := p_parseImage(p_name, p_blob);
+    info.i := nvl(images.count, 0) + 1;
+    images(lower(p_name)) := info;
+  else
+    info := images(lower(p_name));
+  end if;
+
+  if (myW = 0 and myH = 0) then
+    myW := info.w / k;
+    myH := info.h / k;
+  end if;
+  if (myW = 0) then
+    myW := myH * info.w / info.h;
+  end if;
+  if (myH = 0) then
+    myH := myW * info.h / info.w;
+  end if;
+
+  p_out('q '||tochar(myW * k, 2)||' 0 0 '||tochar(myH * k, 2)||' '
+        ||tochar(pX * k, 2)||' '||tochar((h - ( pY + myH)) * k, 2)
+        ||' cm /I'||to_char(info.i)||' Do Q');
+  if (pLink is not null) then
+    Link(pX, pY, myW, myH, pLink);
+  end if;
+exception
+  when others then
+    error('ImageFromBlob : '||sqlerrm);
+end ImageFromBlob;
 
 /* THIS PROCEDURE HANGS UP ........... */
 ----------------------------------------------------------------------------------------
