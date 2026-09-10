@@ -346,6 +346,62 @@ BEGIN
   --------------------------------------------------------------------------
 
   --------------------------------------------------------------------------
+  caso('Documento em paisagem nao contamina o seguinte');
+  --------------------------------------------------------------------------
+  -- O Reset limpava fontes, imagens, links e metadados, mas NAO o
+  -- OrientationChanges -- a tabela que diz quais paginas tem orientacao
+  -- diferente do padrao, e que faz cada uma delas ganhar MediaBox proprio.
+  --
+  -- Como ela e indexada pelo NUMERO da pagina, o indice 1 de um documento
+  -- virava o indice 1 do proximo: quem gerasse um documento com a pagina 1 em
+  -- paisagem deixava TODO documento posterior da mesma sessao com a pagina 1
+  -- em paisagem. MediaBox trocado, conteudo desenhado fora do papel, arquivo
+  -- que abre EM BRANCO -- sem erro nenhum.
+  --
+  -- O sintoma nao acusa a causa: a pagina 1 sai errada e as demais certas,
+  -- porque so o indice reaproveitado colide. Foi assim que apareceu: doze
+  -- amostras com o texto nao extraido, e o codigo de barras sem decodificar.
+  DECLARE
+    l_paisagem BLOB;
+    l_retrato  BLOB;
+  BEGIN
+    -- primeiro documento: pagina 1 em PAISAGEM
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage('L');
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'paisagem');
+    l_paisagem := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- segundo documento: tudo RETRATO, sem tocar em orientacao
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'retrato');
+    l_retrato := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- A4 retrato: 595.28 x 841.89. Paisagem inverte os dois. O segundo
+    -- documento nao pode ter MediaBox proprio em pagina nenhuma.
+    IF acha(l_retrato, '/MediaBox [0 0 841.89 595.28]') = 0 THEN
+      passou('o documento retrato nao herdou a paisagem do anterior');
+    ELSE
+      falhou('a pagina 1 saiu em paisagem: o OrientationChanges do documento '
+             || 'anterior sobreviveu ao Reset');
+    END IF;
+
+    IF acha(l_paisagem, '/MediaBox [0 0 841.89 595.28]') > 0 THEN
+      passou('o documento paisagem tem a pagina em paisagem, como pedido');
+    ELSE
+      falhou('a paisagem pedida nao saiu');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
   DBMS_OUTPUT.PUT_LINE('');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 80, '='));
   DBMS_OUTPUT.PUT_LINE('Total: ' || l_total ||

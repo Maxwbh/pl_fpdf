@@ -8978,6 +8978,17 @@ begin
     fonts.delete;
     FontFiles.delete;
     images.delete;
+    -- OrientationChanges guarda quais paginas tem orientacao diferente do
+    -- padrao, e ganha MediaBox proprio por causa dele. Ficava de fora daqui, e
+    -- por ser tabela indexada por NUMERO da pagina o indice 1 do documento
+    -- anterior virava o indice 1 do seguinte: quem gerasse um documento com a
+    -- pagina 1 em paisagem deixava TODO documento posterior da mesma sessao
+    -- com a pagina 1 em paisagem -- MediaBox trocado, conteudo desenhado fora
+    -- do papel, arquivo que abre em branco.
+    --
+    -- O sintoma nao acusa a causa: a pagina 1 sai errada e as demais certas,
+    -- porque so o indice reaproveitado colide.
+    OrientationChanges.delete;
     if PageLinks is not null then
       PageLinks.delete;
     end if;
