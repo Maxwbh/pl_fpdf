@@ -5332,11 +5332,11 @@ END;
 -- conversao implicita devolve a representacao hexadecimal: 2000 bytes viravam
 -- 4000 caracteres, que nao cabiam no varchar2(2000).
 --
--- Ele e privado, e o unico chamador e o caminho de imagem, que busca por
--- URIFactory e exige ACL de rede que um schema comum nao tem. Por isso os casos
--- 1 a 3 exercitam as duas formas do laco e as duas codificacoes lado a lado,
--- sobre um BLOB controlado: medem o comportamento em vez de inferi-lo de um
--- arquivo gerado.
+-- Ele e privado, entao os casos 1 a 3 exercitam as duas formas do laco e as duas
+-- codificacoes lado a lado, sobre um BLOB controlado: medem o comportamento em
+-- vez de inferi-lo de um arquivo gerado. Os casos 5 e 6 percorrem o caminho
+-- completo da imagem pelo ImageFromBlob, que recebe os bytes prontos e por isso
+-- nao precisa da ACL de rede que o Image() exige.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
@@ -5405,6 +5405,12 @@ DECLARE
     RETURN l_b;
   END ida_e_volta;
 
+  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
   l_blob    BLOB;
   l_buf     RAW(2000);
   l_qtd     INTEGER;
@@ -5415,6 +5421,7 @@ DECLARE
   l_texto   VARCHAR2(4000);
   l_charset VARCHAR2(60);
   l_pdf     BLOB;
+  l_hex     VARCHAR2(4000);
 BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - stream de imagem');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
@@ -5541,11 +5548,61 @@ BEGIN
   --------------------------------------------------------------------------
   caso('A imagem inteira, do parser ao stream');
   --------------------------------------------------------------------------
-  -- Nao ha como exercitar aqui: o Image() busca por URIFactory, e isso exige
-  -- ACL de rede que um schema comum nao tem. Passar sem ter olhado seria pior
-  -- que falhar, entao fica registrado como pendencia, nao como aprovacao.
-  pulou('Image() busca por HTTP e exige ACL de rede; o caminho completo so se '
-        || 'confere com uma entrada que receba o BLOB pronto');
+  -- Pelo ImageFromBlob, que recebe os bytes prontos: sem HTTP, sem ACL, nada
+  -- fora do schema. O PNG abaixo tem 2x2 pixels e paleta de quatro cores,
+  -- indexado de proposito, porque a paleta e a parte que o percurso binario
+  -- mais toca.
+  l_hex := '89504E470D0A1A0A0000000D494844520000000200000002080300000045';
+  l_hex := l_hex || '68FD160000000C504C5445FF000000FF000000FFFFFF00D6028F7B000000';
+  l_hex := l_hex || '0E4944415478DA63606064606206000011000783CA64640000000049454E';
+  l_hex := l_hex || '44AE426082';
+
+  PL_FPDF.Reset;
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.ImageFromBlob(HEXTORAW(l_hex), 'TESTE_PNG', 10, 10, 40);
+  l_pdf := PL_FPDF.OutputBlob;
+
+  IF acha(l_pdf, '/ASCIIHexDecode') > 0 THEN
+    passou('o stream declara /ASCIIHexDecode');
+  ELSE
+    falhou('/ASCIIHexDecode ausente - o binario nao atravessaria o CLOB');
+  END IF;
+
+  IF acha(l_pdf, '/DecodeParms [') > 0 THEN
+    passou('/DecodeParms saiu como vetor, acompanhando o /Filter');
+  ELSE
+    falhou('/DecodeParms nao e vetor - o /Predictor cairia no filtro errado');
+  END IF;
+
+  IF acha(l_pdf, '/Subtype /Image') > 0 AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
+    passou('PDF com imagem gerado, ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+  ELSE
+    falhou('o objeto de imagem nao foi emitido');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('Formato nao suportado e recusado, nao aceito em silencio');
+  --------------------------------------------------------------------------
+  -- Um SVG comeca com '<?xml' ou '<svg': nao tem assinatura binaria de PNG nem
+  -- marcador SOI de JPEG. Recusar com erro proprio vale mais que gravar um
+  -- objeto de imagem que nenhum leitor desenha.
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.ImageFromBlob(UTL_RAW.CAST_TO_RAW('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+                          'TESTE_SVG', 10, 10, 40);
+    falhou('o SVG foi aceito - deveria ter sido recusado');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20303') > 0
+         OR INSTR(SQLERRM, 'Unsupported image format') > 0 THEN
+        passou('formato nao suportado recusado com erro proprio');
+      ELSE
+        falhou('recusou, mas com outro erro: ' || SQLERRM);
+      END IF;
+  END;
 
   DBMS_OUTPUT.PUT_LINE('');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));

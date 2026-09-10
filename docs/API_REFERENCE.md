@@ -1585,6 +1585,62 @@ PL_FPDF.Image(
 
 ---
 
+### ImageFromBlob
+
+Insere uma imagem que você já tem em mãos — de uma tabela, de um BFILE ou de uma variável — sem passar por URL. O `Image` busca pela rede, o que exige ACL concedida ao schema; quando os bytes já estão no banco, esta entrada dispensa a rede e a permissão.
+
+O formato é reconhecido pelos primeiros bytes do próprio arquivo, não pela extensão nem por um parâmetro: assinatura PNG ou marcador SOI do JPEG. Qualquer outra coisa é recusada com erro, em vez de virar um objeto de imagem que o leitor não desenha.
+
+#### Sintaxe
+
+```sql
+PROCEDURE PL_FPDF.ImageFromBlob(
+    p_blob  blob,
+    p_name  varchar2,
+    pX      number,
+    pY      number,
+    pWidth  number DEFAULT 0,
+    pHeight number DEFAULT 0,
+    pLink   varchar2 DEFAULT null);
+```
+
+#### Parâmetros
+
+| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
+|-----------|------|-----------|-------------------|--------|
+| `p_blob` | BLOB | Bytes da imagem. | PNG ou JPEG | — |
+| `p_name` | VARCHAR2 | Chave no cache de imagens. Um BLOB não tem nome, então você escolhe: nomes distintos para imagens distintas, e o mesmo nome reaproveita o objeto já emitido, em vez de gravar os mesmos bytes outra vez. | Qualquer texto não nulo | — |
+| `pX` | NUMBER | X do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| `pY` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| `pWidth` | NUMBER | Largura desejada. | Número na unidade definida em Init; 0 (padrão) calcula a partir da altura | `0` |
+| `pHeight` | NUMBER | Altura desejada. | Número na unidade definida em Init; 0 (padrão) calcula a partir da largura, mantendo a proporção | `0` |
+| `pLink` | VARCHAR2 | Torna a imagem clicável. | URL ou identificador de AddLink; NULL = sem link | `null` |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `-20301` | BLOB vazio, nome ausente ou cabeçalho inválido |
+| `-20303` | Formato não suportado |
+
+#### Exemplo
+
+```sql
+DECLARE
+  l_logo BLOB;
+BEGIN
+  SELECT logo INTO l_logo FROM empresa WHERE id = 1;
+
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);   -- altura proporcional
+END;
+```
+
+**Veja também:** [image](#image), [OverlayImage](#overlayimage)
+
+---
+
 ## Links
 
 ### AddLink

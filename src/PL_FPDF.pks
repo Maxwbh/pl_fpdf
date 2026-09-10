@@ -621,6 +621,38 @@ procedure image ( pFile in varchar2,
 				  pHeight in number default 0,
 				  pType in varchar2 default null,
 				  pLink in varchar2 default null);
+
+/*******************************************************************************
+* Procedure: ImageFromBlob / Imagem a partir de BLOB
+* Description: Coloca uma imagem que o chamador já tem em mãos, sem passar por
+*              URL. O Image() busca pela rede e exige ACL concedida ao schema;
+*              quando a imagem já está numa tabela ou numa variável, esta
+*              entrada dispensa a rede e a permissão.
+*              O formato é reconhecido pelos primeiros bytes do arquivo, não
+*              pela extensão. PNG e JPEG; qualquer outra coisa é recusada.
+* Parameters:
+*   p_blob  - bytes da imagem (PNG ou JPEG)
+*   p_name  - chave no cache de imagens. Um BLOB não tem nome, então o chamador
+*             escolhe: nomes distintos para imagens distintas, e o mesmo nome
+*             reaproveita o objeto já emitido no documento
+*   pX, pY  - posição, na unidade corrente
+*   pWidth  - largura (0 = derivada da altura, ou da imagem a 72 dpi)
+*   pHeight - altura (0 = derivada da largura, ou da imagem a 72 dpi)
+*   pLink   - link opcional sobre a área da imagem
+* Raises:
+*   -20301: cabeçalho inválido, BLOB vazio ou nome ausente
+*   -20303: formato não suportado
+* Example:
+*   SELECT logo INTO l_logo FROM empresa WHERE id = 1;
+*   PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);
+*******************************************************************************/
+procedure ImageFromBlob( p_blob  in blob,
+                         p_name  in varchar2,
+                         pX      in number,
+                         pY      in number,
+                         pWidth  in number default 0,
+                         pHeight in number default 0,
+                         pLink   in varchar2 default null);
 				  
 procedure Output(pname in varchar2 default null, pdest in varchar2 default null);
 function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default null) return blob;

@@ -2477,7 +2477,8 @@ end p_dounderline;
 --------------------------------------------------------------------------------
 -- Parse an image (Updated for Task 1.6: Native BLOB support)
 --------------------------------------------------------------------------------
-function p_parseImage(pFile in varchar2) return recImage is
+function p_parseImage(pFile in varchar2,
+                      p_blob in blob default null) return recImage is
   myImg recImageBlob;  -- Changed from ordsys.ordImage to recImageBlob
   myImgInfo recImage;
   myblob blob;
@@ -2531,7 +2532,17 @@ begin
   dbms_lob.open(myImgInfo.data,dbms_lob.LOB_READWRITE);
 
   -- Fetch and parse image using native BLOB handling
-  myImg := getImageFromUrl(pFile);
+  if p_blob is null then
+    myImg := getImageFromUrl(pFile);
+  else
+    -- Recebe o PNG pronto: sem HTTP, e portanto sem ACL de rede. O
+    -- parse_png_header le largura, altura e tipo de cor em RAW, que e o unico
+    -- dado que o getImageFromUrl fornecia alem do proprio BLOB.
+    myImg.image_blob := p_blob;
+    if not parse_png_header(p_blob, myImg) then
+      raise_application_error(-20301, 'Invalid PNG header in image: ' || pFile);
+    end if;
+  end if;
   myblob := myImg.image_blob;  -- Use BLOB field directly
   myImgInfo.i := 1;
     -- reading the blob
@@ -4801,6 +4812,48 @@ begin
 end multicell;
 
 ----------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
+-- p_jpegImage : monta o objeto de imagem de um JPEG recebido como BLOB.
+--
+-- JPEG nao tem chunks para percorrer como o PNG: o proprio arquivo ja e o
+-- stream que o PDF carrega, sob /DCTDecode. Do cabecalho saem largura, altura,
+-- precisao e o numero de componentes, que e o que determina o espaco de cor.
+----------------------------------------------------------------------------------------
+function p_jpegImage(p_blob in blob, p_name in varchar2) return recImage is
+  l_img  recImageBlob;
+  l_info recImage;
+begin
+  if not parse_jpeg_header(p_blob, l_img) then
+    raise_application_error(-20301, 'Invalid JPEG header in image: ' || p_name);
+  end if;
+
+  l_info.i   := 1;
+  l_info.w   := l_img.width;
+  l_info.h   := l_img.height;
+  l_info.bpc := nvl(l_img.bit_depth, 8);
+  l_info.f   := 'DCTDecode';
+
+  -- color_type traz o numero de componentes do SOF: 1 cinza, 3 RGB, 4 CMYK.
+  if l_img.color_type = 1 then
+    l_info.cs := 'DeviceGray';
+  elsif l_img.color_type = 3 then
+    l_info.cs := 'DeviceRGB';
+  elsif l_img.color_type = 4 then
+    l_info.cs := 'DeviceCMYK';
+  else
+    raise_application_error(-20303,
+      'Unsupported JPEG component count (' || l_img.color_type || '): ' || p_name);
+  end if;
+
+  -- O BLOB precisa sobreviver ate a hora de escrever o documento, entao vai
+  -- para um temporario do package, como faz o caminho do PNG.
+  dbms_lob.createtemporary(imgBlob, true);
+  dbms_lob.copy(imgBlob, p_blob, dbms_lob.getlength(p_blob), 1, 1);
+  l_info.data := imgBlob;
+
+  return l_info;
+end p_jpegImage;
+
 procedure image ( pFile in varchar2, 
 		  		  pX in number, 
 				  pY in number, 
@@ -4845,6 +4898,80 @@ exception
   when others then
    error('image : '||sqlerrm);
 end image;
+
+----------------------------------------------------------------------------------------
+-- ImageFromBlob : coloca uma imagem que o chamador ja tem em maos.
+--
+-- O Image() busca por URL, atraves do URIFactory, e isso exige ACL de rede
+-- concedida ao schema. Quando a imagem ja esta numa tabela, num BFILE ou numa
+-- variavel, a ida ate a rede nao serve a nada e ainda pede uma permissao que
+-- boa parte dos ambientes nao da.
+--
+-- O formato e reconhecido pelos primeiros bytes do proprio arquivo, nao por
+-- extensao: assinatura PNG ou marcador SOI do JPEG. Qualquer outra coisa e
+-- recusada com o codigo de formato nao suportado, em vez de virar um objeto
+-- de imagem que o leitor nao desenha.
+--
+-- p_name e a chave do cache de imagens, que e indexado por nome. Um BLOB nao
+-- tem nome, entao o chamador escolhe: nomes distintos para imagens distintas,
+-- e o mesmo nome reaproveita o objeto ja emitido no documento, em vez de
+-- gravar os mesmos bytes outra vez.
+----------------------------------------------------------------------------------------
+procedure ImageFromBlob( p_blob  in blob,
+                         p_name  in varchar2,
+                         pX      in number,
+                         pY      in number,
+                         pWidth  in number default 0,
+                         pHeight in number default 0,
+                         pLink   in varchar2 default null) is
+  myW  number := pWidth;
+  myH  number := pHeight;
+  info recImage;
+  l_sig raw(8);
+begin
+  if p_blob is null or dbms_lob.getlength(p_blob) = 0 then
+    raise_application_error(-20301, 'Empty image blob: ' || nvl(p_name, '(sem nome)'));
+  end if;
+  if p_name is null then
+    raise_application_error(-20301,
+      'ImageFromBlob requires a name: it is the key of the image cache');
+  end if;
+
+  if ( not imageExists(p_name) ) then
+    l_sig := dbms_lob.substr(p_blob, 8, 1);
+    if utl_raw.compare(l_sig, c_PNG_SIGNATURE) = 0 then
+      info := p_parseImage(p_name, p_blob);
+    elsif utl_raw.compare(utl_raw.substr(l_sig, 1, 2), c_JPEG_SOI) = 0 then
+      info := p_jpegImage(p_blob, p_name);
+    else
+      raise_application_error(-20303,
+        'Unsupported image format (only PNG and JPEG supported): ' || p_name);
+    end if;
+    info.i := nvl(images.count, 0) + 1;
+    images(lower(p_name)) := info;
+  else
+    info := images(lower(p_name));
+  end if;
+
+  -- daqui para baixo e o mesmo posicionamento do Image()
+  if (myW = 0 and myH = 0) then
+    myW := info.w / k;
+    myH := info.h / k;
+  end if;
+  if (myW = 0) then
+    myW := myH * info.w / info.h;
+  end if;
+  if (myH = 0) then
+    myH := myW * info.h / info.w;
+  end if;
+
+  p_out('q '||tochar(myW * k, 2)||' 0 0 '||tochar(myH * k, 2)||' '
+        ||tochar(pX * k, 2)||' '||tochar((h - ( pY + myH)) * k, 2)
+        ||' cm /I'||to_char(info.i)||' Do Q');
+  if (pLink is not null) then
+    Link(pX, pY, myW, myH, pLink);
+  end if;
+end ImageFromBlob;
 
 /* THIS PROCEDURE HANGS UP ........... */
 ----------------------------------------------------------------------------------------
