@@ -452,6 +452,31 @@ AMOSTRAS = [
       # conferido no PNG de origem, em (640, 320) de 1280x640
       'pixel': (1, 300, 540, (13, 25, 44))}),
 
+    # ── imagem pelo caminho do parser, com os pixels conferidos ─────────────
+    #
+    # As outras três amostras de imagem entram por OverlayImage, que é outro
+    # percurso: recebe o BLOB e o rasteriza. Esta entra por ImageFromBlob, que
+    # atravessa o p_parseImage — o parser que percorre os chunks do PNG — e sai
+    # pelo p_putstream. Era o único caminho de imagem sem aferição de pixel, e
+    # foi por isso que dois defeitos moraram nele por quatro versões: a
+    # assinatura comparada como caractere e o stream escrito em hexadecimal sem
+    # filtro declarado. Os dois produziam arquivo que abre, então nenhuma
+    # checagem estrutural pegava.
+    ('imagem_blob', """
+        DECLARE l_pdf BLOB; l_img BLOB := TO_BLOB(:img); BEGIN
+          PL_FPDF.ClearPDFCache;
+          PL_FPDF.Init('P','mm','A4'); PL_FPDF.SetFont('Arial','B',16);
+          PL_FPDF.AddPage(); PL_FPDF.Cell(100,10,'Imagem pelo parser','1',1);
+          PL_FPDF.ImageFromBlob(l_img, 'AMOSTRA', 20, 40, 60, 60);
+          :saida := PL_FPDF.OutputBlob();
+          PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
+        END;""",
+     {'paginas': 1, 'textos': ['Imagem pelo parser'], 'imagens': {1: 1},
+      # o proprio vermelho do PNG de origem, no meio da area desenhada.
+      # 20 mm de margem e 60 mm de lado, em pontos: x de 56,7 a 226,8 e a
+      # imagem comeca 40 mm abaixo do topo — o centro cai perto de (142, 227)
+      'pixel': (1, 142, 227, (200, 60, 40))}),
+
     # ── documento de complexidade real: um boleto bancário ───────────────────
     #
     # O PL/SQL não está aqui: está em `examples/boleto.sql`, que é o arquivo
@@ -1021,6 +1046,9 @@ CONTEUDOS = {'qrcode_pix': PIX, 'barcode_code128': 'PL-FPDF-2026',
              # três conteúdos diferentes no mesmo bloco
              'marca_dagua': 'CONFIDENCIAL',
              'overlay_img': {'img': png_solido(8, (32, 144, 208))},
+             # mesmo helper do overlay, cor diferente para nao confundir as
+             # duas amostras quando uma falha
+             'imagem_blob': {'img': png_solido(8, (200, 60, 40))},
              'png_alfa': {'img': png_alfa(8, (200, 60, 40, 128))},
              'png_entrelacado': {'img': png_entrelacado(16)},
              # o banner do próprio projeto: 1280x640, 326 KB — a única
