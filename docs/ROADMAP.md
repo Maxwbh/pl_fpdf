@@ -2,10 +2,16 @@
 
 **Versao Atual:** 3.4.0 | **Atualizado:** 2026-09-10
 
-Revisado em 28/08/2026 conferindo cada afirmacao contra o codigo. As correcoes
-estao marcadas ao longo do documento; a mais importante e que **v3.0.0 dava
-marcas d'agua e overlays como prontos desde fevereiro, e eles nao desenhavam
-nada** — so passaram a desenhar agora.
+Revisado em 10/09/2026, e antes em 28/08/2026, conferindo cada afirmacao contra
+o codigo. As correcoes estao marcadas ao longo do documento; a mais importante
+da primeira revisao e que **v3.0.0 dava marcas d'agua e overlays como prontos
+desde fevereiro, e eles nao desenhavam nada** — so passaram a desenhar depois.
+
+A revisao de setembro achou tres inconsistencias no proprio documento, e as
+tres estao corrigidas abaixo: as versoes planejadas 3.3.0 e 3.4.0 descreviam
+funcionalidades que **nao sao** as que sairam com esses numeros; cinco
+verificacoes rodavam no CI sem constar da tabela que diz registra-las; e as
+quatro correcoes de setembro nao estavam nas pendencias.
 
 ---
 
@@ -108,6 +114,10 @@ passaram a ser conferidos por decodificadores reais.
 | ~~**Antecipacao de subprograma publico**~~ | **Resolvido, e virou lint.** `PLS-00305`: tres declaracoes antecipadas vieram junto com o codigo para o `PL_FPDF_UTIL` e passaram a apontar para subprogramas que a spec nova declara. A spec ja declara; repetir no body e redeclarar no mesmo escopo. Antecipacao so serve para subprograma PRIVADO chamado antes de ser definido. (`check_spec_body.py`) |
 | ~~**Tipo que ficou no outro package**~~ | **Resolvido, e virou lint.** `PLS-00201`: o `PL_FPDF_UTIL` usava `tpi` e `tv4000`, que ficaram no `PL_FPDF` — um package nao herda tipo do outro. Como o `PLS-00371`, este erro **aborta a analise da unidade inteira**, entao ele escondeu o proprio: foram duas rodadas para dois erros que estavam no arquivo ao mesmo tempo. A regra entrou no `check_spec_body.py`: todo tipo usado no body tem de estar declarado no body, na spec, ou ser nativo. |
 | ~~**Tipo declarado na spec e no body**~~ | **Resolvido, e virou lint.** O body herda o que a spec declara; redeclarar da `PLS-00371` e **aborta a analise da unidade inteira**, com a mensagem apontando a linha de um vizinho qualquer. Custou uma rodada na separacao do `PL_FPDF_UTIL`: o tipo `tqr` veio junto na mudanca e ja estava na spec nova. A regra entrou no `check_spec_body.py`, que ja lia o par spec/body — sem etapa nova no CI. |
+| ~~**Texto acentuado saia com dois glifos**~~ | **Resolvido.** O dicionario da fonte declarava `/Encoding /WinAnsiEncoding` e o texto entrava cru, em AL32UTF8: cada acentuado chegava ao leitor como DOIS bytes e ele desenhava dois glifos — sem erro, num arquivo que abre. A medicao derrubou as duas suposicoes do relato: a tabela de larguras estava **integra** (256 chaves distintas), e o sintoma nao era medida errada e sim `ORA-06502`, porque `subtype car is varchar2(1)` e UM byte e o `a` com til tem dois. Como `Cell` so mede para `align` C e R, alinhado a esquerda desenhava errado calado e centralizado LEVANTAVA. A tabela cp1252 saiu do codec do Python e foi conferida no MuPDF (217 de 217 posicoes desenhaveis); o byte sai como escape OCTAL, que e ASCII e atravessa o CLOB — a mesma licao do stream de imagem. `SetUTF8Enabled`/`IsUTF8Enabled` sairam da spec: nao faziam nada. (`check_byte_chars.py`, regra 4) |
+| ~~**`Image()` recusava todo PNG em AL32UTF8**~~ | **Resolvido.** Nao era `ORA-29275`, como o relato supunha: o `UTL_RAW.CAST_TO_VARCHAR2` nao levanta sobre binario. A assinatura era montada com `chr(137) \|\| 'PNG'`, que em AL32UTF8 nunca casa com os oito bytes do arquivo — e o parser recusava com `Not a PNG file`, uma mensagem que manda procurar defeito **no arquivo**. Todo o percurso binario do `p_parseImage` passou a RAW, com a assinatura vindo de `HEXTORAW`. |
+| ~~**Stream de imagem em hexadecimal nao declarado**~~ | **Resolvido.** O `p_putstream` lia o BLOB para buffer `VARCHAR2`: a sobrecarga de BLOB entrega RAW, e a conversao implicita devolve hexadecimal — 2000 bytes viravam 4000 caracteres. O hexadecimal era a codificacao CERTA (o documento e montado num CLOB, e byte acima de 0x7F nao sobrevive: medido, 256 entram e 422 saem), mas era acidental e sem `/ASCIIHexDecode`. Mais dois defeitos nas mesmas seis linhas: o laco parava um byte antes do fim, e o tamanho do pedaco era `IN OUT` e ficava preso na primeira leitura curta. (`check_byte_chars.py`, regra 3) |
+| ~~**Documento em paisagem contaminava o seguinte**~~ | **Resolvido.** O `Reset` limpava fontes, imagens, links e metadados — e deixava de fora o `OrientationChanges`, que diz quais paginas ganham `/MediaBox` proprio. Como e indexado pelo NUMERO da pagina, o indice 1 de um documento virava o indice 1 do proximo: quem gerasse um documento com a pagina 1 em paisagem deixava **todo documento posterior da mesma sessao** com a pagina 1 em paisagem. Conteudo desenhado fora do papel, arquivo que abre EM BRANCO, sem erro nenhum. Doze amostras cairam juntas e o sintoma nao acusava a causa — a pagina 1 saia errada e as demais certas, porque so o indice reaproveitado colide. O que fechou foi ler o arquivo gerado: `-30 bytes` por documento depois do conserto, exatamente o `/MediaBox` que sobrava. |
 
 ---
 
@@ -192,7 +202,15 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 
 ---
 
-### v3.3.0 - Bookmarks & Links (Q3 2026)
+### Bookmarks & Links — sem versao definida
+
+> **Corrigido na revisao de setembro.** Esta secao dizia "v3.3.0 (Q3 2026)", e
+> a 3.3.0 **ja saiu** — com instalacao em um arquivo, separacao do
+> `PL_FPDF_UTIL` e documentacao em ingles, nada disto aqui. Numero de versao
+> planejado que o lancamento nao cumpre e pior que nao ter numero: quem le
+> acredita que os bookmarks vieram na 3.3.0.
+>
+> O item continua valendo, sem numero, ate ser agendado de novo.
 
 **Prioridade:** Media
 
@@ -214,7 +232,12 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 
 ---
 
-### v3.4.0 - PDF 1.5/1.6 (Q4 2026)
+### PDF 1.5/1.6 — leitura pronta, escrita sem versao definida
+
+> **Corrigido na revisao de setembro.** Dizia "v3.4.0 (Q4 2026)", e a 3.4.0
+> **ja saiu** — com a conversao WinAnsi, o `ImageFromBlob` e o conserto do
+> caminho de imagem. A parte de LEITURA desta secao, marcada abaixo, entrou na
+> 3.2.1 de agosto; o que falta e a ESCRITA, e ela segue sem numero.
 
 **Prioridade:** Media
 
@@ -284,6 +307,12 @@ O que continua automático é a **conferência**, que é onde o CI ajuda de verd
 |-------------|-------------|
 | `check_refs.py` | Toda referência `PL_FPDF.*` citada na documentação existe no package |
 | `check_links.py` | Todo link e imagem relativa aponta para arquivo que existe |
+| `check_escape_pdf.py` | Mais de uma rotina escapando string literal de PDF. Existiam cinco, e TRES estavam erradas — procuravam `'\\\\'` e trocavam por `'\\\\\\\\'`, ou seja, duas barras por quatro, e a barra sozinha, que e o caso comum, passava intacta |
+| `check_heranca.py` | Mede quanto do fonte de 2017 ainda vive em `src/` e **trava o numero**: a heranca so pode diminuir |
+| `check_lob_temp.py` | LOB temporario devolvido por funcao e nao liberado por quem chama — vazamento que so aparece sob carga |
+| `check_undeclared.py` | Chamada a subprograma que nao existe (`PLS-00201`), que aborta a analise da unidade inteira e esconde o erro seguinte |
+| `check_v_estatico.py` | `V$`/`GV$`/`DBA_` em SQL estatico dentro de PL/SQL: compila no ambiente de quem tem o grant e falha no do usuario |
+| `check_roadmap_ci.py` | Esta tabela prometendo mais, ou menos, do que o `ci.yml` roda. Na revisao de setembro eram 21 passos para 16 entradas — a deriva e silenciosa por construcao: acrescentar um passo no CI nao obriga a tabela a acompanhar |
 | `check_paridade.py` | As páginas inglesas acompanham as portuguesas, e nenhuma frase ficou por traduzir |
 
 Duas consequências que valem registro:

@@ -106,6 +106,13 @@ jobs:
       - name: Nenhum byte virando caractere com CHR
         run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
+      # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na
+      # revisao de setembro ela tinha 16 entradas para 21 passos: cinco
+      # verificacoes rodavam sem constar de lugar nenhum. Quem le a tabela para
+      # saber se um defeito ja tem rede acreditava que nao tinha.
+      - name: A tabela do ROADMAP corresponde ao que roda no CI
+        run: python dev/scripts/plsql_lint/check_roadmap_ci.py
+
       # Num DECLARE, uma vez que aparece o corpo de um subprograma local, nao
       # se declara mais nada. O ORA-06550 aponta a linha da declaracao, nao a
       # do subprograma que a invalidou, entao se procura no lugar errado.
