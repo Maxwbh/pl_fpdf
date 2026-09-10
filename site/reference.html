@@ -185,11 +185,9 @@
 <li><a href="#clearttffontcache">ClearTTFFontCache</a></li>
 <li><a href="#getttffontinfo">GetTTFFontInfo</a></li>
 <li><a href="#isttffontloaded">IsTTFFontLoaded</a></li>
-<li><a href="#isutf8enabled">IsUTF8Enabled</a></li>
 <li><a href="#loadttffromfile">LoadTTFFromFile</a></li>
 <li><a href="#setfont">SetFont</a></li>
 <li><a href="#setfontsize">SetFontSize</a></li>
-<li><a href="#setutf8enabled">SetUTF8Enabled</a></li>
 <li><a href="#utf8topdfstring">UTF8ToPDFString</a></li>
 </ul></div>
 <div class="side-group"><h4>Escrita de texto</h4><ul>
@@ -648,15 +646,6 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
 <h5>Retorno</h5><p class="d">BOOLEAN — TRUE se a fonte está no cache.</p>
 <p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#clearttffontcache">ClearTTFFontCache</a></p>
 </article>
-<article class="api" id="isutf8enabled">
-<h3>IsUTF8Enabled <span class="kind">Function</span><a class="anchor" href="#isutf8enabled" aria-label="link">#</a></h3>
-<p class="d">Indica se o modo UTF-8 está ativo.</p>
-<h5>Sintaxe</h5>
-<div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsUTF8Enabled
-    <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
-<h5>Retorno</h5><p class="d">BOOLEAN — TRUE se UTF-8 está habilitado.</p>
-<p class="see"><b>Veja também:</b> <a href="#setutf8enabled">SetUTF8Enabled</a></p>
-</article>
 <article class="api" id="loadttffromfile">
 <h3>LoadTTFFromFile <span class="kind">Procedure</span><a class="anchor" href="#loadttffromfile" aria-label="link">#</a></h3>
 <p class="d">Carrega uma fonte TrueType a partir de um arquivo em um DIRECTORY do Oracle.</p>
@@ -702,17 +691,6 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
 </tbody></table></div>
 <p class="see"><b>Veja também:</b> <a href="#setfont">SetFont</a></p>
 </article>
-<article class="api" id="setutf8enabled">
-<h3>SetUTF8Enabled <span class="kind">Procedure</span><a class="anchor" href="#setutf8enabled" aria-label="link">#</a></h3>
-<p class="d">Liga ou desliga o tratamento UTF-8 do texto.</p>
-<h5>Sintaxe</h5>
-<div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetUTF8Enabled(
-    p_enabled <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">true</span>);</pre></div>
-<h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
-<tr><td class="pname">p_enabled</td><td class="ptype">BOOLEAN</td><td>Ativa UTF-8.</td><td class="pval">TRUE ou FALSE; TRUE é o padrão</td><td><code>true</code></td></tr>
-</tbody></table></div>
-<p class="see"><b>Veja também:</b> <a href="#isutf8enabled">IsUTF8Enabled</a>, <a href="#utf8topdfstring">UTF8ToPDFString</a></p>
-</article>
 <article class="api" id="utf8topdfstring">
 <h3>UTF8ToPDFString <span class="kind">Function</span><a class="anchor" href="#utf8topdfstring" aria-label="link">#</a></h3>
 <p class="d">Converte um texto UTF-8 para a representação interna do PDF. Chamada internamente; útil para depuração de acentuação.</p>
@@ -726,7 +704,6 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
 <tr><td class="pname">p_escape</td><td class="ptype">BOOLEAN</td><td>Aplica escape dos caracteres especiais do PDF (parênteses e barra invertida).</td><td class="pval">TRUE ou FALSE</td><td><code>true</code></td></tr>
 </tbody></table></div>
 <h5>Retorno</h5><p class="d">VARCHAR2 — texto convertido.</p>
-<p class="see"><b>Veja também:</b> <a href="#setutf8enabled">SetUTF8Enabled</a></p>
 </article>
 <h2 class="grp" id="grp-text">Escrita de texto</h2>
 <article class="api" id="cell">

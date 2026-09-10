@@ -463,6 +463,33 @@ AMOSTRAS = [
       # conferido no PNG de origem, em (640, 320) de 1280x640
       'pixel': (1, 300, 540, (13, 25, 44))}),
 
+    # ── texto acentuado nas fontes padrao ───────────────────────────────────
+    #
+    # A prova que interessa não é o escape estar no arquivo — é um LEITOR
+    # devolver o texto certo. O validador extrai o texto com o MuPDF e compara,
+    # e é isso que separa "converteu" de "converteu para a coisa certa".
+    #
+    # Sem a conversão, cada acentuado saía como dois glifos: o leitor devolvia
+    # 'EndereÃ§o de cobranÃ§a'. O arquivo abria, e ninguém percebia sem olhar.
+    ('acentos', """
+        BEGIN
+          PL_FPDF.ClearPDFCache;
+          PL_FPDF.Init('P','mm','A4'); PL_FPDF.SetFont('Helvetica','',12);
+          PL_FPDF.AddPage();
+          PL_FPDF.Cell(0, 10, 'Endereco de cobranca - Sao Paulo', '0', 1);
+          PL_FPDF.Cell(0, 10, 'Endereço de cobrança - São Paulo', '0', 1);
+          PL_FPDF.Cell(0, 10, 'Acentuacao: à é î õ ü ç ñ Ç', '0', 1);
+          -- alinhado à direita: só este caminho chama GetStringWidth, e era
+          -- onde o ORA-06502 aparecia
+          PL_FPDF.Cell(0, 10, 'Total à direita', '0', 1, 'R');
+          :saida := PL_FPDF.OutputBlob();
+          PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
+        END;""",
+     {'paginas': 1,
+      'textos': ['Endereço de cobrança - São Paulo',
+                 'Acentuacao: à é î õ ü ç ñ Ç',
+                 'Total à direita']}),
+
     # ── imagem pelo caminho do parser, com os pixels conferidos ─────────────
     #
     # As outras três amostras de imagem entram por OverlayImage, que é outro

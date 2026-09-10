@@ -43,6 +43,7 @@ TESTES = [
     ('test_phase_security.sql',        'Fase 5: segurança'),
     ('test_regressoes_revisao.sql',    'Regressões da revisão de ago/2026'),
     ('test_stream_imagem.sql',         'Escrita do stream de imagem'),
+    ('test_winansi.sql',               'Texto acentuado (WinAnsi)'),
 ]
 
 CABECALHO = """--------------------------------------------------------------------------------

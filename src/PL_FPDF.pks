@@ -390,15 +390,7 @@ function UTF8ToPDFString(
   p_escape boolean default true
 ) return varchar2;
 
-/*******************************************************************************
-* Function: IsUTF8Enabled - Check if UTF-8 encoding is enabled
-*******************************************************************************/
-function IsUTF8Enabled return boolean;
 
-/*******************************************************************************
-* Procedure: SetUTF8Enabled - Enable/disable UTF-8 encoding
-*******************************************************************************/
-procedure SetUTF8Enabled(p_enabled boolean default true);
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -442,6 +434,12 @@ PRAGMA EXCEPTION_INIT(exc_invalid_font_name, -20210);
 
 exc_invalid_font_blob EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_font_blob, -20211);
+
+-- Caractere que nao existe em WinAnsi, a codificacao que as fontes padrao do
+-- PDF declaram. Recusar vale mais que desenhar '?': um documento com o nome do
+-- sacado furado e entregue como se estivesse certo.
+exc_fora_de_winansi EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_fora_de_winansi, -20203);
 
 -- Image Errors (-20301 to -20310)
 exc_invalid_image EXCEPTION;

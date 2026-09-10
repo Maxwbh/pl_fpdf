@@ -175,12 +175,22 @@ PL_FPDF.SetFont('Roboto', '', 12);
 
 Helpers: `IsTTFFontLoaded(name)`, `GetTTFFontInfo(name)`, `ClearTTFFontCache`.
 
-### UTF-8
+### Accented text
+
+With the standard PDF fonts — Helvetica, Times, Courier — accented text comes
+out right with no call at all: the conversion to the encoding the document
+declares happens on the way out.
 
 ```sql
-PL_FPDF.SetUTF8Enabled(TRUE);        -- the default; accents work natively
-IF PL_FPDF.IsUTF8Enabled THEN ... END IF;
+PL_FPDF.SetFont('Helvetica', '', 12);
+PL_FPDF.Cell(0, 10, 'Endereço de cobrança - São Paulo');
 ```
+
+The reach is WinAnsi's: the western latin scripts, plus euro, em dash, curly
+quotes and the like. A character outside that range — an ideograph, an emoji —
+is **rejected** with `ORA-20203` and its position, rather than silently
+becoming `?`. For those scripts, embed a TrueType font with
+[AddTTFFont](API_REFERENCE_EN.md#addttffont).
 
 ---
 

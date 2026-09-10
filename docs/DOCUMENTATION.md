@@ -174,12 +174,21 @@ PL_FPDF.SetFont('Roboto', '', 12);
 
 Auxiliares: `IsTTFFontLoaded(nome)`, `GetTTFFontInfo(nome)`, `ClearTTFFontCache`.
 
-### UTF-8
+### Acentuação
+
+Nas fontes padrão do PDF — Helvetica, Times, Courier — o texto acentuado sai
+correto sem nenhuma chamada: a conversão para a codificação que o documento
+declara é feita na saída.
 
 ```sql
-PL_FPDF.SetUTF8Enabled(TRUE);        -- padrão; acentos funcionam nativamente
-IF PL_FPDF.IsUTF8Enabled THEN ... END IF;
+PL_FPDF.SetFont('Helvetica', '', 12);
+PL_FPDF.Cell(0, 10, 'Endereço de cobrança - São Paulo');
 ```
+
+O alcance é o do WinAnsi: as escritas latinas ocidentais, mais euro, travessão,
+aspas curvas e afins. Caractere fora dessa faixa — um ideograma, um emoji — é
+**recusado** com `ORA-20203` e a posição, em vez de virar `?` em silêncio. Para
+essas escritas, embuta uma fonte TrueType com [AddTTFFont](API_REFERENCE.md#addttffont).
 
 ---
 

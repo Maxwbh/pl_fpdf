@@ -13,7 +13,7 @@ syntax, parameters with accepted values, return, errors raised and an example.
 
 **Lifecycle** — [fpdf](#fpdf) · [Init](#init) · [IsInitialized](#isinitialized) · [Reset](#reset)
 **Pages and positioning** — [AcceptPageBreak](#acceptpagebreak) · [AddPage](#addpage) · [GetCurrentPage](#getcurrentpage) · [GetX](#getx) · [GetY](#gety) · [Ln](#ln) · [PageNo](#pageno) · [SetAutoPageBreak](#setautopagebreak) · [SetLeftMargin](#setleftmargin) · [SetMargins](#setmargins) · [SetPage](#setpage) · [SetRightMargin](#setrightmargin) · [SetTopMargin](#settopmargin) · [SetX](#setx) · [SetXY](#setxy) · [SetY](#sety)
-**Fonts and UTF-8** — [AddFont](#addfont) · [AddTTFFont](#addttffont) · [ClearTTFFontCache](#clearttffontcache) · [GetTTFFontInfo](#getttffontinfo) · [IsTTFFontLoaded](#isttffontloaded) · [IsUTF8Enabled](#isutf8enabled) · [LoadTTFFromFile](#loadttffromfile) · [SetFont](#setfont) · [SetFontSize](#setfontsize) · [SetUTF8Enabled](#setutf8enabled) · [UTF8ToPDFString](#utf8topdfstring)
+**Fonts and UTF-8** — [AddFont](#addfont) · [AddTTFFont](#addttffont) · [ClearTTFFontCache](#clearttffontcache) · [GetTTFFontInfo](#getttffontinfo) · [IsTTFFontLoaded](#isttffontloaded) · [LoadTTFFromFile](#loadttffromfile) · [SetFont](#setfont) · [SetFontSize](#setfontsize) · [UTF8ToPDFString](#utf8topdfstring)
 **Writing text** — [Cell](#cell) · [CellRotated](#cellrotated) · [GetCurrentFontFamily](#getcurrentfontfamily) · [GetCurrentFontSize](#getcurrentfontsize) · [GetCurrentFontStyle](#getcurrentfontstyle) · [GetLineSpacing](#getlinespacing) · [GetStringWidth](#getstringwidth) · [MultiCell](#multicell) · [SetLineSpacing](#setlinespacing) · [Text](#text) · [Write](#write) · [WriteRotated](#writerotated)
 **Colours and drawing** — [Line](#line) · [Poly](#poly) · [Rect](#rect) · [SetDash](#setdash) · [SetDrawColor](#setdrawcolor) · [SetFillColor](#setfillcolor) · [SetLineDashPattern](#setlinedashpattern) · [SetLineWidth](#setlinewidth) · [SetTextColor](#settextcolor) · [Triangle](#triangle)
 **Images** — [getImageFromUrl](#getimagefromurl) · [image](#image)
@@ -682,24 +682,6 @@ BOOLEAN — TRUE if the font is in the cache.
 
 ---
 
-### IsUTF8Enabled
-
-Tells whether UTF-8 mode is active.
-
-#### Syntax
-
-```sql
-FUNCTION PL_FPDF.IsUTF8Enabled
-    RETURN BOOLEAN;
-```
-
-#### Returns
-
-BOOLEAN — TRUE if UTF-8 is enabled.
-
-**See also:** [SetUTF8Enabled](#setutf8enabled)
-
----
 
 ### LoadTTFFromFile
 
@@ -786,26 +768,6 @@ PROCEDURE PL_FPDF.SetFontSize(
 
 ---
 
-### SetUTF8Enabled
-
-Turns UTF-8 handling of text on or off.
-
-#### Syntax
-
-```sql
-PROCEDURE PL_FPDF.SetUTF8Enabled(
-    p_enabled boolean DEFAULT true);
-```
-
-#### Parameters
-
-| Parameter | Type | Description | Accepted values | Default |
-|-----------|------|-----------|-------------------|--------|
-| `p_enabled` | BOOLEAN | Enables UTF-8. | TRUE or FALSE; TRUE is the default | `true` |
-
-**See also:** [IsUTF8Enabled](#isutf8enabled), [UTF8ToPDFString](#utf8topdfstring)
-
----
 
 ### UTF8ToPDFString
 
@@ -831,7 +793,6 @@ FUNCTION PL_FPDF.UTF8ToPDFString(
 
 VARCHAR2 — the converted text.
 
-**See also:** [SetUTF8Enabled](#setutf8enabled)
 
 ---
 

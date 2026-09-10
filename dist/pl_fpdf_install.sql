@@ -3568,15 +3568,7 @@ function UTF8ToPDFString(
   p_escape boolean default true
 ) return varchar2;
 
-/*******************************************************************************
-* Function: IsUTF8Enabled - Check if UTF-8 encoding is enabled
-*******************************************************************************/
-function IsUTF8Enabled return boolean;
 
-/*******************************************************************************
-* Procedure: SetUTF8Enabled - Enable/disable UTF-8 encoding
-*******************************************************************************/
-procedure SetUTF8Enabled(p_enabled boolean default true);
 
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -3620,6 +3612,12 @@ PRAGMA EXCEPTION_INIT(exc_invalid_font_name, -20210);
 
 exc_invalid_font_blob EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_font_blob, -20211);
+
+-- Caractere que nao existe em WinAnsi, a codificacao que as fontes padrao do
+-- PDF declaram. Recusar vale mais que desenhar '?': um documento com o nome do
+-- sacado furado e entregue como se estivesse certo.
+exc_fora_de_winansi EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_fora_de_winansi, -20203);
 
 -- Image Errors (-20301 to -20310)
 exc_invalid_image EXCEPTION;
@@ -5535,7 +5533,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 -- Date: 2025-12-17
 --------------------------------------------------------------------------------
- g_utf8_enabled boolean := true;            -- UTF-8 encoding enabled by default
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -6842,6 +6839,136 @@ end p_newobj;
 -- original dizia "Add \ before \, ( and )": a intencao estava certa, a
 -- implementacao nao. Pegava PL_FPDF.Text e os metadados do documento (titulo,
 -- autor, assunto, palavras-chave, criador), que passam pelo p_textstring.
+----------------------------------------------------------------------------------------
+-- p_winansi_byte : o byte WinAnsi de um caractere, ou NULL se ele nao existe la.
+--
+-- A tabela vem de dev/scripts/winansi_reference/, gerada do codec cp1252 e
+-- conferida contra o MuPDF: das 217 posicoes desenhaveis o leitor devolve
+-- todas com o caractere previsto, exceto 0xA0 e 0xAD, que o Anexo D do PDF
+-- manda tratar como espaco e hifen.
+--
+-- Ela colapsa em duas partes. Para 224 posicoes o byte E o proprio ponto de
+-- codigo, porque de 0xA0 a 0xFF o cp1252 coincide com o Latin-1. Sobram 27
+-- excecoes, todas entre 0x80 e 0x9F, que e onde a Microsoft pos simbolos no
+-- lugar dos controles C1 -- sao as do CASE abaixo.
+--
+-- O ponto de codigo sai do ASCIISTR, que devolve '\XXXX' para o que nao e
+-- ASCII. E o caminho que nao depende de adivinhar charset de origem.
+--
+-- Devolve NULL para o que nao existe em WinAnsi: ideograma, emoji, aspas de
+-- outras escritas. Quem chama decide o que fazer com isso.
+----------------------------------------------------------------------------------------
+function p_winansi_byte(p_car in varchar2) return pls_integer is
+  l_asc varchar2(24);
+  l_cp  pls_integer;
+begin
+  if p_car is null then
+    return null;
+  end if;
+
+  l_asc := asciistr(p_car);
+  if l_asc = '\\' then
+    l_cp := 92;                       -- o ASCIISTR escapa a propria barra
+  elsif substr(l_asc, 1, 1) = '\' then
+    l_cp := to_number(substr(l_asc, 2, 4), 'XXXX');
+  else
+    l_cp := ascii(p_car);
+  end if;
+
+  case l_cp
+    when 8364 then return 128;    -- U+20AC  0x80
+    when 8218 then return 130;    -- U+201A  0x82
+    when 402 then return 131;     -- U+0192  0x83
+    when 8222 then return 132;    -- U+201E  0x84
+    when 8230 then return 133;    -- U+2026  0x85
+    when 8224 then return 134;    -- U+2020  0x86
+    when 8225 then return 135;    -- U+2021  0x87
+    when 710 then return 136;     -- U+02C6  0x88
+    when 8240 then return 137;    -- U+2030  0x89
+    when 352 then return 138;     -- U+0160  0x8A
+    when 8249 then return 139;    -- U+2039  0x8B
+    when 338 then return 140;     -- U+0152  0x8C
+    when 381 then return 142;     -- U+017D  0x8E
+    when 8216 then return 145;    -- U+2018  0x91
+    when 8217 then return 146;    -- U+2019  0x92
+    when 8220 then return 147;    -- U+201C  0x93
+    when 8221 then return 148;    -- U+201D  0x94
+    when 8226 then return 149;    -- U+2022  0x95
+    when 8211 then return 150;    -- U+2013  0x96
+    when 8212 then return 151;    -- U+2014  0x97
+    when 732 then return 152;     -- U+02DC  0x98
+    when 8482 then return 153;    -- U+2122  0x99
+    when 353 then return 154;     -- U+0161  0x9A
+    when 8250 then return 155;    -- U+203A  0x9B
+    when 339 then return 156;     -- U+0153  0x9C
+    when 382 then return 158;     -- U+017E  0x9E
+    when 376 then return 159;     -- U+0178  0x9F
+    else
+      if l_cp between 0 and 127 or l_cp between 160 and 255 then
+        return l_cp;                  -- identidade
+      end if;
+      return null;
+  end case;
+end p_winansi_byte;
+
+----------------------------------------------------------------------------------------
+-- p_texto_pdf : texto de conteudo pronto para entrar entre parenteses.
+--
+-- Duas coisas ao mesmo tempo, e as duas precisam acontecer aqui.
+--
+-- 1. A conversao para WinAnsi. O dicionario da fonte declara
+--    /Encoding /WinAnsiEncoding e o texto sai do banco em AL32UTF8: sem
+--    traduzir, cada acentuado chega ao leitor como DOIS bytes e ele desenha
+--    dois glifos -- o 'c' cedilha vira 'A' til seguido de paragrafo.
+--
+-- 2. O escape OCTAL do que passa de 0x7F. O byte convertido nao pode ser
+--    escrito cru: o documento e montado num CLOB e convertido no fim por
+--    DBMS_LOB.CONVERTTOBLOB, que recodifica pelo charset do banco. Medido:
+--    256 bytes entram e 422 saem. A forma '\ddd' e ASCII, atravessa intacta, e
+--    o leitor a resolve como o byte. Mesma solucao do stream de imagem, pelo
+--    mesmo motivo.
+--
+-- Caractere fora do WinAnsi levanta erro com a posicao, em vez de virar '?'.
+-- Um boleto com o nome do sacado furado e entregue como se estivesse certo.
+----------------------------------------------------------------------------------------
+function p_texto_pdf(p_txt in varchar2) return varchar2 is
+  l_saida varchar2(32767);
+  l_car   varchar2(4);
+  l_byte  pls_integer;
+begin
+  if p_txt is null then
+    return null;
+  end if;
+
+  for i in 1 .. length(p_txt) loop
+    l_car  := substr(p_txt, i, 1);
+    l_byte := p_winansi_byte(l_car);
+
+    if l_byte is null then
+      raise_application_error(-20203,
+        'Caractere fora de WinAnsi na posicao ' || i || ': ' || l_car
+        || '. As fontes padrao do PDF so alcancam WinAnsi; para outras '
+        || 'escritas, embuta uma fonte TrueType.');
+    end if;
+
+    if l_byte in (40, 41, 92) then            -- ( ) e barra: escape do PDF
+      l_saida := l_saida || '\' || chr(l_byte);
+    elsif l_byte between 32 and 126 then
+      l_saida := l_saida || chr(l_byte);
+    else
+      -- Octal de TRES digitos, sempre. Com menos, '\7' seguido de um digito do
+      -- texto seria lido como um numero maior. O Oracle nao formata em octal,
+      -- entao a conta e explicita.
+      l_saida := l_saida
+                 || '\' || to_char(trunc(l_byte / 64))
+                 || to_char(trunc(mod(l_byte, 64) / 8))
+                 || to_char(mod(l_byte, 8));
+    end if;
+  end loop;
+
+  return l_saida;
+end p_texto_pdf;
+
 ----------------------------------------------------------------------------------------
 function p_escapa_pdf(p_txt in varchar2) return varchar2 is
 begin
@@ -8585,7 +8712,7 @@ procedure Text(px in number, py in number, ptxt in varchar2) is
 s varchar2(2000);
 begin
 	-- Output a string
-	s:='BT '|| tochar(px*k,2) ||' '|| tochar((h-py)*k,2) ||' Td ('||p_escapa_pdf(ptxt)||') Tj ET';
+	s:='BT '|| tochar(px*k,2) ||' '|| tochar((h-py)*k,2) ||' Td ('||p_texto_pdf(ptxt)||') Tj ET';
 	if(underline and ptxt is not null) then
 		s := s || ' ' || p_dounderline(px,py,ptxt);
 	end if; 
@@ -9337,22 +9464,7 @@ exception
     end if;
 end UTF8ToPDFString;
 
-/*******************************************************************************
-* Function: IsUTF8Enabled
-*******************************************************************************/
-function IsUTF8Enabled return boolean is
-begin
-  return g_utf8_enabled;
-end IsUTF8Enabled;
 
-/*******************************************************************************
-* Procedure: SetUTF8Enabled
-*******************************************************************************/
-procedure SetUTF8Enabled(p_enabled boolean default true) is
-begin
-  log_message(3, 'Setting UTF-8 encoding to: ' || case when p_enabled then 'ENABLED' else 'DISABLED' end);
-  g_utf8_enabled := p_enabled;
-end SetUTF8Enabled;
 
 --------------------------------------------------------------------------------
 -- End of TASK 2.1 implementations
@@ -9710,17 +9822,31 @@ w number;
 lg number;
 wdth number;
 c car;
+l_byte pls_integer;
 begin
 	-- Get width of a string in the current font
+	-- A tabela e indexada por CHR(byte), e o byte e o do WinAnsi -- que e a
+	-- codificacao que o dicionario da fonte declara. Consultar com o caractere
+	-- cru nao funciona em AL32UTF8: 'c' cedilha tem dois bytes e o subtipo car
+	-- tem um, entao a consulta estourava ORA-06502 ANTES de chegar na tabela.
+	-- Medido: 'Sao Paulo' devolvia 19.5326 e 'Sao Paulo' com til levantava.
 	charSetWidth := CurrentFont.cw;
 	w:=0;
 	lg := length(pstr);
 	for i in 1..lg
 	loop
-		c := substr(pstr,i,1);
-	    --if (charSetWidth.exists(c)) then
-		  wdth := charSetWidth(c);
-		--end if;
+		l_byte := p_winansi_byte(substr(pstr,i,1));
+		if l_byte is null then
+			raise_application_error(-20203,
+				'Caractere fora de WinAnsi na posicao ' || i
+				|| ' ao medir a largura: ' || substr(pstr,i,1));
+		end if;
+		c := chr(l_byte);
+		if charSetWidth.exists(c) then
+			wdth := charSetWidth(c);
+		else
+			wdth := 0;
+		end if;
 		w:= w + wdth;
 	end loop;
 	return w * fontsize/1000;
@@ -9821,7 +9947,7 @@ begin
 			myS := myS || 'q ' || TextColor || ' ';
 	    end if; 
 		
-        myTXT2 := p_escapa_pdf(ptxt);
+        myTXT2 := p_texto_pdf(ptxt);
     myS := myS || 'BT '||tochar((x+myDX)*myK,2)||' '||tochar((h-(y+.5*ph+.3*fontsize))*myK,2)||' Td ('||myTXT2||') Tj ET';
 		if(underline) then
 			myS := myS || ' ' || p_dounderline(x+myDX,y+.5*ph+.3*fontsize,ptxt);
@@ -14291,7 +14417,7 @@ END ovl_num;
 -- ovl_escape: escapa uma string literal do PDF
 FUNCTION ovl_escape(p_txt IN VARCHAR2) RETURN VARCHAR2 IS
 BEGIN
-  RETURN p_escapa_pdf(p_txt);
+  RETURN p_texto_pdf(p_txt);
 END ovl_escape;
 
 -- ovl_familia / ovl_fonte_nome / ovl_fonte_base: as tres familias suportadas
