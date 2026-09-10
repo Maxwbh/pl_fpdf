@@ -5388,7 +5388,10 @@ type recImage is record ( n number,  	 	  	 		-- indice d'insertion dans le docu
 						  bpc txt,				 	-- Bit per color
 	 		  	 		  f txt,  	 			 	-- File Format
 						  parms txt,			 	-- pdf parameter for this image
-						  pal txt,				 	-- colors palette informations 
+						  pal raw(8192),			-- paleta em RAW. O PLTE valido tem no maximo
+												-- 768 bytes (256 cores x 3), mas o tamanho vem
+												-- do arquivo: dimensionar no limite teorico
+												-- faria um PNG corrompido estourar ORA-06502.
 						  trns tn,			 	 	-- transparency 
 						  data blob	 			 	-- Data
  );
@@ -7144,7 +7147,7 @@ procedure p_putimages is
   info recImage;
   v txt;
   trns txt;
-  pal  txt;
+  pal  raw(8192);
 begin
   -- Nao ha filtro a declarar aqui: a imagem traz o seu proprio (info.f, o
   -- /DCTDecode do JPEG por exemplo) e a paleta sai crua. O ramo que punha
@@ -7160,7 +7163,7 @@ begin
 		p_out('/Width ' || info.w);
 		p_out('/Height ' || info.h);
 		if(info.cs = 'Indexed') then
-			p_out('/ColorSpace [/Indexed /DeviceRGB ' || to_char(length(info.pal) / 3 - 1) || ' ' || to_char(n+1) || ' 0 R]');
+			p_out('/ColorSpace [/Indexed /DeviceRGB ' || to_char(utl_raw.length(info.pal) / 3 - 1) || ' ' || to_char(n+1) || ' 0 R]');
 		else
 			p_out('/ColorSpace /' || info.cs);
 			if(info.cs = 'DeviceCMYK') then
@@ -7212,8 +7215,14 @@ begin
 			 -- deixava o dado VAZIO, o que produz PDF quebrado assim que alguem
 			 -- ligasse a compressao
 			 pal := info.pal;
-			p_out('<</Length ' || length(pal) || '>>');
-			p_putstream(pal);
+			-- A paleta viaja em RAW e so vira hexadecimal aqui, na saida, pelo
+			-- mesmo motivo do stream da imagem: o documento e montado num CLOB.
+			p_out('<</Filter /ASCIIHexDecode /Length '
+			      || (utl_raw.length(pal) * 2 + 1) || '>>');
+			p_out('stream');
+			p_out(rawtohex(pal), false);
+			p_out('>');
+			p_out('endstream');
 			p_out('endobj');
 		end if;
 		v := images.next(v);
@@ -7715,7 +7724,10 @@ function p_parseImage(pFile in varchar2,
   myImgInfo recImage;
   myblob blob;
   chunk_content blob;
-  png_signature constant varchar2(8)  := chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
+  -- A assinatura vem do RAW ja declarado no package. Monta-la com CHR nao
+  -- produz os bytes: produz os caracteres daqueles pontos de codigo, e em
+  -- AL32UTF8 a comparacao nunca casa -- o PNG era recusado com "Not a PNG
+  -- file", que manda procurar defeito no arquivo em vez de no parser.
   signature_len integer := 8;
   chunklength_len integer := 4;
   chunktype_len integer := 4;
@@ -7727,7 +7739,7 @@ function p_parseImage(pFile in varchar2,
   --amount number;
   f number default 1;
   f_chunk number default 1;
-  buf varchar2(8192);
+  bufRaw raw(32000);
   ct word;
   colors pls_integer;
   myType word;
@@ -7780,7 +7792,7 @@ begin
     -- reading the blob
 
     --Check signature
-    if(fread(myblob, f, signature_len) != png_signature ) then
+    if(utl_raw.compare(freadb(myblob, f, signature_len), c_PNG_SIGNATURE) != 0) then
         Error('Not a PNG file: ' || pFile);
     end if;
 
@@ -7800,19 +7812,19 @@ begin
     end if;
     chunk_num := chunk_num + 1;
     --discard the crc
-    buf := fread(myblob, f, crc_len);
+    bufRaw := freadb(myblob, f, crc_len);
     if( chunk_num = 1 and myType != 'IHDR' ) then
       Error('Incorrect PNG file: ' || pFile);
     elsif(myType = 'IHDR') then
       -- ^^^ I have already get width and height, so go forward (read 4 Bytes twice)
-      buf := fread(chunk_content, f_chunk, widthheight_len);
+      bufRaw := freadb(chunk_content, f_chunk, widthheight_len);
 
-      myImgInfo.bpc := ascii(fread(chunk_content, f_chunk, hdrflag_len));    
+      myImgInfo.bpc := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
       if( myImgInfo.bpc > 8) then
         Error('16-bit depth not supported: ' || pFile);    
       end if;  
       
-      ct := ascii(fread(chunk_content, f_chunk, hdrflag_len));    
+      ct := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
       if( ct = 0 ) then
         myImgInfo.cs := 'DeviceGray';
       elsif( ct = 2 ) then
@@ -7822,13 +7834,13 @@ begin
       else
         Error('Alpha channel not supported: ' || pFile);
         end if;
-      if( ascii(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Unknown compression method: ' || pFile);
       end if;
-      if( ascii(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Unknown filter method: ' || pFile);
       end if;
-      if( ascii(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Interlacing not supported: ' || pFile);
       end if;
       if (ct = 2 ) then
@@ -7841,20 +7853,25 @@ begin
           
         elsif(myType = 'PLTE') then
             -- Read palette
-            myImgInfo.pal := fread(chunk_content, f_chunk, chunkdata_len ) ;
+            myImgInfo.pal := freadb(chunk_content, f_chunk, chunkdata_len);
         elsif(myType = 'tRNS') then
             --   Read transparency info
-            buf := fread(chunk_content, f_chunk, chunkdata_len ) ;
+            bufRaw := freadb(chunk_content, f_chunk, chunkdata_len);
             if(ct = 0) then
-                myImgInfo.trns(1) := ascii(substr(buf,1,1));
+                myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
             elsif( ct = 2) then
-               myImgInfo.trns(1) := ascii(substr(buf,1,1));
-               myImgInfo.trns(2) := ascii(substr(buf,3,1));
-               myImgInfo.trns(3) := ascii(substr(buf,5,1));
+               myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
+               myImgInfo.trns(2) := to_number(rawtohex(utl_raw.substr(bufRaw,3,1)),'XX');
+               myImgInfo.trns(3) := to_number(rawtohex(utl_raw.substr(bufRaw,5,1)),'XX');
             else
-                if(instr(buf,chr(0)) > 0) then
-                    myImgInfo.trns(1) := instr(buf,chr(0));
-                end if;
+                -- procura o indice transparente byte a byte, em RAW: o INSTR
+                -- sobre VARCHAR2 dependia de CHR(0) e do charset
+                for k in 1..utl_raw.length(bufRaw) loop
+                  if utl_raw.substr(bufRaw,k,1) = hextoraw('00') then
+                    myImgInfo.trns(1) := k;
+                    exit;
+                  end if;
+                end loop;
             end if;
         elsif(myType = 'IDAT') then
             -- Read image data block after the loop, just mark the begin of data
