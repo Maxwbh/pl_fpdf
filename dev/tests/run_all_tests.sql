@@ -135,18 +135,45 @@ BEGIN
   END;
 
   -- Test: Unicode characters in document
+  --
+  -- Este caso escrevia 'Sao Paulo - Zurich - Moscou' com acentos e cirilico
+  -- numa fonte core, e aferia so que o PDF tinha mais de zero bytes. Passava
+  -- -- e aprovava saida quebrada: o cirilico virava glifo errado, porque as
+  -- fontes padrao do PDF alcancam WinAnsi e nada alem.
+  --
+  -- Agora sao dois casos, e cada um afere o contrato de verdade: o que cabe em
+  -- WinAnsi sai; o que nao cabe e RECUSADO, em vez de desenhado errado.
   DECLARE
     l_pdf BLOB;
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
     PL_FPDF.AddPage();
     PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Test: São Paulo - Zürich - Москва');
+    PL_FPDF.Cell(0, 10, 'Test: São Paulo - Zürich');
     l_pdf := PL_FPDF.OutputBlob();
     test_result('Unicode text rendering', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
     test_result('Unicode text rendering', FALSE, SQLERRM);
+  END;
+
+  -- Test: fora de WinAnsi e recusado, nao desenhado errado
+  DECLARE
+    l_pdf BLOB;
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Moscou em cirilico: ' || UNISTR('\041C\043E\0441'));
+    l_pdf := PL_FPDF.OutputBlob();
+    test_result('Non-WinAnsi text refused', FALSE,
+                'aceitou cirilico em fonte core: sairia com glifo errado');
+    PL_FPDF.Reset();
+  EXCEPTION WHEN OTHERS THEN
+    test_result('Non-WinAnsi text refused', INSTR(SQLERRM, 'ORA-20203') > 0,
+                CASE WHEN INSTR(SQLERRM, 'ORA-20203') = 0
+                     THEN 'recusou com outro erro: ' || SQLERRM END);
+    PL_FPDF.Reset();
   END;
 
   -- Test: SetFont with standard fonts
