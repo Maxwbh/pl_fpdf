@@ -49,8 +49,8 @@ PROCEDURE PL_FPDF.fpdf(
 
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
-| `orientation` | VARCHAR2 | Orientação. | 'P' (padrão) ou 'L' | `'P'` |
-| `unit` | VARCHAR2 | Unidade de medida. | 'mm' (padrão), 'cm', 'pt' ou 'in' | `'mm'` |
+| `orientation` | VARCHAR2 | Orientação. | 'P' (*portrait*, retrato — o padrão) ou 'L' (*landscape*, paisagem) | `'P'` |
+| `unit` | VARCHAR2 | Unidade de medida. | 'mm' (padrão), 'cm', 'pt' (*point*, ponto) ou 'in' (*inch*, polegada) | `'mm'` |
 | `format` | VARCHAR2 | Formato da página. | 'A3', 'A4' (padrão), 'A5', 'Letter' ou 'Legal' | `'A4'` |
 
 **Veja também:** [Init](#init)
@@ -76,7 +76,7 @@ PROCEDURE PL_FPDF.Init(
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
 | `p_orientation` | VARCHAR2 | Orientação padrão das páginas. | 'P' (*portrait*, retrato — o padrão) ou 'L' (*landscape*, paisagem) | `'P'` |
-| `p_unit` | VARCHAR2 | Unidade de medida de todas as coordenadas e dimensões do documento. | 'mm' (padrão), 'cm', 'pt' ou 'in' | `'mm'` |
+| `p_unit` | VARCHAR2 | Unidade de medida de todas as coordenadas e dimensões do documento. | 'mm' (padrão), 'cm', 'pt' (*point*, ponto) ou 'in' (*inch*, polegada) | `'mm'` |
 | `p_format` | VARCHAR2 | Formato de página padrão. | 'A3', 'A4' (padrão), 'A5', 'Letter' ou 'Legal' | `'A4'` |
 | `p_encoding` | VARCHAR2 | Codificação de caracteres do texto. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
 
@@ -583,7 +583,7 @@ PROCEDURE PL_FPDF.AddFont(
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
 | `family` | VARCHAR2 | Nome da família a registrar. | Texto livre; usado depois em SetFont | — |
-| `style` | VARCHAR2 | Estilo associado ao arquivo. | '', 'B', 'I' ou 'BI' | `''` |
+| `style` | VARCHAR2 | Estilo associado ao arquivo. | '', 'B' (*bold*, negrito), 'I' (*italic*, itálico) ou 'BI' (os dois) | `''` |
 | `filename` | VARCHAR2 | Arquivo de definição da fonte. | Nome do arquivo; vazio usa a convenção padrão do FPDF | `''` |
 
 **Veja também:** [AddTTFFont](#addttffont), [SetFont](#setfont)
@@ -836,7 +836,7 @@ PROCEDURE PL_FPDF.Cell(
 | `pw` | NUMBER | Largura da célula. | Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita | — |
 | `ph` | NUMBER | Altura da célula. | Número na unidade definida em Init (mm, cm, pt ou in); 0 é o padrão | `0` |
 | `ptxt` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2; vazio desenha apenas a célula | `''` |
-| `pborder` | VARCHAR2 | Bordas desenhadas. | '0' (nenhuma), '1' (moldura completa) ou combinação de 'L', 'T', 'R', 'B' — ex.: 'LTB' | `'0'` |
+| `pborder` | VARCHAR2 | Bordas desenhadas. | '0' (nenhuma), '1' (moldura completa) ou combinação de 'L', 'T', 'R', 'B' — *left*, *top*, *right*, *bottom*: esquerda, topo, direita, base. Ex.: 'LTB' | `'0'` |
 | `pln` | NUMBER | Para onde o cursor vai depois. | 0 = à direita da célula (padrão), 1 = início da próxima linha, 2 = abaixo da célula | `0` |
 | `palign` | VARCHAR2 | Alinhamento do texto. | 'L' (*left*, esquerda), 'C' (*center*, centro), 'R' (*right*, direita) ou '' (padrão, esquerda) | `''` |
 | `pfill` | NUMBER | Preenche o fundo com a cor de SetFillColor. | 0 = transparente (padrão), 1 = preenchido | `0` |
@@ -886,9 +886,9 @@ PROCEDURE PL_FPDF.CellRotated(
 | `p_width` | NUMBER | Largura da célula. | Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita | — |
 | `p_height` | NUMBER | Altura da célula. | Número na unidade definida em Init (mm, cm, pt ou in) | `0` |
 | `p_text` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | `''` |
-| `p_border` | VARCHAR2 | Bordas. | '0', '1' ou combinação de 'L', 'T', 'R', 'B' | `'0'` |
+| `p_border` | VARCHAR2 | Bordas. | '0', '1' ou combinação de 'L', 'T', 'R', 'B' (*left*, *top*, *right*, *bottom* — esquerda, topo, direita, base) | `'0'` |
 | `p_ln` | NUMBER | Posição do cursor depois. | 0 = à direita, 1 = próxima linha, 2 = abaixo | `0` |
-| `p_align` | VARCHAR2 | Alinhamento. | 'L', 'C' ou 'R' | `''` |
+| `p_align` | VARCHAR2 | Alinhamento. | 'L' (*left*, esquerda), 'C' (*center*, centro) ou 'R' (*right*, direita) | `''` |
 | `p_fill` | NUMBER | Preenchimento. | 0 ou 1 | `0` |
 | `p_link` | VARCHAR2 | Link opcional. | URL ou identificador de AddLink | `''` |
 | `p_rotation` | PLS_INTEGER | Ângulo de rotação do texto. | 0 (padrão), 90, 180 ou 270 — outros valores geram erro | `0` |
@@ -1054,15 +1054,15 @@ PROCEDURE PL_FPDF.MultiCell(
 | `pw` | NUMBER | Largura do bloco. | Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita | — |
 | `ph` | NUMBER | Altura de cada linha. | Número na unidade definida em Init (mm, cm, pt ou in) | `0` |
 | `ptxt` | VARCHAR2 | Texto do parágrafo (aceita quebras de linha). | Qualquer VARCHAR2 | — |
-| `pborder` | VARCHAR2 | Bordas do bloco. | '0', '1' ou combinação de 'L', 'T', 'R', 'B' | `'0'` |
-| `palign` | VARCHAR2 | Alinhamento. | 'J' (justificado, padrão), 'L', 'C' ou 'R' | `'J'` |
+| `pborder` | VARCHAR2 | Bordas do bloco. | '0', '1' ou combinação de 'L', 'T', 'R', 'B' (*left*, *top*, *right*, *bottom* — esquerda, topo, direita, base) | `'0'` |
+| `palign` | VARCHAR2 | Alinhamento. | 'J' (*justified*, justificado — o padrão), 'L' (*left*, esquerda), 'C' (*center*, centro) ou 'R' (*right*, direita) | `'J'` |
 | `pfill` | NUMBER | Preenche o fundo. | 0 (padrão) ou 1 | `0` |
 | `phMax` | NUMBER | Altura máxima do bloco; o texto é truncado se exceder. | Número; 0 (padrão) = sem limite | `0` |
 | `pwidth` | NUMBER | Largura do bloco (versão procedure). | Número na unidade definida em Init (mm, cm, pt ou in); 0 até a margem direita | — |
 | `pheight` | NUMBER | Altura de cada linha (versão procedure). | Número na unidade definida em Init (mm, cm, pt ou in) | `0` |
 | `ptext` | VARCHAR2 | Texto do parágrafo (versão procedure). | Qualquer VARCHAR2 | — |
-| `pbrdr` | VARCHAR2 | Bordas (versão procedure). | '0', '1' ou 'LTRB' | `'0'` |
-| `palignment` | VARCHAR2 | Alinhamento (versão procedure). | 'J', 'L', 'C' ou 'R' | `'J'` |
+| `pbrdr` | VARCHAR2 | Bordas (versão procedure). | '0', '1' ou 'LTRB' (*left*, *top*, *right*, *bottom* — esquerda, topo, direita, base) | `'0'` |
+| `palignment` | VARCHAR2 | Alinhamento (versão procedure). | 'J' (*justified*), 'L' (*left*), 'C' (*center*) ou 'R' (*right*) — justificado, esquerda, centro, direita | `'J'` |
 | `pfillin` | NUMBER | Preenchimento (versão procedure). | 0 ou 1 | `0` |
 | `phMaximum` | NUMBER | Altura máxima (versão procedure). | Número; 0 = sem limite | `0` |
 
@@ -1251,7 +1251,7 @@ PROCEDURE PL_FPDF.Poly(
 |-----------|------|-----------|-------------------|--------|
 | `points` | TAB_POINTS | Pontos do polígono. | Coleção tab_points com pares X/Y na unidade do documento | — |
 | `pclose` | BOOLEAN | Fecha o polígono ligando o último ponto ao primeiro. | TRUE ou FALSE | — |
-| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (contorno), 'F' (preenchido), 'DF' (ambos) | `''` |
+| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (*draw*, contorno), 'F' (*fill*, preenchido), 'DF' (ambos) | `''` |
 
 **Veja também:** [Line](#line), [Triangle](#triangle)
 
@@ -1280,7 +1280,7 @@ PROCEDURE PL_FPDF.Rect(
 | `py` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `pw` | NUMBER | Largura. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `ph` | NUMBER | Altura. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (apenas contorno, padrão), 'F' (apenas preenchimento), 'DF'/'FD' (contorno + preenchimento) | `''` |
+| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (*draw*, apenas contorno — o padrão), 'F' (*fill*, apenas preenchimento), 'DF'/'FD' (contorno + preenchimento) | `''` |
 
 #### Exemplo
 
@@ -1474,8 +1474,8 @@ PROCEDURE PL_FPDF.Triangle(
 | `px` | NUMBER | X do canto superior esquerdo da caixa que envolve o triângulo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `py` | NUMBER | Y do canto superior esquerdo da caixa que envolve o triângulo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `psize` | NUMBER | Altura do triângulo; a base mede o dobro disso. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `porientation` | VARCHAR2 | Direção para onde a ponta aponta. | 'up', 'down', 'left' ou 'right' — ou a inicial 'U', 'D', 'L', 'R' | `'left'` |
-| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (contorno), 'F' (preenchido), 'DF' (ambos) | `''` |
+| `porientation` | VARCHAR2 | Direção para onde a ponta aponta. | 'up', 'down', 'left' ou 'right' — cima, baixo, esquerda, direita — ou a inicial 'U', 'D', 'L', 'R' | `'left'` |
+| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (*draw*, contorno), 'F' (*fill*, preenchido), 'DF' (ambos) | `''` |
 
 #### Erros
 
@@ -1917,7 +1917,7 @@ PROCEDURE PL_FPDF.AddQRCode(
 | `p_size` | NUMBER | Lado do QR Code (largura = altura). | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `p_data` | VARCHAR2 | Conteúdo a codificar. | Até 2953 bytes em modo binário; o conteúdo deve seguir o formato escolhido em p_format | — |
 | `p_format` | VARCHAR2 | Formato do conteúdo, que define como leitores interpretam o código. | 'TEXT' (padrão, texto livre), 'URL', 'PIX', 'VCARD', 'WIFI' ou 'EMAIL' | `'TEXT'` |
-| `p_error_correction` | VARCHAR2 | Nível de correção de erros: quanto maior, mais o código resiste a sujeira e dobras, porém menos dados cabem. | 'L' (7%), 'M' (15%, padrão), 'Q' (25%) ou 'H' (30%) | `'M'` |
+| `p_error_correction` | VARCHAR2 | Nível de correção de erros: quanto maior, mais o código resiste a sujeira e dobras, porém menos dados cabem. | 'L' (*low*, 7%), 'M' (*medium*, 15% — o padrão), 'Q' (*quartile*, 25%) ou 'H' (*high*, 30%) | `'M'` |
 
 #### Erros
 
@@ -2069,7 +2069,7 @@ PROCEDURE PL_FPDF.SetDisplayMode(
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
 | `zoom` | VARCHAR2 | Nível de zoom inicial. | 'fullpage' (página inteira), 'fullwidth' (largura da página), 'real' (100%), 'default' ou um número representando a porcentagem | — |
-| `layout` | VARCHAR2 | Disposição das páginas. | 'continuous' (padrão), 'single', 'two' ou 'default' | `'continuous'` |
+| `layout` | VARCHAR2 | Disposição das páginas. | 'continuous' (contínuo, padrão), 'single' (uma página), 'two' (duas páginas) ou 'default' (do leitor) | `'continuous'` |
 
 #### Exemplo
 
@@ -2217,7 +2217,7 @@ PROCEDURE PL_FPDF.Output(
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
 | `pname` | VARCHAR2 | Nome do arquivo/documento. | Qualquer VARCHAR2 | `null` |
-| `pdest` | VARCHAR2 | Destino. | 'S', 'D', 'I' ou 'F' | `null` |
+| `pdest` | VARCHAR2 | Destino. | 'S' (*string*), 'D' (*download*), 'I' (*inline*) ou 'F' (*file*) — BLOB, download, navegador, arquivo | `null` |
 
 **Veja também:** [OutputBlob](#outputblob), [OutputFile](#outputfile)
 
@@ -2289,7 +2289,7 @@ FUNCTION PL_FPDF.ReturnBlob(
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
 | `pname` | VARCHAR2 | Nome lógico do documento. | Qualquer VARCHAR2; NULL = sem nome | `null` |
-| `pdest` | VARCHAR2 | Destino no estilo FPDF. | 'S' (string/BLOB), 'D' (download), 'I' (inline), 'F' (arquivo) | `null` |
+| `pdest` | VARCHAR2 | Destino no estilo FPDF. | 'S' (*string*, devolve BLOB), 'D' (*download*), 'I' (*inline*, no navegador), 'F' (*file*, grava em arquivo) | `null` |
 
 #### Retorno
 
@@ -2328,7 +2328,7 @@ PROCEDURE PL_FPDF.AddWatermark(
 | `p_pages` | VARCHAR2 | Páginas que recebem a marca. | 'ALL' (padrão) ou lista/intervalos como '1', '1,3,5', '2-8', '1,3-5,10' | `'ALL'` |
 | `p_font` | VARCHAR2 | Fonte usada. | 'Helvetica' (padrão), 'Arial', 'Times' ou 'Courier' | `'Helvetica'` |
 | `p_size` | NUMBER | Tamanho da fonte em pontos. | Número > 0; 48 é o padrão | `48` |
-| `p_color` | VARCHAR2 | Cor da marca d'água. | 'gray' (padrão), 'red', 'blue', 'green', 'black' ou hexadecimal RGB como 'FF0000' | `'gray'` |
+| `p_color` | VARCHAR2 | Cor da marca d'água. | 'gray' (cinza, padrão), 'red' (vermelho), 'blue' (azul), 'green' (verde), 'black' (preto) ou hexadecimal RGB como 'FF0000' | `'gray'` |
 
 #### Erros
 

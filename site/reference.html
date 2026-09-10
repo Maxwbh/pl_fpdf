@@ -323,8 +323,8 @@
     unit        <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;mm&#x27;</span>,
     format      <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;A4&#x27;</span>);</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
-<tr><td class="pname">orientation</td><td class="ptype">VARCHAR2</td><td>Orientação.</td><td class="pval">&#x27;P&#x27; (padrão) ou &#x27;L&#x27;</td><td><code>&#x27;P&#x27;</code></td></tr>
-<tr><td class="pname">unit</td><td class="ptype">VARCHAR2</td><td>Unidade de medida.</td><td class="pval">&#x27;mm&#x27; (padrão), &#x27;cm&#x27;, &#x27;pt&#x27; ou &#x27;in&#x27;</td><td><code>&#x27;mm&#x27;</code></td></tr>
+<tr><td class="pname">orientation</td><td class="ptype">VARCHAR2</td><td>Orientação.</td><td class="pval">&#x27;P&#x27; (<i>portrait</i>, retrato — o padrão) ou &#x27;L&#x27; (<i>landscape</i>, paisagem)</td><td><code>&#x27;P&#x27;</code></td></tr>
+<tr><td class="pname">unit</td><td class="ptype">VARCHAR2</td><td>Unidade de medida.</td><td class="pval">&#x27;mm&#x27; (padrão), &#x27;cm&#x27;, &#x27;pt&#x27; (<i>point</i>, ponto) ou &#x27;in&#x27; (<i>inch</i>, polegada)</td><td><code>&#x27;mm&#x27;</code></td></tr>
 <tr><td class="pname">format</td><td class="ptype">VARCHAR2</td><td>Formato da página.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27; (padrão), &#x27;A5&#x27;, &#x27;Letter&#x27; ou &#x27;Legal&#x27;</td><td><code>&#x27;A4&#x27;</code></td></tr>
 </tbody></table></div>
 <p class="see"><b>Veja também:</b> <a href="#init">Init</a></p>
@@ -340,7 +340,7 @@
     p_encoding    <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;UTF-8&#x27;</span>);</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
 <tr><td class="pname">p_orientation</td><td class="ptype">VARCHAR2</td><td>Orientação padrão das páginas.</td><td class="pval">&#x27;P&#x27; (<i>portrait</i>, retrato — o padrão) ou &#x27;L&#x27; (<i>landscape</i>, paisagem)</td><td><code>&#x27;P&#x27;</code></td></tr>
-<tr><td class="pname">p_unit</td><td class="ptype">VARCHAR2</td><td>Unidade de medida de todas as coordenadas e dimensões do documento.</td><td class="pval">&#x27;mm&#x27; (padrão), &#x27;cm&#x27;, &#x27;pt&#x27; ou &#x27;in&#x27;</td><td><code>&#x27;mm&#x27;</code></td></tr>
+<tr><td class="pname">p_unit</td><td class="ptype">VARCHAR2</td><td>Unidade de medida de todas as coordenadas e dimensões do documento.</td><td class="pval">&#x27;mm&#x27; (padrão), &#x27;cm&#x27;, &#x27;pt&#x27; (<i>point</i>, ponto) ou &#x27;in&#x27; (<i>inch</i>, polegada)</td><td><code>&#x27;mm&#x27;</code></td></tr>
 <tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Formato de página padrão.</td><td class="pval">&#x27;A3&#x27;, &#x27;A4&#x27; (padrão), &#x27;A5&#x27;, &#x27;Letter&#x27; ou &#x27;Legal&#x27;</td><td><code>&#x27;A4&#x27;</code></td></tr>
 <tr><td class="pname">p_encoding</td><td class="ptype">VARCHAR2</td><td>Codificação de caracteres do texto.</td><td class="pval">&#x27;UTF-8&#x27; (padrão) ou &#x27;WINDOWS-1252&#x27;</td><td><code>&#x27;UTF-8&#x27;</code></td></tr>
 </tbody></table></div>
@@ -585,7 +585,7 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
     filename <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;&#x27;</span>);</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
 <tr><td class="pname">family</td><td class="ptype">VARCHAR2</td><td>Nome da família a registrar.</td><td class="pval">Texto livre; usado depois em SetFont</td><td>—</td></tr>
-<tr><td class="pname">style</td><td class="ptype">VARCHAR2</td><td>Estilo associado ao arquivo.</td><td class="pval">&#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27; ou &#x27;BI&#x27;</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">style</td><td class="ptype">VARCHAR2</td><td>Estilo associado ao arquivo.</td><td class="pval">&#x27;&#x27;, &#x27;B&#x27; (<i>bold</i>, negrito), &#x27;I&#x27; (<i>italic</i>, itálico) ou &#x27;BI&#x27; (os dois)</td><td><code>&#x27;&#x27;</code></td></tr>
 <tr><td class="pname">filename</td><td class="ptype">VARCHAR2</td><td>Arquivo de definição da fonte.</td><td class="pval">Nome do arquivo; vazio usa a convenção padrão do FPDF</td><td><code>&#x27;&#x27;</code></td></tr>
 </tbody></table></div>
 <p class="see"><b>Veja também:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#setfont">SetFont</a></p>
@@ -724,7 +724,7 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
 <tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita</td><td>—</td></tr>
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 é o padrão</td><td><code>0</code></td></tr>
 <tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2; vazio desenha apenas a célula</td><td><code>&#x27;&#x27;</code></td></tr>
-<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Bordas desenhadas.</td><td class="pval">&#x27;0&#x27; (nenhuma), &#x27;1&#x27; (moldura completa) ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27; — ex.: &#x27;LTB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Bordas desenhadas.</td><td class="pval">&#x27;0&#x27; (nenhuma), &#x27;1&#x27; (moldura completa) ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27; — <i>left</i>, <i>top</i>, <i>right</i>, <i>bottom</i>: esquerda, topo, direita, base. Ex.: &#x27;LTB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
 <tr><td class="pname">pln</td><td class="ptype">NUMBER</td><td>Para onde o cursor vai depois.</td><td class="pval">0 = à direita da célula (padrão), 1 = início da próxima linha, 2 = abaixo da célula</td><td><code>0</code></td></tr>
 <tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Alinhamento do texto.</td><td class="pval">&#x27;L&#x27; (<i>left</i>, esquerda), &#x27;C&#x27; (<i>center</i>, centro), &#x27;R&#x27; (<i>right</i>, direita) ou &#x27;&#x27; (padrão, esquerda)</td><td><code>&#x27;&#x27;</code></td></tr>
 <tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td>Preenche o fundo com a cor de SetFillColor.</td><td class="pval">0 = transparente (padrão), 1 = preenchido</td><td><code>0</code></td></tr>
@@ -759,9 +759,9 @@ PL_FPDF.Cell(
 <tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>Largura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita</td><td>—</td></tr>
 <tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>Altura da célula.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td><code>0</code></td></tr>
 <tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>Texto a escrever.</td><td class="pval">Qualquer VARCHAR2</td><td><code>&#x27;&#x27;</code></td></tr>
-<tr><td class="pname">p_border</td><td class="ptype">VARCHAR2</td><td>Bordas.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">p_border</td><td class="ptype">VARCHAR2</td><td>Bordas.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27; (<i>left</i>, <i>top</i>, <i>right</i>, <i>bottom</i> — esquerda, topo, direita, base)</td><td><code>&#x27;0&#x27;</code></td></tr>
 <tr><td class="pname">p_ln</td><td class="ptype">NUMBER</td><td>Posição do cursor depois.</td><td class="pval">0 = à direita, 1 = próxima linha, 2 = abaixo</td><td><code>0</code></td></tr>
-<tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td>Alinhamento.</td><td class="pval">&#x27;L&#x27;, &#x27;C&#x27; ou &#x27;R&#x27;</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td>Alinhamento.</td><td class="pval">&#x27;L&#x27; (<i>left</i>, esquerda), &#x27;C&#x27; (<i>center</i>, centro) ou &#x27;R&#x27; (<i>right</i>, direita)</td><td><code>&#x27;&#x27;</code></td></tr>
 <tr><td class="pname">p_fill</td><td class="ptype">NUMBER</td><td>Preenchimento.</td><td class="pval">0 ou 1</td><td><code>0</code></td></tr>
 <tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td>Link opcional.</td><td class="pval">URL ou identificador de AddLink</td><td><code>&#x27;&#x27;</code></td></tr>
 <tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td>Ângulo de rotação do texto.</td><td class="pval">0 (padrão), 90, 180 ou 270 — outros valores geram erro</td><td><code>0</code></td></tr>
@@ -848,15 +848,15 @@ PL_FPDF.SetX((210 - l_w) / 2);   <span class="c">-- centraliza em A4 retrato (21
 <tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura do bloco.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita</td><td>—</td></tr>
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura de cada linha.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td><code>0</code></td></tr>
 <tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>Texto do parágrafo (aceita quebras de linha).</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
-<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Bordas do bloco.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
-<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Alinhamento.</td><td class="pval">&#x27;J&#x27; (justificado, padrão), &#x27;L&#x27;, &#x27;C&#x27; ou &#x27;R&#x27;</td><td><code>&#x27;J&#x27;</code></td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td>Bordas do bloco.</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou combinação de &#x27;L&#x27;, &#x27;T&#x27;, &#x27;R&#x27;, &#x27;B&#x27; (<i>left</i>, <i>top</i>, <i>right</i>, <i>bottom</i> — esquerda, topo, direita, base)</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td>Alinhamento.</td><td class="pval">&#x27;J&#x27; (<i>justified</i>, justificado — o padrão), &#x27;L&#x27; (<i>left</i>, esquerda), &#x27;C&#x27; (<i>center</i>, centro) ou &#x27;R&#x27; (<i>right</i>, direita)</td><td><code>&#x27;J&#x27;</code></td></tr>
 <tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td>Preenche o fundo.</td><td class="pval">0 (padrão) ou 1</td><td><code>0</code></td></tr>
 <tr><td class="pname">phMax</td><td class="ptype">NUMBER</td><td>Altura máxima do bloco; o texto é truncado se exceder.</td><td class="pval">Número; 0 (padrão) = sem limite</td><td><code>0</code></td></tr>
 <tr><td class="pname">pwidth</td><td class="ptype">NUMBER</td><td>Largura do bloco (versão procedure).</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in); 0 até a margem direita</td><td>—</td></tr>
 <tr><td class="pname">pheight</td><td class="ptype">NUMBER</td><td>Altura de cada linha (versão procedure).</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td><code>0</code></td></tr>
 <tr><td class="pname">ptext</td><td class="ptype">VARCHAR2</td><td>Texto do parágrafo (versão procedure).</td><td class="pval">Qualquer VARCHAR2</td><td>—</td></tr>
-<tr><td class="pname">pbrdr</td><td class="ptype">VARCHAR2</td><td>Bordas (versão procedure).</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou &#x27;LTRB&#x27;</td><td><code>&#x27;0&#x27;</code></td></tr>
-<tr><td class="pname">palignment</td><td class="ptype">VARCHAR2</td><td>Alinhamento (versão procedure).</td><td class="pval">&#x27;J&#x27;, &#x27;L&#x27;, &#x27;C&#x27; ou &#x27;R&#x27;</td><td><code>&#x27;J&#x27;</code></td></tr>
+<tr><td class="pname">pbrdr</td><td class="ptype">VARCHAR2</td><td>Bordas (versão procedure).</td><td class="pval">&#x27;0&#x27;, &#x27;1&#x27; ou &#x27;LTRB&#x27; (<i>left</i>, <i>top</i>, <i>right</i>, <i>bottom</i> — esquerda, topo, direita, base)</td><td><code>&#x27;0&#x27;</code></td></tr>
+<tr><td class="pname">palignment</td><td class="ptype">VARCHAR2</td><td>Alinhamento (versão procedure).</td><td class="pval">&#x27;J&#x27; (<i>justified</i>), &#x27;L&#x27; (<i>left</i>), &#x27;C&#x27; (<i>center</i>) ou &#x27;R&#x27; (<i>right</i>) — justificado, esquerda, centro, direita</td><td><code>&#x27;J&#x27;</code></td></tr>
 <tr><td class="pname">pfillin</td><td class="ptype">NUMBER</td><td>Preenchimento (versão procedure).</td><td class="pval">0 ou 1</td><td><code>0</code></td></tr>
 <tr><td class="pname">phMaximum</td><td class="ptype">NUMBER</td><td>Altura máxima (versão procedure).</td><td class="pval">Número; 0 = sem limite</td><td><code>0</code></td></tr>
 </tbody></table></div>
@@ -963,7 +963,7 @@ PL_FPDF.Write(6, <span class="s">&#x27;PL_FPDF&#x27;</span>, <span class="s">&#x
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
 <tr><td class="pname">points</td><td class="ptype">TAB_POINTS</td><td>Pontos do polígono.</td><td class="pval">Coleção tab_points com pares X/Y na unidade do documento</td><td>—</td></tr>
 <tr><td class="pname">pclose</td><td class="ptype">BOOLEAN</td><td>Fecha o polígono ligando o último ponto ao primeiro.</td><td class="pval">TRUE ou FALSE</td><td>—</td></tr>
-<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (contorno), &#x27;F&#x27; (preenchido), &#x27;DF&#x27; (ambos)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (<i>draw</i>, contorno), &#x27;F&#x27; (<i>fill</i>, preenchido), &#x27;DF&#x27; (ambos)</td><td><code>&#x27;&#x27;</code></td></tr>
 </tbody></table></div>
 <p class="see"><b>Veja também:</b> <a href="#line">Line</a>, <a href="#triangle">Triangle</a></p>
 </article>
@@ -982,7 +982,7 @@ PL_FPDF.Write(6, <span class="s">&#x27;PL_FPDF&#x27;</span>, <span class="s">&#x
 <tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
 <tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>Largura.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>Altura.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
-<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (apenas contorno, padrão), &#x27;F&#x27; (apenas preenchimento), &#x27;DF&#x27;/&#x27;FD&#x27; (contorno + preenchimento)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (<i>draw</i>, apenas contorno — o padrão), &#x27;F&#x27; (<i>fill</i>, apenas preenchimento), &#x27;DF&#x27;/&#x27;FD&#x27; (contorno + preenchimento)</td><td><code>&#x27;&#x27;</code></td></tr>
 </tbody></table></div>
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Rect(px =&gt; 10, py =&gt; 40, pw =&gt; 60, ph =&gt; 25, pstyle =&gt; <span class="s">&#x27;DF&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#setdrawcolor">SetDrawColor</a>, <a href="#setfillcolor">SetFillColor</a></p>
@@ -1086,8 +1086,8 @@ PL_FPDF.SetDrawColor(128);         <span class="c">-- cinza médio</span></pre><
 <tr><td class="pname">px</td><td class="ptype">NUMBER</td><td>X do canto superior esquerdo da caixa que envolve o triângulo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
 <tr><td class="pname">py</td><td class="ptype">NUMBER</td><td>Y do canto superior esquerdo da caixa que envolve o triângulo.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
 <tr><td class="pname">psize</td><td class="ptype">NUMBER</td><td>Altura do triângulo; a base mede o dobro disso.</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
-<tr><td class="pname">porientation</td><td class="ptype">VARCHAR2</td><td>Direção para onde a ponta aponta.</td><td class="pval">&#x27;up&#x27;, &#x27;down&#x27;, &#x27;left&#x27; ou &#x27;right&#x27; — ou a inicial &#x27;U&#x27;, &#x27;D&#x27;, &#x27;L&#x27;, &#x27;R&#x27;</td><td><code>&#x27;left&#x27;</code></td></tr>
-<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (contorno), &#x27;F&#x27; (preenchido), &#x27;DF&#x27; (ambos)</td><td><code>&#x27;&#x27;</code></td></tr>
+<tr><td class="pname">porientation</td><td class="ptype">VARCHAR2</td><td>Direção para onde a ponta aponta.</td><td class="pval">&#x27;up&#x27;, &#x27;down&#x27;, &#x27;left&#x27; ou &#x27;right&#x27; — cima, baixo, esquerda, direita — ou a inicial &#x27;U&#x27;, &#x27;D&#x27;, &#x27;L&#x27;, &#x27;R&#x27;</td><td><code>&#x27;left&#x27;</code></td></tr>
+<tr><td class="pname">pstyle</td><td class="ptype">VARCHAR2</td><td>Estilo de renderização.</td><td class="pval">&#x27;&#x27; ou &#x27;D&#x27; (<i>draw</i>, contorno), &#x27;F&#x27; (<i>fill</i>, preenchido), &#x27;DF&#x27; (ambos)</td><td><code>&#x27;&#x27;</code></td></tr>
 </tbody></table></div>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
 <tr><td class="pname">-20821</td><td>Orientação inválida — use up/down/left/right ou U/D/L/R</td></tr>
@@ -1316,7 +1316,7 @@ PL_FPDF.SetAliasNbPages;</pre></div>
 <tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>Lado do QR Code (largura = altura).</td><td class="pval">Número na unidade definida em Init (mm, cm, pt ou in)</td><td>—</td></tr>
 <tr><td class="pname">p_data</td><td class="ptype">VARCHAR2</td><td>Conteúdo a codificar.</td><td class="pval">Até 2953 bytes em modo binário; o conteúdo deve seguir o formato escolhido em p_format</td><td>—</td></tr>
 <tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td>Formato do conteúdo, que define como leitores interpretam o código.</td><td class="pval">&#x27;TEXT&#x27; (padrão, texto livre), &#x27;URL&#x27;, &#x27;PIX&#x27;, &#x27;VCARD&#x27;, &#x27;WIFI&#x27; ou &#x27;EMAIL&#x27;</td><td><code>&#x27;TEXT&#x27;</code></td></tr>
-<tr><td class="pname">p_error_correction</td><td class="ptype">VARCHAR2</td><td>Nível de correção de erros: quanto maior, mais o código resiste a sujeira e dobras, porém menos dados cabem.</td><td class="pval">&#x27;L&#x27; (7%), &#x27;M&#x27; (15%, padrão), &#x27;Q&#x27; (25%) ou &#x27;H&#x27; (30%)</td><td><code>&#x27;M&#x27;</code></td></tr>
+<tr><td class="pname">p_error_correction</td><td class="ptype">VARCHAR2</td><td>Nível de correção de erros: quanto maior, mais o código resiste a sujeira e dobras, porém menos dados cabem.</td><td class="pval">&#x27;L&#x27; (<i>low</i>, 7%), &#x27;M&#x27; (<i>medium</i>, 15% — o padrão), &#x27;Q&#x27; (<i>quartile</i>, 25%) ou &#x27;H&#x27; (<i>high</i>, 30%)</td><td><code>&#x27;M&#x27;</code></td></tr>
 </tbody></table></div>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
 <tr><td class="pname">-20870</td><td>Conteúdo vazio</td></tr>
@@ -1396,7 +1396,7 @@ PL_FPDF.SetAliasNbPages;</pre></div>
     layout <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;continuous&#x27;</span>);</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
 <tr><td class="pname">zoom</td><td class="ptype">VARCHAR2</td><td>Nível de zoom inicial.</td><td class="pval">&#x27;fullpage&#x27; (página inteira), &#x27;fullwidth&#x27; (largura da página), &#x27;real&#x27; (100%), &#x27;default&#x27; ou um número representando a porcentagem</td><td>—</td></tr>
-<tr><td class="pname">layout</td><td class="ptype">VARCHAR2</td><td>Disposição das páginas.</td><td class="pval">&#x27;continuous&#x27; (padrão), &#x27;single&#x27;, &#x27;two&#x27; ou &#x27;default&#x27;</td><td><code>&#x27;continuous&#x27;</code></td></tr>
+<tr><td class="pname">layout</td><td class="ptype">VARCHAR2</td><td>Disposição das páginas.</td><td class="pval">&#x27;continuous&#x27; (contínuo, padrão), &#x27;single&#x27; (uma página), &#x27;two&#x27; (duas páginas) ou &#x27;default&#x27; (do leitor)</td><td><code>&#x27;continuous&#x27;</code></td></tr>
 </tbody></table></div>
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetDisplayMode(zoom =&gt; <span class="s">&#x27;fullpage&#x27;</span>, layout =&gt; <span class="s">&#x27;single&#x27;</span>);</pre></div>
 </article>
@@ -1470,7 +1470,7 @@ PL_FPDF.SetAliasNbPages;</pre></div>
     pdest <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
 <tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td>Nome do arquivo/documento.</td><td class="pval">Qualquer VARCHAR2</td><td><code>null</code></td></tr>
-<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destino.</td><td class="pval">&#x27;S&#x27;, &#x27;D&#x27;, &#x27;I&#x27; ou &#x27;F&#x27;</td><td><code>null</code></td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destino.</td><td class="pval">&#x27;S&#x27; (<i>string</i>), &#x27;D&#x27; (<i>download</i>), &#x27;I&#x27; (<i>inline</i>) ou &#x27;F&#x27; (<i>file</i>) — BLOB, download, navegador, arquivo</td><td><code>null</code></td></tr>
 </tbody></table></div>
 <p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a>, <a href="#outputfile">OutputFile</a></p>
 </article>
@@ -1507,7 +1507,7 @@ PL_FPDF.SetAliasNbPages;</pre></div>
     <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Descrição</th><th>Valores possíveis</th><th>Padrão</th></tr></thead><tbody>
 <tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td>Nome lógico do documento.</td><td class="pval">Qualquer VARCHAR2; NULL = sem nome</td><td><code>null</code></td></tr>
-<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destino no estilo FPDF.</td><td class="pval">&#x27;S&#x27; (string/BLOB), &#x27;D&#x27; (download), &#x27;I&#x27; (inline), &#x27;F&#x27; (arquivo)</td><td><code>null</code></td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td>Destino no estilo FPDF.</td><td class="pval">&#x27;S&#x27; (<i>string</i>, devolve BLOB), &#x27;D&#x27; (<i>download</i>), &#x27;I&#x27; (<i>inline</i>, no navegador), &#x27;F&#x27; (<i>file</i>, grava em arquivo)</td><td><code>null</code></td></tr>
 </tbody></table></div>
 <h5>Retorno</h5><p class="d">BLOB — conteúdo do PDF.</p>
 <p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a></p>
@@ -1532,7 +1532,7 @@ PL_FPDF.SetAliasNbPages;</pre></div>
 <tr><td class="pname">p_pages</td><td class="ptype">VARCHAR2</td><td>Páginas que recebem a marca.</td><td class="pval">&#x27;ALL&#x27; (padrão) ou lista/intervalos como &#x27;1&#x27;, &#x27;1,3,5&#x27;, &#x27;2-8&#x27;, &#x27;1,3-5,10&#x27;</td><td><code>&#x27;ALL&#x27;</code></td></tr>
 <tr><td class="pname">p_font</td><td class="ptype">VARCHAR2</td><td>Fonte usada.</td><td class="pval">&#x27;Helvetica&#x27; (padrão), &#x27;Arial&#x27;, &#x27;Times&#x27; ou &#x27;Courier&#x27;</td><td><code>&#x27;Helvetica&#x27;</code></td></tr>
 <tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>Tamanho da fonte em pontos.</td><td class="pval">Número &gt; 0; 48 é o padrão</td><td><code>48</code></td></tr>
-<tr><td class="pname">p_color</td><td class="ptype">VARCHAR2</td><td>Cor da marca d&#x27;água.</td><td class="pval">&#x27;gray&#x27; (padrão), &#x27;red&#x27;, &#x27;blue&#x27;, &#x27;green&#x27;, &#x27;black&#x27; ou hexadecimal RGB como &#x27;FF0000&#x27;</td><td><code>&#x27;gray&#x27;</code></td></tr>
+<tr><td class="pname">p_color</td><td class="ptype">VARCHAR2</td><td>Cor da marca d&#x27;água.</td><td class="pval">&#x27;gray&#x27; (cinza, padrão), &#x27;red&#x27; (vermelho), &#x27;blue&#x27; (azul), &#x27;green&#x27; (verde), &#x27;black&#x27; (preto) ou hexadecimal RGB como &#x27;FF0000&#x27;</td><td><code>&#x27;gray&#x27;</code></td></tr>
 </tbody></table></div>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Condição</th></tr></thead><tbody>
 <tr><td class="pname">-20809</td><td>Nenhum PDF carregado</td></tr>
