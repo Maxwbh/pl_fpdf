@@ -1,7 +1,7 @@
 CREATE OR REPLACE PACKAGE BODY PL_FPDF AS
 /*******************************************************************************
 *                                                                              *
-*                            PL_FPDF v3.3.0                                    *
+*                            PL_FPDF v3.4.0                                    *
 *                Oracle PL/SQL PDF Generation and Manipulation                 *
 *                           Package Body / Corpo do Pacote                     *
 *                                                                              *

@@ -1,7 +1,7 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-3.3.0-blue.svg" alt="Versão">
+  <img src="https://img.shields.io/badge/versão-3.4.0-blue.svg" alt="Versão">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licença-MIT-green.svg" alt="Licença"></a>
   <img src="https://img.shields.io/badge/segurança-AES--256-brightgreen.svg" alt="Segurança">
@@ -82,7 +82,7 @@ tabela, sequência ou diretório para criar antes.
 
 -- Verificar instalação
 SELECT PL_FPDF.co_version FROM DUAL;
--- Retorna: 3.2.0
+-- Retorna: 3.4.0
 ```
 
 **Requisitos:** Oracle 19c+, e `CREATE PROCEDURE` no schema onde os packages

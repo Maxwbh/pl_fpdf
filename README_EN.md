@@ -1,7 +1,7 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.3.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.4.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/security-AES--256-brightgreen.svg" alt="Security">
@@ -81,7 +81,7 @@ directory to create first.
 
 -- Verify
 SELECT PL_FPDF.co_version FROM DUAL;
--- Returns: 3.2.0
+-- Returns: 3.4.0
 ```
 
 **Requirements:** Oracle 19c+, and `CREATE PROCEDURE` in the schema where the

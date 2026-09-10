@@ -1,7 +1,7 @@
 CREATE OR REPLACE PACKAGE PL_FPDF AS
 /*******************************************************************************
 *                                                                              *
-*                            PL_FPDF v3.3.0                                    *
+*                            PL_FPDF v3.4.0                                    *
 *                Oracle PL/SQL PDF Generation and Manipulation                *
 *                                                                              *
 ********************************************************************************
@@ -159,7 +159,7 @@ type recImageBlob is record (
 );
 
 -- Global constants / Constantes globais
-co_version CONSTANT VARCHAR2(10) := '3.3.0';  -- PL_FPDF Version / Versão
+co_version CONSTANT VARCHAR2(10) := '3.4.0';  -- PL_FPDF Version / Versão
 noParam tv4000a;
 
 /*******************************************************************************

@@ -1,6 +1,6 @@
 # PL_FPDF — API Reference
 
-**Version:** 3.3.0 | **Oracle:** 19c+ | **License:** MIT
+**Version:** 3.4.0 | **Oracle:** 19c+ | **License:** MIT
 
 Detailed documentation of every public function and procedure of the `PL_FPDF` package:
 syntax, parameters with accepted values, return, errors raised and an example.

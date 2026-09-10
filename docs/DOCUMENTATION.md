@@ -1,6 +1,6 @@
 # PL_FPDF — Referência Completa de Uso
 
-**Versão:** 3.3.0 | **Oracle:** 19c+ | **Licença:** MIT
+**Versão:** 3.4.0 | **Oracle:** 19c+ | **Licença:** MIT
 
 > Guia oficial de todas as funcionalidades do PL_FPDF: o que cada API faz e como usá-la.
 > Versão navegável no site: [maxwbh.github.io/pl_fpdf/api.html](https://maxwbh.github.io/pl_fpdf/api.html) ·
@@ -73,7 +73,7 @@ Developer e no SQL\*Plus.
 
 ```sql
 -- Verificar
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.3.0
+SELECT PL_FPDF.co_version FROM DUAL;  -- 3.4.0
 
 -- Os dois objetos precisam sair VALID
 SELECT object_name, object_type, status FROM user_objects

@@ -1,6 +1,6 @@
 # PL_FPDF Roadmap
 
-**Versao Atual:** 3.3.0 | **Atualizado:** 2026-08-28
+**Versao Atual:** 3.4.0 | **Atualizado:** 2026-09-10
 
 Revisado em 28/08/2026 conferindo cada afirmacao contra o codigo. As correcoes
 estao marcadas ao longo do documento; a mais importante e que **v3.0.0 dava
