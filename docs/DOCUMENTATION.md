@@ -84,7 +84,7 @@ SELECT object_name, object_type, status FROM user_objects
 
 ```sql
 PL_FPDF.Init(
-  p_orientation => 'P',      -- 'P' retrato | 'L' paisagem
+  p_orientation => 'P',      -- 'P' portrait, retrato | 'L' landscape, paisagem
   p_unit        => 'mm',     -- 'mm', 'cm', 'pt', 'in'
   p_format      => 'A4',     -- 'A4', 'A3', 'A5', 'Letter', 'Legal'
   p_encoding    => 'UTF-8'

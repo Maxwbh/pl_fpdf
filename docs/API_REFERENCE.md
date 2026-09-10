@@ -75,7 +75,7 @@ PROCEDURE PL_FPDF.Init(
 
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
-| `p_orientation` | VARCHAR2 | Orientação padrão das páginas. | 'P' (retrato, padrão) ou 'L' (paisagem) | `'P'` |
+| `p_orientation` | VARCHAR2 | Orientação padrão das páginas. | 'P' (*portrait*, retrato — o padrão) ou 'L' (*landscape*, paisagem) | `'P'` |
 | `p_unit` | VARCHAR2 | Unidade de medida de todas as coordenadas e dimensões do documento. | 'mm' (padrão), 'cm', 'pt' ou 'in' | `'mm'` |
 | `p_format` | VARCHAR2 | Formato de página padrão. | 'A3', 'A4' (padrão), 'A5', 'Letter' ou 'Legal' | `'A4'` |
 | `p_encoding` | VARCHAR2 | Codificação de caracteres do texto. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
@@ -179,7 +179,7 @@ PROCEDURE PL_FPDF.AddPage(
 
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
-| `p_orientation` | VARCHAR2 | Orientação apenas desta página. | 'P', 'L' ou NULL (herda de Init) | `null` |
+| `p_orientation` | VARCHAR2 | Orientação apenas desta página. | 'P' (*portrait*, retrato), 'L' (*landscape*, paisagem) ou NULL (herda de Init) | `null` |
 | `p_format` | VARCHAR2 | Formato apenas desta página. | 'A3', 'A4', 'A5', 'Letter', 'Legal' ou NULL (herda de Init) | `null` |
 | `p_rotation` | PLS_INTEGER | Rotação de exibição da página no leitor de PDF. | 0 (padrão), 90, 180 ou 270 | `0` |
 
@@ -188,7 +188,7 @@ PROCEDURE PL_FPDF.AddPage(
 | Código | Condição |
 |--------|----------|
 | `-20005` | Documento não inicializado (chame Init antes) |
-| `-20107` | Orientação inválida (só 'P' ou 'L') |
+| `-20107` | Orientação inválida (só 'P', *portrait*, ou 'L', *landscape*) |
 | `-20103` | Formato de página desconhecido |
 | `-20101` | Dimensões do formato personalizado inválidas |
 | `-20104` | Rotação inválida (só 0, 90, 180 ou 270) |
@@ -747,7 +747,7 @@ PROCEDURE PL_FPDF.SetFont(
 | Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
 |-----------|------|-----------|-------------------|--------|
 | `pfamily` | VARCHAR2 | Família da fonte. | 'Arial'/'Helvetica', 'Times', 'Courier', 'Symbol', 'ZapfDingbats' ou o nome de uma fonte TrueType carregada com AddTTFFont/LoadTTFFromFile | — |
-| `pstyle` | VARCHAR2 | Estilo do texto. | '' (normal), 'B' (negrito), 'I' (itálico), 'BI' (negrito itálico) ou 'U' (sublinhado) | `''` |
+| `pstyle` | VARCHAR2 | Estilo do texto. | '' (normal), 'B' (*bold*, negrito), 'I' (*italic*, itálico), 'BI' (os dois) ou 'U' (*underline*, sublinhado) | `''` |
 | `psize` | NUMBER | Tamanho em pontos. | Número > 0; 0 (padrão) mantém o tamanho atual | `0` |
 
 #### Exemplo
@@ -838,7 +838,7 @@ PROCEDURE PL_FPDF.Cell(
 | `ptxt` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2; vazio desenha apenas a célula | `''` |
 | `pborder` | VARCHAR2 | Bordas desenhadas. | '0' (nenhuma), '1' (moldura completa) ou combinação de 'L', 'T', 'R', 'B' — ex.: 'LTB' | `'0'` |
 | `pln` | NUMBER | Para onde o cursor vai depois. | 0 = à direita da célula (padrão), 1 = início da próxima linha, 2 = abaixo da célula | `0` |
-| `palign` | VARCHAR2 | Alinhamento do texto. | 'L' (esquerda), 'C' (centro), 'R' (direita) ou '' (padrão, esquerda) | `''` |
+| `palign` | VARCHAR2 | Alinhamento do texto. | 'L' (*left*, esquerda), 'C' (*center*, centro), 'R' (*right*, direita) ou '' (padrão, esquerda) | `''` |
 | `pfill` | NUMBER | Preenche o fundo com a cor de SetFillColor. | 0 = transparente (padrão), 1 = preenchido | `0` |
 | `plink` | VARCHAR2 | Torna a célula clicável. | URL ('https://…') ou identificador retornado por AddLink | `''` |
 
