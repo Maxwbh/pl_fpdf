@@ -44,23 +44,27 @@ DECLARE
   l_ced_txt  VARCHAR2(10);
   l_erro     VARCHAR2(400);
 
+  -- O runner so imprime a saida de um teste que passou quando recebe -v.
+  -- Aqui a saida E o resultado -- o arquivo mede, nao afere --, entao cada
+  -- linha vai marcada com '***', que o runner imprime sempre. Sem isso o
+  -- diagnostico rodava, passava, e nao dizia nada a ninguem.
   PROCEDURE diz(p_msg VARCHAR2) IS
   BEGIN
-    DBMS_OUTPUT.PUT_LINE('  ' || p_msg);
+    DBMS_OUTPUT.PUT_LINE('*** ' || p_msg);
   END;
 BEGIN
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF - medicao WinAnsi');
-  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  diz('PL_FPDF - medicao WinAnsi');
+  diz(RPAD('=', 70, '='));
 
   SELECT value INTO l_charset
     FROM nls_database_parameters
    WHERE parameter = 'NLS_CHARACTERSET';
-  DBMS_OUTPUT.PUT_LINE('  NLS_CHARACTERSET = ' || l_charset);
-  DBMS_OUTPUT.PUT_LINE('');
+  diz('NLS_CHARACTERSET = ' || l_charset);
+  diz('');
 
   ------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('1. Quantos bytes tem CHR(i) de 128 a 255');
-  DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  diz('1. Quantos bytes tem CHR(i) de 128 a 255');
+  diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- Se CHR(i) devolver UM byte, a chave e o byte cru -- que nao e UTF-8
   -- valido sozinho, e nao vai casar com caractere nenhum tirado de um texto.
@@ -75,11 +79,11 @@ BEGIN
   END LOOP;
   diz('um byte: ' || l_um_byte || ' | dois bytes: ' || l_dois
       || ' | outros: ' || l_outros || '   (de 128 posicoes)');
-  DBMS_OUTPUT.PUT_LINE('');
+  diz('');
 
   ------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('2. As 256 chaves CHR(i) sao distintas entre si?');
-  DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  diz('2. As 256 chaves CHR(i) sao distintas entre si?');
+  diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- Chave repetida significa posicao de largura perdida: a segunda sobrescreve
   -- a primeira, e as duas passam a devolver a mesma largura.
@@ -90,11 +94,11 @@ BEGIN
     diz('-> ' || (256 - l_distintas) || ' posicao(oes) colidem: a tabela de '
         || 'larguras tem menos entradas do que aparenta');
   END IF;
-  DBMS_OUTPUT.PUT_LINE('');
+  diz('');
 
   ------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('3. A chave da tabela casa com o texto consultado?');
-  DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  diz('3. A chave da tabela casa com o texto consultado?');
+  diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- A tabela e montada com CHR(231); a consulta usa SUBSTR de um texto. Se os
   -- dois nao forem iguais, a consulta nao acha a chave.
@@ -109,11 +113,11 @@ BEGIN
   ELSE
     diz('-> DIFERENTES: a consulta nao acha a chave da tabela');
   END IF;
-  DBMS_OUTPUT.PUT_LINE('');
+  diz('');
 
   ------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('4. O que GetStringWidth devolve, na pratica');
-  DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  diz('4. O que GetStringWidth devolve, na pratica');
+  diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- O .exists da consulta esta comentado no codigo, entao chave ausente sobe
   -- como NO_DATA_FOUND -- que e outro sintoma, e mais barulhento, do que o
@@ -146,11 +150,11 @@ BEGIN
             || 'comentado no codigo deixa a excecao subir');
       END IF;
   END;
-  DBMS_OUTPUT.PUT_LINE('');
+  diz('');
 
   ------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('5. O acentuado no stream do documento');
-  DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  diz('5. O acentuado no stream do documento');
+  diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- Confirma o relato pelo lado do arquivo: os bytes do 'ç' chegam crus, em
   -- UTF-8, num stream declarado como WinAnsi.
@@ -184,8 +188,8 @@ BEGIN
       diz('geracao levantou: ' || SQLERRM);
   END;
 
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  diz('');
+  diz(RPAD('=', 70, '='));
   DBMS_OUTPUT.PUT_LINE('[PASS] medicao concluida - a decisao esta na saida acima');
   PL_FPDF.Reset;
 EXCEPTION
