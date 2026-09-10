@@ -118,11 +118,20 @@ BEGIN
   END IF;
 
   --------------------------------------------------------------------------
-  caso('GetStringWidth mede acentuado, e mede diferente');
+  caso('GetStringWidth mede acentuado sem levantar');
   --------------------------------------------------------------------------
-  -- Antes levantava ORA-06502. E nao basta devolver numero: o 'a' com til e
-  -- mais largo que o 'a', entao as duas medidas TEM de diferir -- se saissem
-  -- iguais, a conversao estaria caindo num caractere so.
+  -- Antes levantava ORA-06502, e agora mede.
+  --
+  -- A primeira versao deste caso exigia que as duas medidas DIFERISSEM, no
+  -- palpite de que o 'a' com til seria mais largo. Errado: nas 14 fontes
+  -- padrao do PDF o glifo acentuado tem a MESMA largura de avanco do glifo
+  -- base. Conferido na propria tabela do package: 'a' e 'a til' medem 556,
+  -- 'c' e 'c cedilha' medem 500. Medir igual e o certo.
+  --
+  -- Entao afere-se o que de fato distingue: que nao levanta, e que um
+  -- caractere de largura reconhecidamente diferente -- o travessao, 1000
+  -- contra 333 do hifen -- e medido como tal. Se a conversao caisse num
+  -- caractere so, essa comparacao denunciaria.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.AddPage;
@@ -133,10 +142,20 @@ BEGIN
     l_larg2 := PL_FPDF.GetStringWidth('São Paulo');
     passou('mediu as duas: ' || TO_CHAR(l_larg) || ' e ' || TO_CHAR(l_larg2));
 
-    IF l_larg2 != l_larg THEN
-      passou('as larguras diferem, como devem');
+    IF l_larg2 = l_larg THEN
+      passou('as duas medem igual, como manda a tabela: o acentuado tem a '
+             || 'largura de avanco do glifo base');
     ELSE
-      falhou('as duas medem igual - o acentuado nao chegou na tabela certa');
+      falhou('as larguras diferem (' || TO_CHAR(l_larg) || ' e '
+             || TO_CHAR(l_larg2) || ') - o acentuado caiu na posicao errada');
+    END IF;
+
+    -- travessao contra hifen: 1000 contra 333 em Helvetica
+    IF PL_FPDF.GetStringWidth(UNISTR('\2014')) >
+       PL_FPDF.GetStringWidth('-') * 2 THEN
+      passou('o travessao mede mais que o dobro do hifen, como na tabela');
+    ELSE
+      falhou('o travessao nao foi medido pela posicao dele');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN

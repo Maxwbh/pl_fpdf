@@ -485,10 +485,13 @@ AMOSTRAS = [
           :saida := PL_FPDF.OutputBlob();
           PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
         END;""",
+     # 'textos' e uma lista POR PAGINA: o indice e a pagina, nao o item. Tres
+     # strings soltas fariam o validador procurar texto nas paginas 2 e 3, que
+     # nao existem -- foi o que aconteceu na primeira versao desta amostra.
      {'paginas': 1,
-      'textos': ['Endereço de cobrança - São Paulo',
-                 'Acentuacao: à é î õ ü ç ñ Ç',
-                 'Total à direita']}),
+      'textos': [['Endereço de cobrança - São Paulo',
+                  'Acentuacao: à é î õ ü ç ñ Ç',
+                  'Total à direita']]}),
 
     # ── imagem pelo caminho do parser, com os pixels conferidos ─────────────
     #

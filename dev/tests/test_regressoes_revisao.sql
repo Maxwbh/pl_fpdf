@@ -335,34 +335,15 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 7. SetUTF8Enabled nao tem efeito (DEFEITO CONHECIDO, ainda aberto)
+  -- O caso que existia aqui conferia que SetUTF8Enabled e IsUTF8Enabled eram
+  -- coerentes entre si -- o unico contrato que aquela API cumpria, porque a
+  -- flag nao era consultada em lugar nenhum. As duas sairam da spec quando a
+  -- conversao WinAnsi passou a ser sempre feita, e o caso saiu com elas.
   --
-  -- g_utf8_enabled e escrita pelo setter e lida pelo getter, e mais ninguem
-  -- a consulta: nao existe conversao WinAnsi no package. Este caso NAO cobra
-  -- a conversao — cobra que o par setter/getter seja coerente, que e o unico
-  -- contrato que a API hoje cumpre, e deixa o defeito registrado em texto.
+  -- O que ele registrava em texto agora e aferido de verdade, em
+  -- test_winansi.sql: o acentuado convertido, o alinhamento que antes
+  -- levantava ORA-06502, e a recusa do que nao existe em WinAnsi.
   --------------------------------------------------------------------------
-  caso('SetUTF8Enabled/IsUTF8Enabled sao coerentes entre si');
-  BEGIN
-    PL_FPDF.SetUTF8Enabled(FALSE);
-    IF PL_FPDF.IsUTF8Enabled THEN
-      falhou('IsUTF8Enabled devolveu TRUE depois de SetUTF8Enabled(FALSE)');
-    ELSE
-      PL_FPDF.SetUTF8Enabled(TRUE);
-      IF NOT NVL(PL_FPDF.IsUTF8Enabled, FALSE) THEN
-        falhou('IsUTF8Enabled devolveu FALSE depois de SetUTF8Enabled(TRUE)');
-      ELSE
-        passou('o par setter/getter e coerente');
-        DBMS_OUTPUT.PUT_LINE('  [NOTA] a flag nao muda a saida: nao ha ' ||
-                             'conversao WinAnsi no package. Acento em fonte');
-        DBMS_OUTPUT.PUT_LINE('         core sai errado em AL32UTF8, no Cell ' ||
-                             'e no MultiCell, nao so no overlay.');
-      END IF;
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('excecao: ' || SQLERRM);
-  END;
 
   --------------------------------------------------------------------------
   DBMS_OUTPUT.PUT_LINE('');

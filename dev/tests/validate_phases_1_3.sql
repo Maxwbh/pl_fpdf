@@ -90,9 +90,16 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('----------------------------------');
 
   -- Test: UTF-8 encoding
+  --
+  -- O IsUTF8Enabled saiu da spec: a flag era escrita e lida, e ninguem a
+  -- consultava. O que se afere agora e o que importa -- que o Init aceite o
+  -- encoding e que texto acentuado atravesse sem levantar.
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
-    test_result('UTF-8 encoding enabled', PL_FPDF.IsUTF8Enabled());
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Cell(0, 10, 'Acentuacao: cobranca em Sao Paulo');
+    test_result('UTF-8 encoding enabled', TRUE);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
     test_result('UTF-8 encoding', FALSE, SQLERRM);

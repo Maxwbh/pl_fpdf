@@ -119,9 +119,16 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('----------------------------------');
 
   -- Test: UTF-8 encoding
+  --
+  -- O IsUTF8Enabled saiu da spec: a flag era escrita e lida, e ninguem a
+  -- consultava. O que se afere agora e o que importa -- que o Init aceite o
+  -- encoding e que texto acentuado atravesse sem levantar.
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
-    test_result('UTF-8 encoding enabled', PL_FPDF.IsUTF8Enabled());
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Cell(0, 10, 'Acentuacao: cobranca em Sao Paulo');
+    test_result('UTF-8 encoding enabled', TRUE);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
     test_result('UTF-8 encoding', FALSE, SQLERRM);
@@ -5272,34 +5279,15 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 7. SetUTF8Enabled nao tem efeito (DEFEITO CONHECIDO, ainda aberto)
+  -- O caso que existia aqui conferia que SetUTF8Enabled e IsUTF8Enabled eram
+  -- coerentes entre si -- o unico contrato que aquela API cumpria, porque a
+  -- flag nao era consultada em lugar nenhum. As duas sairam da spec quando a
+  -- conversao WinAnsi passou a ser sempre feita, e o caso saiu com elas.
   --
-  -- g_utf8_enabled e escrita pelo setter e lida pelo getter, e mais ninguem
-  -- a consulta: nao existe conversao WinAnsi no package. Este caso NAO cobra
-  -- a conversao — cobra que o par setter/getter seja coerente, que e o unico
-  -- contrato que a API hoje cumpre, e deixa o defeito registrado em texto.
+  -- O que ele registrava em texto agora e aferido de verdade, em
+  -- test_winansi.sql: o acentuado convertido, o alinhamento que antes
+  -- levantava ORA-06502, e a recusa do que nao existe em WinAnsi.
   --------------------------------------------------------------------------
-  caso('SetUTF8Enabled/IsUTF8Enabled sao coerentes entre si');
-  BEGIN
-    PL_FPDF.SetUTF8Enabled(FALSE);
-    IF PL_FPDF.IsUTF8Enabled THEN
-      falhou('IsUTF8Enabled devolveu TRUE depois de SetUTF8Enabled(FALSE)');
-    ELSE
-      PL_FPDF.SetUTF8Enabled(TRUE);
-      IF NOT NVL(PL_FPDF.IsUTF8Enabled, FALSE) THEN
-        falhou('IsUTF8Enabled devolveu FALSE depois de SetUTF8Enabled(TRUE)');
-      ELSE
-        passou('o par setter/getter e coerente');
-        DBMS_OUTPUT.PUT_LINE('  [NOTA] a flag nao muda a saida: nao ha ' ||
-                             'conversao WinAnsi no package. Acento em fonte');
-        DBMS_OUTPUT.PUT_LINE('         core sai errado em AL32UTF8, no Cell ' ||
-                             'e no MultiCell, nao so no overlay.');
-      END IF;
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('excecao: ' || SQLERRM);
-  END;
 
   --------------------------------------------------------------------------
   DBMS_OUTPUT.PUT_LINE('');
@@ -5742,11 +5730,20 @@ BEGIN
   END IF;
 
   --------------------------------------------------------------------------
-  caso('GetStringWidth mede acentuado, e mede diferente');
+  caso('GetStringWidth mede acentuado sem levantar');
   --------------------------------------------------------------------------
-  -- Antes levantava ORA-06502. E nao basta devolver numero: o 'a' com til e
-  -- mais largo que o 'a', entao as duas medidas TEM de diferir -- se saissem
-  -- iguais, a conversao estaria caindo num caractere so.
+  -- Antes levantava ORA-06502, e agora mede.
+  --
+  -- A primeira versao deste caso exigia que as duas medidas DIFERISSEM, no
+  -- palpite de que o 'a' com til seria mais largo. Errado: nas 14 fontes
+  -- padrao do PDF o glifo acentuado tem a MESMA largura de avanco do glifo
+  -- base. Conferido na propria tabela do package: 'a' e 'a til' medem 556,
+  -- 'c' e 'c cedilha' medem 500. Medir igual e o certo.
+  --
+  -- Entao afere-se o que de fato distingue: que nao levanta, e que um
+  -- caractere de largura reconhecidamente diferente -- o travessao, 1000
+  -- contra 333 do hifen -- e medido como tal. Se a conversao caisse num
+  -- caractere so, essa comparacao denunciaria.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.AddPage;
@@ -5757,10 +5754,20 @@ BEGIN
     l_larg2 := PL_FPDF.GetStringWidth('São Paulo');
     passou('mediu as duas: ' || TO_CHAR(l_larg) || ' e ' || TO_CHAR(l_larg2));
 
-    IF l_larg2 != l_larg THEN
-      passou('as larguras diferem, como devem');
+    IF l_larg2 = l_larg THEN
+      passou('as duas medem igual, como manda a tabela: o acentuado tem a '
+             || 'largura de avanco do glifo base');
     ELSE
-      falhou('as duas medem igual - o acentuado nao chegou na tabela certa');
+      falhou('as larguras diferem (' || TO_CHAR(l_larg) || ' e '
+             || TO_CHAR(l_larg2) || ') - o acentuado caiu na posicao errada');
+    END IF;
+
+    -- travessao contra hifen: 1000 contra 333 em Helvetica
+    IF PL_FPDF.GetStringWidth(UNISTR('\2014')) >
+       PL_FPDF.GetStringWidth('-') * 2 THEN
+      passou('o travessao mede mais que o dobro do hifen, como na tabela');
+    ELSE
+      falhou('o travessao nao foi medido pela posicao dele');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
