@@ -236,6 +236,22 @@ BEGIN
   pulou('as sete rotinas de demonstracao sairam; conferir a ausencia aqui '
         || 'derrubaria a compilacao do bloco');
 
+  --------------------------------------------------------------------------
+  -- Devolve a sessao ao estado de partida.
+  --
+  -- O caso 4 cria pagina em PAISAGEM, e o Reset zera state e page mas NAO
+  -- restaura a geometria: DefOrientation, w e h sobrevivem. Numa suite que
+  -- roda tudo na mesma sessao, e este arquivo e o primeiro da ordem
+  -- alfabetica, o que ficar aqui vaza para todos os testes seguintes.
+  --
+  -- Um Init em retrato, com o formato padrao, e a ultima coisa que este
+  -- arquivo faz. Teste que suja a sessao do vizinho e pior que teste que
+  -- falha: a falha aparece longe da causa.
+  --------------------------------------------------------------------------
+  PL_FPDF.Reset;
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.Reset;
+
   DBMS_OUTPUT.PUT_LINE('');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
   DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
