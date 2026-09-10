@@ -473,9 +473,14 @@ AMOSTRAS = [
         END;""",
      {'paginas': 1, 'textos': ['Imagem pelo parser'], 'imagens': {1: 1},
       # o proprio vermelho do PNG de origem, no meio da area desenhada.
-      # 20 mm de margem e 60 mm de lado, em pontos: x de 56,7 a 226,8 e a
-      # imagem comeca 40 mm abaixo do topo — o centro cai perto de (142, 227)
-      'pixel': (1, 142, 227, (200, 60, 40))}),
+      #
+      # A conta, que erra facil: o ImageFromBlob recebe mm e conta o pY do
+      # TOPO; o validador quer PONTOS contados da BASE. Imagem em x=20 mm,
+      # 60 mm de lado, 40 mm abaixo do topo, numa A4 de 297 mm:
+      #   x = (20 + 30) mm x 2,8346          = 142 pt
+      #   y = (297 - 40 - 60 + 30) mm x 2,8346 = 643 pt
+      # Usar o 227 mm sem converter cai bem abaixo da imagem, em papel branco.
+      'pixel': (1, 142, 643, (200, 60, 40))}),
 
     # ── documento de complexidade real: um boleto bancário ───────────────────
     #
