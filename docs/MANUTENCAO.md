@@ -291,6 +291,11 @@ O CI falha se algum deles estiver desatualizado.
   resultado mais longo e diferente. Use `UTL_RAW.CAST_TO_VARCHAR2`, que não
   converte charset — a mesma função que o `pdf_read` usa.
   (`check_byte_chars.py`)
+- **O mesmo erro na forma literal, e o sintoma culpa o arquivo:** uma assinatura
+  binária montada como `chr(137) || 'PNG' || ...` nunca casa com os bytes que
+  abrem um PNG, e o parser recusa **todo** arquivo com `Not a PNG file`. Medido
+  no banco: **não há `ORA-29275`** — a comparação só falha em silêncio. Use
+  `HEXTORAW`. (`check_byte_chars.py`)
 - **A mesma confusão pelo outro lado:** `SUBSTRB(x, k, 1)` extrai um byte, e um
   byte do meio de um caractere multibyte **não volta como ele**. Remontar dado
   binário byte a byte num VARCHAR2 e devolvê-lo a `UTL_RAW.CAST_TO_RAW` não

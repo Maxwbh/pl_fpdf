@@ -74,6 +74,33 @@ está declarado `BLOB` e `buf` está declarado `VARCHAR2`. Quando o tipo de um
 dos dois não é determinável ali — um campo de record, por exemplo — não acusa:
 o preço de um falso positivo num lint é ele ser desligado.
 
+Regra 4 — assinatura binária montada com CHR
+--------------------------------------------
+A regra 1 pega `CHR(v)` quando `v` carrega um byte lido de um RAW. Esta pega o
+caso literal, que é o mesmo erro escrito de outro jeito:
+
+    png_signature constant varchar2(8) :=
+      chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
+
+`CHR(137)` não é o byte `0x89`: é o caractere daquele ponto de código, e em
+AL32UTF8 sai com dois bytes. A constante nunca vai casar com os oito bytes que
+abrem um PNG.
+
+O que essa linha custou vale registrar, porque o sintoma não aponta para ela.
+O `p_parseImage` recusava **todo** PNG com
+
+    ORA-20100: p_parseImage : Not a PNG file: <nome>
+
+— uma mensagem que manda procurar defeito no arquivo, não no parser. E não
+houve `ORA-29275`: medido no banco, o `UTL_RAW.CAST_TO_VARCHAR2` não levanta
+exceção sobre binário. A comparação simplesmente falha, em silêncio, e por isso
+a suspeita foi parar no charset em vez de na constante.
+
+Acusa `CHR(n)` com `n` de 128 para cima, em qualquer lugar. Deliberadamente
+estreita: `CHR(10)` e `CHR(13)` são quebras de linha legítimas e não são
+tocadas. Quem precisa de um byte acima de 127 usa `HEXTORAW`, e quem precisa da
+string binária correspondente usa `UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW(...))`.
+
 Uso:  python scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb
 """
 import io
@@ -86,6 +113,8 @@ CABECALHO = re.compile(r'^[ \t]{0,2}(?:FUNCTION|PROCEDURE)\s+([a-z_][a-z_0-9$#]*
 DE_BYTE = re.compile(r'\b([a-z_][a-z_0-9$#]*)\s*:=\s*TO_NUMBER\s*\(\s*RAWTOHEX',
                      re.I)
 CHR_VAR = re.compile(r'\bCHR\s*\(\s*([a-z_][a-z_0-9$#]*)\s*\)', re.I)
+# 'chr(137)' — literal acima de 127, que em AL32UTF8 nunca e um byte so
+CHR_LITERAL = re.compile(r'\bCHR\s*\(\s*(\d+)\s*\)', re.I)
 
 # 'l_c := SUBSTRB(qualquer, qualquer, 1)' — a variável passa a carregar UM byte
 DE_SUBSTRB1 = re.compile(
@@ -133,6 +162,12 @@ def main(caminho):
                 linha = texto.count('\n', 0, marcas[i] + m.start()) + 1
                 problemas.append((linha, m.group(1), 'raw'))
 
+        # regra 4: assinatura binaria montada com CHR de literal alto
+        for m in CHR_LITERAL.finditer(trecho):
+            if int(m.group(1)) >= 128:
+                linha = texto.count('\n', 0, marcas[i] + m.start()) + 1
+                problemas.append((linha, m.group(1), 'chr_lit'))
+
         # regra 3: buffer VARCHAR2 recebendo leitura de BLOB
         tipos = {}
         for m in DECLARACAO.finditer(trecho):
@@ -162,6 +197,13 @@ def main(caminho):
                       f'(TO_NUMBER(RAWTOHEX(...))). Em AL32UTF8 os valores de '
                       f'128 a 255 saem com DOIS bytes. Use '
                       f'UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW(...)).')
+            elif tipo == 'chr_lit':
+                print(f'  linha {linha}: CHR({var}) — em AL32UTF8 o ponto de '
+                      f'código {var} sai com DOIS bytes, nunca com um. Para um '
+                      f'byte use HEXTORAW; para a string binária, '
+                      f'UTL_RAW.CAST_TO_VARCHAR2(HEXTORAW(...)). Uma '
+                      f'assinatura montada assim não casa com o arquivo, e a '
+                      f'recusa culpa o arquivo.')
             elif tipo == 'read':
                 print(f'  linha {linha}: DBMS_LOB.READ sobre BLOB com buffer '
                       f'{var}, declarado VARCHAR2. A sobrecarga de BLOB entrega '
