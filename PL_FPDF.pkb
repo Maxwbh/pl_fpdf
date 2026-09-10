@@ -87,7 +87,10 @@ type recImage is record ( n number,  	 	  	 		-- indice d'insertion dans le docu
 						  bpc txt,				 	-- Bit per color
 	 		  	 		  f txt,  	 			 	-- File Format
 						  parms txt,			 	-- pdf parameter for this image
-						  pal txt,				 	-- colors palette informations 
+						  pal raw(8192),			-- paleta em RAW. O PLTE valido tem no maximo
+												-- 768 bytes (256 cores x 3), mas o tamanho vem
+												-- do arquivo: dimensionar no limite teorico
+												-- faria um PNG corrompido estourar ORA-06502.
 						  trns tn,			 	 	-- transparency 
 						  data blob	 			 	-- Data
  );
@@ -230,8 +233,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4';
- co_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
- co_pl_fpdf_version CONSTANT VARCHAR2(10) := '2.0.0';
 
  -- Page Dimension Limits (in mm)
  c_MIN_PAGE_WIDTH CONSTANT NUMBER := 1;
@@ -1346,16 +1347,34 @@ end p_putstream;
 
 ----------------------------------------------------------------------------------------
 procedure p_putstream(pData in out NOCOPY blob) is 
+	lv_content_length number := dbms_lob.getlength(pdata);
 	offset integer := 1;
-  lv_content_length number := dbms_lob.getlength(pdata);
-	buf_size integer := 2000;
-	buf varchar2(2000);
+	buf_size integer;
+	buf raw(2000);
 begin
 	p_out('stream');
-	-- read the blob and put it in small pieces in a varchar
-	while offset < lv_content_length loop
+	-- Read the blob in RAW chunks and emit them as hexadecimal.
+	--
+	-- The buffer used to be varchar2, which the BLOB overload of dbms_lob.read
+	-- filled with RAW: the implicit conversion produced hexadecimal by accident,
+	-- and 2000 bytes became 4000 characters, more than the buffer held.
+	--
+	-- Hexadecimal is nevertheless the right encoding here, and the reason is the
+	-- document buffer. The document is assembled as a CLOB and turned into a
+	-- BLOB by dbms_lob.convertToBlob, so anything written to it makes a round
+	-- trip through the database character set. Measured on AL32UTF8, 256 bytes
+	-- written through utl_raw.cast_to_varchar2 come back as 422 - the round trip
+	-- is not faithful for anything above 0x7F. Hexadecimal is ASCII, so it
+	-- survives unchanged.
+	--
+	-- The caller has to declare /ASCIIHexDecode and size /Length accordingly;
+	-- this procedure only controls what goes between stream and endstream.
+	while offset <= lv_content_length loop
+	  -- buf_size is IN OUT: dbms_lob.read returns in it what it actually read,
+	  -- so it has to be set on every pass, not once.
+	  buf_size := 2000;
 	  dbms_lob.read(pData,buf_size,offset,buf);
-	  p_out(buf, false);
+	  p_out(rawtohex(buf), false);
 	  offset := offset + buf_size;
 	end loop;
 	-- put a CRLF at te end of the blob
@@ -1571,7 +1590,8 @@ procedure p_putimages is
   info recImage;
   v txt;
   trns txt;
-  pal  txt;
+  pal  raw(8192);
+  l_off pls_integer;
 begin
   if (b_compress) then
     filter := '/Filter /FlateDecode ';
@@ -1589,7 +1609,7 @@ begin
 		p_out('/Width ' || info.w);
 		p_out('/Height ' || info.h);
 		if(info.cs = 'Indexed') then
-			p_out('/ColorSpace [/Indexed /DeviceRGB ' || to_char(strlen(info.pal) / 3 - 1) || ' ' || to_char(n+1) || ' 0 R]');
+			p_out('/ColorSpace [/Indexed /DeviceRGB ' || to_char(utl_raw.length(info.pal) / 3 - 1) || ' ' || to_char(n+1) || ' 0 R]');
 		else
 			p_out('/ColorSpace /' || info.cs);
 			if(info.cs = 'DeviceCMYK') then
@@ -1599,10 +1619,18 @@ begin
 
 		p_out('/BitsPerComponent ' || info.bpc);
 		if(info.f is not null) then
-			p_out('/Filter /' || info.f);
+			p_out('/Filter [/ASCIIHexDecode /' || info.f || ']');
 		end if;
 		if(info.parms is not null) then
-			p_out(info.parms);
+			-- Com /Filter em array, o /DecodeParms também tem de ser array: um
+			-- por filtro, na mesma ordem. null para o /ASCIIHexDecode, que não
+			-- tem parâmetro, e o dicionário para o /FlateDecode. Com um
+			-- dicionário solto, o leitor aplica o /Predictor ao filtro errado e a
+			-- imagem decodifica desalinhada: abre sem erro e desenha as cores
+			-- trocadas de lugar. Foi pego rasterizando o PDF num leitor
+			-- independente e comparando os pixels: 10 de 16 saíam errados.
+			p_out(replace(info.parms, '/DecodeParms ', '/DecodeParms [null ')
+			      || ']');
 		end if;
 		
 		if(info.trns.first is not null ) then
@@ -1613,8 +1641,15 @@ begin
 			p_out('/Mask (' || trns || ')');
 		end if;
 
-		p_out('/Length ' || dbms_lob.getlength(info.data) || '>>');
-		p_putstream(info.data);
+		p_out('/Length ' || (dbms_lob.getlength(info.data) * 2 + 1) || '>>');
+		p_out('stream');
+		l_off := 1;
+		while l_off <= dbms_lob.getlength(info.data) loop
+			p_out(rawtohex(dbms_lob.substr(info.data, 2000, l_off)), false);
+			l_off := l_off + 2000;
+		end loop;
+		p_out('>');
+		p_out('endstream');
 		images(v).data := null;
 		p_out('endobj');
 
@@ -1627,8 +1662,14 @@ begin
 			 else
 			   pal := info.pal;
 			 end if;
-			p_out('<<' || filter || '/Length ' || strlen(pal) || '>>');
-			p_putstream(pal);
+			-- A paleta viaja em RAW e so vira hexadecimal aqui, na saida, porque
+			-- o documento e montado num CLOB.
+			p_out('<</Filter /ASCIIHexDecode /Length '
+			      || (utl_raw.length(pal) * 2 + 1) || '>>');
+			p_out('stream');
+			p_out(rawtohex(pal), false);
+			p_out('>');
+			p_out('endstream');
 			p_out('endobj');
 		end if;
 		v := images.next(v);
@@ -2169,7 +2210,7 @@ function p_parseImage(pFile in varchar2) return recImage is
   myImgInfo recImage;
   myblob blob;
   chunk_content blob;
-  png_signature constant varchar2(8)  := chr(137) || 'PNG' || chr(13) || chr(10) || chr(26) || chr(10);
+  c_png_sig constant raw(8) := hextoraw('89504E470D0A1A0A');
   signature_len integer := 8;
   chunklength_len integer := 4;
   chunktype_len integer := 4;
@@ -2182,6 +2223,7 @@ function p_parseImage(pFile in varchar2) return recImage is
   f number default 1;
   f_chunk number default 1;
   buf varchar2(8192);
+  bufRaw raw(32000);
   ct word;
   colors pls_integer;
   myType word;
@@ -2224,7 +2266,7 @@ begin
     -- reading the blob
 
     --Check signature
-    if(fread(myblob, f, signature_len) != png_signature ) then
+    if(utl_raw.compare(freadb(myblob, f, signature_len), c_png_sig) != 0) then
         Error('Not a PNG file: ' || pFile);
     end if;
 
@@ -2244,19 +2286,19 @@ begin
     end if;
     chunk_num := chunk_num + 1;
     --discard the crc
-    buf := fread(myblob, f, crc_len);
+    bufRaw := freadb(myblob, f, crc_len);
     if( chunk_num = 1 and myType != 'IHDR' ) then
       Error('Incorrect PNG file: ' || pFile);
     elsif(myType = 'IHDR') then
       -- ^^^ I have already get width and height, so go forward (read 4 Bytes twice)
-      buf := fread(chunk_content, f_chunk, widthheight_len);
+      bufRaw := freadb(chunk_content, f_chunk, widthheight_len);
 
-      myImgInfo.bpc := ord(fread(chunk_content, f_chunk, hdrflag_len));    
+      myImgInfo.bpc := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
       if( myImgInfo.bpc > 8) then
         Error('16-bit depth not supported: ' || pFile);    
       end if;  
       
-      ct := ord(fread(chunk_content, f_chunk, hdrflag_len));    
+      ct := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
       if( ct = 0 ) then
         myImgInfo.cs := 'DeviceGray';
       elsif( ct = 2 ) then
@@ -2266,13 +2308,13 @@ begin
       else
         Error('Alpha channel not supported: ' || pFile);
         end if;
-      if( ord(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Unknown compression method: ' || pFile);
       end if;
-      if( ord(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Unknown filter method: ' || pFile);
       end if;
-      if( ord(fread(chunk_content, f_chunk, hdrflag_len)) != 0 ) then
+      if( to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX') != 0 ) then
         Error('Interlacing not supported: ' || pFile);
       end if;
       if (ct = 2 ) then
@@ -2285,20 +2327,23 @@ begin
           
         elsif(myType = 'PLTE') then
             -- Read palette
-            myImgInfo.pal := fread(chunk_content, f_chunk, chunkdata_len ) ;
+            myImgInfo.pal := freadb(chunk_content, f_chunk, chunkdata_len);
         elsif(myType = 'tRNS') then
             --   Read transparency info
-            buf := fread(chunk_content, f_chunk, chunkdata_len ) ;
+            bufRaw := freadb(chunk_content, f_chunk, chunkdata_len);
             if(ct = 0) then
-                myImgInfo.trns(1) := ord(substr(buf,1,1));
+                myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
             elsif( ct = 2) then
-               myImgInfo.trns(1) := ord(substr(buf,1,1));
-               myImgInfo.trns(2) := ord(substr(buf,3,1));
-               myImgInfo.trns(3) := ord(substr(buf,5,1));
+               myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
+               myImgInfo.trns(2) := to_number(rawtohex(utl_raw.substr(bufRaw,3,1)),'XX');
+               myImgInfo.trns(3) := to_number(rawtohex(utl_raw.substr(bufRaw,5,1)),'XX');
             else
-                if(instr(buf,chr(0)) > 0) then
-                    myImgInfo.trns(1) := instr(buf,chr(0));
-                end if;
+                for k in 1..utl_raw.length(bufRaw) loop
+                  if utl_raw.substr(bufRaw,k,1) = hextoraw('00') then
+                    myImgInfo.trns(1) := k;
+                    exit;
+                  end if;
+                end loop;
             end if;
         elsif(myType = 'IDAT') then
             -- Read image data block after the loop, just mark the begin of data
