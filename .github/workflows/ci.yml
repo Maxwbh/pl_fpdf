@@ -106,6 +106,14 @@ jobs:
       - name: Nenhum byte virando caractere com CHR
         run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
+      # Num DECLARE, uma vez que aparece o corpo de um subprograma local, nao
+      # se declara mais nada. O ORA-06550 aponta a linha da declaracao, nao a
+      # do subprograma que a invalidou, entao se procura no lugar errado.
+      # Custou uma rodada contra o banco: o arquivo passou por todos os lints
+      # porque nenhum olhava para dev/tests/*.sql.
+      - name: Nenhuma declaracao depois de subprograma local nos testes
+        run: python dev/scripts/plsql_lint/check_block_declarations.py dev/tests/*.sql
+
       # NVL(tabela(i), x) NAO evita NO_DATA_FOUND: o indice e lido primeiro. A
       # linha parece defensiva e falha na primeira posicao nao visitada.
       - name: Nenhum NVL sobre elemento de tabela indexada

@@ -313,6 +313,7 @@ no banco, e existe para que ele não volte:
 | Verificação | O que pega |
 |-------------|------------|
 | `check_declarations.py` | Global declarada depois do primeiro subprograma (`PLS-00103`) |
+| `check_block_declarations.py` | A mesma regra do lado dos testes: item declarado depois do primeiro subprograma local de um bloco anônimo. O `ORA-06550` aponta a linha da declaração, não a do subprograma que a invalidou — e nenhum lint olhava para `dev/tests/*.sql`, então só quebrou depois de conectar ao banco |
 | `check_spec_body.py` | Subprograma da spec sem corpo (`PLS-00323`) — um `/*` órfão já engoliu `AddQRCode` e `AddBarcode` inteiros, 892 linhas de comentário acidental |
 | `check_call_order.py` | Chamada a subprograma definido mais abaixo (`PLS-00313`) |
 | `check_clob_bytes.py` | `SUBSTRB`/`LENGTHB`/`INSTRB` em CLOB (`ORA-22998` só em execução) e LOB passado a `STANDARD_HASH` (`ORA-00902`, sem dizer qual argumento). Roda em `src/` **e em `dev/tests/`**: o mesmo erro reapareceu num diagnóstico porque a verificação só olhava `src/` |

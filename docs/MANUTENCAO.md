@@ -203,6 +203,7 @@ python dev/scripts/plsql_lint/check_call_order.py   src/PL_FPDF_UTIL.pks src/PL_
 python dev/scripts/plsql_lint/check_clob_bytes.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb src/PL_FPDF.pks dev/tests/*.sql
 python dev/scripts/plsql_lint/check_error_codes.py  src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_byte_chars.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+python dev/scripts/plsql_lint/check_block_declarations.py dev/tests/*.sql
 python dev/scripts/plsql_lint/check_assoc_nvl.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_pls_overflow.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF.pks src/PL_FPDF.pkb

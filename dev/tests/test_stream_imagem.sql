@@ -23,6 +23,18 @@ DECLARE
   l_falhas PLS_INTEGER := 0;
   l_skip   PLS_INTEGER := 0;
 
+  l_blob    BLOB;
+  l_buf     RAW(2000);
+  l_qtd     INTEGER;
+  l_pos     INTEGER;
+  l_lidos   INTEGER;
+  l_tam     INTEGER;
+  l_origem  RAW(256);
+  l_texto   VARCHAR2(4000);
+  l_charset VARCHAR2(60);
+  l_pdf     BLOB;
+  l_hex     VARCHAR2(4000);
+
   PROCEDURE caso(p_nome VARCHAR2) IS
   BEGIN
     l_total := l_total + 1;
@@ -85,17 +97,6 @@ DECLARE
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
   END acha;
 
-  l_blob    BLOB;
-  l_buf     RAW(2000);
-  l_qtd     INTEGER;
-  l_pos     INTEGER;
-  l_lidos   INTEGER;
-  l_tam     INTEGER;
-  l_origem  RAW(256);
-  l_texto   VARCHAR2(4000);
-  l_charset VARCHAR2(60);
-  l_pdf     BLOB;
-  l_hex     VARCHAR2(4000);
 BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - stream de imagem');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
