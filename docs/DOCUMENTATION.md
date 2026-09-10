@@ -653,6 +653,68 @@ PL_FPDF.Output('F', caminho);        PL_FPDF.OutputFile(nome, directory);
 | UTF-8 limitado | UTF-8 completo + TrueType |
 | Sem criptografia | AES-256, AES-128 e RC4 |
 
+### O que de fato quebra
+
+Levantamos a superfície pública das três versões e comparamos nome a nome e
+assinatura a assinatura. O resultado, em número:
+
+| | 0.9.4 | 2.0.0 | 3.4.0 |
+|---|---|---|---|
+| Subprogramas públicos | 70 | 94 | 119 |
+
+**Da 0.9.4 para a 3.4.0 sumiram sete nomes**, e os sete são rotinas de
+demonstração que o próprio package trazia — `helloworld`, `test`, `testImg`,
+`testheader`, `myRepetitiveHeader`, `myRepetitiveFooter` e `lpc_footer`.
+Nenhuma é API: quem chamava `helloworld` num sistema estava rodando o
+exemplo que veio junto, não a biblioteca.
+
+**Da 2.0.0 para a 3.4.0 sumiram duas**, `SetUTF8Enabled` e `IsUTF8Enabled` —
+que não faziam nada. A variável era escrita pelo *setter* e lida pelo *getter*,
+e nenhum outro ponto do package a consultava. Hoje a acentuação sai correta
+sempre, sem chave.
+
+**Das 133 assinaturas em comum, uma mudou**, e não foi na 3.x: o parâmetro do
+`AddPage` passou de `orientation` para `p_orientation` na 2.0.0.
+
+```sql
+PL_FPDF.AddPage('L');                    -- posicional: continua valendo
+PL_FPDF.AddPage(orientation   => 'L');   -- 0.9.4: não compila mais
+PL_FPDF.AddPage(p_orientation => 'L');   -- hoje
+```
+
+A forma **posicional** — que é a dos exemplos de 2017 — atravessa sem mudança.
+Só a **nomeada** exige trocar uma palavra.
+
+> **Por que não manter os dois nomes?** Sobrecarga em PL/SQL resolve por tipo e
+> posição, nunca por nome de parâmetro, e um parâmetro só pode ter um nome.
+> Duas `AddPage` cujo primeiro parâmetro é `VARCHAR2` são indistinguíveis:
+> `AddPage('L')` casaria com as duas e o Oracle recusa com `PLS-00307`.
+
+### As entradas legadas continuam de pé
+
+O construtor e o fluxo do porte de 2017 seguem valendo, e há teste que executa
+a sequência do `helloworld` original chamada a chamada:
+
+```sql
+PL_FPDF.FPDF('P', 'cm', 'A4');   -- o construtor legado deixa o package pronto
+PL_FPDF.openpdf;                 -- aceito; hoje o AddPage o chama sozinho
+PL_FPDF.AddPage();
+PL_FPDF.SetFont('Arial', 'B', 16);
+PL_FPDF.Cell(0, 1.2, 'Hello World', 0, 1, 'C');
+l_pdf := PL_FPDF.ReturnBlob;     -- da 0.9.4, continua
+```
+
+`SetHeaderProc` e `SetFooterProc`, o mecanismo de cabeçalho e rodapé por nome
+de procedure, também continuam.
+
+### O que mudou de comportamento, não de assinatura
+
+Caractere fora do WinAnsi — um ideograma, um emoji — passou a ser **recusado**
+com `ORA-20203` e a posição, em vez de sair desenhado errado. Nas fontes padrão
+do PDF isso nunca funcionou: o glifo saía trocado e o arquivo abria como se
+estivesse certo. Para essas escritas, embuta uma fonte TrueType com
+[AddTTFFont](API_REFERENCE.md#addttffont).
+
 ---
 
 ## 18. Códigos de erro

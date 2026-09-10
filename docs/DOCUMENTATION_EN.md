@@ -653,6 +653,69 @@ PL_FPDF.Output('F', path);           PL_FPDF.OutputFile(name, directory);
 | Limited UTF-8 | Full UTF-8 + TrueType |
 | No encryption | AES-256, AES-128 and RC4 |
 
+### What actually breaks
+
+We took the public surface of all three versions and compared it name by name
+and signature by signature. In numbers:
+
+| | 0.9.4 | 2.0.0 | 3.4.0 |
+|---|---|---|---|
+| Public subprograms | 70 | 94 | 119 |
+
+**Seven names are gone from 0.9.4 to 3.4.0**, and all seven are the demo
+routines the package itself shipped — `helloworld`, `test`, `testImg`,
+`testheader`, `myRepetitiveHeader`, `myRepetitiveFooter` and `lpc_footer`. None
+is API: calling `helloworld` from a system meant running the bundled sample,
+not the library.
+
+**Two are gone from 2.0.0 to 3.4.0**, `SetUTF8Enabled` and `IsUTF8Enabled` —
+which did nothing. The flag was written by the setter and read by the getter,
+and no other point in the package consulted it. Accented text now comes out
+right always, with no switch.
+
+**Of the 133 shared signatures, one changed**, and not in 3.x: the `AddPage`
+parameter went from `orientation` to `p_orientation` in 2.0.0.
+
+```sql
+PL_FPDF.AddPage('L');                    -- positional: still valid
+PL_FPDF.AddPage(orientation   => 'L');   -- 0.9.4: no longer compiles
+PL_FPDF.AddPage(p_orientation => 'L');   -- today
+```
+
+The **positional** form — the one the 2017 examples use — goes through
+unchanged. Only the **named** form needs one word changed.
+
+> **Why not keep both names?** PL/SQL overload resolution goes by type and
+> position, never by parameter name, and a parameter can only have one name.
+> Two `AddPage` procedures whose first parameter is `VARCHAR2` are
+> indistinguishable: `AddPage('L')` would match both and Oracle rejects it with
+> `PLS-00307`.
+
+### The legacy entry points still stand
+
+The 2017 constructor and flow keep working, and there is a test that runs the
+original `helloworld` sequence call by call:
+
+```sql
+PL_FPDF.FPDF('P', 'cm', 'A4');   -- the legacy constructor leaves it ready
+PL_FPDF.openpdf;                 -- accepted; AddPage calls it on its own now
+PL_FPDF.AddPage();
+PL_FPDF.SetFont('Arial', 'B', 16);
+PL_FPDF.Cell(0, 1.2, 'Hello World', 0, 1, 'C');
+l_pdf := PL_FPDF.ReturnBlob;     -- from 0.9.4, still there
+```
+
+`SetHeaderProc` and `SetFooterProc`, the header/footer-by-procedure-name
+mechanism, are still there too.
+
+### What changed in behaviour, not in signature
+
+A character outside WinAnsi — an ideograph, an emoji — is now **rejected** with
+`ORA-20203` and its position, instead of being drawn wrong. With the standard
+PDF fonts that never worked: the glyph came out wrong and the file opened as if
+it were fine. For those scripts, embed a TrueType font with
+[AddTTFFont](API_REFERENCE_EN.md#addttffont).
+
 ---
 
 ## 18. Error codes

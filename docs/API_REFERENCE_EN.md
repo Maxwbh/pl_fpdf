@@ -201,6 +201,19 @@ PL_FPDF.AddPage(p_orientation => 'L');                -- this one in landscape
 PL_FPDF.AddPage(p_format => 'A5', p_rotation => 90);  -- A5, rotated
 ```
 
+> **Coming from 0.9.4?** The parameter was called `orientation` up to that
+> version and became `p_orientation` in 2.0.0. **Positional** calls —
+> `AddPage('L')`, the form the old examples use — keep working unchanged. Only
+> **named** calls need one word changed:
+>
+> ```sql
+> PL_FPDF.AddPage(orientation   => 'L');   -- 0.9.4: no longer compiles
+> PL_FPDF.AddPage(p_orientation => 'L');   -- today
+> ```
+>
+> It is the only signature that changed across the 133 APIs the three versions
+> share. See [Migrating from 0.9.4 and 2.0.0](DOCUMENTATION_EN.md#migrating-from-094-and-200).
+
 **See also:** [Init](#init), [SetPage](#setpage), [GetCurrentPage](#getcurrentpage)
 
 ---

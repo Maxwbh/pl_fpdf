@@ -384,6 +384,7 @@
 <article class="api" id="addpage">
 <h3>AddPage <span class="kind">Procedure</span><a class="anchor" href="#addpage" aria-label="link">#</a></h3>
 <p class="d">Adds a new page to the document and makes it the current one. NULL parameters inherit the values set in Init, which lets you mix orientations and formats within the same PDF.</p>
+<p class="d"><b>Coming from 0.9.4:</b> the parameter was called <code>orientation</code> and became <code>p_orientation</code> in 2.0.0. Positional calls — <code>AddPage('L')</code> — keep working; only named ones change. It is the only signature that changed across the 133 APIs the three versions share.</p>
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddPage(
     p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
