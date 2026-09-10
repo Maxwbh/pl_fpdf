@@ -24,6 +24,7 @@ de quem usa a biblioteca.
 | `dev/tests/` | Suíte, validações e diagnósticos | Não |
 | `dev/scripts/` | Runner, verificadores do CI, referências em Python, geradores | Não |
 | `docs/ROADMAP.md`, este arquivo | Planejamento e método | Não |
+| `docs/HISTORIAS.md` | Uma história por lacuna priorizada: lógica, caso de uso e critério de aceite. O **como** do que o roadmap lista | Não |
 
 | `dist/pl_fpdf_install.sql` | Os quatro fontes num arquivo só, **gerado** de `src/`. É o que se baixa por link direto, sem clone | **Sim** |
 | `site/` | A página publicada pelo GitHub Pages (workflow `pages.yml`) | Não |

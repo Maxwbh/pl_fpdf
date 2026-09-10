@@ -13,6 +13,13 @@ funcionalidades que **nao sao** as que sairam com esses numeros; cinco
 verificacoes rodavam no CI sem constar da tabela que diz registra-las; e as
 quatro correcoes de setembro nao estavam nas pendencias.
 
+A revisao trouxe tambem a secao **"Lacunas priorizadas por uso medido"** e o
+**"Fora de escopo"**, que estavam num ramo a parte, com os numeros datados de
+8/09/2026 para que ninguem os tome por medicao corrente. O **como** de cada
+lacuna — logica, caso de uso e criterio de aceite — esta em
+`docs/HISTORIAS.md`, uma historia por item, e as duas primeiras ja saem de la
+concluidas.
+
 ---
 
 ## Versoes Lancadas
@@ -363,20 +370,238 @@ no banco, e existe para que ele não volte:
 
 ---
 
+## Lacunas priorizadas por uso medido
+
+DOCUMENTO DE MANUTENCAO.
+
+Esta secao existe para responder uma pergunta so: **entre o que falta, o que e
+de fato usado?** A ordem abaixo nao saiu de opiniao — saiu de tres medicoes
+independentes, e ela **contradisse** a ordem que este mesmo documento teria
+proposto por intuicao. O item que a intuicao punha em terceiro caiu para o
+backlog quando o numero apareceu.
+
+O **como** de cada item — logica, caso de uso, criterio de aceite e as
+armadilhas conhecidas — esta em `docs/HISTORIAS.md`, uma historia por lacuna.
+Esta secao fica com o **o que** e o **em que ordem**.
+
+> **Os numeros desta secao sao de 8 de setembro de 2026, e nao foram
+> remedidos.** Servem para ordenar a fila, nao como medicao corrente: quem
+> precisar deles para decidir alguma coisa hoje refaz a contagem antes. O que
+> mudou desde entao esta dito item a item — o item 1 saiu na 3.4.0.
+
+### Como foi medido
+
+**Fonte A — o que o mercado precisa ver demonstrado.** Levantamento de
+demanda sobre um catalogo comercial de referencia do mesmo nicho: 174 casos
+de exemplo, agrupados por tema. Quem vende suporte escreve exemplo para o que
+o cliente pergunta, entao a distribuicao dos exemplos e um retrato barato da
+demanda atendida. O levantamento e **quantitativo e de superficie** — conta
+casos por tema, nada alem disso.
+
+**Fonte B — o que esta base ja exercita.** APIs distintas chamadas em
+`examples/` e `dev/tests/`: **69 das 138 publicas**. Metade da superficie
+publica nao tem um so chamador no repositorio — achado proprio, tratado
+adiante.
+
+**Fonte C — impacto medido, quando da para medir.** Para o subset de fonte,
+`fontTools` sobre as fontes reais e o conjunto de caracteres que os exemplos
+desta base de fato usam (106 distintos).
+
+### O retrato da demanda (8/set/2026)
+
+| Tema | Casos (fonte A) | Temos? |
+|------|----------------:|--------|
+| Celula / linha / tabela      | 31 | Parcial — `Cell` e `MultiCell`; sem tabela com quebra automatica |
+| XHTML -> PDF                 | 14 | *Fora de escopo — outro produto* |
+| Codigo de barras             | 12 | **Sim** |
+| Grafico                      | 10 | *Fora de escopo — outro produto* |
+| Assinatura digital / carimbo |  9 | *Fora de escopo — outro produto* |
+| Sumario (TOC)                |  8 | Nao |
+| Desenho vetorial             |  7 | **Sim** |
+| Formulario AcroForm          |  6 | Nao |
+| Template / carimbo / marca   |  6 | **Sim** |
+| Fonte TTF                    |  5 | Parcial — sem subset |
+| Anotacao / anexo             |  5 | Nao |
+| Codificacao e acento         |  4 | **Sim, desde a 3.4.0** |
+| Marcadores (bookmarks)       |  1 | Nao |
+| PDF marcado (tagged/PDF-UA)  |  1 | Nao |
+
+> **Demanda alta nao e o mesmo que escopo.** Os tres itens marcados como fora
+> de escopo somam 33 casos e ocupam o 2o, o 4o e o 5o lugares da medicao —
+> mais que o primeiro colocado sozinho. Saem assim mesmo, e a decisao esta em
+> "Fora de escopo", adiante. Medir a demanda e uma coisa; decidir que produto
+> se esta construindo e outra.
+
+> **A correcao que o numero impos.** "PDF marcado" tinha sido proposto como o
+> terceiro item, pelo argumento de licitacao publica. Ele e o **penultimo** da
+> fonte A — 1 caso em 174, empatado com o ultimo. O argumento de licitacao nao
+> se sustentou contra texto legal: a Lei Brasileira de Inclusao e o eMAG
+> obrigam acessibilidade de **sitio web**; nao se achou norma que exija PDF/UA
+> em documento de licitacao. Sem essa norma, o item nao se sustenta como
+> prioridade. Foi para o backlog.
+
+> **O sinal mais alto nao esta entre os quatro.** Celula/linha/tabela tem 31
+> casos — mais que o dobro do segundo. Ja consta do backlog como "Table
+> auto-pagination / Media / Alto". A medicao diz que essa entrada esta
+> subestimada: e a superficie mais usada de qualquer biblioteca de PDF, e a
+> unica em que estamos parciais e nao ausentes.
+
+---
+
+### 1. Conversao WinAnsi — CONCLUIDA na 3.4.0
+
+**Era o peso mais alto da fila.** Nao era funcionalidade que faltava: era
+defeito na superficie que a fonte A mede em 31 casos e a fonte B em 104
+chamadas a `Cell`. O dicionario da fonte declarava `/Encoding
+/WinAnsiEncoding` e nada convertia o texto de AL32UTF8 antes de escrever, e o
+leitor desenhava **dois glifos errados** no lugar de cada acentuado. Estava
+mascarado porque os exemplos evitavam acento.
+
+Entregue em setembro/2026 com a tabela gerada de fonte primaria e validada
+contra o MuPDF, saida em escape octal (o CLOB de montagem recodifica qualquer
+byte acima de `0x7F`), recusa com `ORA-20203` para o que nao existe em cp1252,
+e `check_byte_chars.py` guardando a volta.
+
+**A hipotese que acompanhava o item nao se confirmou.** Suspeitava-se de que
+`p_larguras_de` montasse a tabela de larguras com chaves colididas, por causa
+do `CHR(i)` em AL32UTF8. Medido: as 256 chaves sao distintas e as larguras
+estao certas. O que quebrava `GetStringWidth` do acentuado era outra coisa, no
+mesmo tema — o `subtype car is varchar2(1)`, que guarda **um byte** e estoura
+com `ORA-06502` diante de um caractere de dois. Vale como registro do metodo:
+a medicao barata (HU-00) evitou consertar o que nao estava quebrado.
+
+**Relato completo:** `docs/HISTORIAS.md`, HU-00 e HU-01.
+
+---
+
+### 2. Subset de fonte TTF — 27x no tamanho do arquivo
+
+**Peso: alto, e o unico dos quatro com impacto medido em numero.** Com o item
+1 concluido, e agora o primeiro da fila.
+
+**A medida.** `fontTools`, com os 106 caracteres distintos que os exemplos
+desta base usam:
+
+| Fonte | Inteira | Subset | Reducao | Dentro do PDF (deflate) |
+|-------|--------:|-------:|--------:|------------------------:|
+| DejaVuSans          | 759.720 B | 20.700 B | **97,3%** | 381.835 -> **14.343 B** |
+| LiberationSans      | 410.820 B | 24.312 B | **94,1%** | 210.802 -> **15.421 B** |
+
+Um boleto desta base tem 14 KB e um ingresso 22 KB. Embutir DejaVuSans hoje
+soma **382 KB** — a fonte fica sendo 95% do arquivo. Com subset, 14 KB.
+
+**O argumento mudou com a 3.4.0, e para melhor.** Ate entao embutir uma TTF
+era a **unica forma de acertar acento**, e isso inflava o numero de quem
+embutia por necessidade. Consertado o item 1, quem so precisa de portugues
+fica nas fontes core e nem embute; quem embute, embute por tipografia — e
+deve embutir barato. O item perde urgencia e mantem o valor.
+
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-02.
+
+---
+
+### 3. Sumario e marcadores (`/Outlines`)
+
+**Peso: medio-alto. Barato, muito visivel.** 8 casos de TOC + 1 de marcadores
+na fonte A. E a unica estrutura desta lista que o PDF resolve com um
+dicionario simples, sem codificacao nem binario.
+
+Dependia do item 1 pelo acento do `/Title`, e a dependencia esta paga.
+
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-03.
+
+---
+
+### 4. PDF marcado (tagged / PDF-UA) — rebaixado para backlog
+
+**Peso: o mais baixo dos quatro, pela medida.** 1 caso em 174 na fonte A. A
+justificativa era licitacao publica; a norma que se achou (LBI art. 63, eMAG,
+Decreto 5.296) obriga acessibilidade de **sitio web**, e nao se localizou
+exigencia de PDF/UA em documento de licitacao. Sem norma que obrigue, o item
+nao sustenta a prioridade que se imaginou.
+
+Fica registrado o que seria preciso, para quando houver demanda concreta:
+arvore de estrutura (`/StructTreeRoot`), marcacao do conteudo com `BDC`/`EMC`
+por bloco, `/Lang`, `/MarkInfo`, ordem de leitura explicita e texto
+alternativo de imagem. E trabalho grande, espalhado por todo o gerador de
+conteudo — nao e um modulo que se acrescenta ao lado.
+
+**Reavaliar se** aparecer exigencia contratual real, ou norma que se possa
+citar. Nesse caso ele sobe direto, porque nenhuma biblioteca PL/SQL livre faz
+isso. Analise completa em `docs/HISTORIAS.md`, HU-04.
+
+---
+
+### Achado proprio: metade da API publica nao tem chamador
+
+69 das 138 APIs publicas sao exercitadas por `examples/` e `dev/tests/`. As
+outras 69 compilam e ninguem as chama neste repositorio — nao ha como saber se
+funcionam. Nao e o mesmo que estarem quebradas, e e exatamente a situacao em
+que `AddWatermark` passou meses marcado como pronto sem desenhar nada.
+
+Antes de acrescentar superficie nova, vale medir a existente. Levantamento e
+criterio em `docs/HISTORIAS.md`, HU-05.
+
+---
+
 ## Backlog (Sem Versao Definida)
 
-| Feature | Complexidade | Valor |
-|---------|--------------|-------|
-| HTML to PDF (subset) | Alta | Alto |
-| Table auto-pagination | Media | Alto |
-| Annotations (comments) | Media | Baixo |
-| JavaScript actions | Alta | Baixo |
-| Layers (OCG) | Media | Baixo |
+Valor revisado em set/2026 pela medicao da secao anterior; a coluna "casos"
+traz a contagem da fonte A, que e o que sustenta a nota de valor.
+
+| Feature | Complexidade | Valor | Casos |
+|---------|--------------|-------|------:|
+| Table auto-pagination | Media | **Alto** | 31 |
+| Formulario AcroForm | Media | Medio † | 6 |
+| Annotations (comments) | Media | Baixo † | 5 |
+| PDF marcado (tagged/PDF-UA) | Alta | Baixo *(reavaliar com norma)* | 1 |
+| JavaScript actions | Alta | Baixo | 0 |
+| Layers (OCG) | Media | Baixo | 0 |
+
+† **Itens separados, esforco conjunto.** Os dois sao a **mesma maquina**:
+anotacao e campo de formulario sao entradas do mesmo `/Annots`, e a base ja o
+monta — o array e aberto no `p_putpages` e a entrada de link ja sai como
+`<</Type /Annot /Subtype /Link /Rect [...`. Um campo de formulario e um
+`/Subtype /Widget` no mesmo lugar.
+
+Ficam separados na tabela porque sao entregas distintas, com casos de uso e
+criterios de aceite proprios — juntar as duas numa linha so esconderia que uma
+pode ser entregue sem a outra. Mas quem pegar uma **deve pegar as duas na mesma
+investida**: o caro aqui e entender e generalizar o `/Annots` (dicionario por
+subtipo, `/Rect` em coordenadas de pagina, *appearance stream*, e o que
+acontece com tudo isso no `MergePDFs` e no `RemovePage`). Feito esse trabalho,
+o segundo subtipo custa uma fracao do primeiro. Feitos em rodadas separadas,
+paga-se o entendimento duas vezes — e a segunda passagem tende a refatorar o
+que a primeira deixou rigido demais.
+
+Fronteira interna, para nao repetir a discussao: **criar** o campo, o `/Rect`,
+o `/AP` e o valor inicial e nosso; **ler** o valor de um PDF carregado e nosso.
+Acao JavaScript de validacao e calculo nao e — esta na linha propria do
+backlog, e e outro dominio. Fluxo de aprovacao e quem preenche o que, tambem
+nao.
 
 > **Correcao da revisao.** "Headers/Footers automaticos" saiu do backlog:
 > `SetHeaderProc` e `SetFooterProc` existem, sao chamados na quebra de pagina e
 > tem teste em `dev/tests/test_core.sql`, inclusive para nome de procedimento
 > invalido e para tentativa de injecao no callback.
+
+### Fora de escopo — decidido, nao esquecido
+
+Tres entradas com demanda **alta e medida** — 33 casos somados, mais que o
+primeiro colocado sozinho — sairam do backlog em set/2026 por decisao de
+escopo. Ficam registradas aqui de proposito: apagadas, alguem as re-deriva
+da mesma medicao daqui a seis meses e refaz a discussao.
+
+| Item | Casos | Por que sai |
+|------|------:|-------------|
+| XHTML -> PDF | 14 | E **outro produto**, e a funcionalidade ja existe pronta e facil fora daqui. Reimplementar um subconjunto de HTML e CSS dentro do PL/SQL entrega uma versao pior de algo que a pessoa resolve melhor por outro caminho. |
+| Grafico (barra, linha, pizza) | 10 | E **outro produto**. Grafico e visualizacao de dado — escala de eixo, legenda, posicionamento de rotulo, paleta —, um dominio inteiro que por acaso termina numa imagem. E o encaixe **ja existe**: quem gera o grafico onde for melhor coloca a imagem com `Image`, `ImageFromBlob` ou `OverlayImage`, que esta base ja faz e ja valida por pixel. Construir um motor de grafico aqui competiria com ferramenta madura para entregar menos. |
+| Assinatura digital | 9 | E **outro produto**. Assinatura e infraestrutura de certificado, cadeia, carimbo do tempo e politica de assinatura — nao e geracao de PDF. Quem faz isso serio nao quer que a biblioteca de desenho tambem assine. |
+
+O criterio e o mesmo que ja tirou o `PL_FPDF_BOLETO` daqui: **montar** os 44
+digitos e regra de cobranca, nao desenho de PDF; **desenhar** o codigo de
+barras e. A pergunta que separa os dois lados e sempre a mesma — *isto e
+desenhar um PDF, ou e outro dominio que por acaso termina num PDF?*
 
 ---
 
@@ -395,6 +620,15 @@ no banco, e existe para que ele não volte:
 6. **Recusar em vez de entregar errado** - Quando algo nao e suportado, levantar
    erro com mensagem clara. Um PDF marcado como protegido que nao esta, ou uma
    imagem que sai como ruido, custa mais caro que uma excecao.
+7. **Desenhar PDF, nao o dominio de quem chama** - A pergunta que decide o
+   escopo e sempre a mesma: *isto e desenhar um PDF, ou e outro dominio que
+   por acaso termina num PDF?* Montar os 44 digitos do boleto e regra de
+   cobranca; desenhar o codigo de barras e nosso. Assinatura digital e
+   infraestrutura de certificado; XHTML -> PDF e um motor de layout; grafico
+   e visualizacao de dado — os tres ja existem prontos fora daqui, e para os
+   dois ultimos o encaixe e uma imagem, que esta base ja coloca. Demanda
+   medida alta nao derruba este principio — derruba so a duvida sobre se
+   alguem pediria.
 
 ---
 
