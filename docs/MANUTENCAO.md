@@ -209,6 +209,7 @@ python dev/scripts/plsql_lint/check_assoc_nvl.py   src/PL_FPDF.pkb src/PL_FPDF_U
 python dev/scripts/plsql_lint/check_pls_overflow.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF.pks src/PL_FPDF.pkb
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
+python dev/scripts/plsql_lint/check_spec_comments.py
 python dev/scripts/plsql_lint/check_tables.py
 python dev/scripts/plsql_lint/check_test_calls.py
 python dev/scripts/plsql_lint/check_examples_sync.py
@@ -221,6 +222,66 @@ python dev/scripts/gen_docs/check_paridade.py
 Cada um existe porque um erro específico custou uma rodada de compilação ou uma
 ida ao banco. A tabela com o que cada um pega está no
 [roadmap](ROADMAP.md#verificações-automáticas-no-ci).
+
+---
+
+## Comentário de API — o formato da spec
+
+A spec é a documentação que se lê **sem sair do banco**: quem abre o package no
+PL/SQL Developer vê o bloco antes da assinatura, e é dali que decide como
+chamar. Duas decisões, e o `check_spec_comments.py` guarda as duas.
+
+**1. Descrição de subprograma é bilíngue, com o PT-BR na frente.** O público
+principal escreve em português; o inglês vem em seguida, para quem chega de
+fora. Vale para o rótulo (`Descrição / Description:`) e para o corpo (a linha
+`PT:` antes da `EN:`).
+
+**2. Comentário no meio do código é só PT-BR.** Não é a mesma coisa e não se
+confere pelo mesmo verificador: ali o leitor é sempre quem mantém, e o que
+importa é dizer *por que* o código está assim — o sintoma, a causa e o
+conserto —, não repetir o que a linha já diz.
+
+O formato do bloco:
+
+```
+/*******************************************************************************
+* Procedure: Cell / Célula
+*
+* Descrição / Description:
+*   PT: ...
+*   EN: ...
+*
+* Parâmetros / Parameters:      (quando há parâmetros)
+*   pw - largura; 0 vai até a margem direita / width; 0 spans to the right
+*
+* Retorna / Returns:            (quando é function)
+*   NUMBER - ...
+*
+* Erros / Raises:               (quando levanta)
+*   -20100: ... / ...
+*
+* Exemplo / Example:
+*   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
+*******************************************************************************/
+```
+
+Rótulos opcionais seguem a mesma ordem: `Nota / Note:`, `Limitação /
+Limitation:`, `Processo / Process:`, `Opções / Options:`.
+
+> **Por que virou verificação.** Na revisão de setembro de 2026 **metade da API
+> pública não tinha bloco nenhum** — 56 documentados, 64 sem uma linha —, e os
+> 64 eram justamente os mais chamados: `Cell`, `SetFont`, `Text`, `Line`,
+> `Rect`, `Output`, `MultiCell`. O que tinha bloco vinha em três dialetos: a
+> parte antiga só em inglês, a Fase 4 bilíngue com o `EN:` na frente, e o
+> `ImageFromBlob` com rótulo em inglês e texto em português. A deriva é
+> silenciosa por construção: acrescentar um subprograma sem bloco compila
+> igual, e nenhum teste repara.
+
+**Uma sigla sempre diz de onde vem.** `'P'`/`'L'` de orientação são iniciais do
+**inglês** — Portrait e Landscape —, e traduzir só a explicação ("P de padrão")
+deixa a letra sem sentido. O padrão é mostrar a origem e a tradução ao lado:
+`'P' (Portrait, retrato)`. Vale para `'F'` (Fill), `'B'` (Bold), `'L'`, `'T'`,
+`'R'`, `'B'` de borda, e para as siglas de nível de log.
 
 ---
 
