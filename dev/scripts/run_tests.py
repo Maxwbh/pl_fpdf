@@ -216,11 +216,22 @@ def rodar_testes(con, arquivos, verboso=False):
         extra = f" | {do_arq['SKIP']} pulado(s)" if do_arq['SKIP'] else ''
         print(f"   {sit:<5} {nome:<34} {do_arq['PASS']}/{verif}{extra}")
 
-        # o detalhe só interessa quando algo falhou (ou se pedirem tudo)
+        # O detalhe só interessa quando algo falhou (ou se pedirem tudo). A
+        # exceção é a linha marcada com '***': ela sai sempre.
+        #
+        # Serve a duas coisas que não são aferição e por isso não têm [FAIL]
+        # para chamar atenção: o bloco que nem chegou a executar, e a medição
+        # de um diag_*, cujo resultado É a saída. Um arquivo que mede, passa e
+        # não imprime nada não serve para nada — foi o que aconteceu com o
+        # diag_winansi, que rodou duas vezes sem dizer o que mediu.
+        marcadas = [l for l in linhas_arq if l.startswith('***')]
         if verboso or do_arq['FAIL']:
             for l in linhas_arq:
                 if verboso or '[FAIL]' in l or l.startswith('***'):
                     print('         ' + l.strip())
+        elif marcadas:
+            for l in marcadas:
+                print('         ' + l.strip())
     return total, falhas, situacao
 
 
