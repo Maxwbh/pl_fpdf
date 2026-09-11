@@ -45,6 +45,7 @@ TESTES = [
     ('test_stream_imagem.sql',         'Escrita do stream de imagem'),
     ('test_winansi.sql',               'Texto acentuado (WinAnsi)'),
     ('test_compat_legado.sql',         'Compatibilidade com 0.9.4 e 2.0.0'),
+    ('test_api_sem_chamador.sql',      'APIs publicas que ninguem chamava'),
 ]
 
 CABECALHO = """--------------------------------------------------------------------------------

@@ -501,5 +501,30 @@ extensao dele, nao script novo.
 testar / experimental / remover. Nao e preciso testar todos de uma vez; e
 preciso **saber quais sao**.
 
+### O que a lista produziu, em setembro/2026
+
+A lista saiu, e a primeira API dela que ganhou teste devolveu **quatro
+defeitos** no mesmo subprograma -- o `Link`, um por rodada:
+
+1. o `/Dest` do link interno nunca foi escrito, e o `/Annot` saia com o
+   dicionario ABERTO: arquivo malformado, nao apenas link que nao navega;
+2. o `Link` estendia a colecao ate a pagina corrente e deixava entrada vazia
+   nas anteriores, que ganhavam `/Annots` quebrado sem terem pedido link;
+3. o `AddLink` levantava `ORA-06531` na linha da propria declaracao -- a
+   colecao `links` e nested table e ninguem a inicializa. **Nunca funcionou**;
+4. o `Link` media o quanto estender pelo `.last`, que e NULL em colecao vazia,
+   entao o primeiro `Link` do SEGUNDO documento da sessao estourava com
+   `ORA-06533`.
+
+Nenhum deles aparecia em revisao de codigo: os quatro foram achados
+**escrevendo a chamada**. Vale como medida do que "compila e ninguem chama"
+esconde.
+
+Depois disso, `dev/tests/test_api_sem_chamador.sql` escreveu a primeira chamada
+de tudo o que nao depende de recurso externo. **De 48 sem chamador para 6**, e
+os 6 que sobram precisam de DIRECTORY (`LoadTTFFromFile`, `OutputFile`,
+`Output`) ou de ACL de rede (`Image` por URL, `getImageFromUrl`), fora o
+`AddFont`, que espera arquivo de metricas.
+
 **Estimativa:** 2 dias para o levantamento. O que fazer com o resultado e
 decisao, nao implementacao.

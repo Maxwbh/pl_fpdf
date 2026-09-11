@@ -544,6 +544,14 @@ que `AddWatermark` passou meses marcado como pronto sem desenhar nada.
 Antes de acrescentar superficie nova, vale medir a existente. Levantamento e
 criterio em `docs/HISTORIAS.md`, HU-05.
 
+**Atualizacao de 11/09/2026.** A primeira API sem chamador que ganhou teste --
+o `Link` -- devolveu **quatro defeitos**, um por rodada, todos achados ao
+escrever a chamada e nenhum visivel em revisao de codigo. Em seguida,
+`dev/tests/test_api_sem_chamador.sql` escreveu a primeira chamada de tudo o que
+nao depende de recurso externo: **de 48 APIs sem chamador para 6**. As seis que
+restam precisam de DIRECTORY (`LoadTTFFromFile`, `OutputFile`, `Output`), de
+ACL de rede (`Image`, `getImageFromUrl`) ou de arquivo de metricas (`AddFont`).
+
 ---
 
 ## Backlog (Sem Versao Definida)
