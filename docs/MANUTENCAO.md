@@ -376,6 +376,46 @@ deixa a letra sem sentido. O padrão é mostrar a origem e a tradução ao lado:
 
 ---
 
+## A referência da API é gerada
+
+`docs/API_REFERENCE.md` e `site/reference.html` **não se editam à mão**: saem do
+Javadoc de `src/PL_FPDF.pks` e de `src/PL_FPDF_UTIL.pks`.
+
+```bash
+python dev/scripts/gen_docs/generate.py            # escreve as duas
+python dev/scripts/gen_docs/generate.py --check    # o do CI
+```
+
+Para corrigir um texto da referência, corrija o **bloco na spec** e rode o
+gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
+
+| Peça | Papel |
+|---|---|
+| `parse_javadoc.py` | lê os blocos: descrição, `@param`, `@return`, `@raises`, `@example`, notas. `--verificar` prova a leitura dos 137 |
+| `parse_spec.py` | lê a assinatura: tipo, modo e valor padrão de cada parâmetro |
+| `meta.py` | o que é editorial e não cabe num bloco: o **grupo** de cada API e o **veja também** |
+| `reference_molde.html` | o desenho do site — cabeçalho, SEO, CSS, navegação e script. 210 linhas que continuam à mão |
+| `generate.py` | junta tudo e escreve as duas páginas |
+
+> **Por que passou a ser gerada.** Escritas à mão, as duas páginas divergiram da
+> spec sem que nada quebrasse: **38 APIs** levantavam erro que a referência não
+> listava (`Init` sem `-20001`, `SetFont` sem `-20005` e `-20201`, `Cell` sem
+> `-20100`), e as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma. Quem
+> lesse a página para saber o que capturar recebia lista incompleta. Gerada, ela
+> herda o que o `check_spec_comments.py` já cobra da spec.
+>
+> **O que gerar não garante** é que o texto esteja *certo* — só que a página
+> concorda com a spec. Contra texto errado valem a revisão humana e o cruzamento
+> entre o `@raises` e o `raise_application_error` do corpo.
+>
+> Duas diferenças em relação ao que era escrito à mão: a tabela de parâmetros
+> tem **4 colunas** em vez de 5, porque na spec a descrição e os valores
+> possíveis são uma frase só em 256 dos 287 parâmetros e inventar o corte
+> perderia texto; e a **versão em inglês não é gerada** — `API_REFERENCE_EN.md`
+> segue à mão, por decisão, já que a spec é só PT-BR.
+
+---
+
 ## Referências validadas contra decodificadores externos
 
 Nada que um leitor externo precise entender é escrito direto em PL/SQL. Primeiro

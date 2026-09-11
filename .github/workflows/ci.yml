@@ -131,6 +131,12 @@ jobs:
       - name: Comentários do body (privado documentado, PT-BR, sem código morto)
         run: python dev/scripts/plsql_lint/check_body_comments.py
 
+      # A referencia da API e GERADA do Javadoc da spec. Enquanto foi
+      # escrita a mao, divergiu em silencio: 38 APIs levantavam erro que
+      # a pagina nao listava, e o PL_FPDF_UTIL inteiro nao tinha secao.
+      - name: Referencia da API em dia com o Javadoc da spec
+        run: python dev/scripts/gen_docs/generate.py --check
+
       # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na
       # revisao de setembro ela tinha 16 entradas para 21 passos: cinco
       # verificacoes rodavam sem constar de lugar nenhum. Quem le a tabela para
