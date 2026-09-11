@@ -13,7 +13,7 @@
 *
 * Usage:
 *   SET SERVEROUTPUT ON SIZE UNLIMITED
-*   @tests/validate_phases_1_3.sql
+*   @tests/test_geracao_basica.sql
 *******************************************************************************/
 
 -- ================================================================================
@@ -27,7 +27,7 @@ DECLARE
   l_pass_count PLS_INTEGER := 0;
   l_fail_count PLS_INTEGER := 0;
 
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE confere(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_test_count := l_test_count + 1;
     IF p_passed THEN
@@ -38,7 +38,7 @@ DECLARE
       DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name ||
         CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
     END IF;
-  END test_result;
+  END confere;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('================================');
@@ -54,10 +54,10 @@ BEGIN
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
     PL_FPDF.AddPage();
-    test_result('Init + AddPage', PL_FPDF.IsInitialized() AND PL_FPDF.GetCurrentPage() = 1);
+    confere('Init + AddPage', PL_FPDF.IsInitialized() AND PL_FPDF.GetCurrentPage() = 1);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Init + AddPage', FALSE, SQLERRM);
+    confere('Init + AddPage', FALSE, SQLERRM);
   END;
 
   -- Test: Multi-page document
@@ -66,10 +66,10 @@ BEGIN
     FOR i IN 1..5 LOOP
       PL_FPDF.AddPage();
     END LOOP;
-    test_result('Multi-page document (5 pages)', PL_FPDF.GetCurrentPage() = 5);
+    confere('Multi-page document (5 pages)', PL_FPDF.GetCurrentPage() = 5);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Multi-page document', FALSE, SQLERRM);
+    confere('Multi-page document', FALSE, SQLERRM);
   END;
 
   -- Test: Page navigation (SetPage)
@@ -79,10 +79,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.AddPage();
     PL_FPDF.SetPage(1);
-    test_result('Page navigation (SetPage)', PL_FPDF.GetCurrentPage() = 1);
+    confere('Page navigation (SetPage)', PL_FPDF.GetCurrentPage() = 1);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Page navigation', FALSE, SQLERRM);
+    confere('Page navigation', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -99,10 +99,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.SetFont('Helvetica', '', 12);
     PL_FPDF.Cell(0, 10, 'Acentuacao: cobranca em Sao Paulo');
-    test_result('UTF-8 encoding enabled', TRUE);
+    confere('UTF-8 encoding enabled', TRUE);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('UTF-8 encoding', FALSE, SQLERRM);
+    confere('UTF-8 encoding', FALSE, SQLERRM);
   END;
 
   -- Test: Unicode characters in document
@@ -122,10 +122,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(0, 10, 'Test: São Paulo - Zürich');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Unicode text rendering', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Unicode text rendering', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Unicode text rendering', FALSE, SQLERRM);
+    confere('Unicode text rendering', FALSE, SQLERRM);
   END;
 
   -- Test: fora de WinAnsi e recusado, nao desenhado errado
@@ -137,11 +137,11 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(0, 10, 'Moscou em cirilico: ' || UNISTR('\041C\043E\0441'));
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Non-WinAnsi text refused', FALSE,
+    confere('Non-WinAnsi text refused', FALSE,
                 'aceitou cirilico em fonte core: sairia com glifo errado');
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Non-WinAnsi text refused', INSTR(SQLERRM, 'ORA-20203') > 0,
+    confere('Non-WinAnsi text refused', INSTR(SQLERRM, 'ORA-20203') > 0,
                 CASE WHEN INSTR(SQLERRM, 'ORA-20203') = 0
                      THEN 'recusou com outro erro: ' || SQLERRM END);
     PL_FPDF.Reset();
@@ -154,10 +154,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.SetFont('Times', 'B', 14);
     PL_FPDF.SetFont('Courier', 'I', 10);
-    test_result('Standard fonts (Arial, Times, Courier)', TRUE);
+    confere('Standard fonts (Arial, Times, Courier)', TRUE);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Standard fonts', FALSE, SQLERRM);
+    confere('Standard fonts', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -173,10 +173,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(100, 10, 'Test Cell', '1', 0, 'C');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Cell output', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Cell output', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Cell output', FALSE, SQLERRM);
+    confere('Cell output', FALSE, SQLERRM);
   END;
 
   -- Test: MultiCell with line breaks
@@ -188,10 +188,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.MultiCell(100, 5, 'This is a multi-line text that should wrap automatically.');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('MultiCell with wrapping', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('MultiCell with wrapping', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('MultiCell', FALSE, SQLERRM);
+    confere('MultiCell', FALSE, SQLERRM);
   END;
 
   -- Test: Write method
@@ -203,10 +203,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Write(10, 'Test Write method');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Write method', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Write method', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Write method', FALSE, SQLERRM);
+    confere('Write method', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -224,11 +224,11 @@ BEGIN
     PL_FPDF.Cell(0, 10, 'Test PDF');
     l_pdf := PL_FPDF.OutputBlob();
     l_header := DBMS_LOB.SUBSTR(l_pdf, 4, 1);
-    test_result('OutputBlob generates valid PDF',
+    confere('OutputBlob generates valid PDF',
                 UTL_RAW.CAST_TO_VARCHAR2(l_header) = '%PDF');
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('OutputBlob', FALSE, SQLERRM);
+    confere('OutputBlob', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -245,23 +245,23 @@ BEGIN
   BEGIN
     PL_FPDF.Reset();
     PL_FPDF.AddPage();
-    test_result('Error on AddPage before Init', FALSE, 'Should have raised error');
+    confere('Error on AddPage before Init', FALSE, 'Should have raised error');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
       -- -20005 = 'PL_FPDF not initialized'. -20801 é 'PDF inválido' no parser.
-      test_result('Error on AddPage before Init', SQLCODE = -20005);
+      confere('Error on AddPage before Init', SQLCODE = -20005);
   END;
 
   -- Test: Error when SetFont before Init
   BEGIN
     PL_FPDF.Reset();
     PL_FPDF.SetFont('Arial', '', 12);
-    test_result('Error on SetFont before Init', FALSE, 'Should have raised error');
+    confere('Error on SetFont before Init', FALSE, 'Should have raised error');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
-      test_result('Error on SetFont before Init', SQLCODE = -20005);
+      confere('Error on SetFont before Init', SQLCODE = -20005);
   END;
 
   -- Test: Error when OutputBlob before Init
@@ -270,12 +270,12 @@ BEGIN
   BEGIN
     PL_FPDF.Reset();
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Error on OutputBlob before Init', FALSE, 'Should have raised error');
+    confere('Error on OutputBlob before Init', FALSE, 'Should have raised error');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
       -- OutputBlob chama ClosePDF, que chama AddPage: o erro chega como -20005.
-      test_result('Error on OutputBlob before Init', SQLCODE = -20005);
+      confere('Error on OutputBlob before Init', SQLCODE = -20005);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -289,9 +289,9 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(0, 10, 'Test');
     PL_FPDF.Reset();
-    test_result('Reset cleanup', NOT PL_FPDF.IsInitialized());
+    confere('Reset cleanup', NOT PL_FPDF.IsInitialized());
   EXCEPTION WHEN OTHERS THEN
-    test_result('Reset cleanup', FALSE, SQLERRM);
+    confere('Reset cleanup', FALSE, SQLERRM);
   END;
 
   -- Test: Re-initialization after Reset
@@ -301,10 +301,10 @@ BEGIN
     PL_FPDF.Reset();
     PL_FPDF.Init();
     PL_FPDF.AddPage();
-    test_result('Re-init after Reset', PL_FPDF.IsInitialized());
+    confere('Re-init after Reset', PL_FPDF.IsInitialized());
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Re-init after Reset', FALSE, SQLERRM);
+    confere('Re-init after Reset', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -325,10 +325,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.Line(10, 10, 100, 10);
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Line drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Line drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Line drawing', FALSE, SQLERRM);
+    confere('Line drawing', FALSE, SQLERRM);
   END;
 
   -- Test: Rect drawing
@@ -339,10 +339,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.Rect(10, 10, 50, 30, 'D');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Rectangle drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Rectangle drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Rectangle drawing', FALSE, SQLERRM);
+    confere('Rectangle drawing', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -359,11 +359,11 @@ BEGIN
     PL_FPDF.Init();
     PL_FPDF.AddPage();
     -- Test image type detection (will fail but validates type detection logic)
-    test_result('Image type detection (PNG)', TRUE);
+    confere('Image type detection (PNG)', TRUE);
     PL_FPDF.Reset();
     DBMS_LOB.FREETEMPORARY(l_minimal_png);
   EXCEPTION WHEN OTHERS THEN
-    test_result('Image type detection', FALSE, SQLERRM);
+    confere('Image type detection', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -379,10 +379,10 @@ BEGIN
     PL_FPDF.SetDrawColor(255, 0, 0);  -- Red
     PL_FPDF.Line(10, 10, 100, 10);
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('SetDrawColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('SetDrawColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('SetDrawColor', FALSE, SQLERRM);
+    confere('SetDrawColor', FALSE, SQLERRM);
   END;
 
   -- Test: SetFillColor
@@ -394,10 +394,10 @@ BEGIN
     PL_FPDF.SetFillColor(0, 255, 0);  -- Green
     PL_FPDF.Rect(10, 10, 50, 30, 'F');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('SetFillColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('SetFillColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('SetFillColor', FALSE, SQLERRM);
+    confere('SetFillColor', FALSE, SQLERRM);
   END;
 
   -- Test: SetTextColor
@@ -410,10 +410,10 @@ BEGIN
     PL_FPDF.SetTextColor(0, 0, 255);  -- Blue
     PL_FPDF.Cell(0, 10, 'Blue Text');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('SetTextColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('SetTextColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('SetTextColor', FALSE, SQLERRM);
+    confere('SetTextColor', FALSE, SQLERRM);
   END;
 
   -- Summary

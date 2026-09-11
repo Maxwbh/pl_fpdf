@@ -321,6 +321,7 @@ O que continua automático é a **conferência**, que é onde o CI ajuda de verd
 | `check_lob_temp.py` | LOB temporario devolvido por funcao e nao liberado por quem chama — vazamento que so aparece sob carga |
 | `check_undeclared.py` | Chamada a subprograma que nao existe (`PLS-00201`), que aborta a analise da unidade inteira e esconde o erro seguinte |
 | `check_v_estatico.py` | `V$`/`GV$`/`DBA_` em SQL estatico dentro de PL/SQL: compila no ambiente de quem tem o grant e falha no do usuario |
+| `check_suite.py` | Arquivo de teste fora da lista do `build_run_all.py` — existe, compila, afere e **nunca roda** —, e dialeto fora do vocabulário canônico (`caso`, `passou`, `falhou`, `pulou`, `confere`). Achou dois arquivos que imprimiam `✓ Test 1: nome - PASS` em vez de `[PASS]`: o runner contava **zero** verificação para eles, e 65 aferições eram invisíveis |
 | `check_atribuicao.py` | Atribuição que começa antes de a anterior terminar — falta o `;`. Um gerador emitia o hexadecimal de uma fonte com uma atribuição por linha e nenhum terminador: o Oracle recusa o **bloco anônimo inteiro** com `ORA-06550`, apontando a linha de baixo, e 60 casos que passavam deixaram de rodar. Nenhuma outra verificação daqui analisa sintaxe |
 | `check_spec_comments.py` | API pública sem bloco de documentação na spec, ou com o bloco fora do formato. Na revisão de setembro **metade da API não tinha bloco** — 56 documentados contra 64 sem nenhum —, e os 64 eram os mais chamados: `Cell`, `SetFont`, `Text`, `Line`, `Output`. O que tinha vinha em três dialetos, e o leitor trocava de idioma três vezes descendo o arquivo |
 | `check_roadmap_ci.py` | Esta tabela prometendo mais, ou menos, do que o `ci.yml` roda. Na revisao de setembro eram 21 passos para 16 entradas — a deriva e silenciosa por construcao: acrescentar um passo no CI nao obriga a tabela a acompanhar |
@@ -338,7 +339,7 @@ Duas consequências que valem registro:
 
 | Item | Situação |
 |------|----------|
-| `dev/tests/validate_phase_4_complete.sql` chamava `IsPDFLoaded`, `RemoveWatermark` e `ClearWatermarks`, que não existem no package | ✅ Resolvido: o teste passou a usar `GetPageCount` (que levanta `-20809` sem PDF carregado) e a documentar por que as outras duas não existem |
+| `dev/tests/test_manipulacao_completa.sql` chamava `IsPDFLoaded`, `RemoveWatermark` e `ClearWatermarks`, que não existem no package | ✅ Resolvido: o teste passou a usar `GetPageCount` (que levanta `-20809` sem PDF carregado) e a documentar por que as outras duas não existem |
 | Verificação automática de referências (`dev/scripts/gen_docs/check_refs.py`) no CI | ✅ Concluído |
 | Paridade PT/EN das páginas escritas à mão (`check_paridade.py`) no CI | ✅ Concluído |
 | Códigos `ORA-208xx` reutilizados entre QR/barcode e manipulação/segurança | Pendente — ver "Pendencias conhecidas" |

@@ -210,6 +210,7 @@ python dev/scripts/plsql_lint/check_pls_overflow.py   src/PL_FPDF.pkb src/PL_FPD
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF.pks src/PL_FPDF.pkb
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_atribuicao.py
+python dev/scripts/plsql_lint/check_suite.py
 python dev/scripts/plsql_lint/check_spec_comments.py
 python dev/scripts/plsql_lint/check_tables.py
 python dev/scripts/plsql_lint/check_test_calls.py

@@ -28,24 +28,35 @@ def do_repo(*partes):
 
 SAIDA = do_repo('dev', 'tests', 'run_all_tests.sql')
 
-# ordem de execução: base primeiro, depois parser, manipulação e o núcleo novo
+# Ordem de execução, por assunto: primeiro gerar, depois ler e manipular o
+# que veio de fora, depois a segurança, e por fim o que guarda regressão.
+# Ate setembro/2026 a ordem e os nomes eram por 'fase' de um roadmap de
+# fevereiro que nao existe mais -- 'test_phase_4_1b' tinha ate a letra de
+# uma subdivisao. Assunto envelhece menos que cronograma.
 TESTES = [
-    ('validate_phases_1_3.sql',        'Fases 1-3: geração de PDF (base)'),
-    ('test_phase_4_parser_basic.sql',  'Fase 4: leitura de PDF (parser)'),
-    ('test_phase_4_1b_pages.sql',      'Fase 4.1B: informações de página'),
-    ('test_phase_4_2_page_mgmt.sql',   'Fase 4.2: gerenciamento de páginas'),
-    ('test_phase_4_3_watermark.sql',   'Fase 4.3: marcas d\'água'),
-    ('test_phase_4_4_output.sql',      'Fase 4.4: OutputModifiedPDF'),
-    ('test_phase_4_5_overlay.sql',     'Fase 4.5: sobreposições'),
-    ('test_phase_4_6_merge_split.sql', 'Fase 4.6: merge e split'),
-    ('validate_phase_4_complete.sql',  'Fase 4: validação completa'),
-    ('test_core.sql',                  'Núcleo: buffers, NLS, QR, barcode, merge/split'),
-    ('test_phase_security.sql',        'Fase 5: segurança'),
-    ('test_regressoes_revisao.sql',    'Regressões da revisão de ago/2026'),
-    ('test_stream_imagem.sql',         'Escrita do stream de imagem'),
+    # Geração: do documento em branco ao arquivo pronto
+    ('test_geracao_basica.sql',        'Geração: páginas, texto, desenho, imagem'),
     ('test_winansi.sql',               'Texto acentuado (WinAnsi)'),
+    ('test_stream_imagem.sql',         'Escrita do stream de imagem'),
+    ('test_core.sql',                  'Núcleo: buffers, NLS, QR, código de barras'),
+
+    # Leitura e manipulação de um PDF que veio de fora
+    ('test_leitura_pdf.sql',           'Leitura: cabeçalho, xref, trailer'),
+    ('test_leitura_paginas.sql',       'Leitura: informações de página'),
+    ('test_paginas_girar_remover.sql', 'Páginas: girar e remover'),
+    ('test_marca_dagua.sql',           'Marca d\'água'),
+    ('test_sobreposicao.sql',          'Sobreposição de texto e imagem'),
+    ('test_mesclar_dividir.sql',       'Mesclar, dividir e extrair'),
+    ('test_saida_modificada.sql',      'OutputModifiedPDF'),
+    ('test_manipulacao_completa.sql',  'Manipulação: o caminho inteiro'),
+
+    # Segurança do documento
+    ('test_seguranca.sql',             'Criptografia, senhas e permissões'),
+
+    # O que guarda o que já quebrou, e o que ninguém chamava
+    ('test_regressoes_revisao.sql',    'Regressões das revisões de ago e set/2026'),
     ('test_compat_legado.sql',         'Compatibilidade com 0.9.4 e 2.0.0'),
-    ('test_api_sem_chamador.sql',      'APIs publicas que ninguem chamava'),
+    ('test_api_sem_chamador.sql',      'APIs públicas que ninguém chamava'),
 ]
 
 CABECALHO = """--------------------------------------------------------------------------------

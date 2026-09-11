@@ -106,6 +106,13 @@ jobs:
       - name: Nenhum byte virando caractere com CHR
         run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
+      # Um teste fora da lista do build_run_all.py existe, compila, tem
+      # afericao -- e nunca roda. E a suite falava quatro dialetos para a mesma
+      # asercao. Dois deles nem emitiam [PASS]/[FAIL], entao o runner contava
+      # zero verificacao e uma falha ali era invisivel.
+      - name: A suite tem um vocabulario so, e ninguem fica de fora
+        run: python dev/scripts/plsql_lint/check_suite.py
+
       # Um gerador emitia "l_hex := '...'" em toda linha, sem terminador em
       # nenhuma menos a ultima. Nao e PL/SQL, e o Oracle recusa o BLOCO INTEIRO
       # com ORA-06550 apontando a linha de baixo -- 60 casos que passavam

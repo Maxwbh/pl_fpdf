@@ -1,6 +1,10 @@
 --------------------------------------------------------------------------------
 -- Diagnóstico 2: dá para descomprimir SEM conhecer o CRC-32?
 --
+-- EXPERIMENTO — não entra na suíte. Não afere nada: mede e imprime,
+-- para um humano ler. A pergunta foi respondida (o Oracle confere CRC e tamanho, e nenhum atalho entrega os dados sem eles — daí o inflate próprio em PL/SQL),
+-- e o registro fica porque o caminho até a resposta vale mais que ela.
+--
 -- O primeiro diagnóstico respondeu o principal: o Oracle produz gzip padrão
 -- (`1F8B08`), e o DEFLATE do PDF vestido de gzip **funciona** — 600 bytes,
 -- conteúdo conferido. O caminho existe.

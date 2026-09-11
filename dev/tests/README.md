@@ -129,29 +129,73 @@ SET SERVEROUTPUT ON SIZE UNLIMITED
 
 ---
 
+## Como escrever um caso
+
+**Cinco nomes, e o quinto é feito dos outros.** Todo arquivo da suíte declara os
+seus — são blocos anônimos independentes, sem package de apoio, e é isso que os
+faz rodar com F8 na SQL Window sem instalar nada.
+
+| | |
+|---|---|
+| `caso(nome)` | abre um caso, com o cabeçalho |
+| `passou(msg)` / `falhou(msg)` | a asserção, quando a verificação tem duas saídas |
+| `pulou(msg)` | o caso não pôde ser concluído (falta um recurso, por exemplo) |
+| `confere(nome, condicao)` | a forma condensada, quando a condição cabe numa expressão |
+
+O contrato com o runner são as marcas **`[PASS]`**, **`[FAIL]`** e **`[SKIP]`**
+no `DBMS_OUTPUT` — é por elas que ele conta. Um arquivo que imprime o resultado
+de outro jeito *roda* e não é contado: aconteceu com dois deles, que diziam
+`✓ Test 1: nome - PASS` e apareciam como `ok 0/0` na saída, com 65 aferições
+invisíveis. O `check_suite.py` guarda isso.
+
+E o nome do arquivo diz o **assunto**, não a fase de um cronograma: até
+setembro de 2026 havia `test_phase_4_1b_pages`, com a letra de uma subdivisão
+de fevereiro. Assunto envelhece menos.
+
 ## Estrutura
 
-Um runner, uma validação por área — sem duplicatas:
+Um runner, uma aferição por assunto — sem duplicatas:
 
 ```
 dev/tests/
-├── run_all_tests.sql              # Único runner: executa tudo abaixo, em ordem
-├── validate_phases_1_3.sql        # Geração de PDF (init, fontes, imagens, UTF-8)
-├── test_phase_4_parser_basic.sql  # Parser de PDF existente
-├── test_phase_4_1b_pages.sql      # Leitura de páginas
-├── test_phase_4_2_page_mgmt.sql   # Rotação / remoção de páginas
-├── test_phase_4_3_watermark.sql   # Marca d'água
-├── test_phase_4_4_output.sql      # OutputModifiedPDF
-├── test_phase_4_5_overlay.sql     # Overlay de texto/imagem
-├── test_phase_4_6_merge_split.sql # Merge e split
-├── validate_phase_4_complete.sql  # Integração da manipulação de PDF
-├── test_phase_security.sql        # Criptografia: RC4, AES-128 e AES-256
+├── run_all_tests.sql               # gerado: executa tudo abaixo, em ordem
 │
-├── diag_inflate.sql               # INFLATE contra vetores do zlib
-├── diag_xrefstm.sql               # xref em stream e object streams (gerado)
-├── diag_password.sql              # Derivação de chave e verificação de senha
-└── diag_utl_compress*.sql         # Por que o UTL_COMPRESS não serve (registro)
+│   # gerar um documento
+├── test_geracao_basica.sql         # páginas, texto, desenho, imagem
+├── test_winansi.sql                # texto acentuado
+├── test_stream_imagem.sql          # o stream da imagem
+├── test_core.sql                   # buffers, NLS, QR, código de barras
+│
+│   # ler e manipular um PDF que veio de fora
+├── test_leitura_pdf.sql            # cabeçalho, xref, trailer
+├── test_leitura_paginas.sql        # informações de página
+├── test_paginas_girar_remover.sql  # girar e remover
+├── test_marca_dagua.sql            # marca d'água
+├── test_sobreposicao.sql           # sobreposição de texto e imagem
+├── test_mesclar_dividir.sql        # mesclar, dividir e extrair
+├── test_saida_modificada.sql       # OutputModifiedPDF
+├── test_manipulacao_completa.sql   # o caminho inteiro
+│
+│   # segurança do documento
+├── test_seguranca.sql              # RC4, AES-128 e AES-256, senhas, permissões
+│
+│   # o que guarda o que já quebrou
+├── test_regressoes_revisao.sql     # regressões das revisões de ago e set/2026
+├── test_compat_legado.sql          # o código da 0.9.4 e da 2.0.0 continua rodando
+├── test_api_sem_chamador.sql       # a primeira chamada de 28 APIs públicas
+│
+│   # diagnóstico: mede e imprime, para um humano ler
+├── diag_inflate.sql                # INFLATE contra vetores do zlib
+├── diag_winansi.sql                # a conversão de texto, byte a byte
+├── diag_deflate.sql                # o deflate próprio
+├── diag_xrefstm.sql                # xref em stream e object streams
+├── diag_password.sql               # EXPERIMENTO: derivação de chave (respondido)
+└── diag_utl_compress*.sql          # EXPERIMENTO: por que o UTL_COMPRESS não serve
 ```
+
+O runner executa os `diag_*` que emitem `[PASS]`. Os marcados **EXPERIMENTO**
+não aferem nada — a resposta que buscavam está no cabeçalho deles, e ficam
+porque o caminho até a resposta vale mais que a resposta sozinha.
 
 Os testes da extensão PIX/Boleto ficam em
 [`extensions/brazilian-payments/tests/`](../../extensions/brazilian-payments/tests/).

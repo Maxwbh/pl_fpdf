@@ -24,8 +24,8 @@
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Fases 1-3: geração de PDF (base)
--- origem: tests/validate_phases_1_3.sql
+-- Geração: páginas, texto, desenho, imagem
+-- origem: tests/test_geracao_basica.sql
 --------------------------------------------------------------------------------
 /*******************************************************************************
 * Validation Script: Phases 1-3 Combined Validation
@@ -42,7 +42,7 @@
 *
 * Usage:
 *   SET SERVEROUTPUT ON SIZE UNLIMITED
-*   @tests/validate_phases_1_3.sql
+*   @tests/test_geracao_basica.sql
 *******************************************************************************/
 
 -- ================================================================================
@@ -56,7 +56,7 @@ DECLARE
   l_pass_count PLS_INTEGER := 0;
   l_fail_count PLS_INTEGER := 0;
 
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE confere(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_test_count := l_test_count + 1;
     IF p_passed THEN
@@ -67,7 +67,7 @@ DECLARE
       DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name ||
         CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
     END IF;
-  END test_result;
+  END confere;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('================================');
@@ -83,10 +83,10 @@ BEGIN
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4', 'UTF-8');
     PL_FPDF.AddPage();
-    test_result('Init + AddPage', PL_FPDF.IsInitialized() AND PL_FPDF.GetCurrentPage() = 1);
+    confere('Init + AddPage', PL_FPDF.IsInitialized() AND PL_FPDF.GetCurrentPage() = 1);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Init + AddPage', FALSE, SQLERRM);
+    confere('Init + AddPage', FALSE, SQLERRM);
   END;
 
   -- Test: Multi-page document
@@ -95,10 +95,10 @@ BEGIN
     FOR i IN 1..5 LOOP
       PL_FPDF.AddPage();
     END LOOP;
-    test_result('Multi-page document (5 pages)', PL_FPDF.GetCurrentPage() = 5);
+    confere('Multi-page document (5 pages)', PL_FPDF.GetCurrentPage() = 5);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Multi-page document', FALSE, SQLERRM);
+    confere('Multi-page document', FALSE, SQLERRM);
   END;
 
   -- Test: Page navigation (SetPage)
@@ -108,10 +108,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.AddPage();
     PL_FPDF.SetPage(1);
-    test_result('Page navigation (SetPage)', PL_FPDF.GetCurrentPage() = 1);
+    confere('Page navigation (SetPage)', PL_FPDF.GetCurrentPage() = 1);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Page navigation', FALSE, SQLERRM);
+    confere('Page navigation', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -128,10 +128,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.SetFont('Helvetica', '', 12);
     PL_FPDF.Cell(0, 10, 'Acentuacao: cobranca em Sao Paulo');
-    test_result('UTF-8 encoding enabled', TRUE);
+    confere('UTF-8 encoding enabled', TRUE);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('UTF-8 encoding', FALSE, SQLERRM);
+    confere('UTF-8 encoding', FALSE, SQLERRM);
   END;
 
   -- Test: Unicode characters in document
@@ -151,10 +151,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(0, 10, 'Test: São Paulo - Zürich');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Unicode text rendering', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Unicode text rendering', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Unicode text rendering', FALSE, SQLERRM);
+    confere('Unicode text rendering', FALSE, SQLERRM);
   END;
 
   -- Test: fora de WinAnsi e recusado, nao desenhado errado
@@ -166,11 +166,11 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(0, 10, 'Moscou em cirilico: ' || UNISTR('\041C\043E\0441'));
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Non-WinAnsi text refused', FALSE,
+    confere('Non-WinAnsi text refused', FALSE,
                 'aceitou cirilico em fonte core: sairia com glifo errado');
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Non-WinAnsi text refused', INSTR(SQLERRM, 'ORA-20203') > 0,
+    confere('Non-WinAnsi text refused', INSTR(SQLERRM, 'ORA-20203') > 0,
                 CASE WHEN INSTR(SQLERRM, 'ORA-20203') = 0
                      THEN 'recusou com outro erro: ' || SQLERRM END);
     PL_FPDF.Reset();
@@ -183,10 +183,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.SetFont('Times', 'B', 14);
     PL_FPDF.SetFont('Courier', 'I', 10);
-    test_result('Standard fonts (Arial, Times, Courier)', TRUE);
+    confere('Standard fonts (Arial, Times, Courier)', TRUE);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Standard fonts', FALSE, SQLERRM);
+    confere('Standard fonts', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -202,10 +202,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(100, 10, 'Test Cell', '1', 0, 'C');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Cell output', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Cell output', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Cell output', FALSE, SQLERRM);
+    confere('Cell output', FALSE, SQLERRM);
   END;
 
   -- Test: MultiCell with line breaks
@@ -217,10 +217,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.MultiCell(100, 5, 'This is a multi-line text that should wrap automatically.');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('MultiCell with wrapping', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('MultiCell with wrapping', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('MultiCell', FALSE, SQLERRM);
+    confere('MultiCell', FALSE, SQLERRM);
   END;
 
   -- Test: Write method
@@ -232,10 +232,10 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Write(10, 'Test Write method');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Write method', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Write method', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Write method', FALSE, SQLERRM);
+    confere('Write method', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -253,11 +253,11 @@ BEGIN
     PL_FPDF.Cell(0, 10, 'Test PDF');
     l_pdf := PL_FPDF.OutputBlob();
     l_header := DBMS_LOB.SUBSTR(l_pdf, 4, 1);
-    test_result('OutputBlob generates valid PDF',
+    confere('OutputBlob generates valid PDF',
                 UTL_RAW.CAST_TO_VARCHAR2(l_header) = '%PDF');
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('OutputBlob', FALSE, SQLERRM);
+    confere('OutputBlob', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -274,23 +274,23 @@ BEGIN
   BEGIN
     PL_FPDF.Reset();
     PL_FPDF.AddPage();
-    test_result('Error on AddPage before Init', FALSE, 'Should have raised error');
+    confere('Error on AddPage before Init', FALSE, 'Should have raised error');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
       -- -20005 = 'PL_FPDF not initialized'. -20801 é 'PDF inválido' no parser.
-      test_result('Error on AddPage before Init', SQLCODE = -20005);
+      confere('Error on AddPage before Init', SQLCODE = -20005);
   END;
 
   -- Test: Error when SetFont before Init
   BEGIN
     PL_FPDF.Reset();
     PL_FPDF.SetFont('Arial', '', 12);
-    test_result('Error on SetFont before Init', FALSE, 'Should have raised error');
+    confere('Error on SetFont before Init', FALSE, 'Should have raised error');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
-      test_result('Error on SetFont before Init', SQLCODE = -20005);
+      confere('Error on SetFont before Init', SQLCODE = -20005);
   END;
 
   -- Test: Error when OutputBlob before Init
@@ -299,12 +299,12 @@ BEGIN
   BEGIN
     PL_FPDF.Reset();
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Error on OutputBlob before Init', FALSE, 'Should have raised error');
+    confere('Error on OutputBlob before Init', FALSE, 'Should have raised error');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
       -- OutputBlob chama ClosePDF, que chama AddPage: o erro chega como -20005.
-      test_result('Error on OutputBlob before Init', SQLCODE = -20005);
+      confere('Error on OutputBlob before Init', SQLCODE = -20005);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -318,9 +318,9 @@ BEGIN
     PL_FPDF.SetFont('Arial', '', 12);
     PL_FPDF.Cell(0, 10, 'Test');
     PL_FPDF.Reset();
-    test_result('Reset cleanup', NOT PL_FPDF.IsInitialized());
+    confere('Reset cleanup', NOT PL_FPDF.IsInitialized());
   EXCEPTION WHEN OTHERS THEN
-    test_result('Reset cleanup', FALSE, SQLERRM);
+    confere('Reset cleanup', FALSE, SQLERRM);
   END;
 
   -- Test: Re-initialization after Reset
@@ -330,10 +330,10 @@ BEGIN
     PL_FPDF.Reset();
     PL_FPDF.Init();
     PL_FPDF.AddPage();
-    test_result('Re-init after Reset', PL_FPDF.IsInitialized());
+    confere('Re-init after Reset', PL_FPDF.IsInitialized());
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Re-init after Reset', FALSE, SQLERRM);
+    confere('Re-init after Reset', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -354,10 +354,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.Line(10, 10, 100, 10);
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Line drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Line drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Line drawing', FALSE, SQLERRM);
+    confere('Line drawing', FALSE, SQLERRM);
   END;
 
   -- Test: Rect drawing
@@ -368,10 +368,10 @@ BEGIN
     PL_FPDF.AddPage();
     PL_FPDF.Rect(10, 10, 50, 30, 'D');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('Rectangle drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('Rectangle drawing', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('Rectangle drawing', FALSE, SQLERRM);
+    confere('Rectangle drawing', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -388,11 +388,11 @@ BEGIN
     PL_FPDF.Init();
     PL_FPDF.AddPage();
     -- Test image type detection (will fail but validates type detection logic)
-    test_result('Image type detection (PNG)', TRUE);
+    confere('Image type detection (PNG)', TRUE);
     PL_FPDF.Reset();
     DBMS_LOB.FREETEMPORARY(l_minimal_png);
   EXCEPTION WHEN OTHERS THEN
-    test_result('Image type detection', FALSE, SQLERRM);
+    confere('Image type detection', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -408,10 +408,10 @@ BEGIN
     PL_FPDF.SetDrawColor(255, 0, 0);  -- Red
     PL_FPDF.Line(10, 10, 100, 10);
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('SetDrawColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('SetDrawColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('SetDrawColor', FALSE, SQLERRM);
+    confere('SetDrawColor', FALSE, SQLERRM);
   END;
 
   -- Test: SetFillColor
@@ -423,10 +423,10 @@ BEGIN
     PL_FPDF.SetFillColor(0, 255, 0);  -- Green
     PL_FPDF.Rect(10, 10, 50, 30, 'F');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('SetFillColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('SetFillColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('SetFillColor', FALSE, SQLERRM);
+    confere('SetFillColor', FALSE, SQLERRM);
   END;
 
   -- Test: SetTextColor
@@ -439,10 +439,10 @@ BEGIN
     PL_FPDF.SetTextColor(0, 0, 255);  -- Blue
     PL_FPDF.Cell(0, 10, 'Blue Text');
     l_pdf := PL_FPDF.OutputBlob();
-    test_result('SetTextColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
+    confere('SetTextColor (RGB)', DBMS_LOB.GETLENGTH(l_pdf) > 0);
     PL_FPDF.Reset();
   EXCEPTION WHEN OTHERS THEN
-    test_result('SetTextColor', FALSE, SQLERRM);
+    confere('SetTextColor', FALSE, SQLERRM);
   END;
 
   -- Summary
@@ -472,2492 +472,554 @@ END;
 --
 
 --------------------------------------------------------------------------------
--- Fase 4: leitura de PDF (parser)
--- origem: tests/test_phase_4_parser_basic.sql
+-- Texto acentuado (WinAnsi)
+-- origem: tests/test_winansi.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- Test Phase 4: PDF Parser - Basic Reading
--- Tests LoadPDF, GetPageCount, GetPDFInfo
+-- PL_FPDF - Texto acentuado nas fontes padrao (conversao WinAnsi)
+--
+-- O dicionario da fonte declara /Encoding /WinAnsiEncoding e o texto sai do
+-- banco em AL32UTF8. Sem conversao, cada acentuado chegava ao leitor como DOIS
+-- bytes e ele desenhava dois glifos: 'cobranca' com cedilha virava 'cobranA§a'.
+-- Sem erro nenhum, num arquivo que abre normalmente -- so se percebia olhando.
+--
+-- Medido antes do conserto, e vale registrar porque nenhuma das duas suposicoes
+-- do relato se confirmou:
+--
+--   CHR(231) e 1 byte (E7); SUBSTR('c cedilha',1,1) sao 2 (C3A7)
+--   GetStringWidth('Sao Paulo') = 19.5326
+--   GetStringWidth('Sao Paulo' com til) levantava ORA-06502 -- nao
+--     NO_DATA_FOUND: o subtipo car tem UM byte e o caractere tem dois, entao
+--     estourava antes de consultar a tabela
+--
+-- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
 --------------------------------------------------------------------------------
-
 
 DECLARE
-  -- Test counter
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-    -- Test PDF (generated by PL_FPDF for valid structure)
-  l_test_pdf BLOB;
-  l_page_count PLS_INTEGER;
-  l_pdf_info JSON_OBJECT_T;
-  
-  -- Helper procedure
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
+
+  l_pdf    BLOB;
+  l_larg   NUMBER;
+  l_larg2  NUMBER;
+  l_erro   VARCHAR2(400);
+  l_txt    VARCHAR2(200);
+
+  PROCEDURE caso(p_nome VARCHAR2) IS
   BEGIN
-    l_test_count := l_test_count + 1;
-    IF p_passed THEN
-      l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_test_name);
-    ELSE
-      l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name || 
-        CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
-    END IF;
-  END test_result;
-  
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END;
 
-
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('========================================================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4 - PDF PARSER: BASIC READING TESTS');
-  DBMS_OUTPUT.PUT_LINE('========================================================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  DBMS_OUTPUT.PUT_LINE('Test 4.1: Load Simple PDF');
-  DBMS_OUTPUT.PUT_LINE('-------------------------');
-
-  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
+  PROCEDURE passou(p_msg VARCHAR2) IS
   BEGIN
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END;
+
+  PROCEDURE falhou(p_msg VARCHAR2) IS
+  BEGIN
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END;
+
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
+  FUNCTION pdf_com(p_texto IN VARCHAR2) RETURN BLOB IS
+    l_b BLOB;
+  BEGIN
+    PL_FPDF.Reset;
     PL_FPDF.Init('P', 'mm', 'A4');
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Test Page 1');
-    l_test_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END;
-  
-  -- Test 1: LoadPDF
-  BEGIN
-    PL_FPDF.LoadPDF(l_test_pdf);
-    test_result('LoadPDF() with minimal PDF', TRUE);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('LoadPDF() with minimal PDF', FALSE, SQLERRM);
-  END;
-  
-  -- Test 2: GetPageCount
-  BEGIN
-    l_page_count := PL_FPDF.GetPageCount();
-    test_result('GetPageCount() returns 1', l_page_count = 1);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetPageCount()', FALSE, SQLERRM);
-  END;
-  
-  -- Test 3: GetPDFInfo
-  BEGIN
-    l_pdf_info := PL_FPDF.GetPDFInfo();
-    test_result('GetPDFInfo() returns JSON', l_pdf_info IS NOT NULL);
-    test_result('GetPDFInfo().version = 1.4', l_pdf_info.get_string('version') = '1.4');
-    test_result('GetPDFInfo().pageCount = 1', l_pdf_info.get_number('pageCount') = 1);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetPDFInfo()', FALSE, SQLERRM);
-  END;
-  
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('========================================================================');
-  DBMS_OUTPUT.PUT_LINE('SUMMARY');
-  DBMS_OUTPUT.PUT_LINE('========================================================================');
-  DBMS_OUTPUT.PUT_LINE('Total Tests: ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('Passed:      ' || l_pass_count);
-  DBMS_OUTPUT.PUT_LINE('Failed:      ' || l_fail_count);
-  DBMS_OUTPUT.PUT_LINE('Success Rate: ' || ROUND(l_pass_count * 100 / l_test_count, 1) || '%');
-  DBMS_OUTPUT.PUT_LINE('========================================================================');
-
-  
-  
-    IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('*** PHASE 4_parser_basic: ALL TESTS PASSED ***');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('*** PHASE 4_parser_basic: SOME TESTS FAILED - REVIEW REQUIRED ***');
-  END IF;
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-END;
-/
-
---------------------------------------------------------------------------------
--- Fase 4.1B: informações de página
--- origem: tests/test_phase_4_1b_pages.sql
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- PL_FPDF v3.0.0-alpha - Phase 4.1B: Page Information and Manipulation Tests
--- Description: Test suite for GetPageInfo and RotatePage APIs
---------------------------------------------------------------------------------
-
-
-DECLARE
-  l_pdf BLOB;
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-  l_info JSON_OBJECT_T;
-  l_page_count PLS_INTEGER;
-
-  -- Test helper procedures
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
-    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
-  END;
-
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
-  BEGIN
-    l_pass_count := l_pass_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
-  END;
-
-  PROCEDURE test_fail(p_message VARCHAR2) IS
-  BEGIN
-    l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
-  END;
-
-  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
-  PROCEDURE create_test_pdf IS
-  BEGIN
-    PL_FPDF.Init('P', 'mm', 'Letter');
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Page 1');
-    PL_FPDF.AddPage();
-    PL_FPDF.Cell(0, 10, 'Page 2');
-    l_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END;
-
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Cell(100, 10, p_texto);
+    l_b := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+    RETURN l_b;
+  END pdf_com;
 BEGIN
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-alpha - PHASE 4.1B: Page Information & Manipulation Tests');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - conversao WinAnsi');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
 
-  -- Create test PDF
-  create_test_pdf();
+  --------------------------------------------------------------------------
+  caso('O acentuado sai como escape octal, nao como UTF-8 cru');
+  --------------------------------------------------------------------------
+  -- O byte convertido NAO pode ir cru: o documento e montado num CLOB e
+  -- convertido no fim por CONVERTTOBLOB, que recodifica pelo charset do banco.
+  -- Medido no diag: 256 bytes entram, 422 saem. O escape octal e ASCII e
+  -- atravessa intacto.
+  l_pdf := pdf_com('cobrança');
 
-  -- Enable debug logging
-  --PL_FPDF.EnableDebugMode();
-  PL_FPDF.SetLogLevel(4);
+  IF acha(l_pdf, '\347') > 0 THEN
+    passou('o cedilha saiu como \347, que o leitor resolve como 0xE7');
+  ELSE
+    falhou('nao ha \347 no arquivo - a conversao nao aconteceu');
+  END IF;
 
-  --------------------------------------------------------------------------------
-  -- TEST 1: Load PDF and verify page tree parsing
-  --------------------------------------------------------------------------------
-  test_start('Load PDF and parse page tree');
+  IF DBMS_LOB.INSTR(l_pdf, HEXTORAW('C3A7'), 1, 1) = 0 THEN
+    passou('os bytes C3 A7 (UTF-8 cru) sumiram do arquivo');
+  ELSE
+    falhou('C3 A7 ainda esta no arquivo - o texto continua cru');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('Texto sem acento nao mudou');
+  --------------------------------------------------------------------------
+  -- O ASCII coincide nas duas codificacoes, entao o caminho comum tem de sair
+  -- exatamente como saia. E onde uma regressao passaria despercebida.
+  l_pdf := pdf_com('Sao Paulo');
+  IF acha(l_pdf, 'Sao Paulo') > 0 THEN
+    passou('o texto ASCII continua legivel no arquivo, sem escape');
+  ELSE
+    falhou('o texto ASCII foi alterado');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('Parenteses e barra seguem escapados');
+  --------------------------------------------------------------------------
+  -- Sao o escape que o PDF ja exigia, e a conversao nao pode ter comido.
+  l_pdf := pdf_com('Total (liquido) \ 50%');
+  IF acha(l_pdf, '\(liquido\)') > 0 THEN
+    passou('parenteses escapados');
+  ELSE
+    falhou('parenteses nao escapados - a string do PDF quebra');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('GetStringWidth mede acentuado sem levantar');
+  --------------------------------------------------------------------------
+  -- Antes levantava ORA-06502, e agora mede.
+  --
+  -- A primeira versao deste caso exigia que as duas medidas DIFERISSEM, no
+  -- palpite de que o 'a' com til seria mais largo. Errado: nas 14 fontes
+  -- padrao do PDF o glifo acentuado tem a MESMA largura de avanco do glifo
+  -- base. Conferido na propria tabela do package: 'a' e 'a til' medem 556,
+  -- 'c' e 'c cedilha' medem 500. Medir igual e o certo.
+  --
+  -- Entao afere-se o que de fato distingue: que nao levanta, e que um
+  -- caractere de largura reconhecidamente diferente -- o travessao, 1000
+  -- contra 333 do hifen -- e medido como tal. Se a conversao caisse num
+  -- caractere so, essa comparacao denunciaria.
+  PL_FPDF.Reset;
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Helvetica', '', 12);
+
   BEGIN
-    PL_FPDF.LoadPDF(l_pdf);
-    l_page_count := PL_FPDF.GetPageCount();
+    l_larg  := PL_FPDF.GetStringWidth('Sao Paulo');
+    l_larg2 := PL_FPDF.GetStringWidth('São Paulo');
+    passou('mediu as duas: ' || TO_CHAR(l_larg) || ' e ' || TO_CHAR(l_larg2));
 
-    IF l_page_count = 2 THEN
-      test_pass('Page count correct: 2 pages');
+    IF l_larg2 = l_larg THEN
+      passou('as duas medem igual, como manda a tabela: o acentuado tem a '
+             || 'largura de avanco do glifo base');
     ELSE
-      test_fail('Expected 2 pages, got ' || l_page_count);
+      falhou('as larguras diferem (' || TO_CHAR(l_larg) || ' e '
+             || TO_CHAR(l_larg2) || ') - o acentuado caiu na posicao errada');
+    END IF;
+
+    -- travessao contra hifen: 1000 contra 333 em Helvetica
+    IF PL_FPDF.GetStringWidth(UNISTR('\2014')) >
+       PL_FPDF.GetStringWidth('-') * 2 THEN
+      passou('o travessao mede mais que o dobro do hifen, como na tabela');
+    ELSE
+      falhou('o travessao nao foi medido pela posicao dele');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error loading PDF: ' || SQLERRM);
+      falhou('ainda levanta: ' || SQLERRM);
   END;
 
-  --------------------------------------------------------------------------------
-  -- TEST 2: Get page 1 information
-  --------------------------------------------------------------------------------
-  test_start('GetPageInfo for page 1');
+  --------------------------------------------------------------------------
+  caso('Alinhamento a direita com acento nao levanta mais');
+  --------------------------------------------------------------------------
+  -- O Cell so chama GetStringWidth para align C e R. Era ai que o ORA-06502
+  -- aparecia, enquanto o alinhamento a esquerda desenhava errado calado.
   BEGIN
-    l_info := PL_FPDF.GetPageInfo(1);
-
-    DBMS_OUTPUT.PUT_LINE('  Page 1 Info:');
-    DBMS_OUTPUT.PUT_LINE('    - Page Number: ' || l_info.get_number('pageNumber'));
-    DBMS_OUTPUT.PUT_LINE('    - Object ID: ' || l_info.get_number('pageObjectId'));
-    DBMS_OUTPUT.PUT_LINE('    - MediaBox: ' || l_info.get_string('mediaBox'));
-    DBMS_OUTPUT.PUT_LINE('    - Rotation: ' || l_info.get_number('rotation') || ' degrees');
-
-    IF l_info.get_number('pageNumber') = 1 THEN
-      test_pass('Page number correct');
-    ELSE
-      test_fail('Page number incorrect');
-    END IF;
-
-    IF l_info.get_string('mediaBox') LIKE '0 0 612%792%' THEN
-      test_pass('MediaBox correct (Letter size)');
-    ELSE
-      test_fail('MediaBox incorrect: ' || l_info.get_string('mediaBox'));
-    END IF;
-
-    IF l_info.get_number('rotation') = 0 THEN
-      test_pass('Rotation correct (0 degrees)');
-    ELSE
-      test_fail('Rotation incorrect: ' || l_info.get_number('rotation'));
-    END IF;
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Cell(100, 10, 'Endereço de cobrança', '0', 1, 'R');
+    PL_FPDF.Cell(100, 10, 'Endereço de cobrança', '0', 1, 'C');
+    l_pdf := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+    passou('alinhado a direita e centralizado, ' || DBMS_LOB.GETLENGTH(l_pdf)
+           || ' bytes');
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error getting page 1 info: ' || SQLERRM);
+      falhou('levantou: ' || SQLERRM);
   END;
 
-  --------------------------------------------------------------------------------
-  -- TEST 3: Get page 2 information
-  --------------------------------------------------------------------------------
-  test_start('GetPageInfo for page 2');
+  --------------------------------------------------------------------------
+  caso('Caractere fora do WinAnsi e recusado com erro proprio');
+  --------------------------------------------------------------------------
+  -- O criterio: recusar, e nao virar '?' em silencio. E o erro tem de ser o
+  -- nosso, com a posicao -- se voltar ORA-06502, o conserto so trocou de
+  -- sintoma. Ideograma escolhido por nao existir em WinAnsi de forma alguma.
   BEGIN
-    l_info := PL_FPDF.GetPageInfo(2);
-
-    DBMS_OUTPUT.PUT_LINE('  Page 2 Info:');
-    DBMS_OUTPUT.PUT_LINE('    - Page Number: ' || l_info.get_number('pageNumber'));
-    DBMS_OUTPUT.PUT_LINE('    - Object ID: ' || l_info.get_number('pageObjectId'));
-    DBMS_OUTPUT.PUT_LINE('    - MediaBox: ' || l_info.get_string('mediaBox'));
-    DBMS_OUTPUT.PUT_LINE('    - Rotation: ' || l_info.get_number('rotation') || ' degrees');
-
-    IF l_info.get_string('mediaBox') LIKE '0 0 612%792%' THEN
-      test_pass('MediaBox correct (Letter size)');
-    ELSE
-      test_fail('MediaBox incorrect: ' || l_info.get_string('mediaBox'));
-    END IF;
-
-    IF l_info.get_number('rotation') = 0 THEN
-      test_pass('Rotation correct (0 degrees)');
-    ELSE
-      test_fail('Rotation incorrect: ' || l_info.get_number('rotation'));
-    END IF;
+    l_pdf := pdf_com('Relatorio ' || UNISTR('\4E2D') || ' final');
+    falhou('aceitou o caractere fora da tabela');
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error getting page 2 info: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 4: RotatePage - Set page 1 to 180 degrees
-  --------------------------------------------------------------------------------
-  test_start('RotatePage - Set page 1 to 180 degrees');
-  BEGIN
-    PL_FPDF.RotatePage(1, 180);
-
-    l_info := PL_FPDF.GetPageInfo(1);
-    IF l_info.get_number('rotation') = 180 THEN
-      test_pass('Page 1 rotation updated to 180 degrees');
-    ELSE
-      test_fail('Rotation not updated: ' || l_info.get_number('rotation'));
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error rotating page: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 5: RotatePage - Invalid rotation value
-  --------------------------------------------------------------------------------
-  test_start('RotatePage - Invalid rotation value (should fail)');
-  BEGIN
-    PL_FPDF.RotatePage(1, 45);  -- Invalid: must be 0, 90, 180, or 270
-    test_fail('Should have raised error for invalid rotation');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20813 THEN
-        test_pass('Correctly rejected invalid rotation value');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 6: GetPageInfo - Invalid page number
-  --------------------------------------------------------------------------------
-  test_start('GetPageInfo - Invalid page number (should fail)');
-  BEGIN
-    l_info := PL_FPDF.GetPageInfo(99);  -- PDF only has 2 pages
-    test_fail('Should have raised error for invalid page number');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20812 THEN
-        test_pass('Correctly rejected invalid page number');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 7: ClearPDFCache and verify cleanup
-  --------------------------------------------------------------------------------
-  test_start('ClearPDFCache and verify cleanup');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-
-    -- Try to get page count after clearing - should fail
-    BEGIN
-      l_page_count := PL_FPDF.GetPageCount();
-      test_fail('Should have raised error after ClearPDFCache');
-    EXCEPTION
-      WHEN OTHERS THEN
-        IF SQLCODE = -20809 THEN
-          test_pass('Correctly raised error after clearing cache');
+      l_erro := SQLERRM;
+      IF INSTR(l_erro, 'ORA-20203') > 0 THEN
+        passou('recusado com ORA-20203');
+        IF INSTR(l_erro, 'posicao 11') > 0 THEN
+          passou('a mensagem diz a posicao');
         ELSE
-          test_fail('Wrong error code: ' || SQLCODE);
+          falhou('a mensagem nao diz a posicao: ' || l_erro);
         END IF;
-    END;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error clearing cache: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST SUMMARY
-  --------------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  -- l_test_count conta blocos (test_start); l_pass/l_fail contam verificações.
-  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
-  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
-  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
-    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
-         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
-    END || '%)');
-  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
-  DBMS_OUTPUT.PUT_LINE('');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
-  END IF;
-
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-END;
-/
-
---------------------------------------------------------------------------------
--- Fase 4.2: gerenciamento de páginas
--- origem: tests/test_phase_4_2_page_mgmt.sql
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- PL_FPDF v3.0.0-a.3 - Phase 4.2: Page Management Tests
--- Description: Test suite for RemovePage, GetActivePageCount, modification tracking
---------------------------------------------------------------------------------
-
-
-DECLARE
-  l_pdf BLOB;
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-  l_page_count PLS_INTEGER;
-  l_active_count PLS_INTEGER;
-  l_is_removed BOOLEAN;
-  l_is_modified BOOLEAN;
-
-  -- Test helper procedures
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
-    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
-  END;
-
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
-  BEGIN
-    l_pass_count := l_pass_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
-  END;
-
-  PROCEDURE test_fail(p_message VARCHAR2) IS
-  BEGIN
-    l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
-  END;
-
-  -- Create valid test PDF with 5 pages using PL_FPDF itself
-  PROCEDURE create_test_pdf IS
-  BEGIN
-    PL_FPDF.Init('P', 'mm', 'Letter');
-    PL_FPDF.SetFont('Arial', '', 12);
-    FOR i IN 1..5 LOOP
-      PL_FPDF.AddPage();
-      PL_FPDF.Cell(0, 10, 'Page ' || i);
-    END LOOP;
-    l_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END;
-
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-a.3 - PHASE 4.2: Page Management Tests');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-  -- Create test PDF with 5 pages
-  create_test_pdf();
-
-  --------------------------------------------------------------------------------
-  -- TEST 1: Load PDF and verify initial state
-  --------------------------------------------------------------------------------
-  test_start('Load PDF and verify initial state');
-  BEGIN
-    PL_FPDF.LoadPDF(l_pdf);
-    l_page_count := PL_FPDF.GetPageCount();
-    l_active_count := PL_FPDF.GetActivePageCount();
-    l_is_modified := PL_FPDF.IsPDFModified();
-
-    IF l_page_count = 5 THEN
-      test_pass('Total page count correct: 5 pages');
-    ELSE
-      test_fail('Expected 5 pages, got ' || l_page_count);
-    END IF;
-
-    IF l_active_count = 5 THEN
-      test_pass('Active page count correct: 5 pages (none removed)');
-    ELSE
-      test_fail('Expected 5 active pages, got ' || l_active_count);
-    END IF;
-
-    IF NOT l_is_modified THEN
-      test_pass('PDF not modified initially');
-    ELSE
-      test_fail('PDF should not be marked as modified initially');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error loading PDF: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 2: RemovePage - Remove page 2
-  --------------------------------------------------------------------------------
-  test_start('RemovePage - Remove page 2');
-  BEGIN
-    PL_FPDF.RemovePage(2);
-
-    l_active_count := PL_FPDF.GetActivePageCount();
-    l_is_removed := PL_FPDF.IsPageRemoved(2);
-    l_is_modified := PL_FPDF.IsPDFModified();
-
-    IF l_active_count = 4 THEN
-      test_pass('Active page count correct: 4 pages (1 removed)');
-    ELSE
-      test_fail('Expected 4 active pages, got ' || l_active_count);
-    END IF;
-
-    IF l_is_removed THEN
-      test_pass('Page 2 marked as removed');
-    ELSE
-      test_fail('Page 2 should be marked as removed');
-    END IF;
-
-    IF l_is_modified THEN
-      test_pass('PDF marked as modified');
-    ELSE
-      test_fail('PDF should be marked as modified');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error removing page: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 3: RemovePage - Remove multiple pages (3 and 5)
-  --------------------------------------------------------------------------------
-  test_start('RemovePage - Remove pages 3 and 5');
-  BEGIN
-    PL_FPDF.RemovePage(3);
-    PL_FPDF.RemovePage(5);
-
-    l_active_count := PL_FPDF.GetActivePageCount();
-
-    IF l_active_count = 2 THEN
-      test_pass('Active page count correct: 2 pages (3 removed total)');
-    ELSE
-      test_fail('Expected 2 active pages, got ' || l_active_count);
-    END IF;
-
-    -- Verify individual page status
-    IF PL_FPDF.IsPageRemoved(2) AND PL_FPDF.IsPageRemoved(3) AND PL_FPDF.IsPageRemoved(5) THEN
-      test_pass('Pages 2, 3, 5 correctly marked as removed');
-    ELSE
-      test_fail('Not all pages correctly marked as removed');
-    END IF;
-
-    IF NOT PL_FPDF.IsPageRemoved(1) AND NOT PL_FPDF.IsPageRemoved(4) THEN
-      test_pass('Pages 1, 4 correctly marked as active');
-    ELSE
-      test_fail('Pages 1, 4 should not be marked as removed');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error removing pages: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 4: RemovePage - Attempt to remove already removed page
-  --------------------------------------------------------------------------------
-  test_start('RemovePage - Attempt to remove already removed page (should fail)');
-  BEGIN
-    PL_FPDF.RemovePage(2);  -- Already removed in TEST 2
-    test_fail('Should have raised error for already removed page');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20814 THEN
-        test_pass('Correctly rejected attempt to remove already removed page');
+      ELSIF INSTR(l_erro, 'ORA-06502') > 0 THEN
+        falhou('ORA-06502 - trocou de sintoma, nao consertou');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('recusou com outro erro: ' || l_erro);
       END IF;
   END;
 
-  --------------------------------------------------------------------------------
-  -- TEST 5: RemovePage - Invalid page number
-  --------------------------------------------------------------------------------
-  test_start('RemovePage - Invalid page number (should fail)');
+  --------------------------------------------------------------------------
+  caso('As 27 excecoes do cp1252 atravessam');
+  --------------------------------------------------------------------------
+  -- De 0xA0 a 0xFF o cp1252 e o Latin-1, e o byte e o proprio ponto de codigo.
+  -- As 27 posicoes entre 0x80 e 0x9F sao as unicas que precisam de tabela, e
+  -- sao as que um teste de acento comum nao alcanca: travessao, aspas curvas,
+  -- euro, reticencias.
+  l_txt := UNISTR('\20AC \2014 \201C \201D \2026 \2122');   -- EUR - " " ... TM
   BEGIN
-    PL_FPDF.RemovePage(99);  -- PDF only has 5 pages
-    test_fail('Should have raised error for invalid page number');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20812 THEN
-        test_pass('Correctly rejected invalid page number');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 6: RotatePage and check modification flag
-  --------------------------------------------------------------------------------
-  test_start('RotatePage - Verify modification tracking');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- Should not be modified initially
-    IF NOT PL_FPDF.IsPDFModified() THEN
-      test_pass('PDF not modified after fresh load');
+    l_pdf := pdf_com(l_txt);
+    IF acha(l_pdf, '\200') > 0 AND acha(l_pdf, '\227') > 0
+       AND acha(l_pdf, '\223') > 0 AND acha(l_pdf, '\231') > 0 THEN
+      passou('euro, travessao, aspas curvas e marca registrada convertidos');
     ELSE
-      test_fail('PDF should not be modified after fresh load');
-    END IF;
-
-    -- Rotate a page
-    PL_FPDF.RotatePage(1, 90);
-
-    IF PL_FPDF.IsPDFModified() THEN
-      test_pass('PDF marked as modified after rotation');
-    ELSE
-      test_fail('PDF should be marked as modified after rotation');
+      falhou('alguma das 27 excecoes nao saiu como octal');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error in modification tracking: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 7: ClearPDFCache - Verify cleanup of modification tracking
-  --------------------------------------------------------------------------------
-  test_start('ClearPDFCache - Verify cleanup');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-
-    -- Try to check modification status after clearing - should fail
-    BEGIN
-      l_is_modified := PL_FPDF.IsPDFModified();
-      -- IsPDFModified doesn't validate PDF loaded, so it will return FALSE
-      IF NOT l_is_modified THEN
-        test_pass('Modification flag cleared after cache clear');
-      ELSE
-        test_fail('Modification flag should be cleared');
-      END IF;
-    EXCEPTION
-      WHEN OTHERS THEN
-        test_fail('Unexpected error: ' || SQLERRM);
-    END;
-
-    -- GetActivePageCount should fail after clearing
-    BEGIN
-      l_active_count := PL_FPDF.GetActivePageCount();
-      test_fail('Should have raised error after ClearPDFCache');
-    EXCEPTION
-      WHEN OTHERS THEN
-        IF SQLCODE = -20809 THEN
-          test_pass('Correctly raised error after clearing cache');
-        ELSE
-          test_fail('Wrong error code: ' || SQLCODE);
-        END IF;
-    END;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error clearing cache: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST SUMMARY
-  --------------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  -- l_test_count conta blocos (test_start); l_pass/l_fail contam verificações.
-  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
-  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
-  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
-    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
-         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
-    END || '%)');
-  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
-  DBMS_OUTPUT.PUT_LINE('');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
-  END IF;
-
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-END;
-/
-
---------------------------------------------------------------------------------
--- Fase 4.3: marcas d'água
--- origem: tests/test_phase_4_3_watermark.sql
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- PL_FPDF v3.0.0-a.4 - Phase 4.3: Watermark Tests
--- Description: Test suite for AddWatermark and GetWatermarks APIs
---------------------------------------------------------------------------------
-
-
-
-DECLARE
-  l_pdf BLOB;
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-  l_watermarks JSON_ARRAY_T;
-  l_watermark JSON_OBJECT_T;
-  l_is_modified BOOLEAN;
-
-  -- Test helper procedures
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
-    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
-  END;
-
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
-  BEGIN
-    l_pass_count := l_pass_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
-  END;
-
-  PROCEDURE test_fail(p_message VARCHAR2) IS
-  BEGIN
-    l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
-  END;
-
-  -- Create valid test PDF with 10 pages using PL_FPDF itself
-  PROCEDURE create_test_pdf IS
-  BEGIN
-    PL_FPDF.Init('P', 'mm', 'Letter');
-    PL_FPDF.SetFont('Arial', '', 12);
-    FOR i IN 1..10 LOOP
-      PL_FPDF.AddPage();
-      PL_FPDF.Cell(0, 10, 'Page ' || i);
-    END LOOP;
-    l_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END;
-
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-a.4 - PHASE 4.3: Watermark Tests');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-  -- Create test PDF with 10 pages
-  create_test_pdf();
-
-  --------------------------------------------------------------------------------
-  -- TEST 1: Load PDF and add watermark to all pages
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Apply to ALL pages');
-  BEGIN
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
-
-    l_watermarks := PL_FPDF.GetWatermarks();
-    l_is_modified := PL_FPDF.IsPDFModified();
-
-    IF l_watermarks.get_size() = 1 THEN
-      test_pass('1 watermark added');
-    ELSE
-      test_fail('Expected 1 watermark, got ' || l_watermarks.get_size());
-    END IF;
-
-    l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
-    IF l_watermark.get_string('text') = 'CONFIDENTIAL' THEN
-      test_pass('Watermark text correct: CONFIDENTIAL');
-    ELSE
-      test_fail('Watermark text incorrect: ' || l_watermark.get_string('text'));
-    END IF;
-
-    IF l_watermark.get_number('opacity') = 0.3 THEN
-      test_pass('Opacity correct: 0.3');
-    ELSE
-      test_fail('Opacity incorrect: ' || l_watermark.get_number('opacity'));
-    END IF;
-
-    IF l_watermark.get_number('rotation') = 45 THEN
-      test_pass('Rotation correct: 45 degrees');
-    ELSE
-      test_fail('Rotation incorrect: ' || l_watermark.get_number('rotation'));
-    END IF;
-
-    IF l_is_modified THEN
-      test_pass('PDF marked as modified');
-    ELSE
-      test_fail('PDF should be marked as modified');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error adding watermark: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 2: AddWatermark - Specific page range '1-3'
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Specific range: 1-3');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('DRAFT', 0.2, 90, '1-3');
-
-    l_watermarks := PL_FPDF.GetWatermarks();
-    l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
-
-    DBMS_OUTPUT.PUT_LINE('  Page range: ' || l_watermark.get_string('pageRange'));
-
-    -- Page range should be parsed to '1,2,3'
-    IF l_watermark.get_string('pageRange') = '1,2,3' THEN
-      test_pass('Page range parsed correctly: 1,2,3');
-    ELSE
-      test_fail('Page range incorrect: ' || l_watermark.get_string('pageRange'));
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error with page range: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 3: AddWatermark - Complex range '1,3,5-7,10'
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Complex range: 1,3,5-7,10');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '1,3,5-7,10');
-
-    l_watermarks := PL_FPDF.GetWatermarks();
-    l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
-
-    DBMS_OUTPUT.PUT_LINE('  Page range: ' || l_watermark.get_string('pageRange'));
-
-    -- Page range should be parsed to '1,3,5,6,7,10'
-    IF l_watermark.get_string('pageRange') = '1,3,5,6,7,10' THEN
-      test_pass('Complex range parsed correctly: 1,3,5,6,7,10');
-    ELSE
-      test_fail('Page range incorrect: ' || l_watermark.get_string('pageRange'));
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error with complex range: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 4: AddWatermark - Multiple watermarks
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Multiple watermarks');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    PL_FPDF.AddWatermark('CONFIDENTIAL', 0.2, 45, 'ALL');
-    PL_FPDF.AddWatermark('DRAFT', 0.3, 90, '1-5');
-    PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '10');
-
-    l_watermarks := PL_FPDF.GetWatermarks();
-
-    IF l_watermarks.get_size() = 3 THEN
-      test_pass('3 watermarks added');
-    ELSE
-      test_fail('Expected 3 watermarks, got ' || l_watermarks.get_size());
-    END IF;
-
-    -- Verify each watermark
-    FOR i IN 0..l_watermarks.get_size() - 1 LOOP
-      l_watermark := TREAT(l_watermarks.get(i) AS JSON_OBJECT_T);
-      DBMS_OUTPUT.PUT_LINE('  Watermark ' || (i + 1) || ': ' ||
-        l_watermark.get_string('text') || ' on pages ' ||
-        l_watermark.get_string('pageRange'));
-    END LOOP;
-
-    test_pass('All watermarks stored correctly');
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error with multiple watermarks: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 5: AddWatermark - Invalid parameters (empty text)
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid text (should fail)');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('', 0.3, 45, 'ALL');  -- Empty text
-    test_fail('Should have raised error for empty text');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20816 THEN
-        test_pass('Correctly rejected empty watermark text');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 6: AddWatermark - Invalid opacity
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid opacity (should fail)');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('TEST', 1.5, 45, 'ALL');  -- Opacity > 1
-    test_fail('Should have raised error for opacity > 1');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20817 THEN
-        test_pass('Correctly rejected invalid opacity');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 7: AddWatermark - Invalid rotation
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid rotation (should fail)');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('TEST', 0.3, 60, 'ALL');  -- Invalid rotation
-    test_fail('Should have raised error for invalid rotation');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20818 THEN
-        test_pass('Correctly rejected invalid rotation (60 degrees)');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 8: AddWatermark - Invalid page range
-  --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid page range (should fail)');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.AddWatermark('TEST', 0.3, 45, '1-20');  -- Page 20 doesn't exist
-    test_fail('Should have raised error for invalid page range');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20815 THEN
-        test_pass('Correctly rejected invalid page range (1-20)');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 9: ClearPDFCache - Verify watermarks cleared
-  --------------------------------------------------------------------------------
-  test_start('ClearPDFCache - Verify watermarks cleared');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-
-    -- GetWatermarks should fail after clearing
-    BEGIN
-      l_watermarks := PL_FPDF.GetWatermarks();
-      test_fail('Should have raised error after ClearPDFCache');
-    EXCEPTION
-      WHEN OTHERS THEN
-        IF SQLCODE = -20809 THEN
-          test_pass('Correctly raised error after clearing cache');
-        ELSE
-          test_fail('Wrong error code: ' || SQLCODE);
-        END IF;
-    END;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error clearing cache: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST SUMMARY
-  --------------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  -- l_test_count conta blocos (test_start); l_pass/l_fail contam verificações.
-  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
-  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
-  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
-    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
-         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
-    END || '%)');
-  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
-  DBMS_OUTPUT.PUT_LINE('');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
-  END IF;
-
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-END;
-/
-
---------------------------------------------------------------------------------
--- Fase 4.4: OutputModifiedPDF
--- origem: tests/test_phase_4_4_output.sql
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- PL_FPDF v3.0.0-a.5 - Phase 4.4: OutputModifiedPDF Tests
--- Description: Test suite for OutputModifiedPDF API
---------------------------------------------------------------------------------
-
-
-
-DECLARE
-  l_pdf BLOB;
-  l_modified_pdf BLOB;
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-  l_original_size NUMBER;
-  l_modified_size NUMBER;
-
-  -- Test helper procedures
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
-    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
-  END;
-
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
-  BEGIN
-    l_pass_count := l_pass_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
-  END;
-
-  PROCEDURE test_fail(p_message VARCHAR2) IS
-  BEGIN
-    l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
-  END;
-
-  -- Create valid test PDF with 5 pages using PL_FPDF itself
-  PROCEDURE create_test_pdf IS
-  BEGIN
-    PL_FPDF.Init('P', 'mm', 'Letter');
-    PL_FPDF.SetFont('Arial', '', 12);
-    FOR i IN 1..5 LOOP
-      PL_FPDF.AddPage();
-      PL_FPDF.Cell(0, 10, 'Page ' || i);
-    END LOOP;
-    l_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END;
-
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-a.5 - PHASE 4.4: OutputModifiedPDF Tests');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-  -- Create test PDF with 5 pages
-  create_test_pdf();
-  l_original_size := DBMS_LOB.GETLENGTH(l_pdf);
-  DBMS_OUTPUT.PUT_LINE('Original PDF size: ' || l_original_size || ' bytes');
-
-  --------------------------------------------------------------------------------
-  -- TEST 1: OutputModifiedPDF without modifications (should fail)
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - No modifications (should fail)');
-  BEGIN
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- Try to output without any modifications
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-    test_fail('Should have raised error for unmodified PDF');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20819 THEN
-        test_pass('Correctly rejected unmodified PDF');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 2: OutputModifiedPDF with rotation
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - With page rotation');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- Rotate page 1
-    PL_FPDF.RotatePage(1, 90);
-
-    -- Generate modified PDF
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-    l_modified_size := DBMS_LOB.GETLENGTH(l_modified_pdf);
-
-    IF l_modified_pdf IS NOT NULL THEN
-      test_pass('Modified PDF generated');
-    ELSE
-      test_fail('Modified PDF is NULL');
-    END IF;
-
-    IF l_modified_size > 0 THEN
-      test_pass('Modified PDF size: ' || l_modified_size || ' bytes');
-    ELSE
-      test_fail('Modified PDF has zero size');
-    END IF;
-
-    -- Cabeçalho: aceita qualquer %PDF-1.x. O copiador de objetos emite 1.7;
-    -- prender o teste a uma versão específica é frágil.
-    IF UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(l_modified_pdf, 7, 1)) LIKE '%PDF-1.' THEN
-      test_pass('PDF header correct');
-    ELSE
-      test_fail('Invalid PDF header: ' ||
-                UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(l_modified_pdf, 8, 1)));
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error generating PDF with rotation: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 3: OutputModifiedPDF with page removal
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - With page removal');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- Remove pages 2 and 4
-    PL_FPDF.RemovePage(2);
-    PL_FPDF.RemovePage(4);
-
-    -- Generate modified PDF
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-    l_modified_size := DBMS_LOB.GETLENGTH(l_modified_pdf);
-
-    IF l_modified_pdf IS NOT NULL THEN
-      test_pass('Modified PDF generated with removed pages');
-    ELSE
-      test_fail('Modified PDF is NULL');
-    END IF;
-
-    DBMS_OUTPUT.PUT_LINE('  Original: 5 pages, Modified: 3 pages (removed 2 and 4)');
-    test_pass('PDF size: ' || l_modified_size || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error generating PDF with removed pages: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 4: OutputModifiedPDF with watermark
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - With watermark');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- A marca d'água é desenhada no fluxo de conteúdo. Antes disto a geração
-    -- era recusada com -20845 para não descartá-la em silêncio; agora o que se
-    -- confere é que ela SAI no arquivo.
-    PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
-
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-
-    IF l_modified_pdf IS NULL THEN
-      test_fail('OutputModifiedPDF devolveu NULL com marca d''água');
-    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
-                         UTL_RAW.CAST_TO_RAW('(CONFIDENTIAL) Tj'), 1, 1) = 0 THEN
-      test_fail('a marca d''água não aparece no fluxo de conteúdo');
-    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
-                         UTL_RAW.CAST_TO_RAW('/ExtGState'), 1, 1) = 0 THEN
-      -- sem o /ExtGState a opacidade seria ignorada e a marca sairia opaca,
-      -- por cima do conteúdo
-      test_fail('o /ExtGState da opacidade não foi declarado');
-    ELSE
-      test_pass('marca d''água desenhada no fluxo de conteúdo, com opacidade');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error generating PDF with watermark: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 5: OutputModifiedPDF with combined modifications
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - Combined modifications');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- Rotação, remoção e marca d'água juntas: a marca é aplicada por número de
-    -- página ORIGINAL, e a página 3 sai do documento — quem confunde os dois
-    -- índices desenha na folha errada.
-    PL_FPDF.RotatePage(1, 90);
-    PL_FPDF.RemovePage(3);
-    PL_FPDF.AddWatermark('RASCUNHO', 0.25, 45, '1');
-
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-    l_modified_size := DBMS_LOB.GETLENGTH(l_modified_pdf);
-
-    IF l_modified_pdf IS NOT NULL THEN
-      test_pass('Modified PDF generated with combined modifications');
-    ELSE
-      test_fail('Modified PDF is NULL');
-    END IF;
-
-    DBMS_OUTPUT.PUT_LINE('  Modifications: rotation + removal');
-    test_pass('PDF size: ' || l_modified_size || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Error with combined modifications: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 5b: OutputModifiedPDF com overlay de imagem
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - Overlay de imagem (PNG)');
-  DECLARE
-    -- PNG 4x4 de cor sólida, sem filtro por linha. Fica embutido em hexadecimal
-    -- para o teste não depender de arquivo nem de diretório do banco.
-    co_png CONSTANT RAW(200) := HEXTORAW(
-         '89504E470D0A1A0A0000000D4948445200000004000000040802000000269309'
-      || '290000001149444154789C63509870018E1888E3000065521801FA941B110000'
-      || '000049454E44AE426082');
-    l_img BLOB := TO_BLOB(co_png);
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.OverlayImage(p_page_number => 1, p_image_blob => l_img,
-                         p_x => 100, p_y => 500,
-                         p_width => 120, p_height => 120);
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-
-    IF l_modified_pdf IS NULL THEN
-      test_fail('OutputModifiedPDF devolveu NULL com overlay de imagem');
-    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
-                         UTL_RAW.CAST_TO_RAW('/Subtype /Image'), 1, 1) = 0 THEN
-      test_fail('o /XObject de imagem não foi gravado');
-    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
-                         UTL_RAW.CAST_TO_RAW('/Predictor 15'), 1, 1) = 0 THEN
-      -- os dados do PNG entram como FlateDecode sem serem descomprimidos; sem
-      -- o Predictor o leitor não desfaz o filtro por linha e desenha ruído
-      test_fail('/DecodeParms com /Predictor 15 não foi declarado');
-    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
-                         UTL_RAW.CAST_TO_RAW('/ImgPLFPDF'), 1, 1) = 0 THEN
-      test_fail('a imagem não entrou no /XObject do /Resources da página');
-    ELSE
-      test_pass('overlay de imagem desenhado, com /DecodeParms e /XObject');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      test_fail('Erro no overlay de imagem: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 5c: formato de imagem não suportado é recusado, não desenhado errado
-  --------------------------------------------------------------------------------
-  test_start('OverlayImage - formato não suportado é recusado');
-  DECLARE
-    l_gif BLOB := TO_BLOB(UTL_RAW.CAST_TO_RAW('GIF89a' || RPAD('x', 40, 'x')));
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-    PL_FPDF.OverlayImage(p_page_number => 1, p_image_blob => l_gif,
-                         p_x => 10, p_y => 10);
-    test_fail('deveria recusar um GIF');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20823 THEN
-        test_pass('formato não suportado recusado com -20823');
-      ELSE
-        test_fail('código errado: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 6: OutputModifiedPDF after removing all pages (should fail)
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - All pages removed (should fail)');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_pdf);
-
-    -- Remove all pages
-    FOR i IN 1..5 LOOP
-      PL_FPDF.RemovePage(i);
-    END LOOP;
-
-    -- Try to generate PDF
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-    test_fail('Should have raised error for empty PDF');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20820 THEN
-        test_pass('Correctly rejected empty PDF (all pages removed)');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST 7: OutputModifiedPDF without loaded PDF (should fail)
-  --------------------------------------------------------------------------------
-  test_start('OutputModifiedPDF - No PDF loaded (should fail)');
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-
-    -- Try to output without loading PDF
-    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
-    test_fail('Should have raised error for no PDF loaded');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF SQLCODE = -20809 THEN
-        test_pass('Correctly raised error for no PDF loaded');
-      ELSE
-        test_fail('Wrong error code: ' || SQLCODE);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------------
-  -- TEST SUMMARY
-  --------------------------------------------------------------------------------
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  -- l_test_count conta blocos (test_start); l_pass/l_fail contam verificações.
-  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
-  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
-  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
-    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
-         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
-    END || '%)');
-  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
-  DBMS_OUTPUT.PUT_LINE('');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
-  END IF;
-
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-END;
-/
-
---------------------------------------------------------------------------------
--- Fase 4.5: sobreposições
--- origem: tests/test_phase_4_5_overlay.sql
---------------------------------------------------------------------------------
-/*******************************************************************************
-* Test Script: Phase 4.5 - Text & Image Overlay
-* Version: 3.0.0-a.6
-* Date: 2026-01-25
-* Author: @maxwbh
-*
-* Description:
-*   Comprehensive test suite for Phase 4.5 overlay functionality including
-*   text overlays, image overlays, and overlay management operations.
-*******************************************************************************/
-
-
-
-DECLARE
-  -- Test counters
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-
-  -- Test data
-  l_test_pdf BLOB;
-  l_logo_blob BLOB;
-  l_result BLOB;
-  l_overlays JSON_ARRAY_T;
-  l_overlay JSON_OBJECT_T;
-  l_options JSON_OBJECT_T;
-  l_overlay_id VARCHAR2(50);
-
-  -- Helper procedures
-  PROCEDURE run_test(p_test_name VARCHAR2, p_result BOOLEAN) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    IF p_result THEN
-      l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
-    ELSE
-      l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name || ' - FAIL');
-    END IF;
-  END run_test;
-
-  PROCEDURE expect_error(p_test_name VARCHAR2, p_expected_code NUMBER) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                         ' - FAIL (Expected error ' || p_expected_code || ' but succeeded)');
-  END expect_error;
-
-  PROCEDURE handle_expected_error(p_test_name VARCHAR2, p_expected_code NUMBER, p_actual_code NUMBER) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    IF p_actual_code = p_expected_code THEN
-      l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
-    ELSE
-      l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                           ' - FAIL (Expected ' || p_expected_code || ', got ' || p_actual_code || ')');
-    END IF;
-  END handle_expected_error;
-
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('Starting Phase 4.5 Overlay Tests...');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
-  BEGIN
-    PL_FPDF.Init('P', 'mm', 'Letter');
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Test Page');
-    l_test_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END;
-
-  -- Create test logo (1x1 PNG - simplest valid PNG)
-  l_logo_blob := HEXTORAW('89504E470D0A1A0A0000000D494844520000000100000001010000000037' ||
-                          '6EF9240000000A49444154789C626001000000050001ED5F38E40000000049' ||
-                          '454E44AE426082');
-
-  DBMS_OUTPUT.PUT_LINE('=== Text Overlay Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 1: OverlayText without PDF loaded (should fail)
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.OverlayText(1, 'Test', 100, 700, NULL);
-    expect_error('OverlayText without PDF loaded', -20809);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('OverlayText without PDF loaded', -20809, SQLCODE);
-  END;
-
-  -- Test 2: Simple text overlay
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    PL_FPDF.OverlayText(1, 'APPROVED', 100, 700, NULL);
-    run_test('Simple text overlay', TRUE);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Simple text overlay', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 3: Text overlay with options
-  BEGIN
-    l_options := JSON_OBJECT_T();
-    l_options.put('font', 'Helvetica-Bold');
-    l_options.put('fontSize', 24);
-    l_options.put('color', 'FF0000');  -- Red
-    l_options.put('opacity', 0.8);
-    l_options.put('rotation', 45);
-    PL_FPDF.OverlayText(1, 'CONFIDENTIAL', 200, 400, l_options);
-    run_test('Text overlay with formatting options', TRUE);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Text overlay with formatting options', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 4: Text overlay with invalid page number
-  BEGIN
-    PL_FPDF.OverlayText(999, 'Test', 100, 700, NULL);
-    expect_error('Text overlay with invalid page number', -20810);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Text overlay with invalid page number', -20810, SQLCODE);
-  END;
-
-  -- Test 5: Text overlay with invalid coordinates
-  BEGIN
-    PL_FPDF.OverlayText(1, 'Test', -100, 700, NULL);
-    expect_error('Text overlay with negative X coordinate', -20821);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Text overlay with negative X coordinate', -20821, SQLCODE);
-  END;
-
-  -- Test 6: Text overlay with invalid opacity
-  BEGIN
-    l_options := JSON_OBJECT_T();
-    l_options.put('opacity', 1.5);
-    PL_FPDF.OverlayText(1, 'Test', 100, 700, l_options);
-    expect_error('Text overlay with invalid opacity', -20821);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Text overlay with invalid opacity', -20821, SQLCODE);
+      falhou('levantou: ' || SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== Image Overlay Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 7: Simple image overlay
-  BEGIN
-    PL_FPDF.OverlayImage(1, l_logo_blob, 450, 750, 100, 50, NULL);
-    run_test('Simple image overlay', TRUE);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Simple image overlay', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 8: Image overlay with options
-  BEGIN
-    l_options := JSON_OBJECT_T();
-    l_options.put('opacity', 0.3);
-    l_options.put('rotation', 45);
-    l_options.put('maintainAspect', TRUE);
-    PL_FPDF.OverlayImage(1, l_logo_blob, 200, 400, 300, NULL, l_options);
-    run_test('Image overlay with transparency and rotation', TRUE);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Image overlay with transparency and rotation', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 9: Image overlay with invalid format
-  BEGIN
-    PL_FPDF.OverlayImage(1, UTL_RAW.CAST_TO_RAW('Invalid'), 100, 100, NULL, NULL, NULL);
-    expect_error('Image overlay with invalid format', -20823);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Image overlay with invalid format', -20823, SQLCODE);
-  END;
-
-  -- Test 10: Image overlay with NULL image
-  BEGIN
-    PL_FPDF.OverlayImage(1, NULL, 100, 100, NULL, NULL, NULL);
-    expect_error('Image overlay with NULL image', -20823);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Image overlay with NULL image', -20823, SQLCODE);
-  END;
-
-  -- Test 11: Image overlay with invalid dimensions
-  BEGIN
-    PL_FPDF.OverlayImage(1, l_logo_blob, 100, 100, -50, 50, NULL);
-    expect_error('Image overlay with negative width', -20824);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Image overlay with negative width', -20824, SQLCODE);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== Overlay Management Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 12: GetOverlays - list all overlays
-  BEGIN
-    l_overlays := PL_FPDF.GetOverlays();
-    run_test('GetOverlays - list all', l_overlays.get_size() > 0);
-    DBMS_OUTPUT.PUT_LINE('   Found ' || l_overlays.get_size() || ' overlays');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('GetOverlays - list all', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 13: GetOverlays - filter by page
-  BEGIN
-    l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('GetOverlays - filter by page', l_overlays.get_size() > 0);
-    DBMS_OUTPUT.PUT_LINE('   Found ' || l_overlays.get_size() || ' overlays on page 1');
-
-    -- Display overlay details
-    FOR i IN 0..l_overlays.get_size() - 1 LOOP
-      l_overlay := TREAT(l_overlays.get(i) AS JSON_OBJECT_T);
-      DBMS_OUTPUT.PUT_LINE('   - ' || l_overlay.get_string('overlayType') || ': ' ||
-                          l_overlay.get_string('overlayId'));
-    END LOOP;
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('GetOverlays - filter by page', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 14: RemoveOverlay
-  BEGIN
-    l_overlays := PL_FPDF.GetOverlays(1);
-    IF l_overlays.get_size() > 0 THEN
-      l_overlay := TREAT(l_overlays.get(0) AS JSON_OBJECT_T);
-      l_overlay_id := l_overlay.get_string('overlayId');
-      PL_FPDF.RemoveOverlay(l_overlay_id);
-      run_test('RemoveOverlay - remove specific overlay', TRUE);
-      DBMS_OUTPUT.PUT_LINE('   Removed overlay: ' || l_overlay_id);
-    ELSE
-      run_test('RemoveOverlay - remove specific overlay', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   No overlays to remove');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('RemoveOverlay - remove specific overlay', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 15: RemoveOverlay with invalid ID
-  BEGIN
-    PL_FPDF.RemoveOverlay('INVALID_ID');
-    expect_error('RemoveOverlay with invalid ID', -20825);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('RemoveOverlay with invalid ID', -20825, SQLCODE);
-  END;
-
-  -- Test 16: ClearOverlays - specific page
-  BEGIN
-    PL_FPDF.ClearOverlays(1);
-    l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('ClearOverlays - specific page', l_overlays.get_size() = 0);
-    DBMS_OUTPUT.PUT_LINE('   Overlays on page 1: ' || l_overlays.get_size());
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('ClearOverlays - specific page', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 17: Add more overlays and clear all
-  BEGIN
-    PL_FPDF.OverlayText(1, 'Test 1', 100, 100, NULL);
-    PL_FPDF.OverlayText(1, 'Test 2', 200, 200, NULL);
-    PL_FPDF.OverlayImage(1, l_logo_blob, 300, 300, 50, 50, NULL);
-
-    l_overlays := PL_FPDF.GetOverlays();
-    DBMS_OUTPUT.PUT_LINE('   Added 3 overlays, total: ' || l_overlays.get_size());
-
-    PL_FPDF.ClearOverlays();  -- Clear all
-    l_overlays := PL_FPDF.GetOverlays();
-    run_test('ClearOverlays - clear all', l_overlays.get_size() = 0);
-    DBMS_OUTPUT.PUT_LINE('   Remaining overlays: ' || l_overlays.get_size());
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('ClearOverlays - clear all', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== Integration Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 18: Multiple overlays with different z-orders
-  BEGIN
-    PL_FPDF.ClearOverlays();
-
-    l_options := JSON_OBJECT_T();
-    l_options.put('zOrder', 1);
-    PL_FPDF.OverlayText(1, 'Bottom Layer', 100, 100, l_options);
-
-    l_options := JSON_OBJECT_T();
-    l_options.put('zOrder', 100);
-    PL_FPDF.OverlayText(1, 'Top Layer', 120, 120, l_options);
-
-    l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('Multiple overlays with z-order', l_overlays.get_size() = 2);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Multiple overlays with z-order', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 19: Overlay persistence check
-  BEGIN
-    l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('Overlay persistence', l_overlays.get_size() = 2);
-    DBMS_OUTPUT.PUT_LINE('   Persisted overlays: ' || l_overlays.get_size());
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Overlay persistence', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 20: ClearPDFCache clears overlays
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    BEGIN
-      l_overlays := PL_FPDF.GetOverlays();
-      run_test('ClearPDFCache clears overlays', FALSE);
-    EXCEPTION
-      WHEN OTHERS THEN
-        IF SQLCODE = -20809 THEN
-          run_test('ClearPDFCache clears overlays', TRUE);
-        ELSE
-          run_test('ClearPDFCache clears overlays', FALSE);
-        END IF;
-    END;
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('ClearPDFCache clears overlays', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Final summary
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('========================================');
-  DBMS_OUTPUT.PUT_LINE('Test Summary:');
-  DBMS_OUTPUT.PUT_LINE('  Total Tests: ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('  Passed:      ' || l_pass_count || ' (' ||
-                      ROUND(l_pass_count/l_test_count*100, 1) || '%)');
-  DBMS_OUTPUT.PUT_LINE('  Failed:      ' || l_fail_count || ' (' ||
-                      ROUND(l_fail_count/l_test_count*100, 1) || '%)');
-  DBMS_OUTPUT.PUT_LINE('========================================');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('✓ ALL TESTS PASSED');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('✗ SOME TESTS FAILED');
-  END IF;
-
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
 EXCEPTION
   WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('FATAL ERROR: ' || SQLERRM);
-    DBMS_OUTPUT.PUT_LINE('Test execution aborted at test ' || l_test_count);
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
     RAISE;
 END;
 /
 
 --------------------------------------------------------------------------------
--- Fase 4.6: merge e split
--- origem: tests/test_phase_4_6_merge_split.sql
+-- Escrita do stream de imagem
+-- origem: tests/test_stream_imagem.sql
 --------------------------------------------------------------------------------
-/*******************************************************************************
-* Test Script: Phase 4.6 - PDF Merge & Split
-* Version: 3.0.0-a.7
-* Date: 2026-01-25
-* Author: @maxwbh
-*
-* Description:
-*   Comprehensive test suite for Phase 4.6 multi-document PDF operations
-*   including merge, split, and extract functionality.
-*******************************************************************************/
-
+--------------------------------------------------------------------------------
+-- PL_FPDF - Escrita do stream de imagem (p_putstream do BLOB)
+--
+-- O p_putstream lia o BLOB para um buffer VARCHAR2. Com um BLOB no primeiro
+-- argumento o DBMS_LOB.READ resolve para a sobrecarga cujo buffer e RAW, e a
+-- conversao implicita devolve a representacao hexadecimal: 2000 bytes viravam
+-- 4000 caracteres, que nao cabiam no varchar2(2000).
+--
+-- Ele e privado, entao os casos 1 a 3 exercitam as duas formas do laco e as duas
+-- codificacoes lado a lado, sobre um BLOB controlado: medem o comportamento em
+-- vez de inferi-lo de um arquivo gerado. Os casos 5 e 6 percorrem o caminho
+-- completo da imagem pelo ImageFromBlob, que recebe os bytes prontos e por isso
+-- nao precisa da ACL de rede que o Image() exige.
+--
+-- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+--------------------------------------------------------------------------------
 
 DECLARE
-  -- Test counters
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
 
-  -- Test data
-  l_test_pdf1 BLOB;
-  l_test_pdf2 BLOB;
-  l_test_pdf3 BLOB;
-  l_merged BLOB;
-  l_split_pdfs JSON_ARRAY_T;
-  l_extracted BLOB;
-  l_pdfs JSON_ARRAY_T;
-  l_pdf_obj JSON_OBJECT_T;
+  l_blob    BLOB;
+  l_buf     RAW(2000);
+  l_qtd     INTEGER;
+  l_pos     INTEGER;
+  l_lidos   INTEGER;
+  l_tam     INTEGER;
+  l_origem  RAW(256);
+  l_texto   VARCHAR2(4000);
+  l_charset VARCHAR2(60);
+  l_pdf     BLOB;
+  l_hex     VARCHAR2(4000);
 
-  -- Helper procedures
-  PROCEDURE run_test(p_test_name VARCHAR2, p_result BOOLEAN) IS
+  PROCEDURE caso(p_nome VARCHAR2) IS
   BEGIN
-    l_test_count := l_test_count + 1;
-    IF p_result THEN
-      l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
-    ELSE
-      l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name || ' - FAIL');
-    END IF;
-  END run_test;
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END;
 
-  PROCEDURE expect_error(p_test_name VARCHAR2, p_expected_code NUMBER) IS
+  PROCEDURE passou(p_msg VARCHAR2) IS
   BEGIN
-    l_test_count := l_test_count + 1;
-    l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                         ' - FAIL (Expected error ' || p_expected_code || ' but succeeded)');
-  END expect_error;
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END;
 
-  PROCEDURE handle_expected_error(p_test_name VARCHAR2, p_expected_code NUMBER, p_actual_code NUMBER) IS
+  PROCEDURE falhou(p_msg VARCHAR2) IS
   BEGIN
-    l_test_count := l_test_count + 1;
-    IF p_actual_code = p_expected_code THEN
-      l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
-    ELSE
-      l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                           ' - FAIL (Expected ' || p_expected_code || ', got ' || p_actual_code || ')');
-    END IF;
-  END handle_expected_error;
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END;
+
+  PROCEDURE pulou(p_msg VARCHAR2) IS
+  BEGIN
+    l_skip := l_skip + 1;
+    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
+  END;
+
+  -- Um BLOB de n bytes iguais.
+  FUNCTION blob_de(p_bytes IN PLS_INTEGER) RETURN BLOB IS
+    l_b BLOB;
+  BEGIN
+    DBMS_LOB.CREATETEMPORARY(l_b, TRUE);
+    FOR i IN 1 .. p_bytes LOOP
+      DBMS_LOB.WRITEAPPEND(l_b, 1, HEXTORAW('41'));
+    END LOOP;
+    RETURN l_b;
+  END blob_de;
+
+  -- Escreve o texto num CLOB e converte de volta para BLOB, que e o percurso
+  -- que todo stream faz: o documento e montado em CLOB e convertido no fim.
+  FUNCTION ida_e_volta(p_texto IN VARCHAR2) RETURN BLOB IS
+    l_c CLOB;
+    l_b BLOB;
+    l_in   PLS_INTEGER := 1;
+    l_out  PLS_INTEGER := 1;
+    l_lang PLS_INTEGER := 0;
+    l_warn PLS_INTEGER := 0;
+  BEGIN
+    DBMS_LOB.CREATETEMPORARY(l_c, TRUE);
+    DBMS_LOB.WRITEAPPEND(l_c, LENGTH(p_texto), p_texto);
+    DBMS_LOB.CREATETEMPORARY(l_b, TRUE);
+    DBMS_LOB.CONVERTTOBLOB(l_b, l_c, DBMS_LOB.GETLENGTH(l_c), l_in, l_out,
+                           DBMS_LOB.DEFAULT_CSID, l_lang, l_warn);
+    DBMS_LOB.FREETEMPORARY(l_c);
+    RETURN l_b;
+  END ida_e_volta;
+
+  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
 
 BEGIN
-  DBMS_OUTPUT.PUT_LINE('Starting Phase 4.6 Multi-Document Tests...');
-  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - stream de imagem');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
 
-  -- Create valid test PDFs using PL_FPDF itself (guarantees correct structure)
-  -- PDF 1
-  PL_FPDF.Init('P', 'mm', 'Letter');
-  PL_FPDF.AddPage();
-  PL_FPDF.SetFont('Arial', '', 12);
-  PL_FPDF.Cell(0, 10, 'Test PDF 1');
-  l_test_pdf1 := PL_FPDF.OutputBlob();
-  PL_FPDF.Reset();
+  --------------------------------------------------------------------------
+  caso('O laco le ate o ultimo byte');
+  --------------------------------------------------------------------------
+  -- O teste era offset < tamanho. Quando o ultimo pedaco comeca exatamente no
+  -- byte final, o laco termina sem le-lo: o stream sai um byte curto enquanto
+  -- o /Length continua prometendo o total. 2001 bytes e o menor caso que
+  -- mostra isso com pedaco de 2000.
+  l_blob := blob_de(2001);
+  l_tam  := DBMS_LOB.GETLENGTH(l_blob);
 
-  -- PDF 2
-  PL_FPDF.Init('P', 'mm', 'Letter');
-  PL_FPDF.AddPage();
-  PL_FPDF.SetFont('Arial', '', 12);
-  PL_FPDF.Cell(0, 10, 'Test PDF 2');
-  l_test_pdf2 := PL_FPDF.OutputBlob();
-  PL_FPDF.Reset();
+  l_lidos := 0;
+  l_pos   := 1;
+  WHILE l_pos < l_tam LOOP
+    l_qtd := 2000;
+    DBMS_LOB.READ(l_blob, l_qtd, l_pos, l_buf);
+    l_lidos := l_lidos + l_qtd;
+    l_pos   := l_pos + l_qtd;
+  END LOOP;
 
-  -- PDF 3
-  PL_FPDF.Init('P', 'mm', 'Letter');
-  PL_FPDF.AddPage();
-  PL_FPDF.SetFont('Arial', '', 12);
-  PL_FPDF.Cell(0, 10, 'Test PDF 3');
-  l_test_pdf3 := PL_FPDF.OutputBlob();
-  PL_FPDF.Reset();
-
-  -- Estado limpo: sem isto, rodar o arquivo duas vezes na mesma sessão falha
-  -- com ORA-20828 ('PDF ID already loaded'), porque a coleção multi-documento
-  -- sobrevive entre execuções.
-  BEGIN
-    PL_FPDF.ClearPDFCache;
-  EXCEPTION WHEN OTHERS THEN NULL;
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('=== LoadPDFWithID Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 1: Load single PDF with ID
-  BEGIN
-    PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf1);
-    run_test('Load PDF with ID', TRUE);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Load PDF with ID', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 2: Load multiple PDFs
-  BEGIN
-    PL_FPDF.LoadPDFWithID('pdf2', l_test_pdf2);
-    PL_FPDF.LoadPDFWithID('pdf3', l_test_pdf3);
-    run_test('Load multiple PDFs', TRUE);
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Load multiple PDFs', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 3: Load duplicate ID (should error)
-  BEGIN
-    PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf1);
-    expect_error('Load duplicate PDF ID', -20828);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Load duplicate PDF ID', -20828, SQLCODE);
-  END;
-
-  -- Test 4: Load with NULL ID (should error)
-  BEGIN
-    PL_FPDF.LoadPDFWithID(NULL, l_test_pdf1);
-    expect_error('Load with NULL ID', -20830);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Load with NULL ID', -20830, SQLCODE);
-  END;
-
-  -- Test 5: Load with NULL BLOB (should error)
-  BEGIN
-    PL_FPDF.LoadPDFWithID('pdf_null', NULL);
-    expect_error('Load with NULL BLOB', -20830);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Load with NULL BLOB', -20830, SQLCODE);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== GetLoadedPDFs Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 6: Get loaded PDFs
-  BEGIN
-    l_pdfs := PL_FPDF.GetLoadedPDFs();
-    run_test('GetLoadedPDFs returns array', l_pdfs IS NOT NULL AND l_pdfs.get_size() >= 3);
-    DBMS_OUTPUT.PUT_LINE('   Found ' || l_pdfs.get_size() || ' loaded PDFs');
-
-    -- Display PDF details
-    FOR i IN 0..l_pdfs.get_size() - 1 LOOP
-      l_pdf_obj := TREAT(l_pdfs.get(i) AS JSON_OBJECT_T);
-      DBMS_OUTPUT.PUT_LINE('   - ' || l_pdf_obj.get_string('pdfId') ||
-                          ': ' || l_pdf_obj.get_number('pageCount') || ' pages, ' ||
-                          ROUND(l_pdf_obj.get_number('fileSize')/1024, 1) || ' KB');
-    END LOOP;
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('GetLoadedPDFs returns array', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== MergePDFs Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 7: Merge 2 PDFs
-  BEGIN
-    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf2"]'), NULL);
-    run_test('Merge 2 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
-    DBMS_OUTPUT.PUT_LINE('   Merged PDF size: ' || DBMS_LOB.GETLENGTH(l_merged) || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Merge 2 PDFs', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 8: Merge 3 PDFs
-  BEGIN
-    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf2","pdf3"]'), NULL);
-    run_test('Merge 3 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
-    DBMS_OUTPUT.PUT_LINE('   Merged PDF size: ' || DBMS_LOB.GETLENGTH(l_merged) || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Merge 3 PDFs', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 9: Merge with empty array (should error)
-  BEGIN
-    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('[]'), NULL);
-    expect_error('Merge with empty array', -20832);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Merge with empty array', -20832, SQLCODE);
-  END;
-
-  -- Test 10: Merge with non-loaded PDF (should error)
-  BEGIN
-    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf_notloaded"]'), NULL);
-    expect_error('Merge with non-loaded PDF', -20833);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Merge with non-loaded PDF', -20833, SQLCODE);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== ExtractPages Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 11: Extract ALL pages
-  BEGIN
-    l_extracted := PL_FPDF.ExtractPages('pdf1', 'ALL', NULL);
-    run_test('Extract ALL pages', l_extracted IS NOT NULL);
-    DBMS_OUTPUT.PUT_LINE('   Extracted PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Extract ALL pages', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 12: Extract single page
-  BEGIN
-    l_extracted := PL_FPDF.ExtractPages('pdf1', '1', NULL);
-    run_test('Extract single page', l_extracted IS NOT NULL);
-    DBMS_OUTPUT.PUT_LINE('   Extracted PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Extract single page', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 13: Extract from non-loaded PDF (should error)
-  BEGIN
-    l_extracted := PL_FPDF.ExtractPages('pdf_notexist', '1', NULL);
-    expect_error('Extract from non-loaded PDF', -20831);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Extract from non-loaded PDF', -20831, SQLCODE);
-  END;
-
-  -- Test 14: Extract with NULL page spec (should error)
-  BEGIN
-    l_extracted := PL_FPDF.ExtractPages('pdf1', NULL, NULL);
-    expect_error('Extract with NULL page spec', -20838);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Extract with NULL page spec', -20838, SQLCODE);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== SplitPDF Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 15: Split PDF
-  BEGIN
-    l_split_pdfs := PL_FPDF.SplitPDF('pdf1', JSON_ARRAY_T('["1"]'));
-    run_test('Split PDF into 1 part', l_split_pdfs IS NOT NULL AND l_split_pdfs.get_size() = 1);
-    DBMS_OUTPUT.PUT_LINE('   Split into ' || l_split_pdfs.get_size() || ' parts');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Split PDF into 1 part', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 16: Split with empty ranges (should error)
-  BEGIN
-    l_split_pdfs := PL_FPDF.SplitPDF('pdf1', JSON_ARRAY_T('[]'));
-    expect_error('Split with empty ranges', -20835);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Split with empty ranges', -20835, SQLCODE);
-  END;
-
-  -- Test 17: Split non-loaded PDF (should error)
-  BEGIN
-    l_split_pdfs := PL_FPDF.SplitPDF('pdf_notexist', JSON_ARRAY_T('["1"]'));
-    expect_error('Split non-loaded PDF', -20831);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Split non-loaded PDF', -20831, SQLCODE);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== UnloadPDF Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 18: Unload PDF
-  BEGIN
-    PL_FPDF.UnloadPDF('pdf3');
-    l_pdfs := PL_FPDF.GetLoadedPDFs();
-    run_test('Unload PDF', l_pdfs.get_size() = 2);
-    DBMS_OUTPUT.PUT_LINE('   Remaining PDFs: ' || l_pdfs.get_size());
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Unload PDF', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Test 19: Unload non-existent PDF (should error)
-  BEGIN
-    PL_FPDF.UnloadPDF('pdf_notexist');
-    expect_error('Unload non-existent PDF', -20831);
-  EXCEPTION
-    WHEN OTHERS THEN
-      handle_expected_error('Unload non-existent PDF', -20831, SQLCODE);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=== Integration Tests ===');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test 20: Load, merge, extract workflow
-  BEGIN
-    PL_FPDF.LoadPDFWithID('pdf4', l_test_pdf1);
-    PL_FPDF.LoadPDFWithID('pdf5', l_test_pdf2);
-
-    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf4","pdf5"]'), NULL);
-    PL_FPDF.LoadPDFWithID('merged', l_merged);
-
-    l_extracted := PL_FPDF.ExtractPages('merged', 'ALL', NULL);
-
-    run_test('Load-Merge-Extract workflow', l_extracted IS NOT NULL);
-    DBMS_OUTPUT.PUT_LINE('   Final PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      run_test('Load-Merge-Extract workflow', FALSE);
-      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
-  END;
-
-  -- Final summary
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('========================================');
-  DBMS_OUTPUT.PUT_LINE('Test Summary:');
-  DBMS_OUTPUT.PUT_LINE('  Total Tests: ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('  Passed:      ' || l_pass_count || ' (' ||
-                      ROUND(l_pass_count/l_test_count*100, 1) || '%)');
-  DBMS_OUTPUT.PUT_LINE('  Failed:      ' || l_fail_count || ' (' ||
-                      ROUND(l_fail_count/l_test_count*100, 1) || '%)');
-  DBMS_OUTPUT.PUT_LINE('========================================');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('✓ ALL TESTS PASSED');
+  IF l_lidos < l_tam THEN
+    passou('a forma antiga leu ' || l_lidos || ' de ' || l_tam || ' bytes');
   ELSE
-    DBMS_OUTPUT.PUT_LINE('✗ SOME TESTS FAILED');
+    falhou('a forma antiga leu tudo - o defeito nao reproduziu');
   END IF;
 
+  l_lidos := 0;
+  l_pos   := 1;
+  WHILE l_pos <= l_tam LOOP
+    l_qtd := 2000;
+    DBMS_LOB.READ(l_blob, l_qtd, l_pos, l_buf);
+    l_lidos := l_lidos + l_qtd;
+    l_pos   := l_pos + l_qtd;
+  END LOOP;
+
+  IF l_lidos = l_tam THEN
+    passou('a forma corrigida leu os ' || l_tam || ' bytes');
+  ELSE
+    falhou('a forma corrigida leu ' || l_lidos || ' de ' || l_tam);
+  END IF;
+  DBMS_LOB.FREETEMPORARY(l_blob);
+
+  --------------------------------------------------------------------------
+  caso('O tamanho do pedaco e IN OUT');
+  --------------------------------------------------------------------------
+  -- O DBMS_LOB.READ devolve no parametro de quantidade o que leu de fato. Se a
+  -- variavel for inicializada uma vez so, em vez de atribuida a cada passagem,
+  -- uma leitura curta vira o tamanho de todas as seguintes.
+  l_blob := blob_de(500);
+  l_qtd  := 2000;
+  DBMS_LOB.READ(l_blob, l_qtd, 1, l_buf);
+
+  IF l_qtd = 500 THEN
+    passou('depois de leitura curta a quantidade volta 500, nao os 2000 dados');
+  ELSE
+    falhou('a quantidade voltou ' || l_qtd);
+  END IF;
+  DBMS_LOB.FREETEMPORARY(l_blob);
+
+  --------------------------------------------------------------------------
+  caso('Por que o stream sai em hexadecimal');
+  --------------------------------------------------------------------------
+  -- O documento e montado como CLOB e convertido no fim, entao tudo o que se
+  -- escreve nele faz um percurso de ida e volta pelo charset do banco. Este
+  -- caso manda os 256 valores de byte pelos dois caminhos e compara.
+  SELECT value INTO l_charset
+    FROM nls_database_parameters
+   WHERE parameter = 'NLS_CHARACTERSET';
+  DBMS_OUTPUT.PUT_LINE('  NLS_CHARACTERSET = ' || l_charset);
+
+  l_origem := NULL;
+  FOR i IN 0 .. 255 LOOP
+    l_origem := UTL_RAW.CONCAT(l_origem, HEXTORAW(TO_CHAR(i, 'FM0X')));
+  END LOOP;
+
+  l_pdf := ida_e_volta(UTL_RAW.CAST_TO_VARCHAR2(l_origem));
+  DBMS_OUTPUT.PUT_LINE('  como caracteres:  256 bytes entraram, '
+                       || DBMS_LOB.GETLENGTH(l_pdf) || ' sairam');
+  IF DBMS_LOB.GETLENGTH(l_pdf) = 256
+     AND UTL_RAW.COMPARE(DBMS_LOB.SUBSTR(l_pdf, 256, 1), l_origem) = 0 THEN
+    pulou('este banco preserva byte cru no percurso - charset de um byte, '
+          || 'entao o caso nao distingue as duas codificacoes');
+  ELSE
+    passou('byte cru nao sobrevive ao percurso, que e por que o stream nao '
+           || 'e escrito assim');
+  END IF;
+  DBMS_LOB.FREETEMPORARY(l_pdf);
+
+  l_texto := RAWTOHEX(l_origem);
+  l_pdf   := ida_e_volta(l_texto);
+  DBMS_OUTPUT.PUT_LINE('  como hexadecimal: ' || LENGTH(l_texto)
+                       || ' caracteres entraram, ' || DBMS_LOB.GETLENGTH(l_pdf)
+                       || ' bytes sairam');
+  IF DBMS_LOB.GETLENGTH(l_pdf) = LENGTH(l_texto)
+     AND UTL_RAW.COMPARE(UTL_RAW.CAST_TO_RAW(l_texto),
+                         DBMS_LOB.SUBSTR(l_pdf, DBMS_LOB.GETLENGTH(l_pdf), 1)) = 0 THEN
+    passou('hexadecimal atravessa o percurso intacto');
+  ELSE
+    falhou('hexadecimal nao sobreviveu - a premissa da codificacao nao vale aqui');
+  END IF;
+  DBMS_LOB.FREETEMPORARY(l_pdf);
+
+  --------------------------------------------------------------------------
+  caso('O package segue gerando documento');
+  --------------------------------------------------------------------------
+  -- O p_out esta no caminho de toda linha do documento, entao qualquer mexida
+  -- na escrita de stream passa por aqui.
+  PL_FPDF.Reset;
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Arial', 'B', 16);
+  PL_FPDF.Cell(0, 10, 'stream', '0', 1, 'C');
+  l_pdf := PL_FPDF.OutputBlob;
+
+  IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
+    passou('documento gerado, ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+  ELSE
+    falhou('OutputBlob devolveu LOB vazio');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('A imagem inteira, do parser ao stream');
+  --------------------------------------------------------------------------
+  -- Pelo ImageFromBlob, que recebe os bytes prontos: sem HTTP, sem ACL, nada
+  -- fora do schema. O PNG abaixo tem 2x2 pixels e paleta de quatro cores,
+  -- indexado de proposito, porque a paleta e a parte que o percurso binario
+  -- mais toca.
+  l_hex := '89504E470D0A1A0A0000000D494844520000000200000002080300000045';
+  l_hex := l_hex || '68FD160000000C504C5445FF000000FF000000FFFFFF00D6028F7B000000';
+  l_hex := l_hex || '0E4944415478DA63606064606206000011000783CA64640000000049454E';
+  l_hex := l_hex || '44AE426082';
+
+  PL_FPDF.Reset;
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.ImageFromBlob(HEXTORAW(l_hex), 'TESTE_PNG', 10, 10, 40);
+  l_pdf := PL_FPDF.OutputBlob;
+
+  IF acha(l_pdf, '/ASCIIHexDecode') > 0 THEN
+    passou('o stream declara /ASCIIHexDecode');
+  ELSE
+    falhou('/ASCIIHexDecode ausente - o binario nao atravessaria o CLOB');
+  END IF;
+
+  IF acha(l_pdf, '/DecodeParms [') > 0 THEN
+    passou('/DecodeParms saiu como vetor, acompanhando o /Filter');
+  ELSE
+    falhou('/DecodeParms nao e vetor - o /Predictor cairia no filtro errado');
+  END IF;
+
+  IF acha(l_pdf, '/Subtype /Image') > 0 AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
+    passou('PDF com imagem gerado, ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+  ELSE
+    falhou('o objeto de imagem nao foi emitido');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('Formato nao suportado e recusado, nao aceito em silencio');
+  --------------------------------------------------------------------------
+  -- Um SVG comeca com '<?xml' ou '<svg': nao tem assinatura binaria de PNG nem
+  -- marcador SOI de JPEG. Recusar com erro proprio vale mais que gravar um
+  -- objeto de imagem que nenhum leitor desenha.
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.ImageFromBlob(UTL_RAW.CAST_TO_RAW('<svg xmlns="http://www.w3.org/2000/svg"/>'),
+                          'TESTE_SVG', 10, 10, 40);
+    falhou('o SVG foi aceito - deveria ter sido recusado');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20303') > 0
+         OR INSTR(SQLERRM, 'Unsupported image format') > 0 THEN
+        passou('formato nao suportado recusado com erro proprio');
+      ELSE
+        falhou('recusou, mas com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
 EXCEPTION
   WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('FATAL ERROR: ' || SQLERRM);
-    DBMS_OUTPUT.PUT_LINE('Test execution aborted at test ' || l_test_count);
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
     RAISE;
 END;
 /
 
 --------------------------------------------------------------------------------
--- Fase 4: validação completa
--- origem: tests/validate_phase_4_complete.sql
---------------------------------------------------------------------------------
-/*******************************************************************************
-* Validation Script: Phase 4 Complete Validation (4.1-4.6)
-* Version: 3.0.0-b.2
-* Date: 2026-01
-* Author: @maxwbh
-*
-* Purpose: Complete validation for PDF Reading & Manipulation (Phase 4)
-*
-* Validates:
-*   - Phase 4.1A: PDF Parser
-*   - Phase 4.1B: Page Information
-*   - Phase 4.2: Page Management (Rotate, Remove)
-*   - Phase 4.3: Watermarks
-*   - Phase 4.4: Output Modified PDF
-*   - Phase 4.5: Text & Image Overlay
-*   - Phase 4.6: PDF Merge & Split
-*
-* Usage:
-*   SET SERVEROUTPUT ON SIZE UNLIMITED
-*   @tests/validate_phase_4_complete.sql
-*******************************************************************************/
-
--- ================================================================================
--- PL_FPDF - Phase 4 Complete Validation (PDF Reading & Manipulation)
--- Version: 3.0.0-b.2
--- ================================================================================
---
-
-DECLARE
-  l_test_count PLS_INTEGER := 0;
-  l_pass_count PLS_INTEGER := 0;
-  l_fail_count PLS_INTEGER := 0;
-
-  l_test_pdf BLOB;
-  l_test_pdf_2 BLOB;
-  l_result BLOB;
-  l_info JSON_OBJECT_T;
-  l_arr  JSON_ARRAY_T;   -- retornos JSON_ARRAY_T
-  l_num  PLS_INTEGER;    -- retornos numéricos
-
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
-  BEGIN
-    l_test_count := l_test_count + 1;
-    IF p_passed THEN
-      l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_test_name);
-    ELSE
-      l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name ||
-        CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
-    END IF;
-  END test_result;
-
-  PROCEDURE create_test_pdf IS
-  BEGIN
-    PL_FPDF.Init();
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Test Page 1');
-    PL_FPDF.AddPage();
-    PL_FPDF.Cell(0, 10, 'Test Page 2');
-    PL_FPDF.AddPage();
-    PL_FPDF.Cell(0, 10, 'Test Page 3');
-    l_test_pdf := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END create_test_pdf;
-
-  PROCEDURE create_test_pdf_2 IS
-  BEGIN
-    PL_FPDF.Init();
-    PL_FPDF.AddPage();
-    PL_FPDF.SetFont('Arial', '', 12);
-    PL_FPDF.Cell(0, 10, 'Second PDF - Page 1');
-    PL_FPDF.AddPage();
-    PL_FPDF.Cell(0, 10, 'Second PDF - Page 2');
-    l_test_pdf_2 := PL_FPDF.OutputBlob();
-    PL_FPDF.Reset();
-  END create_test_pdf_2;
-
-BEGIN
-  -- Create test PDFs
-  create_test_pdf();
-  create_test_pdf_2();
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.1A: PDF Parser');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: LoadPDF
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    test_result('LoadPDF - Load existing PDF', TRUE);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('LoadPDF', FALSE, SQLERRM);
-  END;
-
-  -- Test: PDF carregado
-  -- Nao existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
-  BEGIN
-    test_result('PDF carregado - GetPageCount responde', PL_FPDF.GetPageCount > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('PDF carregado', FALSE, SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.1B: Page Information');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: GetPageCount
-  BEGIN
-    l_num := PL_FPDF.GetPageCount;
-    test_result('GetPageCount - Count pages in PDF', l_num = 3);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetPageCount', FALSE, SQLERRM);
-  END;
-
-  -- Test: GetPageInfo
-  BEGIN
-    l_info := PL_FPDF.GetPageInfo(1);
-    -- as chaves do JSON são camelCase: pageNumber, não page_number
-    test_result('GetPageInfo - Get page 1 information',
-                l_info.has('pageNumber') AND l_info.get_number('pageNumber') = 1);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetPageInfo', FALSE, SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.2: Page Management');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: RotatePage
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    PL_FPDF.RotatePage(1, 90);
-    l_info := PL_FPDF.GetPageInfo(1);
-    test_result('RotatePage - Rotate page 90 degrees',
-                l_info.get_number('rotation') = 90);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('RotatePage', FALSE, SQLERRM);
-  END;
-
-  -- Test: RemovePage
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    PL_FPDF.RemovePage(2);
-    -- RemovePage apenas MARCA a página; GetPageCount continua devolvendo o
-    -- total do documento carregado. A remoção se concretiza em
-    -- OutputModifiedPDF, e o estado é consultável por IsPageRemoved.
-    test_result('RemovePage - Remove page 2',
-                PL_FPDF.IsPageRemoved(2)
-                AND NOT PL_FPDF.IsPageRemoved(1)
-                AND PL_FPDF.GetPageCount = 3);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('RemovePage', FALSE, SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.3: Watermarks');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: AddWatermark
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    PL_FPDF.AddWatermark('CONFIDENTIAL', NULL);
-    test_result('AddWatermark - Add watermark to all pages', TRUE);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('AddWatermark', FALSE, SQLERRM);
-  END;
-
-  -- Test: GetWatermarks
-  DECLARE
-    l_watermarks JSON_ARRAY_T;
-  BEGIN
-    l_watermarks := PL_FPDF.GetWatermarks();
-    test_result('GetWatermarks - List watermarks',
-                l_watermarks IS NOT NULL AND l_watermarks.get_size() > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetWatermarks', FALSE, SQLERRM);
-  END;
-
-  -- RemoveWatermark e ClearWatermarks nao existem na API: o teste antigo as
-  -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A unica forma
-  -- publica de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
-  DECLARE
-    l_watermarks JSON_ARRAY_T;
-  BEGIN
-    l_watermarks := PL_FPDF.GetWatermarks();
-    test_result('GetWatermarks - lista as marcas registradas',
-                l_watermarks.get_size() > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetWatermarks', FALSE, SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.4: Output Modified PDF');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: OutputModifiedPDF
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    PL_FPDF.RotatePage(1, 90);
-    l_result := PL_FPDF.OutputModifiedPDF();
-    test_result('OutputModifiedPDF - Generate modified PDF',
-                l_result IS NOT NULL AND DBMS_LOB.GETLENGTH(l_result) > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('OutputModifiedPDF', FALSE, SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.5: Text & Image Overlay');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: OverlayText
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDF(l_test_pdf);
-    PL_FPDF.OverlayText(1, 'APPROVED', 100, 100, NULL);
-    test_result('OverlayText - Add text overlay to page', TRUE);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('OverlayText', FALSE, SQLERRM);
-  END;
-
-  -- Test: GetOverlays
-  DECLARE
-    l_overlays JSON_ARRAY_T;
-  BEGIN
-    l_overlays := PL_FPDF.GetOverlays(NULL);
-    test_result('GetOverlays - List all overlays',
-                l_overlays IS NOT NULL AND l_overlays.get_size() > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetOverlays', FALSE, SQLERRM);
-  END;
-
-  -- Test: OverlayImage
-  DECLARE
-    l_minimal_png BLOB;
-  BEGIN
-    -- Minimal 1x1 PNG (67 bytes)
-    l_minimal_png := HEXTORAW(
-      '89504E470D0A1A0A' || -- PNG signature
-      '0000000D49484452' || -- IHDR chunk
-      '0000000100000001' || -- 1x1 dimensions
-      '0806000000' ||       -- 8-bit RGBA
-      '1F15C4890000000A' || -- CRC + IDAT chunk header
-      '49444154' ||         -- IDAT
-      '789C6300010000050001' || -- Compressed data
-      '0D0A2DB40000000049454E44AE426082'); -- IEND chunk
-
-    PL_FPDF.OverlayImage(1, l_minimal_png, 50, 50, NULL, NULL, NULL);
-    test_result('OverlayImage - Add image overlay to page', TRUE);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('OverlayImage', FALSE, SQLERRM);
-  END;
-
-  -- Test: RemoveOverlay
-  DECLARE
-    l_overlays JSON_ARRAY_T;
-    l_overlay JSON_OBJECT_T;
-    l_overlay_id VARCHAR2(100);
-  BEGIN
-    l_overlays := PL_FPDF.GetOverlays(NULL);
-    IF l_overlays.get_size() > 0 THEN
-      l_overlay := TREAT(l_overlays.get(0) AS JSON_OBJECT_T);
-      l_overlay_id := l_overlay.get_string('overlayId');   -- camelCase
-      PL_FPDF.RemoveOverlay(l_overlay_id);
-      test_result('RemoveOverlay - Remove specific overlay', TRUE);
-    ELSE
-      test_result('RemoveOverlay', FALSE, 'No overlays to remove');
-    END IF;
-  EXCEPTION WHEN OTHERS THEN
-    test_result('RemoveOverlay', FALSE, SQLERRM);
-  END;
-
-  -- Test: ClearOverlays
-  BEGIN
-    PL_FPDF.ClearOverlays(NULL);
-    l_arr := PL_FPDF.GetOverlays(NULL);
-    test_result('ClearOverlays - Clear all overlays', l_arr.get_size() = 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('ClearOverlays', FALSE, SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('PHASE 4.6: PDF Merge & Split');
-  DBMS_OUTPUT.PUT_LINE('=========================================');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  -- Test: LoadPDFWithID
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf);
-    PL_FPDF.LoadPDFWithID('pdf2', l_test_pdf_2);
-    test_result('LoadPDFWithID - Load multiple PDFs with IDs', TRUE);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('LoadPDFWithID', FALSE, SQLERRM);
-  END;
-
-  -- Test: GetLoadedPDFs
-  DECLARE
-    l_pdfs JSON_ARRAY_T;
-  BEGIN
-    l_pdfs := PL_FPDF.GetLoadedPDFs();
-    test_result('GetLoadedPDFs - List loaded PDFs',
-                l_pdfs IS NOT NULL AND l_pdfs.get_size() = 2);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('GetLoadedPDFs', FALSE, SQLERRM);
-  END;
-
-  -- Test: MergePDFs
-  DECLARE
-    l_merged BLOB;
-    l_pdf_ids JSON_ARRAY_T;
-  BEGIN
-    l_pdf_ids := JSON_ARRAY_T('["pdf1", "pdf2"]');
-    l_merged := PL_FPDF.MergePDFs(l_pdf_ids, NULL);
-    test_result('MergePDFs - Merge two PDFs',
-                l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('MergePDFs', FALSE, SQLERRM);
-  END;
-
-  -- Test: ExtractPages
-  DECLARE
-    l_extracted BLOB;
-  BEGIN
-    l_extracted := PL_FPDF.ExtractPages('pdf1', '1', NULL);
-    test_result('ExtractPages - Extract single page',
-                l_extracted IS NOT NULL AND DBMS_LOB.GETLENGTH(l_extracted) > 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('ExtractPages', FALSE, SQLERRM);
-  END;
-
-  -- Test: SplitPDF
-  DECLARE
-    l_splits JSON_ARRAY_T;
-    l_ranges JSON_ARRAY_T;
-  BEGIN
-    l_ranges := JSON_ARRAY_T('["1", "2-3"]');
-    l_splits := PL_FPDF.SplitPDF('pdf1', l_ranges);
-    test_result('SplitPDF - Split PDF into multiple parts',
-                l_splits IS NOT NULL AND l_splits.get_size() = 2);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('SplitPDF', FALSE, SQLERRM);
-  END;
-
-  -- Test: UnloadPDF
-  BEGIN
-    PL_FPDF.UnloadPDF('pdf2');
-    l_arr := PL_FPDF.GetLoadedPDFs();
-    test_result('UnloadPDF - Unload specific PDF', l_arr.get_size() = 1);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('UnloadPDF', FALSE, SQLERRM);
-  END;
-
-  -- Test: ClearPDFCache
-  BEGIN
-    PL_FPDF.ClearPDFCache();
-    l_arr := PL_FPDF.GetLoadedPDFs();
-    test_result('ClearPDFCache - Clear all loaded PDFs', l_arr.get_size() = 0);
-  EXCEPTION WHEN OTHERS THEN
-    test_result('ClearPDFCache', FALSE, SQLERRM);
-  END;
-
-  -- Summary
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('Phase 4 Complete Validation Summary');
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-  DBMS_OUTPUT.PUT_LINE('Total Tests: ' || l_test_count);
-  DBMS_OUTPUT.PUT_LINE('Passed:      ' || l_pass_count || ' (' ||
-    ROUND(l_pass_count * 100 / l_test_count, 1) || '%)');
-  DBMS_OUTPUT.PUT_LINE('Failed:      ' || l_fail_count);
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE('Phase Coverage:');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.1A: PDF Parser         ✓');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.1B: Page Information   ✓');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.2:  Page Management    ✓');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.3:  Watermarks         ✓');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.4:  Output Modified    ✓');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.5:  Text/Image Overlay ✓');
-  DBMS_OUTPUT.PUT_LINE('  - Phase 4.6:  Merge & Split      ✓');
-  DBMS_OUTPUT.PUT_LINE('');
-
-  IF l_fail_count = 0 THEN
-    DBMS_OUTPUT.PUT_LINE('*** PHASE 4: ALL TESTS PASSED ***');
-    DBMS_OUTPUT.PUT_LINE('*** PDF READING & MANIPULATION: VALIDATED ***');
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Phase 4 is now complete and ready for production use.');
-    DBMS_OUTPUT.PUT_LINE('Version can be promoted from Beta to Release Candidate.');
-  ELSE
-    DBMS_OUTPUT.PUT_LINE('*** PHASE 4: SOME TESTS FAILED - REVIEW REQUIRED ***');
-    DBMS_OUTPUT.PUT_LINE('*** PHASE 4 REMAINS IN BETA STATUS ***');
-  END IF;
-  DBMS_OUTPUT.PUT_LINE('================================================================================');
-
-END;
-/
-
---
--- Validation complete. Review results above.
---
-
---------------------------------------------------------------------------------
--- Núcleo: buffers, NLS, QR, barcode, merge/split
+-- Núcleo: buffers, NLS, QR, código de barras
 -- origem: tests/test_core.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -2973,7 +1035,7 @@ DECLARE
   l_pass_count  PLS_INTEGER := 0;
   l_fail_count  PLS_INTEGER := 0;
 
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
+  PROCEDURE caso(p_test_name VARCHAR2) IS
   BEGIN
     l_test_count := l_test_count + 1;
     DBMS_OUTPUT.PUT_LINE('');
@@ -2981,13 +1043,13 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
   END;
 
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_pass_count := l_pass_count + 1;
     DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
   END;
 
-  PROCEDURE test_fail(p_message VARCHAR2) IS
+  PROCEDURE falhou(p_message VARCHAR2) IS
   BEGIN
     l_fail_count := l_fail_count + 1;
     DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
@@ -2999,7 +1061,7 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('================================================================');
 
   --------------------------------------------------------------------------
-  test_start('Página única com 3.000 células (muito acima de 32 KB)');
+  caso('Página única com 3.000 células (muito acima de 32 KB)');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -3014,18 +1076,18 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 32767 THEN
-      test_pass('PDF gerado com ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+      passou('PDF gerado com ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
     ELSE
-      test_fail('PDF vazio ou truncado: ' || NVL(DBMS_LOB.GETLENGTH(l_pdf), 0) || ' bytes');
+      falhou('PDF vazio ou truncado: ' || NVL(DBMS_LOB.GETLENGTH(l_pdf), 0) || ' bytes');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
       -- ORA-06502 aqui significa que o teto de 32 KB por página voltou
-      test_fail('Exceção ao gerar página grande: ' || SQLERRM);
+      falhou('Exceção ao gerar página grande: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Múltiplas páginas grandes mantêm o conteúdo separado');
+  caso('Múltiplas páginas grandes mantêm o conteúdo separado');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -3041,17 +1103,17 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 32767 THEN
-      test_pass('3 páginas grandes geradas: ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+      passou('3 páginas grandes geradas: ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
     ELSE
-      test_fail('PDF vazio ou truncado');
+      falhou('PDF vazio ou truncado');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção com múltiplas páginas grandes: ' || SQLERRM);
+      falhou('Exceção com múltiplas páginas grandes: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Alias {nb} substituído em página que ultrapassa 32 KB');
+  caso('Alias {nb} substituído em página que ultrapassa 32 KB');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -3071,19 +1133,19 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NULL OR DBMS_LOB.GETLENGTH(l_pdf) = 0 THEN
-      test_fail('PDF vazio');
+      falhou('PDF vazio');
     ELSIF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW('{nb}')) > 0 THEN
-      test_fail('Alias {nb} não foi substituído além do primeiro bloco');
+      falhou('Alias {nb} não foi substituído além do primeiro bloco');
     ELSE
-      test_pass('Alias substituído corretamente em página grande');
+      passou('Alias substituído corretamente em página grande');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção no teste de alias: ' || SQLERRM);
+      falhou('Exceção no teste de alias: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Reset libera recursos e permite novo documento');
+  caso('Reset libera recursos e permite novo documento');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -3101,17 +1163,17 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
-      test_pass('Segundo documento gerado após Reset');
+      passou('Segundo documento gerado após Reset');
     ELSE
-      test_fail('Falha ao gerar documento após Reset');
+      falhou('Falha ao gerar documento após Reset');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção após Reset: ' || SQLERRM);
+      falhou('Exceção após Reset: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Geração funciona com NLS decimal vírgula e não altera a sessão');
+  caso('Geração funciona com NLS decimal vírgula e não altera a sessão');
   --------------------------------------------------------------------------
   DECLARE
     l_nls_antes  VARCHAR2(64);
@@ -3137,26 +1199,26 @@ BEGIN
      WHERE parameter = 'NLS_NUMERIC_CHARACTERS';
 
     IF l_pdf IS NULL OR DBMS_LOB.GETLENGTH(l_pdf) = 0 THEN
-      test_fail('PDF não gerado com NLS vírgula');
+      falhou('PDF não gerado com NLS vírgula');
     ELSIF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW(',25')) > 0
        OR DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW(',75')) > 0 THEN
-      test_fail('Vírgula vazou como separador decimal no conteúdo do PDF');
+      falhou('Vírgula vazou como separador decimal no conteúdo do PDF');
     ELSIF l_nls_depois != l_nls_antes THEN
-      test_fail('A biblioteca alterou NLS_NUMERIC_CHARACTERS da sessão: ' ||
+      falhou('A biblioteca alterou NLS_NUMERIC_CHARACTERS da sessão: ' ||
                 l_nls_antes || ' -> ' || l_nls_depois);
     ELSE
-      test_pass('PDF correto e sessão preservada (' || l_nls_depois || ')');
+      passou('PDF correto e sessão preservada (' || l_nls_depois || ')');
     END IF;
 
     EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ''.,''';
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção com NLS vírgula: ' || SQLERRM);
+      falhou('Exceção com NLS vírgula: ' || SQLERRM);
       EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ''.,''';
   END;
 
   --------------------------------------------------------------------------
-  test_start('Callback com nome válido é aceito');
+  caso('Callback com nome válido é aceito');
   --------------------------------------------------------------------------
   DECLARE
     -- tv4000a é um associative array (INDEX BY word): não tem construtor
@@ -3167,18 +1229,18 @@ BEGIN
     PL_FPDF.SetHeaderProc('meu_pkg.cabecalho');
     l_params('titulo') := 'Relatorio';
     PL_FPDF.SetFooterProc('meu_pkg.rodape', l_params);
-    test_pass('Nomes qualificados aceitos na configuração');
+    passou('Nomes qualificados aceitos na configuração');
     -- meu_pkg nao existe: sem limpar, todo AddPage seguinte falharia ao
     -- executar o bloco dinamico do header.
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Nome válido foi rejeitado: ' || SQLERRM);
+      falhou('Nome válido foi rejeitado: ' || SQLERRM);
       PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Reset limpa os callbacks de header e rodapé');
+  caso('Reset limpa os callbacks de header e rodapé');
   --------------------------------------------------------------------------
   -- Regressao: os callbacks sobreviviam ao Reset (e ao Init, que chama Reset).
   -- Um nome invalido configurado uma vez deixava a sessao inutilizavel: todo
@@ -3197,19 +1259,19 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
-      test_pass('Documento gerado após Reset, sem o callback anterior');
+      passou('Documento gerado após Reset, sem o callback anterior');
     ELSE
-      test_fail('PDF vazio após Reset');
+      falhou('PDF vazio após Reset');
     END IF;
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Callback sobreviveu ao Reset: ' || SQLERRM);
+      falhou('Callback sobreviveu ao Reset: ' || SQLERRM);
       PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Callback com injeção de PL/SQL é rejeitado na configuração');
+  caso('Callback com injeção de PL/SQL é rejeitado na configuração');
   --------------------------------------------------------------------------
   DECLARE
     TYPE t_payloads IS TABLE OF VARCHAR2(200);
@@ -3233,34 +1295,34 @@ BEGIN
     END LOOP;
 
     IF l_rejeitados = l_payloads.COUNT THEN
-      test_pass('Todos os ' || l_rejeitados || ' payloads rejeitados');
+      passou('Todos os ' || l_rejeitados || ' payloads rejeitados');
     ELSE
-      test_fail('Apenas ' || l_rejeitados || ' de ' || l_payloads.COUNT || ' rejeitados');
+      falhou('Apenas ' || l_rejeitados || ' de ' || l_payloads.COUNT || ' rejeitados');
     END IF;
     PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Erro do package informa a origem (backtrace)');
+  caso('Erro do package informa a origem (backtrace)');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Reset;
     BEGIN
       -- SetPage sem documento inicializado: erro conhecido do package
       PL_FPDF.SetPage(99);
-      test_fail('Erro esperado não ocorreu');
+      falhou('Erro esperado não ocorreu');
     EXCEPTION
       WHEN OTHERS THEN
         IF DBMS_UTILITY.FORMAT_ERROR_BACKTRACE IS NOT NULL THEN
-          test_pass('Erro propagado com rastreamento disponível');
+          passou('Erro propagado com rastreamento disponível');
         ELSE
-          test_fail('Erro sem backtrace');
+          falhou('Erro sem backtrace');
         END IF;
     END;
   END;
 
   --------------------------------------------------------------------------
-  test_start('QR Code gera matriz correta (vetores de referência)');
+  caso('QR Code gera matriz correta (vetores de referência)');
   --------------------------------------------------------------------------
   -- QR Code: confere a matriz gerada contra vetores de referência.
   --
@@ -3338,15 +1400,15 @@ BEGIN
     END LOOP;
 
     IF l_falhas = 0 THEN
-      test_pass('Matriz do QR Code igual à referência nos ' ||
+      passou('Matriz do QR Code igual à referência nos ' ||
                 l_casos.COUNT || ' casos');
     ELSE
-      test_fail(l_falhas || ' de ' || l_casos.COUNT || ' casos divergiram');
+      falhou(l_falhas || ' de ' || l_casos.COUNT || ' casos divergiram');
     END IF;
   END;
 
   --------------------------------------------------------------------------
-  test_start('QR Code e barcode: cada recusa com o seu código de erro');
+  caso('QR Code e barcode: cada recusa com o seu código de erro');
   --------------------------------------------------------------------------
   -- Os códigos do QR (-20870..-20879) e dos códigos de barras
   -- (-20880..-20889) colidiam com os da manipulação de PDF e da segurança:
@@ -3374,7 +1436,7 @@ BEGIN
     l_erros PLS_INTEGER := 0;
     l_msg   VARCHAR2(4000);
 
-    PROCEDURE confere(p_i PLS_INTEGER) IS
+    PROCEDURE invocar(p_i PLS_INTEGER) IS
     BEGIN
       CASE p_i
         WHEN 1  THEN PL_FPDF.AddQRCode(10, 10, 40, NULL);
@@ -3405,23 +1467,23 @@ BEGIN
           l_msg := l_msg || ' [' || l_casos(p_i).nome || ': ' || SQLCODE
                          || ', esperado ' || l_casos(p_i).esperado || ']';
         END IF;
-    END confere;
+    END invocar;
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage();
     FOR i IN 1 .. l_casos.COUNT LOOP
-      confere(i);
+      invocar(i);
     END LOOP;
     IF l_erros = 0 THEN
-      test_pass(l_casos.COUNT || ' recusas, cada uma com o código da sua faixa');
+      passou(l_casos.COUNT || ' recusas, cada uma com o código da sua faixa');
     ELSE
-      test_fail(l_erros || ' divergência(s):' || l_msg);
+      falhou(l_erros || ' divergência(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Código de barras gera desenho correto (vetores de referência)');
+  caso('Código de barras gera desenho correto (vetores de referência)');
   --------------------------------------------------------------------------
   -- Código de barras: confere o desenho contra vetores de referência.
   --
@@ -3492,15 +1554,15 @@ BEGIN
     END LOOP;
 
     IF l_falhas = 0 THEN
-      test_pass('Código de barras igual à referência nas ' ||
+      passou('Código de barras igual à referência nas ' ||
                 l_casos.COUNT || ' simbologias');
     ELSE
-      test_fail(l_falhas || ' de ' || l_casos.COUNT || ' divergiram');
+      falhou(l_falhas || ' de ' || l_casos.COUNT || ' divergiram');
     END IF;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Código de barras valida entrada e calcula verificador');
+  caso('Código de barras valida entrada e calcula verificador');
   --------------------------------------------------------------------------
   DECLARE
     l_erros PLS_INTEGER := 0;
@@ -3536,15 +1598,15 @@ BEGIN
     l_b := barras('7891234567895', 'EAN13');
 
     IF l_erros = 3 AND l_a = l_b AND l_a > 0 THEN
-      test_pass('3 entradas inválidas rejeitadas; verificador calculado confere');
+      passou('3 entradas inválidas rejeitadas; verificador calculado confere');
     ELSE
-      test_fail('erros=' || l_erros || ' (esperado 3), barras ' || l_a || ' vs ' || l_b);
+      falhou('erros=' || l_erros || ' (esperado 3), barras ' || l_a || ' vs ' || l_b);
     END IF;
     PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Merge / Split / Extract: cópia real de objetos');
+  caso('Merge / Split / Extract: cópia real de objetos');
   --------------------------------------------------------------------------
   DECLARE
     l_a      BLOB;
@@ -3674,21 +1736,21 @@ BEGIN
     PL_FPDF.UnloadPDF('B');
 
     IF l_erros = 0 THEN
-      test_pass('merge, extract e split preservam a contagem de páginas e '
+      passou('merge, extract e split preservam a contagem de páginas e '
                 || 'rejeitam entradas inválidas');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
       -- sem este handler um erro aqui abortava o arquivo de teste inteiro
-      test_fail('exceção: ' || SQLERRM);
+      falhou('exceção: ' || SQLERRM);
       BEGIN PL_FPDF.ClearPDFCache; PL_FPDF.Reset; EXCEPTION WHEN OTHERS THEN NULL; END;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Merge preserva stream binário e acima de 32 KB');
+  caso('Merge preserva stream binário e acima de 32 KB');
   --------------------------------------------------------------------------
   -- Regressão: pdf_obj_extent devolvia o FIM do payload como se fosse o
   -- início, então o conteúdo do stream passava por VARCHAR2 e por
@@ -3752,19 +1814,19 @@ BEGIN
 
     PL_FPDF.ClearPDFCache;
     IF l_erros = 0 THEN
-      test_pass('stream acima de 32 KB copiado sem truncar nem corromper');
+      passou('stream acima de 32 KB copiado sem truncar nem corromper');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('exceção: ' || SQLERRM);
+      falhou('exceção: ' || SQLERRM);
       BEGIN PL_FPDF.ClearPDFCache; PL_FPDF.Reset; EXCEPTION WHEN OTHERS THEN NULL; END;
   END;
 
   --------------------------------------------------------------------------
-  test_start('OutputModifiedPDF: remoção de página e rotação');
+  caso('OutputModifiedPDF: remoção de página e rotação');
   --------------------------------------------------------------------------
   DECLARE
     l_src   BLOB;
@@ -3818,9 +1880,9 @@ BEGIN
     PL_FPDF.ClearPDFCache;
 
     IF l_erros = 0 THEN
-      test_pass('página removida e rotação aplicada no documento copiado');
+      passou('página removida e rotação aplicada no documento copiado');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   END;
@@ -3836,8 +1898,2501 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- Fase 5: segurança
--- origem: tests/test_phase_security.sql
+-- Leitura: cabeçalho, xref, trailer
+-- origem: tests/test_leitura_pdf.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- Test Phase 4: PDF Parser - Basic Reading
+-- Tests LoadPDF, GetPageCount, GetPDFInfo
+--------------------------------------------------------------------------------
+
+
+DECLARE
+  -- Test counter
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+    -- Test PDF (generated by PL_FPDF for valid structure)
+  l_test_pdf BLOB;
+  l_page_count PLS_INTEGER;
+  l_pdf_info JSON_OBJECT_T;
+  
+  -- Helper procedure
+  PROCEDURE confere(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    IF p_passed THEN
+      l_pass_count := l_pass_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_test_name);
+    ELSE
+      l_fail_count := l_fail_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name || 
+        CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
+    END IF;
+  END confere;
+  
+
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('========================================================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4 - PDF PARSER: BASIC READING TESTS');
+  DBMS_OUTPUT.PUT_LINE('========================================================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  DBMS_OUTPUT.PUT_LINE('Test 4.1: Load Simple PDF');
+  DBMS_OUTPUT.PUT_LINE('-------------------------');
+
+  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Test Page 1');
+    l_test_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
+  
+  -- Test 1: LoadPDF
+  BEGIN
+    PL_FPDF.LoadPDF(l_test_pdf);
+    confere('LoadPDF() with minimal PDF', TRUE);
+  EXCEPTION WHEN OTHERS THEN
+    confere('LoadPDF() with minimal PDF', FALSE, SQLERRM);
+  END;
+  
+  -- Test 2: GetPageCount
+  BEGIN
+    l_page_count := PL_FPDF.GetPageCount();
+    confere('GetPageCount() returns 1', l_page_count = 1);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetPageCount()', FALSE, SQLERRM);
+  END;
+  
+  -- Test 3: GetPDFInfo
+  BEGIN
+    l_pdf_info := PL_FPDF.GetPDFInfo();
+    confere('GetPDFInfo() returns JSON', l_pdf_info IS NOT NULL);
+    confere('GetPDFInfo().version = 1.4', l_pdf_info.get_string('version') = '1.4');
+    confere('GetPDFInfo().pageCount = 1', l_pdf_info.get_number('pageCount') = 1);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetPDFInfo()', FALSE, SQLERRM);
+  END;
+  
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('========================================================================');
+  DBMS_OUTPUT.PUT_LINE('SUMMARY');
+  DBMS_OUTPUT.PUT_LINE('========================================================================');
+  DBMS_OUTPUT.PUT_LINE('Total Tests: ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Passed:      ' || l_pass_count);
+  DBMS_OUTPUT.PUT_LINE('Failed:      ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('Success Rate: ' || ROUND(l_pass_count * 100 / l_test_count, 1) || '%');
+  DBMS_OUTPUT.PUT_LINE('========================================================================');
+
+  
+  
+    IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 4_parser_basic: ALL TESTS PASSED ***');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 4_parser_basic: SOME TESTS FAILED - REVIEW REQUIRED ***');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Leitura: informações de página
+-- origem: tests/test_leitura_paginas.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF v3.0.0-alpha - Phase 4.1B: Page Information and Manipulation Tests
+-- Description: Test suite for GetPageInfo and RotatePage APIs
+--------------------------------------------------------------------------------
+
+
+DECLARE
+  l_pdf BLOB;
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+  l_info JSON_OBJECT_T;
+  l_page_count PLS_INTEGER;
+
+  -- Test helper procedures
+  PROCEDURE caso(p_test_name VARCHAR2) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
+  END;
+
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
+  BEGIN
+    l_pass_count := l_pass_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
+  END;
+
+  PROCEDURE falhou(p_message VARCHAR2) IS
+  BEGIN
+    l_fail_count := l_fail_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
+  END;
+
+  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
+  PROCEDURE create_test_pdf IS
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Page 1');
+    PL_FPDF.AddPage();
+    PL_FPDF.Cell(0, 10, 'Page 2');
+    l_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-alpha - PHASE 4.1B: Page Information & Manipulation Tests');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+  -- Create test PDF
+  create_test_pdf();
+
+  -- Enable debug logging
+  --PL_FPDF.EnableDebugMode();
+  PL_FPDF.SetLogLevel(4);
+
+  --------------------------------------------------------------------------------
+  -- TEST 1: Load PDF and verify page tree parsing
+  --------------------------------------------------------------------------------
+  caso('Load PDF and parse page tree');
+  BEGIN
+    PL_FPDF.LoadPDF(l_pdf);
+    l_page_count := PL_FPDF.GetPageCount();
+
+    IF l_page_count = 2 THEN
+      passou('Page count correct: 2 pages');
+    ELSE
+      falhou('Expected 2 pages, got ' || l_page_count);
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error loading PDF: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 2: Get page 1 information
+  --------------------------------------------------------------------------------
+  caso('GetPageInfo for page 1');
+  BEGIN
+    l_info := PL_FPDF.GetPageInfo(1);
+
+    DBMS_OUTPUT.PUT_LINE('  Page 1 Info:');
+    DBMS_OUTPUT.PUT_LINE('    - Page Number: ' || l_info.get_number('pageNumber'));
+    DBMS_OUTPUT.PUT_LINE('    - Object ID: ' || l_info.get_number('pageObjectId'));
+    DBMS_OUTPUT.PUT_LINE('    - MediaBox: ' || l_info.get_string('mediaBox'));
+    DBMS_OUTPUT.PUT_LINE('    - Rotation: ' || l_info.get_number('rotation') || ' degrees');
+
+    IF l_info.get_number('pageNumber') = 1 THEN
+      passou('Page number correct');
+    ELSE
+      falhou('Page number incorrect');
+    END IF;
+
+    IF l_info.get_string('mediaBox') LIKE '0 0 612%792%' THEN
+      passou('MediaBox correct (Letter size)');
+    ELSE
+      falhou('MediaBox incorrect: ' || l_info.get_string('mediaBox'));
+    END IF;
+
+    IF l_info.get_number('rotation') = 0 THEN
+      passou('Rotation correct (0 degrees)');
+    ELSE
+      falhou('Rotation incorrect: ' || l_info.get_number('rotation'));
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error getting page 1 info: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 3: Get page 2 information
+  --------------------------------------------------------------------------------
+  caso('GetPageInfo for page 2');
+  BEGIN
+    l_info := PL_FPDF.GetPageInfo(2);
+
+    DBMS_OUTPUT.PUT_LINE('  Page 2 Info:');
+    DBMS_OUTPUT.PUT_LINE('    - Page Number: ' || l_info.get_number('pageNumber'));
+    DBMS_OUTPUT.PUT_LINE('    - Object ID: ' || l_info.get_number('pageObjectId'));
+    DBMS_OUTPUT.PUT_LINE('    - MediaBox: ' || l_info.get_string('mediaBox'));
+    DBMS_OUTPUT.PUT_LINE('    - Rotation: ' || l_info.get_number('rotation') || ' degrees');
+
+    IF l_info.get_string('mediaBox') LIKE '0 0 612%792%' THEN
+      passou('MediaBox correct (Letter size)');
+    ELSE
+      falhou('MediaBox incorrect: ' || l_info.get_string('mediaBox'));
+    END IF;
+
+    IF l_info.get_number('rotation') = 0 THEN
+      passou('Rotation correct (0 degrees)');
+    ELSE
+      falhou('Rotation incorrect: ' || l_info.get_number('rotation'));
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error getting page 2 info: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 4: RotatePage - Set page 1 to 180 degrees
+  --------------------------------------------------------------------------------
+  caso('RotatePage - Set page 1 to 180 degrees');
+  BEGIN
+    PL_FPDF.RotatePage(1, 180);
+
+    l_info := PL_FPDF.GetPageInfo(1);
+    IF l_info.get_number('rotation') = 180 THEN
+      passou('Page 1 rotation updated to 180 degrees');
+    ELSE
+      falhou('Rotation not updated: ' || l_info.get_number('rotation'));
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error rotating page: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 5: RotatePage - Invalid rotation value
+  --------------------------------------------------------------------------------
+  caso('RotatePage - Invalid rotation value (should fail)');
+  BEGIN
+    PL_FPDF.RotatePage(1, 45);  -- Invalid: must be 0, 90, 180, or 270
+    falhou('Should have raised error for invalid rotation');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20813 THEN
+        passou('Correctly rejected invalid rotation value');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 6: GetPageInfo - Invalid page number
+  --------------------------------------------------------------------------------
+  caso('GetPageInfo - Invalid page number (should fail)');
+  BEGIN
+    l_info := PL_FPDF.GetPageInfo(99);  -- PDF only has 2 pages
+    falhou('Should have raised error for invalid page number');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20812 THEN
+        passou('Correctly rejected invalid page number');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 7: ClearPDFCache and verify cleanup
+  --------------------------------------------------------------------------------
+  caso('ClearPDFCache and verify cleanup');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+
+    -- Try to get page count after clearing - should fail
+    BEGIN
+      l_page_count := PL_FPDF.GetPageCount();
+      falhou('Should have raised error after ClearPDFCache');
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF SQLCODE = -20809 THEN
+          passou('Correctly raised error after clearing cache');
+        ELSE
+          falhou('Wrong error code: ' || SQLCODE);
+        END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error clearing cache: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST SUMMARY
+  --------------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  -- l_test_count conta blocos (caso); l_pass/l_fail contam verificações.
+  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
+  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
+  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
+    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
+         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
+    END || '%)');
+  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Páginas: girar e remover
+-- origem: tests/test_paginas_girar_remover.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF v3.0.0-a.3 - Phase 4.2: Page Management Tests
+-- Description: Test suite for RemovePage, GetActivePageCount, modification tracking
+--------------------------------------------------------------------------------
+
+
+DECLARE
+  l_pdf BLOB;
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+  l_page_count PLS_INTEGER;
+  l_active_count PLS_INTEGER;
+  l_is_removed BOOLEAN;
+  l_is_modified BOOLEAN;
+
+  -- Test helper procedures
+  PROCEDURE caso(p_test_name VARCHAR2) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
+  END;
+
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
+  BEGIN
+    l_pass_count := l_pass_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
+  END;
+
+  PROCEDURE falhou(p_message VARCHAR2) IS
+  BEGIN
+    l_fail_count := l_fail_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
+  END;
+
+  -- Create valid test PDF with 5 pages using PL_FPDF itself
+  PROCEDURE create_test_pdf IS
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.SetFont('Arial', '', 12);
+    FOR i IN 1..5 LOOP
+      PL_FPDF.AddPage();
+      PL_FPDF.Cell(0, 10, 'Page ' || i);
+    END LOOP;
+    l_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-a.3 - PHASE 4.2: Page Management Tests');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+  -- Create test PDF with 5 pages
+  create_test_pdf();
+
+  --------------------------------------------------------------------------------
+  -- TEST 1: Load PDF and verify initial state
+  --------------------------------------------------------------------------------
+  caso('Load PDF and verify initial state');
+  BEGIN
+    PL_FPDF.LoadPDF(l_pdf);
+    l_page_count := PL_FPDF.GetPageCount();
+    l_active_count := PL_FPDF.GetActivePageCount();
+    l_is_modified := PL_FPDF.IsPDFModified();
+
+    IF l_page_count = 5 THEN
+      passou('Total page count correct: 5 pages');
+    ELSE
+      falhou('Expected 5 pages, got ' || l_page_count);
+    END IF;
+
+    IF l_active_count = 5 THEN
+      passou('Active page count correct: 5 pages (none removed)');
+    ELSE
+      falhou('Expected 5 active pages, got ' || l_active_count);
+    END IF;
+
+    IF NOT l_is_modified THEN
+      passou('PDF not modified initially');
+    ELSE
+      falhou('PDF should not be marked as modified initially');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error loading PDF: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 2: RemovePage - Remove page 2
+  --------------------------------------------------------------------------------
+  caso('RemovePage - Remove page 2');
+  BEGIN
+    PL_FPDF.RemovePage(2);
+
+    l_active_count := PL_FPDF.GetActivePageCount();
+    l_is_removed := PL_FPDF.IsPageRemoved(2);
+    l_is_modified := PL_FPDF.IsPDFModified();
+
+    IF l_active_count = 4 THEN
+      passou('Active page count correct: 4 pages (1 removed)');
+    ELSE
+      falhou('Expected 4 active pages, got ' || l_active_count);
+    END IF;
+
+    IF l_is_removed THEN
+      passou('Page 2 marked as removed');
+    ELSE
+      falhou('Page 2 should be marked as removed');
+    END IF;
+
+    IF l_is_modified THEN
+      passou('PDF marked as modified');
+    ELSE
+      falhou('PDF should be marked as modified');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error removing page: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 3: RemovePage - Remove multiple pages (3 and 5)
+  --------------------------------------------------------------------------------
+  caso('RemovePage - Remove pages 3 and 5');
+  BEGIN
+    PL_FPDF.RemovePage(3);
+    PL_FPDF.RemovePage(5);
+
+    l_active_count := PL_FPDF.GetActivePageCount();
+
+    IF l_active_count = 2 THEN
+      passou('Active page count correct: 2 pages (3 removed total)');
+    ELSE
+      falhou('Expected 2 active pages, got ' || l_active_count);
+    END IF;
+
+    -- Verify individual page status
+    IF PL_FPDF.IsPageRemoved(2) AND PL_FPDF.IsPageRemoved(3) AND PL_FPDF.IsPageRemoved(5) THEN
+      passou('Pages 2, 3, 5 correctly marked as removed');
+    ELSE
+      falhou('Not all pages correctly marked as removed');
+    END IF;
+
+    IF NOT PL_FPDF.IsPageRemoved(1) AND NOT PL_FPDF.IsPageRemoved(4) THEN
+      passou('Pages 1, 4 correctly marked as active');
+    ELSE
+      falhou('Pages 1, 4 should not be marked as removed');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error removing pages: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 4: RemovePage - Attempt to remove already removed page
+  --------------------------------------------------------------------------------
+  caso('RemovePage - Attempt to remove already removed page (should fail)');
+  BEGIN
+    PL_FPDF.RemovePage(2);  -- Already removed in TEST 2
+    falhou('Should have raised error for already removed page');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20814 THEN
+        passou('Correctly rejected attempt to remove already removed page');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 5: RemovePage - Invalid page number
+  --------------------------------------------------------------------------------
+  caso('RemovePage - Invalid page number (should fail)');
+  BEGIN
+    PL_FPDF.RemovePage(99);  -- PDF only has 5 pages
+    falhou('Should have raised error for invalid page number');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20812 THEN
+        passou('Correctly rejected invalid page number');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 6: RotatePage and check modification flag
+  --------------------------------------------------------------------------------
+  caso('RotatePage - Verify modification tracking');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- Should not be modified initially
+    IF NOT PL_FPDF.IsPDFModified() THEN
+      passou('PDF not modified after fresh load');
+    ELSE
+      falhou('PDF should not be modified after fresh load');
+    END IF;
+
+    -- Rotate a page
+    PL_FPDF.RotatePage(1, 90);
+
+    IF PL_FPDF.IsPDFModified() THEN
+      passou('PDF marked as modified after rotation');
+    ELSE
+      falhou('PDF should be marked as modified after rotation');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error in modification tracking: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 7: ClearPDFCache - Verify cleanup of modification tracking
+  --------------------------------------------------------------------------------
+  caso('ClearPDFCache - Verify cleanup');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+
+    -- Try to check modification status after clearing - should fail
+    BEGIN
+      l_is_modified := PL_FPDF.IsPDFModified();
+      -- IsPDFModified doesn't validate PDF loaded, so it will return FALSE
+      IF NOT l_is_modified THEN
+        passou('Modification flag cleared after cache clear');
+      ELSE
+        falhou('Modification flag should be cleared');
+      END IF;
+    EXCEPTION
+      WHEN OTHERS THEN
+        falhou('Unexpected error: ' || SQLERRM);
+    END;
+
+    -- GetActivePageCount should fail after clearing
+    BEGIN
+      l_active_count := PL_FPDF.GetActivePageCount();
+      falhou('Should have raised error after ClearPDFCache');
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF SQLCODE = -20809 THEN
+          passou('Correctly raised error after clearing cache');
+        ELSE
+          falhou('Wrong error code: ' || SQLCODE);
+        END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error clearing cache: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST SUMMARY
+  --------------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  -- l_test_count conta blocos (caso); l_pass/l_fail contam verificações.
+  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
+  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
+  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
+    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
+         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
+    END || '%)');
+  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Marca d'água
+-- origem: tests/test_marca_dagua.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF v3.0.0-a.4 - Phase 4.3: Watermark Tests
+-- Description: Test suite for AddWatermark and GetWatermarks APIs
+--------------------------------------------------------------------------------
+
+
+
+DECLARE
+  l_pdf BLOB;
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+  l_watermarks JSON_ARRAY_T;
+  l_watermark JSON_OBJECT_T;
+  l_is_modified BOOLEAN;
+
+  -- Test helper procedures
+  PROCEDURE caso(p_test_name VARCHAR2) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
+  END;
+
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
+  BEGIN
+    l_pass_count := l_pass_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
+  END;
+
+  PROCEDURE falhou(p_message VARCHAR2) IS
+  BEGIN
+    l_fail_count := l_fail_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
+  END;
+
+  -- Create valid test PDF with 10 pages using PL_FPDF itself
+  PROCEDURE create_test_pdf IS
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.SetFont('Arial', '', 12);
+    FOR i IN 1..10 LOOP
+      PL_FPDF.AddPage();
+      PL_FPDF.Cell(0, 10, 'Page ' || i);
+    END LOOP;
+    l_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-a.4 - PHASE 4.3: Watermark Tests');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+  -- Create test PDF with 10 pages
+  create_test_pdf();
+
+  --------------------------------------------------------------------------------
+  -- TEST 1: Load PDF and add watermark to all pages
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Apply to ALL pages');
+  BEGIN
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
+
+    l_watermarks := PL_FPDF.GetWatermarks();
+    l_is_modified := PL_FPDF.IsPDFModified();
+
+    IF l_watermarks.get_size() = 1 THEN
+      passou('1 watermark added');
+    ELSE
+      falhou('Expected 1 watermark, got ' || l_watermarks.get_size());
+    END IF;
+
+    l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
+    IF l_watermark.get_string('text') = 'CONFIDENTIAL' THEN
+      passou('Watermark text correct: CONFIDENTIAL');
+    ELSE
+      falhou('Watermark text incorrect: ' || l_watermark.get_string('text'));
+    END IF;
+
+    IF l_watermark.get_number('opacity') = 0.3 THEN
+      passou('Opacity correct: 0.3');
+    ELSE
+      falhou('Opacity incorrect: ' || l_watermark.get_number('opacity'));
+    END IF;
+
+    IF l_watermark.get_number('rotation') = 45 THEN
+      passou('Rotation correct: 45 degrees');
+    ELSE
+      falhou('Rotation incorrect: ' || l_watermark.get_number('rotation'));
+    END IF;
+
+    IF l_is_modified THEN
+      passou('PDF marked as modified');
+    ELSE
+      falhou('PDF should be marked as modified');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error adding watermark: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 2: AddWatermark - Specific page range '1-3'
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Specific range: 1-3');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('DRAFT', 0.2, 90, '1-3');
+
+    l_watermarks := PL_FPDF.GetWatermarks();
+    l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
+
+    DBMS_OUTPUT.PUT_LINE('  Page range: ' || l_watermark.get_string('pageRange'));
+
+    -- Page range should be parsed to '1,2,3'
+    IF l_watermark.get_string('pageRange') = '1,2,3' THEN
+      passou('Page range parsed correctly: 1,2,3');
+    ELSE
+      falhou('Page range incorrect: ' || l_watermark.get_string('pageRange'));
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error with page range: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 3: AddWatermark - Complex range '1,3,5-7,10'
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Complex range: 1,3,5-7,10');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '1,3,5-7,10');
+
+    l_watermarks := PL_FPDF.GetWatermarks();
+    l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
+
+    DBMS_OUTPUT.PUT_LINE('  Page range: ' || l_watermark.get_string('pageRange'));
+
+    -- Page range should be parsed to '1,3,5,6,7,10'
+    IF l_watermark.get_string('pageRange') = '1,3,5,6,7,10' THEN
+      passou('Complex range parsed correctly: 1,3,5,6,7,10');
+    ELSE
+      falhou('Page range incorrect: ' || l_watermark.get_string('pageRange'));
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error with complex range: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 4: AddWatermark - Multiple watermarks
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Multiple watermarks');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    PL_FPDF.AddWatermark('CONFIDENTIAL', 0.2, 45, 'ALL');
+    PL_FPDF.AddWatermark('DRAFT', 0.3, 90, '1-5');
+    PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '10');
+
+    l_watermarks := PL_FPDF.GetWatermarks();
+
+    IF l_watermarks.get_size() = 3 THEN
+      passou('3 watermarks added');
+    ELSE
+      falhou('Expected 3 watermarks, got ' || l_watermarks.get_size());
+    END IF;
+
+    -- Verify each watermark
+    FOR i IN 0..l_watermarks.get_size() - 1 LOOP
+      l_watermark := TREAT(l_watermarks.get(i) AS JSON_OBJECT_T);
+      DBMS_OUTPUT.PUT_LINE('  Watermark ' || (i + 1) || ': ' ||
+        l_watermark.get_string('text') || ' on pages ' ||
+        l_watermark.get_string('pageRange'));
+    END LOOP;
+
+    passou('All watermarks stored correctly');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error with multiple watermarks: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 5: AddWatermark - Invalid parameters (empty text)
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Invalid text (should fail)');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('', 0.3, 45, 'ALL');  -- Empty text
+    falhou('Should have raised error for empty text');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20816 THEN
+        passou('Correctly rejected empty watermark text');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 6: AddWatermark - Invalid opacity
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Invalid opacity (should fail)');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('TEST', 1.5, 45, 'ALL');  -- Opacity > 1
+    falhou('Should have raised error for opacity > 1');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20817 THEN
+        passou('Correctly rejected invalid opacity');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 7: AddWatermark - Invalid rotation
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Invalid rotation (should fail)');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('TEST', 0.3, 60, 'ALL');  -- Invalid rotation
+    falhou('Should have raised error for invalid rotation');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20818 THEN
+        passou('Correctly rejected invalid rotation (60 degrees)');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 8: AddWatermark - Invalid page range
+  --------------------------------------------------------------------------------
+  caso('AddWatermark - Invalid page range (should fail)');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.AddWatermark('TEST', 0.3, 45, '1-20');  -- Page 20 doesn't exist
+    falhou('Should have raised error for invalid page range');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20815 THEN
+        passou('Correctly rejected invalid page range (1-20)');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 9: ClearPDFCache - Verify watermarks cleared
+  --------------------------------------------------------------------------------
+  caso('ClearPDFCache - Verify watermarks cleared');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+
+    -- GetWatermarks should fail after clearing
+    BEGIN
+      l_watermarks := PL_FPDF.GetWatermarks();
+      falhou('Should have raised error after ClearPDFCache');
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF SQLCODE = -20809 THEN
+          passou('Correctly raised error after clearing cache');
+        ELSE
+          falhou('Wrong error code: ' || SQLCODE);
+        END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error clearing cache: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST SUMMARY
+  --------------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  -- l_test_count conta blocos (caso); l_pass/l_fail contam verificações.
+  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
+  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
+  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
+    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
+         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
+    END || '%)');
+  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Sobreposição de texto e imagem
+-- origem: tests/test_sobreposicao.sql
+--------------------------------------------------------------------------------
+/*******************************************************************************
+* Test Script: Phase 4.5 - Text & Image Overlay
+* Version: 3.0.0-a.6
+* Date: 2026-01-25
+* Author: @maxwbh
+*
+* Description:
+*   Comprehensive test suite for Phase 4.5 overlay functionality including
+*   text overlays, image overlays, and overlay management operations.
+*******************************************************************************/
+
+
+
+DECLARE
+  -- Test counters
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+
+  -- Test data
+  l_test_pdf BLOB;
+  l_logo_blob BLOB;
+  l_result BLOB;
+  l_overlays JSON_ARRAY_T;
+  l_overlay JSON_OBJECT_T;
+  l_options JSON_OBJECT_T;
+  l_overlay_id VARCHAR2(50);
+
+  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
+  -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
+  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    IF NVL(p_cond, FALSE) THEN
+      l_pass_count := l_pass_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
+    ELSE
+      l_fail_count := l_fail_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome);
+    END IF;
+  END confere;
+
+  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    l_fail_count := l_fail_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                         p_codigo || ' e a chamada foi aceita');
+  END faltou_erro;
+
+  PROCEDURE erro_esperado(p_nome VARCHAR2, p_codigo NUMBER, p_veio NUMBER) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    IF p_veio = p_codigo THEN
+      l_pass_count := l_pass_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
+    ELSE
+      l_fail_count := l_fail_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                           p_codigo || ' e veio ORA' || p_veio);
+    END IF;
+  END erro_esperado;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Starting Phase 4.5 Overlay Tests...');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Create valid test PDF using PL_FPDF itself (guarantees correct structure)
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Test Page');
+    l_test_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
+
+  -- Create test logo (1x1 PNG - simplest valid PNG)
+  l_logo_blob := HEXTORAW('89504E470D0A1A0A0000000D494844520000000100000001010000000037' ||
+                          '6EF9240000000A49444154789C626001000000050001ED5F38E40000000049' ||
+                          '454E44AE426082');
+
+  DBMS_OUTPUT.PUT_LINE('=== Text Overlay Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 1: OverlayText without PDF loaded (should fail)
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.OverlayText(1, 'Test', 100, 700, NULL);
+    faltou_erro('OverlayText without PDF loaded', -20809);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('OverlayText without PDF loaded', -20809, SQLCODE);
+  END;
+
+  -- Test 2: Simple text overlay
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    PL_FPDF.OverlayText(1, 'APPROVED', 100, 700, NULL);
+    confere('Simple text overlay', TRUE);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Simple text overlay', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 3: Text overlay with options
+  BEGIN
+    l_options := JSON_OBJECT_T();
+    l_options.put('font', 'Helvetica-Bold');
+    l_options.put('fontSize', 24);
+    l_options.put('color', 'FF0000');  -- Red
+    l_options.put('opacity', 0.8);
+    l_options.put('rotation', 45);
+    PL_FPDF.OverlayText(1, 'CONFIDENTIAL', 200, 400, l_options);
+    confere('Text overlay with formatting options', TRUE);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Text overlay with formatting options', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 4: Text overlay with invalid page number
+  BEGIN
+    PL_FPDF.OverlayText(999, 'Test', 100, 700, NULL);
+    faltou_erro('Text overlay with invalid page number', -20810);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Text overlay with invalid page number', -20810, SQLCODE);
+  END;
+
+  -- Test 5: Text overlay with invalid coordinates
+  BEGIN
+    PL_FPDF.OverlayText(1, 'Test', -100, 700, NULL);
+    faltou_erro('Text overlay with negative X coordinate', -20821);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Text overlay with negative X coordinate', -20821, SQLCODE);
+  END;
+
+  -- Test 6: Text overlay with invalid opacity
+  BEGIN
+    l_options := JSON_OBJECT_T();
+    l_options.put('opacity', 1.5);
+    PL_FPDF.OverlayText(1, 'Test', 100, 700, l_options);
+    faltou_erro('Text overlay with invalid opacity', -20821);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Text overlay with invalid opacity', -20821, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== Image Overlay Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 7: Simple image overlay
+  BEGIN
+    PL_FPDF.OverlayImage(1, l_logo_blob, 450, 750, 100, 50, NULL);
+    confere('Simple image overlay', TRUE);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Simple image overlay', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 8: Image overlay with options
+  BEGIN
+    l_options := JSON_OBJECT_T();
+    l_options.put('opacity', 0.3);
+    l_options.put('rotation', 45);
+    l_options.put('maintainAspect', TRUE);
+    PL_FPDF.OverlayImage(1, l_logo_blob, 200, 400, 300, NULL, l_options);
+    confere('Image overlay with transparency and rotation', TRUE);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Image overlay with transparency and rotation', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 9: Image overlay with invalid format
+  BEGIN
+    PL_FPDF.OverlayImage(1, UTL_RAW.CAST_TO_RAW('Invalid'), 100, 100, NULL, NULL, NULL);
+    faltou_erro('Image overlay with invalid format', -20823);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Image overlay with invalid format', -20823, SQLCODE);
+  END;
+
+  -- Test 10: Image overlay with NULL image
+  BEGIN
+    PL_FPDF.OverlayImage(1, NULL, 100, 100, NULL, NULL, NULL);
+    faltou_erro('Image overlay with NULL image', -20823);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Image overlay with NULL image', -20823, SQLCODE);
+  END;
+
+  -- Test 11: Image overlay with invalid dimensions
+  BEGIN
+    PL_FPDF.OverlayImage(1, l_logo_blob, 100, 100, -50, 50, NULL);
+    faltou_erro('Image overlay with negative width', -20824);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Image overlay with negative width', -20824, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== Overlay Management Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 12: GetOverlays - list all overlays
+  BEGIN
+    l_overlays := PL_FPDF.GetOverlays();
+    confere('GetOverlays - list all', l_overlays.get_size() > 0);
+    DBMS_OUTPUT.PUT_LINE('   Found ' || l_overlays.get_size() || ' overlays');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('GetOverlays - list all', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 13: GetOverlays - filter by page
+  BEGIN
+    l_overlays := PL_FPDF.GetOverlays(1);
+    confere('GetOverlays - filter by page', l_overlays.get_size() > 0);
+    DBMS_OUTPUT.PUT_LINE('   Found ' || l_overlays.get_size() || ' overlays on page 1');
+
+    -- Display overlay details
+    FOR i IN 0..l_overlays.get_size() - 1 LOOP
+      l_overlay := TREAT(l_overlays.get(i) AS JSON_OBJECT_T);
+      DBMS_OUTPUT.PUT_LINE('   - ' || l_overlay.get_string('overlayType') || ': ' ||
+                          l_overlay.get_string('overlayId'));
+    END LOOP;
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('GetOverlays - filter by page', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 14: RemoveOverlay
+  BEGIN
+    l_overlays := PL_FPDF.GetOverlays(1);
+    IF l_overlays.get_size() > 0 THEN
+      l_overlay := TREAT(l_overlays.get(0) AS JSON_OBJECT_T);
+      l_overlay_id := l_overlay.get_string('overlayId');
+      PL_FPDF.RemoveOverlay(l_overlay_id);
+      confere('RemoveOverlay - remove specific overlay', TRUE);
+      DBMS_OUTPUT.PUT_LINE('   Removed overlay: ' || l_overlay_id);
+    ELSE
+      confere('RemoveOverlay - remove specific overlay', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   No overlays to remove');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('RemoveOverlay - remove specific overlay', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 15: RemoveOverlay with invalid ID
+  BEGIN
+    PL_FPDF.RemoveOverlay('INVALID_ID');
+    faltou_erro('RemoveOverlay with invalid ID', -20825);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('RemoveOverlay with invalid ID', -20825, SQLCODE);
+  END;
+
+  -- Test 16: ClearOverlays - specific page
+  BEGIN
+    PL_FPDF.ClearOverlays(1);
+    l_overlays := PL_FPDF.GetOverlays(1);
+    confere('ClearOverlays - specific page', l_overlays.get_size() = 0);
+    DBMS_OUTPUT.PUT_LINE('   Overlays on page 1: ' || l_overlays.get_size());
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('ClearOverlays - specific page', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 17: Add more overlays and clear all
+  BEGIN
+    PL_FPDF.OverlayText(1, 'Test 1', 100, 100, NULL);
+    PL_FPDF.OverlayText(1, 'Test 2', 200, 200, NULL);
+    PL_FPDF.OverlayImage(1, l_logo_blob, 300, 300, 50, 50, NULL);
+
+    l_overlays := PL_FPDF.GetOverlays();
+    DBMS_OUTPUT.PUT_LINE('   Added 3 overlays, total: ' || l_overlays.get_size());
+
+    PL_FPDF.ClearOverlays();  -- Clear all
+    l_overlays := PL_FPDF.GetOverlays();
+    confere('ClearOverlays - clear all', l_overlays.get_size() = 0);
+    DBMS_OUTPUT.PUT_LINE('   Remaining overlays: ' || l_overlays.get_size());
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('ClearOverlays - clear all', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== Integration Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 18: Multiple overlays with different z-orders
+  BEGIN
+    PL_FPDF.ClearOverlays();
+
+    l_options := JSON_OBJECT_T();
+    l_options.put('zOrder', 1);
+    PL_FPDF.OverlayText(1, 'Bottom Layer', 100, 100, l_options);
+
+    l_options := JSON_OBJECT_T();
+    l_options.put('zOrder', 100);
+    PL_FPDF.OverlayText(1, 'Top Layer', 120, 120, l_options);
+
+    l_overlays := PL_FPDF.GetOverlays(1);
+    confere('Multiple overlays with z-order', l_overlays.get_size() = 2);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Multiple overlays with z-order', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 19: Overlay persistence check
+  BEGIN
+    l_overlays := PL_FPDF.GetOverlays(1);
+    confere('Overlay persistence', l_overlays.get_size() = 2);
+    DBMS_OUTPUT.PUT_LINE('   Persisted overlays: ' || l_overlays.get_size());
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Overlay persistence', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 20: ClearPDFCache clears overlays
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    BEGIN
+      l_overlays := PL_FPDF.GetOverlays();
+      confere('ClearPDFCache clears overlays', FALSE);
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF SQLCODE = -20809 THEN
+          confere('ClearPDFCache clears overlays', TRUE);
+        ELSE
+          confere('ClearPDFCache clears overlays', FALSE);
+        END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('ClearPDFCache clears overlays', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Final summary
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('========================================');
+  DBMS_OUTPUT.PUT_LINE('Test Summary:');
+  DBMS_OUTPUT.PUT_LINE('  Total Tests: ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('  Passed:      ' || l_pass_count || ' (' ||
+                      ROUND(l_pass_count/l_test_count*100, 1) || '%)');
+  DBMS_OUTPUT.PUT_LINE('  Failed:      ' || l_fail_count || ' (' ||
+                      ROUND(l_fail_count/l_test_count*100, 1) || '%)');
+  DBMS_OUTPUT.PUT_LINE('========================================');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('✓ ALL TESTS PASSED');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('✗ SOME TESTS FAILED');
+  END IF;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('FATAL ERROR: ' || SQLERRM);
+    DBMS_OUTPUT.PUT_LINE('Test execution aborted at test ' || l_test_count);
+    RAISE;
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Mesclar, dividir e extrair
+-- origem: tests/test_mesclar_dividir.sql
+--------------------------------------------------------------------------------
+/*******************************************************************************
+* Test Script: Phase 4.6 - PDF Merge & Split
+* Version: 3.0.0-a.7
+* Date: 2026-01-25
+* Author: @maxwbh
+*
+* Description:
+*   Comprehensive test suite for Phase 4.6 multi-document PDF operations
+*   including merge, split, and extract functionality.
+*******************************************************************************/
+
+
+DECLARE
+  -- Test counters
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+
+  -- Test data
+  l_test_pdf1 BLOB;
+  l_test_pdf2 BLOB;
+  l_test_pdf3 BLOB;
+  l_merged BLOB;
+  l_split_pdfs JSON_ARRAY_T;
+  l_extracted BLOB;
+  l_pdfs JSON_ARRAY_T;
+  l_pdf_obj JSON_OBJECT_T;
+
+  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
+  -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
+  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    IF NVL(p_cond, FALSE) THEN
+      l_pass_count := l_pass_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
+    ELSE
+      l_fail_count := l_fail_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome);
+    END IF;
+  END confere;
+
+  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    l_fail_count := l_fail_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                         p_codigo || ' e a chamada foi aceita');
+  END faltou_erro;
+
+  PROCEDURE erro_esperado(p_nome VARCHAR2, p_codigo NUMBER, p_veio NUMBER) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    IF p_veio = p_codigo THEN
+      l_pass_count := l_pass_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
+    ELSE
+      l_fail_count := l_fail_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                           p_codigo || ' e veio ORA' || p_veio);
+    END IF;
+  END erro_esperado;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('Starting Phase 4.6 Multi-Document Tests...');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Create valid test PDFs using PL_FPDF itself (guarantees correct structure)
+  -- PDF 1
+  PL_FPDF.Init('P', 'mm', 'Letter');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Test PDF 1');
+  l_test_pdf1 := PL_FPDF.OutputBlob();
+  PL_FPDF.Reset();
+
+  -- PDF 2
+  PL_FPDF.Init('P', 'mm', 'Letter');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Test PDF 2');
+  l_test_pdf2 := PL_FPDF.OutputBlob();
+  PL_FPDF.Reset();
+
+  -- PDF 3
+  PL_FPDF.Init('P', 'mm', 'Letter');
+  PL_FPDF.AddPage();
+  PL_FPDF.SetFont('Arial', '', 12);
+  PL_FPDF.Cell(0, 10, 'Test PDF 3');
+  l_test_pdf3 := PL_FPDF.OutputBlob();
+  PL_FPDF.Reset();
+
+  -- Estado limpo: sem isto, rodar o arquivo duas vezes na mesma sessão falha
+  -- com ORA-20828 ('PDF ID already loaded'), porque a coleção multi-documento
+  -- sobrevive entre execuções.
+  BEGIN
+    PL_FPDF.ClearPDFCache;
+  EXCEPTION WHEN OTHERS THEN NULL;
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('=== LoadPDFWithID Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 1: Load single PDF with ID
+  BEGIN
+    PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf1);
+    confere('Load PDF with ID', TRUE);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Load PDF with ID', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 2: Load multiple PDFs
+  BEGIN
+    PL_FPDF.LoadPDFWithID('pdf2', l_test_pdf2);
+    PL_FPDF.LoadPDFWithID('pdf3', l_test_pdf3);
+    confere('Load multiple PDFs', TRUE);
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Load multiple PDFs', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 3: Load duplicate ID (should error)
+  BEGIN
+    PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf1);
+    faltou_erro('Load duplicate PDF ID', -20828);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Load duplicate PDF ID', -20828, SQLCODE);
+  END;
+
+  -- Test 4: Load with NULL ID (should error)
+  BEGIN
+    PL_FPDF.LoadPDFWithID(NULL, l_test_pdf1);
+    faltou_erro('Load with NULL ID', -20830);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Load with NULL ID', -20830, SQLCODE);
+  END;
+
+  -- Test 5: Load with NULL BLOB (should error)
+  BEGIN
+    PL_FPDF.LoadPDFWithID('pdf_null', NULL);
+    faltou_erro('Load with NULL BLOB', -20830);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Load with NULL BLOB', -20830, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== GetLoadedPDFs Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 6: Get loaded PDFs
+  BEGIN
+    l_pdfs := PL_FPDF.GetLoadedPDFs();
+    confere('GetLoadedPDFs returns array', l_pdfs IS NOT NULL AND l_pdfs.get_size() >= 3);
+    DBMS_OUTPUT.PUT_LINE('   Found ' || l_pdfs.get_size() || ' loaded PDFs');
+
+    -- Display PDF details
+    FOR i IN 0..l_pdfs.get_size() - 1 LOOP
+      l_pdf_obj := TREAT(l_pdfs.get(i) AS JSON_OBJECT_T);
+      DBMS_OUTPUT.PUT_LINE('   - ' || l_pdf_obj.get_string('pdfId') ||
+                          ': ' || l_pdf_obj.get_number('pageCount') || ' pages, ' ||
+                          ROUND(l_pdf_obj.get_number('fileSize')/1024, 1) || ' KB');
+    END LOOP;
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('GetLoadedPDFs returns array', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== MergePDFs Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 7: Merge 2 PDFs
+  BEGIN
+    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf2"]'), NULL);
+    confere('Merge 2 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
+    DBMS_OUTPUT.PUT_LINE('   Merged PDF size: ' || DBMS_LOB.GETLENGTH(l_merged) || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Merge 2 PDFs', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 8: Merge 3 PDFs
+  BEGIN
+    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf2","pdf3"]'), NULL);
+    confere('Merge 3 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
+    DBMS_OUTPUT.PUT_LINE('   Merged PDF size: ' || DBMS_LOB.GETLENGTH(l_merged) || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Merge 3 PDFs', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 9: Merge with empty array (should error)
+  BEGIN
+    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('[]'), NULL);
+    faltou_erro('Merge with empty array', -20832);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Merge with empty array', -20832, SQLCODE);
+  END;
+
+  -- Test 10: Merge with non-loaded PDF (should error)
+  BEGIN
+    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf_notloaded"]'), NULL);
+    faltou_erro('Merge with non-loaded PDF', -20833);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Merge with non-loaded PDF', -20833, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== ExtractPages Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 11: Extract ALL pages
+  BEGIN
+    l_extracted := PL_FPDF.ExtractPages('pdf1', 'ALL', NULL);
+    confere('Extract ALL pages', l_extracted IS NOT NULL);
+    DBMS_OUTPUT.PUT_LINE('   Extracted PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Extract ALL pages', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 12: Extract single page
+  BEGIN
+    l_extracted := PL_FPDF.ExtractPages('pdf1', '1', NULL);
+    confere('Extract single page', l_extracted IS NOT NULL);
+    DBMS_OUTPUT.PUT_LINE('   Extracted PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Extract single page', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 13: Extract from non-loaded PDF (should error)
+  BEGIN
+    l_extracted := PL_FPDF.ExtractPages('pdf_notexist', '1', NULL);
+    faltou_erro('Extract from non-loaded PDF', -20831);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Extract from non-loaded PDF', -20831, SQLCODE);
+  END;
+
+  -- Test 14: Extract with NULL page spec (should error)
+  BEGIN
+    l_extracted := PL_FPDF.ExtractPages('pdf1', NULL, NULL);
+    faltou_erro('Extract with NULL page spec', -20838);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Extract with NULL page spec', -20838, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== SplitPDF Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 15: Split PDF
+  BEGIN
+    l_split_pdfs := PL_FPDF.SplitPDF('pdf1', JSON_ARRAY_T('["1"]'));
+    confere('Split PDF into 1 part', l_split_pdfs IS NOT NULL AND l_split_pdfs.get_size() = 1);
+    DBMS_OUTPUT.PUT_LINE('   Split into ' || l_split_pdfs.get_size() || ' parts');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Split PDF into 1 part', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 16: Split with empty ranges (should error)
+  BEGIN
+    l_split_pdfs := PL_FPDF.SplitPDF('pdf1', JSON_ARRAY_T('[]'));
+    faltou_erro('Split with empty ranges', -20835);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Split with empty ranges', -20835, SQLCODE);
+  END;
+
+  -- Test 17: Split non-loaded PDF (should error)
+  BEGIN
+    l_split_pdfs := PL_FPDF.SplitPDF('pdf_notexist', JSON_ARRAY_T('["1"]'));
+    faltou_erro('Split non-loaded PDF', -20831);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Split non-loaded PDF', -20831, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== UnloadPDF Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 18: Unload PDF
+  BEGIN
+    PL_FPDF.UnloadPDF('pdf3');
+    l_pdfs := PL_FPDF.GetLoadedPDFs();
+    confere('Unload PDF', l_pdfs.get_size() = 2);
+    DBMS_OUTPUT.PUT_LINE('   Remaining PDFs: ' || l_pdfs.get_size());
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Unload PDF', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Test 19: Unload non-existent PDF (should error)
+  BEGIN
+    PL_FPDF.UnloadPDF('pdf_notexist');
+    faltou_erro('Unload non-existent PDF', -20831);
+  EXCEPTION
+    WHEN OTHERS THEN
+      erro_esperado('Unload non-existent PDF', -20831, SQLCODE);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=== Integration Tests ===');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test 20: Load, merge, extract workflow
+  BEGIN
+    PL_FPDF.LoadPDFWithID('pdf4', l_test_pdf1);
+    PL_FPDF.LoadPDFWithID('pdf5', l_test_pdf2);
+
+    l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf4","pdf5"]'), NULL);
+    PL_FPDF.LoadPDFWithID('merged', l_merged);
+
+    l_extracted := PL_FPDF.ExtractPages('merged', 'ALL', NULL);
+
+    confere('Load-Merge-Extract workflow', l_extracted IS NOT NULL);
+    DBMS_OUTPUT.PUT_LINE('   Final PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      confere('Load-Merge-Extract workflow', FALSE);
+      DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
+  END;
+
+  -- Final summary
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('========================================');
+  DBMS_OUTPUT.PUT_LINE('Test Summary:');
+  DBMS_OUTPUT.PUT_LINE('  Total Tests: ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('  Passed:      ' || l_pass_count || ' (' ||
+                      ROUND(l_pass_count/l_test_count*100, 1) || '%)');
+  DBMS_OUTPUT.PUT_LINE('  Failed:      ' || l_fail_count || ' (' ||
+                      ROUND(l_fail_count/l_test_count*100, 1) || '%)');
+  DBMS_OUTPUT.PUT_LINE('========================================');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('✓ ALL TESTS PASSED');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('✗ SOME TESTS FAILED');
+  END IF;
+
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('FATAL ERROR: ' || SQLERRM);
+    DBMS_OUTPUT.PUT_LINE('Test execution aborted at test ' || l_test_count);
+    RAISE;
+END;
+/
+
+--------------------------------------------------------------------------------
+-- OutputModifiedPDF
+-- origem: tests/test_saida_modificada.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF v3.0.0-a.5 - Phase 4.4: OutputModifiedPDF Tests
+-- Description: Test suite for OutputModifiedPDF API
+--------------------------------------------------------------------------------
+
+
+
+DECLARE
+  l_pdf BLOB;
+  l_modified_pdf BLOB;
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+  l_original_size NUMBER;
+  l_modified_size NUMBER;
+
+  -- Test helper procedures
+  PROCEDURE caso(p_test_name VARCHAR2) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Test ' || l_test_count || ': ' || p_test_name);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
+  END;
+
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
+  BEGIN
+    l_pass_count := l_pass_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
+  END;
+
+  PROCEDURE falhou(p_message VARCHAR2) IS
+  BEGIN
+    l_fail_count := l_fail_count + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
+  END;
+
+  -- Create valid test PDF with 5 pages using PL_FPDF itself
+  PROCEDURE create_test_pdf IS
+  BEGIN
+    PL_FPDF.Init('P', 'mm', 'Letter');
+    PL_FPDF.SetFont('Arial', '', 12);
+    FOR i IN 1..5 LOOP
+      PL_FPDF.AddPage();
+      PL_FPDF.Cell(0, 10, 'Page ' || i);
+    END LOOP;
+    l_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF v3.0.0-a.5 - PHASE 4.4: OutputModifiedPDF Tests');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+  -- Create test PDF with 5 pages
+  create_test_pdf();
+  l_original_size := DBMS_LOB.GETLENGTH(l_pdf);
+  DBMS_OUTPUT.PUT_LINE('Original PDF size: ' || l_original_size || ' bytes');
+
+  --------------------------------------------------------------------------------
+  -- TEST 1: OutputModifiedPDF without modifications (should fail)
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - No modifications (should fail)');
+  BEGIN
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- Try to output without any modifications
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+    falhou('Should have raised error for unmodified PDF');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20819 THEN
+        passou('Correctly rejected unmodified PDF');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 2: OutputModifiedPDF with rotation
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - With page rotation');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- Rotate page 1
+    PL_FPDF.RotatePage(1, 90);
+
+    -- Generate modified PDF
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+    l_modified_size := DBMS_LOB.GETLENGTH(l_modified_pdf);
+
+    IF l_modified_pdf IS NOT NULL THEN
+      passou('Modified PDF generated');
+    ELSE
+      falhou('Modified PDF is NULL');
+    END IF;
+
+    IF l_modified_size > 0 THEN
+      passou('Modified PDF size: ' || l_modified_size || ' bytes');
+    ELSE
+      falhou('Modified PDF has zero size');
+    END IF;
+
+    -- Cabeçalho: aceita qualquer %PDF-1.x. O copiador de objetos emite 1.7;
+    -- prender o teste a uma versão específica é frágil.
+    IF UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(l_modified_pdf, 7, 1)) LIKE '%PDF-1.' THEN
+      passou('PDF header correct');
+    ELSE
+      falhou('Invalid PDF header: ' ||
+                UTL_RAW.CAST_TO_VARCHAR2(DBMS_LOB.SUBSTR(l_modified_pdf, 8, 1)));
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error generating PDF with rotation: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 3: OutputModifiedPDF with page removal
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - With page removal');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- Remove pages 2 and 4
+    PL_FPDF.RemovePage(2);
+    PL_FPDF.RemovePage(4);
+
+    -- Generate modified PDF
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+    l_modified_size := DBMS_LOB.GETLENGTH(l_modified_pdf);
+
+    IF l_modified_pdf IS NOT NULL THEN
+      passou('Modified PDF generated with removed pages');
+    ELSE
+      falhou('Modified PDF is NULL');
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('  Original: 5 pages, Modified: 3 pages (removed 2 and 4)');
+    passou('PDF size: ' || l_modified_size || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error generating PDF with removed pages: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 4: OutputModifiedPDF with watermark
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - With watermark');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- A marca d'água é desenhada no fluxo de conteúdo. Antes disto a geração
+    -- era recusada com -20845 para não descartá-la em silêncio; agora o que se
+    -- confere é que ela SAI no arquivo.
+    PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
+
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+
+    IF l_modified_pdf IS NULL THEN
+      falhou('OutputModifiedPDF devolveu NULL com marca d''água');
+    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
+                         UTL_RAW.CAST_TO_RAW('(CONFIDENTIAL) Tj'), 1, 1) = 0 THEN
+      falhou('a marca d''água não aparece no fluxo de conteúdo');
+    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
+                         UTL_RAW.CAST_TO_RAW('/ExtGState'), 1, 1) = 0 THEN
+      -- sem o /ExtGState a opacidade seria ignorada e a marca sairia opaca,
+      -- por cima do conteúdo
+      falhou('o /ExtGState da opacidade não foi declarado');
+    ELSE
+      passou('marca d''água desenhada no fluxo de conteúdo, com opacidade');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error generating PDF with watermark: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 5: OutputModifiedPDF with combined modifications
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - Combined modifications');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- Rotação, remoção e marca d'água juntas: a marca é aplicada por número de
+    -- página ORIGINAL, e a página 3 sai do documento — quem confunde os dois
+    -- índices desenha na folha errada.
+    PL_FPDF.RotatePage(1, 90);
+    PL_FPDF.RemovePage(3);
+    PL_FPDF.AddWatermark('RASCUNHO', 0.25, 45, '1');
+
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+    l_modified_size := DBMS_LOB.GETLENGTH(l_modified_pdf);
+
+    IF l_modified_pdf IS NOT NULL THEN
+      passou('Modified PDF generated with combined modifications');
+    ELSE
+      falhou('Modified PDF is NULL');
+    END IF;
+
+    DBMS_OUTPUT.PUT_LINE('  Modifications: rotation + removal');
+    passou('PDF size: ' || l_modified_size || ' bytes');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error with combined modifications: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 5b: OutputModifiedPDF com overlay de imagem
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - Overlay de imagem (PNG)');
+  DECLARE
+    -- PNG 4x4 de cor sólida, sem filtro por linha. Fica embutido em hexadecimal
+    -- para o teste não depender de arquivo nem de diretório do banco.
+    co_png CONSTANT RAW(200) := HEXTORAW(
+         '89504E470D0A1A0A0000000D4948445200000004000000040802000000269309'
+      || '290000001149444154789C63509870018E1888E3000065521801FA941B110000'
+      || '000049454E44AE426082');
+    l_img BLOB := TO_BLOB(co_png);
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.OverlayImage(p_page_number => 1, p_image_blob => l_img,
+                         p_x => 100, p_y => 500,
+                         p_width => 120, p_height => 120);
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+
+    IF l_modified_pdf IS NULL THEN
+      falhou('OutputModifiedPDF devolveu NULL com overlay de imagem');
+    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
+                         UTL_RAW.CAST_TO_RAW('/Subtype /Image'), 1, 1) = 0 THEN
+      falhou('o /XObject de imagem não foi gravado');
+    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
+                         UTL_RAW.CAST_TO_RAW('/Predictor 15'), 1, 1) = 0 THEN
+      -- os dados do PNG entram como FlateDecode sem serem descomprimidos; sem
+      -- o Predictor o leitor não desfaz o filtro por linha e desenha ruído
+      falhou('/DecodeParms com /Predictor 15 não foi declarado');
+    ELSIF DBMS_LOB.INSTR(l_modified_pdf,
+                         UTL_RAW.CAST_TO_RAW('/ImgPLFPDF'), 1, 1) = 0 THEN
+      falhou('a imagem não entrou no /XObject do /Resources da página');
+    ELSE
+      passou('overlay de imagem desenhado, com /DecodeParms e /XObject');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Erro no overlay de imagem: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 5c: formato de imagem não suportado é recusado, não desenhado errado
+  --------------------------------------------------------------------------------
+  caso('OverlayImage - formato não suportado é recusado');
+  DECLARE
+    l_gif BLOB := TO_BLOB(UTL_RAW.CAST_TO_RAW('GIF89a' || RPAD('x', 40, 'x')));
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+    PL_FPDF.OverlayImage(p_page_number => 1, p_image_blob => l_gif,
+                         p_x => 10, p_y => 10);
+    falhou('deveria recusar um GIF');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20823 THEN
+        passou('formato não suportado recusado com -20823');
+      ELSE
+        falhou('código errado: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 6: OutputModifiedPDF after removing all pages (should fail)
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - All pages removed (should fail)');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_pdf);
+
+    -- Remove all pages
+    FOR i IN 1..5 LOOP
+      PL_FPDF.RemovePage(i);
+    END LOOP;
+
+    -- Try to generate PDF
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+    falhou('Should have raised error for empty PDF');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20820 THEN
+        passou('Correctly rejected empty PDF (all pages removed)');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST 7: OutputModifiedPDF without loaded PDF (should fail)
+  --------------------------------------------------------------------------------
+  caso('OutputModifiedPDF - No PDF loaded (should fail)');
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+
+    -- Try to output without loading PDF
+    l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+    falhou('Should have raised error for no PDF loaded');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20809 THEN
+        passou('Correctly raised error for no PDF loaded');
+      ELSE
+        falhou('Wrong error code: ' || SQLCODE);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- TEST SUMMARY
+  --------------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  -- l_test_count conta blocos (caso); l_pass/l_fail contam verificações.
+  -- O percentual precisa ser sobre as verificações, senão passa de 100%.
+  DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));
+  DBMS_OUTPUT.PUT_LINE('Passou:       ' || l_pass_count || ' (' ||
+    CASE WHEN l_pass_count + l_fail_count = 0 THEN '0'
+         ELSE TO_CHAR(ROUND(l_pass_count / (l_pass_count + l_fail_count) * 100, 1))
+    END || '%)');
+  DBMS_OUTPUT.PUT_LINE('Falhou:       ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('*** ALL TESTS PASSED ***');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('*** SOME TESTS FAILED ***');
+  END IF;
+
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Manipulação: o caminho inteiro
+-- origem: tests/test_manipulacao_completa.sql
+--------------------------------------------------------------------------------
+/*******************************************************************************
+* Validation Script: Phase 4 Complete Validation (4.1-4.6)
+* Version: 3.0.0-b.2
+* Date: 2026-01
+* Author: @maxwbh
+*
+* Purpose: Complete validation for PDF Reading & Manipulation (Phase 4)
+*
+* Validates:
+*   - Phase 4.1A: PDF Parser
+*   - Phase 4.1B: Page Information
+*   - Phase 4.2: Page Management (Rotate, Remove)
+*   - Phase 4.3: Watermarks
+*   - Phase 4.4: Output Modified PDF
+*   - Phase 4.5: Text & Image Overlay
+*   - Phase 4.6: PDF Merge & Split
+*
+* Usage:
+*   SET SERVEROUTPUT ON SIZE UNLIMITED
+*   @tests/test_manipulacao_completa.sql
+*******************************************************************************/
+
+-- ================================================================================
+-- PL_FPDF - Phase 4 Complete Validation (PDF Reading & Manipulation)
+-- Version: 3.0.0-b.2
+-- ================================================================================
+--
+
+DECLARE
+  l_test_count PLS_INTEGER := 0;
+  l_pass_count PLS_INTEGER := 0;
+  l_fail_count PLS_INTEGER := 0;
+
+  l_test_pdf BLOB;
+  l_test_pdf_2 BLOB;
+  l_result BLOB;
+  l_info JSON_OBJECT_T;
+  l_arr  JSON_ARRAY_T;   -- retornos JSON_ARRAY_T
+  l_num  PLS_INTEGER;    -- retornos numéricos
+
+  PROCEDURE confere(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  BEGIN
+    l_test_count := l_test_count + 1;
+    IF p_passed THEN
+      l_pass_count := l_pass_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_test_name);
+    ELSE
+      l_fail_count := l_fail_count + 1;
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name ||
+        CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
+    END IF;
+  END confere;
+
+  PROCEDURE create_test_pdf IS
+  BEGIN
+    PL_FPDF.Init();
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Test Page 1');
+    PL_FPDF.AddPage();
+    PL_FPDF.Cell(0, 10, 'Test Page 2');
+    PL_FPDF.AddPage();
+    PL_FPDF.Cell(0, 10, 'Test Page 3');
+    l_test_pdf := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END create_test_pdf;
+
+  PROCEDURE create_test_pdf_2 IS
+  BEGIN
+    PL_FPDF.Init();
+    PL_FPDF.AddPage();
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'Second PDF - Page 1');
+    PL_FPDF.AddPage();
+    PL_FPDF.Cell(0, 10, 'Second PDF - Page 2');
+    l_test_pdf_2 := PL_FPDF.OutputBlob();
+    PL_FPDF.Reset();
+  END create_test_pdf_2;
+
+BEGIN
+  -- Create test PDFs
+  create_test_pdf();
+  create_test_pdf_2();
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.1A: PDF Parser');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: LoadPDF
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    confere('LoadPDF - Load existing PDF', TRUE);
+  EXCEPTION WHEN OTHERS THEN
+    confere('LoadPDF', FALSE, SQLERRM);
+  END;
+
+  -- Test: PDF carregado
+  -- Nao existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
+  BEGIN
+    confere('PDF carregado - GetPageCount responde', PL_FPDF.GetPageCount > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('PDF carregado', FALSE, SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.1B: Page Information');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: GetPageCount
+  BEGIN
+    l_num := PL_FPDF.GetPageCount;
+    confere('GetPageCount - Count pages in PDF', l_num = 3);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetPageCount', FALSE, SQLERRM);
+  END;
+
+  -- Test: GetPageInfo
+  BEGIN
+    l_info := PL_FPDF.GetPageInfo(1);
+    -- as chaves do JSON são camelCase: pageNumber, não page_number
+    confere('GetPageInfo - Get page 1 information',
+                l_info.has('pageNumber') AND l_info.get_number('pageNumber') = 1);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetPageInfo', FALSE, SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.2: Page Management');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: RotatePage
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    PL_FPDF.RotatePage(1, 90);
+    l_info := PL_FPDF.GetPageInfo(1);
+    confere('RotatePage - Rotate page 90 degrees',
+                l_info.get_number('rotation') = 90);
+  EXCEPTION WHEN OTHERS THEN
+    confere('RotatePage', FALSE, SQLERRM);
+  END;
+
+  -- Test: RemovePage
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    PL_FPDF.RemovePage(2);
+    -- RemovePage apenas MARCA a página; GetPageCount continua devolvendo o
+    -- total do documento carregado. A remoção se concretiza em
+    -- OutputModifiedPDF, e o estado é consultável por IsPageRemoved.
+    confere('RemovePage - Remove page 2',
+                PL_FPDF.IsPageRemoved(2)
+                AND NOT PL_FPDF.IsPageRemoved(1)
+                AND PL_FPDF.GetPageCount = 3);
+  EXCEPTION WHEN OTHERS THEN
+    confere('RemovePage', FALSE, SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.3: Watermarks');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: AddWatermark
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    PL_FPDF.AddWatermark('CONFIDENTIAL', NULL);
+    confere('AddWatermark - Add watermark to all pages', TRUE);
+  EXCEPTION WHEN OTHERS THEN
+    confere('AddWatermark', FALSE, SQLERRM);
+  END;
+
+  -- Test: GetWatermarks
+  DECLARE
+    l_watermarks JSON_ARRAY_T;
+  BEGIN
+    l_watermarks := PL_FPDF.GetWatermarks();
+    confere('GetWatermarks - List watermarks',
+                l_watermarks IS NOT NULL AND l_watermarks.get_size() > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetWatermarks', FALSE, SQLERRM);
+  END;
+
+  -- RemoveWatermark e ClearWatermarks nao existem na API: o teste antigo as
+  -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A unica forma
+  -- publica de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
+  DECLARE
+    l_watermarks JSON_ARRAY_T;
+  BEGIN
+    l_watermarks := PL_FPDF.GetWatermarks();
+    confere('GetWatermarks - lista as marcas registradas',
+                l_watermarks.get_size() > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetWatermarks', FALSE, SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.4: Output Modified PDF');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: OutputModifiedPDF
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    PL_FPDF.RotatePage(1, 90);
+    l_result := PL_FPDF.OutputModifiedPDF();
+    confere('OutputModifiedPDF - Generate modified PDF',
+                l_result IS NOT NULL AND DBMS_LOB.GETLENGTH(l_result) > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('OutputModifiedPDF', FALSE, SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.5: Text & Image Overlay');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: OverlayText
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDF(l_test_pdf);
+    PL_FPDF.OverlayText(1, 'APPROVED', 100, 100, NULL);
+    confere('OverlayText - Add text overlay to page', TRUE);
+  EXCEPTION WHEN OTHERS THEN
+    confere('OverlayText', FALSE, SQLERRM);
+  END;
+
+  -- Test: GetOverlays
+  DECLARE
+    l_overlays JSON_ARRAY_T;
+  BEGIN
+    l_overlays := PL_FPDF.GetOverlays(NULL);
+    confere('GetOverlays - List all overlays',
+                l_overlays IS NOT NULL AND l_overlays.get_size() > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetOverlays', FALSE, SQLERRM);
+  END;
+
+  -- Test: OverlayImage
+  DECLARE
+    l_minimal_png BLOB;
+  BEGIN
+    -- Minimal 1x1 PNG (67 bytes)
+    l_minimal_png := HEXTORAW(
+      '89504E470D0A1A0A' || -- PNG signature
+      '0000000D49484452' || -- IHDR chunk
+      '0000000100000001' || -- 1x1 dimensions
+      '0806000000' ||       -- 8-bit RGBA
+      '1F15C4890000000A' || -- CRC + IDAT chunk header
+      '49444154' ||         -- IDAT
+      '789C6300010000050001' || -- Compressed data
+      '0D0A2DB40000000049454E44AE426082'); -- IEND chunk
+
+    PL_FPDF.OverlayImage(1, l_minimal_png, 50, 50, NULL, NULL, NULL);
+    confere('OverlayImage - Add image overlay to page', TRUE);
+  EXCEPTION WHEN OTHERS THEN
+    confere('OverlayImage', FALSE, SQLERRM);
+  END;
+
+  -- Test: RemoveOverlay
+  DECLARE
+    l_overlays JSON_ARRAY_T;
+    l_overlay JSON_OBJECT_T;
+    l_overlay_id VARCHAR2(100);
+  BEGIN
+    l_overlays := PL_FPDF.GetOverlays(NULL);
+    IF l_overlays.get_size() > 0 THEN
+      l_overlay := TREAT(l_overlays.get(0) AS JSON_OBJECT_T);
+      l_overlay_id := l_overlay.get_string('overlayId');   -- camelCase
+      PL_FPDF.RemoveOverlay(l_overlay_id);
+      confere('RemoveOverlay - Remove specific overlay', TRUE);
+    ELSE
+      confere('RemoveOverlay', FALSE, 'No overlays to remove');
+    END IF;
+  EXCEPTION WHEN OTHERS THEN
+    confere('RemoveOverlay', FALSE, SQLERRM);
+  END;
+
+  -- Test: ClearOverlays
+  BEGIN
+    PL_FPDF.ClearOverlays(NULL);
+    l_arr := PL_FPDF.GetOverlays(NULL);
+    confere('ClearOverlays - Clear all overlays', l_arr.get_size() = 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('ClearOverlays', FALSE, SQLERRM);
+  END;
+
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('PHASE 4.6: PDF Merge & Split');
+  DBMS_OUTPUT.PUT_LINE('=========================================');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  -- Test: LoadPDFWithID
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf);
+    PL_FPDF.LoadPDFWithID('pdf2', l_test_pdf_2);
+    confere('LoadPDFWithID - Load multiple PDFs with IDs', TRUE);
+  EXCEPTION WHEN OTHERS THEN
+    confere('LoadPDFWithID', FALSE, SQLERRM);
+  END;
+
+  -- Test: GetLoadedPDFs
+  DECLARE
+    l_pdfs JSON_ARRAY_T;
+  BEGIN
+    l_pdfs := PL_FPDF.GetLoadedPDFs();
+    confere('GetLoadedPDFs - List loaded PDFs',
+                l_pdfs IS NOT NULL AND l_pdfs.get_size() = 2);
+  EXCEPTION WHEN OTHERS THEN
+    confere('GetLoadedPDFs', FALSE, SQLERRM);
+  END;
+
+  -- Test: MergePDFs
+  DECLARE
+    l_merged BLOB;
+    l_pdf_ids JSON_ARRAY_T;
+  BEGIN
+    l_pdf_ids := JSON_ARRAY_T('["pdf1", "pdf2"]');
+    l_merged := PL_FPDF.MergePDFs(l_pdf_ids, NULL);
+    confere('MergePDFs - Merge two PDFs',
+                l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('MergePDFs', FALSE, SQLERRM);
+  END;
+
+  -- Test: ExtractPages
+  DECLARE
+    l_extracted BLOB;
+  BEGIN
+    l_extracted := PL_FPDF.ExtractPages('pdf1', '1', NULL);
+    confere('ExtractPages - Extract single page',
+                l_extracted IS NOT NULL AND DBMS_LOB.GETLENGTH(l_extracted) > 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('ExtractPages', FALSE, SQLERRM);
+  END;
+
+  -- Test: SplitPDF
+  DECLARE
+    l_splits JSON_ARRAY_T;
+    l_ranges JSON_ARRAY_T;
+  BEGIN
+    l_ranges := JSON_ARRAY_T('["1", "2-3"]');
+    l_splits := PL_FPDF.SplitPDF('pdf1', l_ranges);
+    confere('SplitPDF - Split PDF into multiple parts',
+                l_splits IS NOT NULL AND l_splits.get_size() = 2);
+  EXCEPTION WHEN OTHERS THEN
+    confere('SplitPDF', FALSE, SQLERRM);
+  END;
+
+  -- Test: UnloadPDF
+  BEGIN
+    PL_FPDF.UnloadPDF('pdf2');
+    l_arr := PL_FPDF.GetLoadedPDFs();
+    confere('UnloadPDF - Unload specific PDF', l_arr.get_size() = 1);
+  EXCEPTION WHEN OTHERS THEN
+    confere('UnloadPDF', FALSE, SQLERRM);
+  END;
+
+  -- Test: ClearPDFCache
+  BEGIN
+    PL_FPDF.ClearPDFCache();
+    l_arr := PL_FPDF.GetLoadedPDFs();
+    confere('ClearPDFCache - Clear all loaded PDFs', l_arr.get_size() = 0);
+  EXCEPTION WHEN OTHERS THEN
+    confere('ClearPDFCache', FALSE, SQLERRM);
+  END;
+
+  -- Summary
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('Phase 4 Complete Validation Summary');
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+  DBMS_OUTPUT.PUT_LINE('Total Tests: ' || l_test_count);
+  DBMS_OUTPUT.PUT_LINE('Passed:      ' || l_pass_count || ' (' ||
+    ROUND(l_pass_count * 100 / l_test_count, 1) || '%)');
+  DBMS_OUTPUT.PUT_LINE('Failed:      ' || l_fail_count);
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE('Phase Coverage:');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.1A: PDF Parser         ✓');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.1B: Page Information   ✓');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.2:  Page Management    ✓');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.3:  Watermarks         ✓');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.4:  Output Modified    ✓');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.5:  Text/Image Overlay ✓');
+  DBMS_OUTPUT.PUT_LINE('  - Phase 4.6:  Merge & Split      ✓');
+  DBMS_OUTPUT.PUT_LINE('');
+
+  IF l_fail_count = 0 THEN
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 4: ALL TESTS PASSED ***');
+    DBMS_OUTPUT.PUT_LINE('*** PDF READING & MANIPULATION: VALIDATED ***');
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Phase 4 is now complete and ready for production use.');
+    DBMS_OUTPUT.PUT_LINE('Version can be promoted from Beta to Release Candidate.');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 4: SOME TESTS FAILED - REVIEW REQUIRED ***');
+    DBMS_OUTPUT.PUT_LINE('*** PHASE 4 REMAINS IN BETA STATUS ***');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE('================================================================================');
+
+END;
+/
+
+--
+-- Validation complete. Review results above.
+--
+
+--------------------------------------------------------------------------------
+-- Criptografia, senhas e permissões
+-- origem: tests/test_seguranca.sql
 --------------------------------------------------------------------------------
 /*******************************************************************************
 * Test Script: Phase 5 - Security / Password Protection
@@ -3869,7 +4424,7 @@ DECLARE
   v_section VARCHAR2(100);
   -- A criptografia depende de EXECUTE em SYS.DBMS_CRYPTO. Sem o privilégio os
   -- casos que a exercitam são PULADOS, não reprovados: é ausência de ambiente,
-  -- não defeito do package. A detecção é feita em test_fail, pelo ORA-20860.
+  -- não defeito do package. A detecção é feita em falhou, pelo ORA-20860.
 
   -- Test variables
   l_pdf BLOB;
@@ -3881,7 +4436,7 @@ DECLARE
   l_permissions JSON_OBJECT_T;
 
   -- Test helper procedures
-  PROCEDURE section_start(p_name VARCHAR2) IS
+  PROCEDURE secao(p_name VARCHAR2) IS
   BEGIN
     v_section := p_name;
     DBMS_OUTPUT.PUT_LINE('');
@@ -3890,7 +4445,7 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE('============================================================');
   END;
 
-  PROCEDURE test_start(p_name VARCHAR2) IS
+  PROCEDURE caso(p_name VARCHAR2) IS
   BEGIN
     v_total_tests := v_total_tests + 1;
     DBMS_OUTPUT.PUT_LINE('');
@@ -3898,13 +4453,13 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE('------------------------------------------------------------');
   END;
 
-  PROCEDURE test_pass(p_msg VARCHAR2 DEFAULT 'PASS') IS
+  PROCEDURE passou(p_msg VARCHAR2 DEFAULT 'PASS') IS
   BEGIN
     v_passed_tests := v_passed_tests + 1;
     DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
   END;
 
-  PROCEDURE test_fail(p_msg VARCHAR2) IS
+  PROCEDURE falhou(p_msg VARCHAR2) IS
   BEGIN
     -- ORA-20860 = sem acesso a DBMS_CRYPTO; ORA-20862 = existe, mas não cifra
     -- de verdade (autoteste com vetores conhecidos reprovou). Nos dois casos é
@@ -3925,7 +4480,7 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
   END;
 
-  PROCEDURE test_skip(p_msg VARCHAR2) IS
+  PROCEDURE pulou(p_msg VARCHAR2) IS
   BEGIN
     v_skipped_tests := v_skipped_tests + 1;
     DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
@@ -3964,57 +4519,57 @@ BEGIN
   -- ================================================================================
   -- SECTION 1: Basic Encryption Detection
   -- ================================================================================
-  section_start('SECTION 1: Basic Encryption Detection');
+  secao('SECTION 1: Basic Encryption Detection');
 
   -- TEST 1.1: Check unencrypted PDF
-  test_start('IsEncrypted - Unencrypted PDF returns FALSE');
+  caso('IsEncrypted - Unencrypted PDF returns FALSE');
   BEGIN
     l_is_encrypted := PL_FPDF.IsEncrypted(l_pdf);
     IF NOT l_is_encrypted THEN
-      test_pass('Correctly detected unencrypted PDF');
+      passou('Correctly detected unencrypted PDF');
     ELSE
-      test_fail('Should report PDF as unencrypted');
+      falhou('Should report PDF as unencrypted');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 1.2: IsEncrypted - NULL PDF
-  test_start('IsEncrypted - NULL PDF returns FALSE');
+  caso('IsEncrypted - NULL PDF returns FALSE');
   BEGIN
     l_is_encrypted := PL_FPDF.IsEncrypted(NULL);
     IF NOT l_is_encrypted THEN
-      test_pass('Correctly returns FALSE for NULL');
+      passou('Correctly returns FALSE for NULL');
     ELSE
-      test_fail('Should return FALSE for NULL');
+      falhou('Should return FALSE for NULL');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 1.3: GetSecurityInfo - Unencrypted PDF
-  test_start('GetSecurityInfo - Unencrypted PDF');
+  caso('GetSecurityInfo - Unencrypted PDF');
   BEGIN
     l_info := PL_FPDF.GetSecurityInfo(l_pdf);
     IF NOT l_info.get_boolean('encrypted') THEN
-      test_pass('Correctly reports encrypted=false');
+      passou('Correctly reports encrypted=false');
     ELSE
-      test_fail('Should report encrypted=false');
+      falhou('Should report encrypted=false');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- ================================================================================
   -- SECTION 2: RC4 Encryption
   -- ================================================================================
-  section_start('SECTION 2: RC4 Encryption');
+  secao('SECTION 2: RC4 Encryption');
 
   -- TEST 2.1: EncryptPDF - RC4-128 with user password only
-  test_start('EncryptPDF - RC4-128 with user password');
+  caso('EncryptPDF - RC4-128 with user password');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4022,22 +4577,22 @@ BEGIN
       p_encryption => 'RC4-128'
     );
     IF l_encrypted IS NOT NULL AND DBMS_LOB.GETLENGTH(l_encrypted) > 0 THEN
-      test_pass('PDF encrypted (' || DBMS_LOB.GETLENGTH(l_encrypted) || ' bytes)');
+      passou('PDF encrypted (' || DBMS_LOB.GETLENGTH(l_encrypted) || ' bytes)');
 
       -- Verify it's now encrypted
       IF PL_FPDF.IsEncrypted(l_encrypted) THEN
         DBMS_OUTPUT.PUT_LINE('  [INFO] IsEncrypted confirms encryption');
       END IF;
     ELSE
-      test_fail('Encryption returned empty result');
+      falhou('Encryption returned empty result');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 2.2: EncryptPDF - RC4-40 legacy encryption
-  test_start('EncryptPDF - RC4-40 legacy encryption');
+  caso('EncryptPDF - RC4-40 legacy encryption');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4045,7 +4600,7 @@ BEGIN
       p_encryption => 'RC4-40'
     );
     IF l_encrypted IS NOT NULL THEN
-      test_pass('RC4-40 encryption successful');
+      passou('RC4-40 encryption successful');
 
       -- Check security info
       l_info := PL_FPDF.GetSecurityInfo(l_encrypted);
@@ -4053,15 +4608,15 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('  [INFO] Method correctly identified as RC4-40');
       END IF;
     ELSE
-      test_fail('RC4-40 encryption failed');
+      falhou('RC4-40 encryption failed');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 2.3: EncryptPDF - With owner password
-  test_start('EncryptPDF - User and Owner passwords');
+  caso('EncryptPDF - User and Owner passwords');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4070,22 +4625,22 @@ BEGIN
       p_encryption => 'RC4-128'
     );
     IF l_encrypted IS NOT NULL THEN
-      test_pass('Encryption with both passwords successful');
+      passou('Encryption with both passwords successful');
 
       l_info := PL_FPDF.GetSecurityInfo(l_encrypted);
       IF l_info.get_boolean('hasUserPassword') AND l_info.get_boolean('hasOwnerPassword') THEN
         DBMS_OUTPUT.PUT_LINE('  [INFO] Both password flags detected');
       END IF;
     ELSE
-      test_fail('Encryption with both passwords failed');
+      falhou('Encryption with both passwords failed');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 2.4: Encrypt already encrypted PDF (should fail)
-  test_start('EncryptPDF - Already encrypted PDF (should fail)');
+  caso('EncryptPDF - Already encrypted PDF (should fail)');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4099,23 +4654,23 @@ BEGIN
       p_user_password => 'second',
       p_encryption => 'RC4-128'
     );
-    test_fail('Should have raised error for already encrypted PDF');
+    falhou('Should have raised error for already encrypted PDF');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20859 THEN
-        test_pass('Correctly rejected already encrypted PDF');
+        passou('Correctly rejected already encrypted PDF');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   -- ================================================================================
   -- SECTION 3: Permission Controls
   -- ================================================================================
-  section_start('SECTION 3: Permission Controls');
+  secao('SECTION 3: Permission Controls');
 
   -- TEST 3.1: EncryptPDF - With permission restrictions
-  test_start('EncryptPDF - With permission restrictions');
+  caso('EncryptPDF - With permission restrictions');
   BEGIN
     l_permissions := JSON_OBJECT_T();
     l_permissions.put('print', TRUE);
@@ -4135,7 +4690,7 @@ BEGIN
       p_encryption => 'RC4-128'
     );
     IF l_encrypted IS NOT NULL THEN
-      test_pass('Encryption with permissions successful');
+      passou('Encryption with permissions successful');
 
       -- Verify permissions in output
       l_info := PL_FPDF.GetSecurityInfo(l_encrypted);
@@ -4147,15 +4702,15 @@ BEGIN
         DBMS_OUTPUT.PUT_LINE('         modify=' || CASE WHEN l_perms.get_boolean('modify') THEN 'Y' ELSE 'N' END);
       END IF;
     ELSE
-      test_fail('Encryption with permissions failed');
+      falhou('Encryption with permissions failed');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 3.2: SetEncryption + SetPermissions - Valid
-  test_start('SetEncryption + SetPermissions - Valid usage');
+  caso('SetEncryption + SetPermissions - Valid usage');
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.SetEncryption('RC4-128', 'user', 'owner');
@@ -4169,32 +4724,32 @@ BEGIN
       p_assemble => FALSE,
       p_print_high => TRUE
     );
-    test_pass('SetEncryption + SetPermissions accepted');
+    passou('SetEncryption + SetPermissions accepted');
     PL_FPDF.Reset();
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
       PL_FPDF.Reset();
   END;
 
   -- TEST 3.3: SetPermissions - Without SetEncryption (should fail)
-  test_start('SetPermissions - Without SetEncryption (should fail)');
+  caso('SetPermissions - Without SetEncryption (should fail)');
   BEGIN
     PL_FPDF.Reset();
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.SetPermissions(p_print => TRUE);
-    test_fail('Should have raised error');
+    falhou('Should have raised error');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20856 THEN
-        test_pass('Correctly requires SetEncryption first');
+        passou('Correctly requires SetEncryption first');
       ELSE
-        test_fail('Wrong error: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   -- TEST 3.4: All permissions enabled
-  test_start('Encryption - All permissions enabled');
+  caso('Encryption - All permissions enabled');
   BEGIN
     l_permissions := JSON_OBJECT_T();
     l_permissions.put('print', TRUE);
@@ -4218,17 +4773,17 @@ BEGIN
 
     IF l_perms.get_boolean('print') AND l_perms.get_boolean('copy') AND
        l_perms.get_boolean('modify') THEN
-      test_pass('All permissions correctly set');
+      passou('All permissions correctly set');
     ELSE
-      test_fail('Some permissions not set correctly');
+      falhou('Some permissions not set correctly');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 3.5: No permissions (most restrictive)
-  test_start('Encryption - No permissions (most restrictive)');
+  caso('Encryption - No permissions (most restrictive)');
   BEGIN
     l_permissions := JSON_OBJECT_T();
     l_permissions.put('print', FALSE);
@@ -4252,17 +4807,17 @@ BEGIN
     l_perms := l_info.get_Object('permissions');
 
     IF NOT l_perms.get_boolean('print') AND NOT l_perms.get_boolean('copy') THEN
-      test_pass('Restrictive permissions correctly set');
+      passou('Restrictive permissions correctly set');
     ELSE
-      test_fail('Permissions not restricted');
+      falhou('Permissions not restricted');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 3.5: o conteudo sai realmente cifrado
-  test_start('EncryptPDF - conteudo deixa de aparecer em claro');
+  caso('EncryptPDF - conteudo deixa de aparecer em claro');
   DECLARE
     co_marca CONSTANT VARCHAR2(60) := 'FraseSecretaParaConferirCifragem';
     l_claro  BLOB;
@@ -4306,20 +4861,20 @@ BEGIN
     END IF;
 
     IF l_erros = 0 THEN
-      test_pass('conteudo sai cifrado, nao apenas marcado como protegido');
+      passou('conteudo sai cifrado, nao apenas marcado como protegido');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 3.5b: AES cifra de verdade, nas duas revisoes
   FOR r IN (SELECT 'AES-128' m, 'AESV2' cfm, 4 v FROM dual
             UNION ALL
             SELECT 'AES-256', 'AESV3', 5 FROM dual) LOOP
-    test_start('EncryptPDF - ' || r.m || ' cifra o conteudo');
+    caso('EncryptPDF - ' || r.m || ' cifra o conteudo');
     DECLARE
       co_marca CONSTANT VARCHAR2(60) := 'FraseSecretaParaConferirAES';
       l_claro  BLOB;
@@ -4338,35 +4893,35 @@ BEGIN
                                   p_encryption => r.m);
 
       IF DBMS_LOB.INSTR(l_claro, UTL_RAW.CAST_TO_RAW(co_marca), 1, 1) = 0 THEN
-        test_fail('o PDF de origem nao tinha a marca em claro; teste invalido');
+        falhou('o PDF de origem nao tinha a marca em claro; teste invalido');
       ELSIF DBMS_LOB.INSTR(l_cif, UTL_RAW.CAST_TO_RAW(co_marca), 1, 1) > 0 THEN
-        test_fail(r.m || ': o texto continua em claro nos bytes');
+        falhou(r.m || ': o texto continua em claro nos bytes');
       ELSIF DBMS_LOB.INSTR(l_cif,
               UTL_RAW.CAST_TO_RAW('/CFM /' || r.cfm), 1, 1) = 0 THEN
         -- sem /CF, /StmF e /StrF o leitor supoe /Identity e mostra o conteudo
         -- cifrado como se fosse texto
-        test_fail(r.m || ': /CFM /' || r.cfm || ' nao foi declarado');
+        falhou(r.m || ': /CFM /' || r.cfm || ' nao foi declarado');
       ELSIF DBMS_LOB.INSTR(l_cif, UTL_RAW.CAST_TO_RAW('/StmF /StdCF'), 1, 1) = 0
       THEN
-        test_fail(r.m || ': /StmF nao aponta para o filtro');
+        falhou(r.m || ': /StmF nao aponta para o filtro');
       ELSE
         l_info := PL_FPDF.GetSecurityInfo(l_cif);
         IF l_info.get_number('version') != r.v THEN
-          test_fail(r.m || ': /V saiu ' || l_info.get_number('version'));
+          falhou(r.m || ': /V saiu ' || l_info.get_number('version'));
         ELSE
-          test_pass(r.m || ': conteudo cifrado, /CF e /StmF declarados');
+          passou(r.m || ': conteudo cifrado, /CF e /StmF declarados');
         END IF;
       END IF;
     EXCEPTION
       WHEN OTHERS THEN
-        test_fail(r.m || ' - Error: ' || SQLERRM);
+        falhou(r.m || ' - Error: ' || SQLERRM);
     END;
   END LOOP;
 
   -- TEST 3.5c: ida e volta do AES, nas duas revisoes
   FOR r IN (SELECT 'AES-128' m FROM dual UNION ALL SELECT 'AES-256' FROM dual)
   LOOP
-    test_start('EncryptPDF + DecryptPDF - ida e volta em ' || r.m);
+    caso('EncryptPDF + DecryptPDF - ida e volta em ' || r.m);
     DECLARE
       co_marca CONSTANT VARCHAR2(60) := 'FraseSecretaIdaEVoltaAES';
       l_claro  BLOB;
@@ -4387,20 +4942,20 @@ BEGIN
       l_dec := PL_FPDF.DecryptPDF(l_cif, 'segredo');
 
       IF DBMS_LOB.INSTR(l_dec, UTL_RAW.CAST_TO_RAW(co_marca), 1, 1) = 0 THEN
-        test_fail(r.m || ': o conteudo nao voltou ao original');
+        falhou(r.m || ': o conteudo nao voltou ao original');
       ELSIF PL_FPDF.IsEncrypted(l_dec) THEN
-        test_fail(r.m || ': o resultado ainda se declara criptografado');
+        falhou(r.m || ': o resultado ainda se declara criptografado');
       ELSE
-        test_pass(r.m || ': decifrado devolve o conteudo original');
+        passou(r.m || ': decifrado devolve o conteudo original');
       END IF;
     EXCEPTION
       WHEN OTHERS THEN
-        test_fail(r.m || ' - Error: ' || SQLERRM);
+        falhou(r.m || ' - Error: ' || SQLERRM);
     END;
 
     -- a senha de proprietario tambem abre, e por outro caminho: no R6 ela usa
     -- os 48 bytes do /U no hash e desembrulha a chave de /OE, nao de /UE
-    test_start('DecryptPDF - senha de proprietario em ' || r.m);
+    caso('DecryptPDF - senha de proprietario em ' || r.m);
     DECLARE
       l_claro BLOB;
       l_cif   BLOB;
@@ -4420,17 +4975,17 @@ BEGIN
       l_dec := PL_FPDF.DecryptPDF(l_cif, 'dono');
       IF DBMS_LOB.INSTR(l_dec,
            UTL_RAW.CAST_TO_RAW('Documento com dois donos'), 1, 1) = 0 THEN
-        test_fail(r.m || ': a senha de proprietario nao devolveu o conteudo');
+        falhou(r.m || ': a senha de proprietario nao devolveu o conteudo');
       ELSE
-        test_pass(r.m || ': senha de proprietario abre o documento');
+        passou(r.m || ': senha de proprietario abre o documento');
       END IF;
     EXCEPTION
       WHEN OTHERS THEN
-        test_fail(r.m || ' (proprietario) - Error: ' || SQLERRM);
+        falhou(r.m || ' (proprietario) - Error: ' || SQLERRM);
     END;
 
     -- senha errada tem de ser RECUSADA, e nao devolver lixo
-    test_start('DecryptPDF - senha errada em ' || r.m);
+    caso('DecryptPDF - senha errada em ' || r.m);
     DECLARE
       l_claro BLOB;
       l_cif   BLOB;
@@ -4447,13 +5002,13 @@ BEGIN
                                   p_user_password => 'segredo',
                                   p_encryption => r.m);
       l_dec := PL_FPDF.DecryptPDF(l_cif, 'errada');
-      test_fail(r.m || ': aceitou uma senha errada');
+      falhou(r.m || ': aceitou uma senha errada');
     EXCEPTION
       WHEN OTHERS THEN
         IF SQLCODE = -20854 THEN
-          test_pass(r.m || ': senha errada recusada com -20854');
+          passou(r.m || ': senha errada recusada com -20854');
         ELSE
-          test_fail(r.m || ': codigo errado: ' || SQLCODE || ' - ' || SQLERRM);
+          falhou(r.m || ': codigo errado: ' || SQLCODE || ' - ' || SQLERRM);
         END IF;
     END;
   END LOOP;
@@ -4466,7 +5021,7 @@ BEGIN
   -- crypto_rc4_blob, que agenda a chave uma vez e carrega o estado da cifra
   -- entre os pedaços — fatiar com crypto_rc4 reiniciaria a cifra em cada
   -- pedaço e produziria lixo.
-  test_start('EncryptPDF - fluxo acima de 16 KB com RC4-128');
+  caso('EncryptPDF - fluxo acima de 16 KB com RC4-128');
   DECLARE
     co_marca CONSTANT VARCHAR2(40) := 'MarcaNoFimDoFluxoGrande';
     l_claro  BLOB;
@@ -4488,7 +5043,7 @@ BEGIN
     l_tam := DBMS_LOB.GETLENGTH(l_claro);
 
     IF l_tam < 16383 THEN
-      test_fail('o documento de origem tem só ' || l_tam
+      falhou('o documento de origem tem só ' || l_tam
                 || ' bytes; o teste não exercita o limite');
     ELSE
       l_cif := PL_FPDF.EncryptPDF(p_pdf => l_claro,
@@ -4497,18 +5052,18 @@ BEGIN
       l_dec := PL_FPDF.DecryptPDF(l_cif, 'grande');
 
       IF DBMS_LOB.INSTR(l_cif, UTL_RAW.CAST_TO_RAW(co_marca), 1, 1) > 0 THEN
-        test_fail('a marca continua em claro no PDF cifrado');
+        falhou('a marca continua em claro no PDF cifrado');
       ELSIF DBMS_LOB.INSTR(l_dec, UTL_RAW.CAST_TO_RAW(co_marca), 1, 1) = 0 THEN
         -- a marca fica no FIM do fluxo: se o estado da cifra não atravessasse
         -- os lotes, o começo voltaria certo e o fim viria como lixo
-        test_fail('a marca no fim do fluxo não voltou ao decifrar');
+        falhou('a marca no fim do fluxo não voltou ao decifrar');
       ELSE
-        test_pass('fluxo de ' || l_tam || ' bytes cifrado e decifrado com RC4');
+        passou('fluxo de ' || l_tam || ' bytes cifrado e decifrado com RC4');
       END IF;
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 3.5e: IsEncrypted olha o TRAILER, não o começo do arquivo
@@ -4518,7 +5073,7 @@ BEGIN
   -- janela. Num PDF cifrado maior, mentia — e a consequência pior não era
   -- recusar a decifragem: EncryptPDF usa IsEncrypted para barrar dupla
   -- cifragem, e passava a cifrar de novo o que já estava cifrado.
-  test_start('IsEncrypted reconhece PDF cifrado acima de 32 KB');
+  caso('IsEncrypted reconhece PDF cifrado acima de 32 KB');
   DECLARE
     l_claro BLOB;
     l_cif   BLOB;
@@ -4571,17 +5126,17 @@ BEGIN
     END;
 
     IF l_erros = 0 THEN
-      test_pass('IsEncrypted acerta acima de 32 KB e a dupla cifragem é barrada');
+      passou('IsEncrypted acerta acima de 32 KB e a dupla cifragem é barrada');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 3.6: ida e volta preserva o documento
-  test_start('EncryptPDF + DecryptPDF - ida e volta preserva o conteudo');
+  caso('EncryptPDF + DecryptPDF - ida e volta preserva o conteudo');
   DECLARE
     co_marca CONSTANT VARCHAR2(60) := 'FraseSecretaParaConferirCifragem';
     l_claro  BLOB;
@@ -4601,54 +5156,54 @@ BEGIN
     l_dec := PL_FPDF.DecryptPDF(l_cif, 'segredo');
 
     IF DBMS_LOB.INSTR(l_dec, UTL_RAW.CAST_TO_RAW(co_marca), 1, 1) > 0 THEN
-      test_pass('decifrado devolve o conteudo original');
+      passou('decifrado devolve o conteudo original');
     ELSE
-      test_fail('o conteudo nao voltou ao original depois de decifrar');
+      falhou('o conteudo nao voltou ao original depois de decifrar');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- ================================================================================
   -- SECTION 4: Decryption
   -- ================================================================================
-  section_start('SECTION 4: Decryption');
+  secao('SECTION 4: Decryption');
 
   -- TEST 4.1: DecryptPDF - Non-encrypted PDF (should fail)
-  test_start('DecryptPDF - Non-encrypted PDF (should fail)');
+  caso('DecryptPDF - Non-encrypted PDF (should fail)');
   BEGIN
     l_decrypted := PL_FPDF.DecryptPDF(l_pdf, 'password');
-    test_fail('Should have raised error for non-encrypted PDF');
+    falhou('Should have raised error for non-encrypted PDF');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20853 THEN
-        test_pass('Correctly rejected non-encrypted PDF');
+        passou('Correctly rejected non-encrypted PDF');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE);
+        falhou('Wrong error code: ' || SQLCODE);
       END IF;
   END;
 
   -- TEST 4.2: DecryptPDF - NULL password (should fail)
-  test_start('DecryptPDF - NULL password (should fail)');
+  caso('DecryptPDF - NULL password (should fail)');
   BEGIN
     -- First encrypt
     l_encrypted := PL_FPDF.EncryptPDF(l_pdf, 'test', NULL, NULL, 'RC4-128');
 
     -- Try to decrypt with NULL
     l_decrypted := PL_FPDF.DecryptPDF(l_encrypted, NULL);
-    test_fail('Should have raised error for NULL password');
+    falhou('Should have raised error for NULL password');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20854 THEN
-        test_pass('Correctly rejected NULL password');
+        passou('Correctly rejected NULL password');
       ELSE
-        test_fail('Wrong error: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   -- TEST 4.3: DecryptPDF - With correct user password
-  test_start('DecryptPDF - With correct user password');
+  caso('DecryptPDF - With correct user password');
   BEGIN
     -- Encrypt
     l_encrypted := PL_FPDF.EncryptPDF(
@@ -4664,20 +5219,20 @@ BEGIN
     IF l_decrypted IS NOT NULL AND DBMS_LOB.GETLENGTH(l_decrypted) > 0 THEN
       -- Verify it's no longer encrypted
       IF NOT PL_FPDF.IsEncrypted(l_decrypted) THEN
-        test_pass('Decryption successful, PDF no longer encrypted');
+        passou('Decryption successful, PDF no longer encrypted');
       ELSE
-        test_pass('Decryption returned PDF (encryption marker may still exist)');
+        passou('Decryption returned PDF (encryption marker may still exist)');
       END IF;
     ELSE
-      test_fail('Decryption returned empty result');
+      falhou('Decryption returned empty result');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 4.4: DecryptPDF - With correct owner password
-  test_start('DecryptPDF - With correct owner password');
+  caso('DecryptPDF - With correct owner password');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4689,17 +5244,17 @@ BEGIN
     l_decrypted := PL_FPDF.DecryptPDF(l_encrypted, 'ownerpass');
 
     IF l_decrypted IS NOT NULL THEN
-      test_pass('Decryption with owner password successful');
+      passou('Decryption with owner password successful');
     ELSE
-      test_fail('Decryption failed');
+      falhou('Decryption failed');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 4.5: DecryptPDF - Wrong password (should fail)
-  test_start('DecryptPDF - Wrong password (should fail)');
+  caso('DecryptPDF - Wrong password (should fail)');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4708,23 +5263,23 @@ BEGIN
     );
 
     l_decrypted := PL_FPDF.DecryptPDF(l_encrypted, 'wrong');
-    test_fail('Should have raised error for wrong password');
+    falhou('Should have raised error for wrong password');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20854 THEN
-        test_pass('Correctly rejected wrong password');
+        passou('Correctly rejected wrong password');
       ELSE
-        test_fail('Wrong error: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   -- ================================================================================
   -- SECTION 5: Security Info Parsing
   -- ================================================================================
-  section_start('SECTION 5: Security Info Parsing');
+  secao('SECTION 5: Security Info Parsing');
 
   -- TEST 5.1: GetSecurityInfo - RC4-128 details
-  test_start('GetSecurityInfo - RC4-128 encrypted PDF details');
+  caso('GetSecurityInfo - RC4-128 encrypted PDF details');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4744,17 +5299,17 @@ BEGIN
     IF l_info.get_boolean('encrypted') AND
        l_info.get_string('method') = 'RC4-128' AND
        l_info.get_number('keyLength') = 128 THEN
-      test_pass('Security info correctly parsed');
+      passou('Security info correctly parsed');
     ELSE
-      test_fail('Security info incomplete or incorrect');
+      falhou('Security info incomplete or incorrect');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 5.2: GetSecurityInfo - RC4-40 details
-  test_start('GetSecurityInfo - RC4-40 encrypted PDF details');
+  caso('GetSecurityInfo - RC4-40 encrypted PDF details');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
@@ -4766,17 +5321,17 @@ BEGIN
 
     IF l_info.get_string('method') = 'RC4-40' AND
        l_info.get_number('version') = 1 THEN
-      test_pass('RC4-40 info correctly parsed');
+      passou('RC4-40 info correctly parsed');
     ELSE
-      test_fail('RC4-40 info incorrect');
+      falhou('RC4-40 info incorrect');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- TEST 5.3: GetSecurityInfo - Permission value
-  test_start('GetSecurityInfo - Permission value parsing');
+  caso('GetSecurityInfo - Permission value parsing');
   BEGIN
     l_permissions := JSON_OBJECT_T();
     l_permissions.put('print', TRUE);
@@ -4795,54 +5350,54 @@ BEGIN
     IF l_perms IS NOT NULL AND
        l_perms.get_boolean('print') = TRUE AND
        l_perms.get_boolean('copy') = FALSE THEN
-      test_pass('Permissions correctly parsed from PDF');
+      passou('Permissions correctly parsed from PDF');
       DBMS_OUTPUT.PUT_LINE('  [INFO] Permission value: ' || l_info.get_number('permissionValue'));
     ELSE
-      test_fail('Permissions not parsed correctly');
+      falhou('Permissions not parsed correctly');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error: ' || SQLERRM);
+      falhou('Error: ' || SQLERRM);
   END;
 
   -- ================================================================================
   -- SECTION 6: Error Handling
   -- ================================================================================
-  section_start('SECTION 6: Error Handling');
+  secao('SECTION 6: Error Handling');
 
   -- TEST 6.1: EncryptPDF - Invalid encryption method
-  test_start('EncryptPDF - Invalid encryption method');
+  caso('EncryptPDF - Invalid encryption method');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
       p_user_password => 'test',
       p_encryption => 'INVALID'
     );
-    test_fail('Should have raised error for invalid method');
+    falhou('Should have raised error for invalid method');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20850 THEN
-        test_pass('Correctly rejected invalid encryption method');
+        passou('Correctly rejected invalid encryption method');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE);
+        falhou('Wrong error code: ' || SQLCODE);
       END IF;
   END;
 
   -- TEST 6.2: EncryptPDF - NULL password
-  test_start('EncryptPDF - NULL password');
+  caso('EncryptPDF - NULL password');
   BEGIN
     l_encrypted := PL_FPDF.EncryptPDF(
       p_pdf => l_pdf,
       p_user_password => NULL,
       p_encryption => 'RC4-128'
     );
-    test_fail('Should have raised error for NULL password');
+    falhou('Should have raised error for NULL password');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20851 THEN
-        test_pass('Correctly rejected NULL password');
+        passou('Correctly rejected NULL password');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
@@ -4853,7 +5408,7 @@ BEGIN
   FOR r IN (SELECT 'AES-128' m, 128 bits FROM dual
             UNION ALL
             SELECT 'AES-256', 256 FROM dual) LOOP
-    test_start('EncryptPDF - ' || r.m || ' produz PDF protegido');
+    caso('EncryptPDF - ' || r.m || ' produz PDF protegido');
     DECLARE
       l_enc  BLOB;
       l_info JSON_OBJECT_T;
@@ -4864,53 +5419,53 @@ BEGIN
         p_encryption => r.m
       );
       IF l_enc IS NULL OR DBMS_LOB.GETLENGTH(l_enc) = 0 THEN
-        test_fail(r.m || ': resultado vazio');
+        falhou(r.m || ': resultado vazio');
       ELSIF NOT PL_FPDF.IsEncrypted(l_enc) THEN
-        test_fail(r.m || ': o resultado nao se declara criptografado');
+        falhou(r.m || ': o resultado nao se declara criptografado');
       ELSE
         l_info := PL_FPDF.GetSecurityInfo(l_enc);
         IF l_info.get_string('method') != r.m THEN
-          test_fail(r.m || ': GetSecurityInfo diz ' || l_info.get_string('method'));
+          falhou(r.m || ': GetSecurityInfo diz ' || l_info.get_string('method'));
         ELSIF l_info.get_number('keyLength') != r.bits THEN
-          test_fail(r.m || ': keyLength ' || l_info.get_number('keyLength')
+          falhou(r.m || ': keyLength ' || l_info.get_number('keyLength')
                     || ', esperado ' || r.bits);
         ELSE
-          test_pass(r.m || ': cifra e se identifica corretamente');
+          passou(r.m || ': cifra e se identifica corretamente');
         END IF;
       END IF;
     EXCEPTION
       WHEN OTHERS THEN
-        test_fail(r.m || ' - Error: ' || SQLERRM);
+        falhou(r.m || ' - Error: ' || SQLERRM);
     END;
   END LOOP;
 
   -- TEST 6.5: SetEncryption - Invalid method
-  test_start('SetEncryption - Invalid method');
+  caso('SetEncryption - Invalid method');
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.SetEncryption('INVALID', 'user123');
-    test_fail('Should have raised error');
+    falhou('Should have raised error');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20850 THEN
-        test_pass('Correctly rejected invalid method');
+        passou('Correctly rejected invalid method');
       ELSE
-        test_fail('Wrong error: ' || SQLERRM);
+        falhou('Wrong error: ' || SQLERRM);
       END IF;
   END;
 
   -- TEST 6.6: SetEncryption - NULL password
-  test_start('SetEncryption - NULL password');
+  caso('SetEncryption - NULL password');
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.SetEncryption('RC4-128', NULL);
-    test_fail('Should have raised error');
+    falhou('Should have raised error');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20851 THEN
-        test_pass('Correctly rejected NULL password');
+        passou('Correctly rejected NULL password');
       ELSE
-        test_fail('Wrong error: ' || SQLERRM);
+        falhou('Wrong error: ' || SQLERRM);
       END IF;
   END;
 
@@ -4966,7 +5521,7 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- Regressões da revisão de ago/2026
+-- Regressões das revisões de ago e set/2026
 -- origem: tests/test_regressoes_revisao.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
@@ -5559,553 +6114,6 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- Escrita do stream de imagem
--- origem: tests/test_stream_imagem.sql
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- PL_FPDF - Escrita do stream de imagem (p_putstream do BLOB)
---
--- O p_putstream lia o BLOB para um buffer VARCHAR2. Com um BLOB no primeiro
--- argumento o DBMS_LOB.READ resolve para a sobrecarga cujo buffer e RAW, e a
--- conversao implicita devolve a representacao hexadecimal: 2000 bytes viravam
--- 4000 caracteres, que nao cabiam no varchar2(2000).
---
--- Ele e privado, entao os casos 1 a 3 exercitam as duas formas do laco e as duas
--- codificacoes lado a lado, sobre um BLOB controlado: medem o comportamento em
--- vez de inferi-lo de um arquivo gerado. Os casos 5 e 6 percorrem o caminho
--- completo da imagem pelo ImageFromBlob, que recebe os bytes prontos e por isso
--- nao precisa da ACL de rede que o Image() exige.
---
--- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
---
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
---------------------------------------------------------------------------------
-
-DECLARE
-  l_total  PLS_INTEGER := 0;
-  l_ok     PLS_INTEGER := 0;
-  l_falhas PLS_INTEGER := 0;
-  l_skip   PLS_INTEGER := 0;
-
-  l_blob    BLOB;
-  l_buf     RAW(2000);
-  l_qtd     INTEGER;
-  l_pos     INTEGER;
-  l_lidos   INTEGER;
-  l_tam     INTEGER;
-  l_origem  RAW(256);
-  l_texto   VARCHAR2(4000);
-  l_charset VARCHAR2(60);
-  l_pdf     BLOB;
-  l_hex     VARCHAR2(4000);
-
-  PROCEDURE caso(p_nome VARCHAR2) IS
-  BEGIN
-    l_total := l_total + 1;
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
-    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
-  END;
-
-  PROCEDURE passou(p_msg VARCHAR2) IS
-  BEGIN
-    l_ok := l_ok + 1;
-    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
-  END;
-
-  PROCEDURE falhou(p_msg VARCHAR2) IS
-  BEGIN
-    l_falhas := l_falhas + 1;
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
-  END;
-
-  PROCEDURE pulou(p_msg VARCHAR2) IS
-  BEGIN
-    l_skip := l_skip + 1;
-    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
-  END;
-
-  -- Um BLOB de n bytes iguais.
-  FUNCTION blob_de(p_bytes IN PLS_INTEGER) RETURN BLOB IS
-    l_b BLOB;
-  BEGIN
-    DBMS_LOB.CREATETEMPORARY(l_b, TRUE);
-    FOR i IN 1 .. p_bytes LOOP
-      DBMS_LOB.WRITEAPPEND(l_b, 1, HEXTORAW('41'));
-    END LOOP;
-    RETURN l_b;
-  END blob_de;
-
-  -- Escreve o texto num CLOB e converte de volta para BLOB, que e o percurso
-  -- que todo stream faz: o documento e montado em CLOB e convertido no fim.
-  FUNCTION ida_e_volta(p_texto IN VARCHAR2) RETURN BLOB IS
-    l_c CLOB;
-    l_b BLOB;
-    l_in   PLS_INTEGER := 1;
-    l_out  PLS_INTEGER := 1;
-    l_lang PLS_INTEGER := 0;
-    l_warn PLS_INTEGER := 0;
-  BEGIN
-    DBMS_LOB.CREATETEMPORARY(l_c, TRUE);
-    DBMS_LOB.WRITEAPPEND(l_c, LENGTH(p_texto), p_texto);
-    DBMS_LOB.CREATETEMPORARY(l_b, TRUE);
-    DBMS_LOB.CONVERTTOBLOB(l_b, l_c, DBMS_LOB.GETLENGTH(l_c), l_in, l_out,
-                           DBMS_LOB.DEFAULT_CSID, l_lang, l_warn);
-    DBMS_LOB.FREETEMPORARY(l_c);
-    RETURN l_b;
-  END ida_e_volta;
-
-  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
-  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
-  BEGIN
-    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
-  END acha;
-
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF - stream de imagem');
-  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-
-  --------------------------------------------------------------------------
-  caso('O laco le ate o ultimo byte');
-  --------------------------------------------------------------------------
-  -- O teste era offset < tamanho. Quando o ultimo pedaco comeca exatamente no
-  -- byte final, o laco termina sem le-lo: o stream sai um byte curto enquanto
-  -- o /Length continua prometendo o total. 2001 bytes e o menor caso que
-  -- mostra isso com pedaco de 2000.
-  l_blob := blob_de(2001);
-  l_tam  := DBMS_LOB.GETLENGTH(l_blob);
-
-  l_lidos := 0;
-  l_pos   := 1;
-  WHILE l_pos < l_tam LOOP
-    l_qtd := 2000;
-    DBMS_LOB.READ(l_blob, l_qtd, l_pos, l_buf);
-    l_lidos := l_lidos + l_qtd;
-    l_pos   := l_pos + l_qtd;
-  END LOOP;
-
-  IF l_lidos < l_tam THEN
-    passou('a forma antiga leu ' || l_lidos || ' de ' || l_tam || ' bytes');
-  ELSE
-    falhou('a forma antiga leu tudo - o defeito nao reproduziu');
-  END IF;
-
-  l_lidos := 0;
-  l_pos   := 1;
-  WHILE l_pos <= l_tam LOOP
-    l_qtd := 2000;
-    DBMS_LOB.READ(l_blob, l_qtd, l_pos, l_buf);
-    l_lidos := l_lidos + l_qtd;
-    l_pos   := l_pos + l_qtd;
-  END LOOP;
-
-  IF l_lidos = l_tam THEN
-    passou('a forma corrigida leu os ' || l_tam || ' bytes');
-  ELSE
-    falhou('a forma corrigida leu ' || l_lidos || ' de ' || l_tam);
-  END IF;
-  DBMS_LOB.FREETEMPORARY(l_blob);
-
-  --------------------------------------------------------------------------
-  caso('O tamanho do pedaco e IN OUT');
-  --------------------------------------------------------------------------
-  -- O DBMS_LOB.READ devolve no parametro de quantidade o que leu de fato. Se a
-  -- variavel for inicializada uma vez so, em vez de atribuida a cada passagem,
-  -- uma leitura curta vira o tamanho de todas as seguintes.
-  l_blob := blob_de(500);
-  l_qtd  := 2000;
-  DBMS_LOB.READ(l_blob, l_qtd, 1, l_buf);
-
-  IF l_qtd = 500 THEN
-    passou('depois de leitura curta a quantidade volta 500, nao os 2000 dados');
-  ELSE
-    falhou('a quantidade voltou ' || l_qtd);
-  END IF;
-  DBMS_LOB.FREETEMPORARY(l_blob);
-
-  --------------------------------------------------------------------------
-  caso('Por que o stream sai em hexadecimal');
-  --------------------------------------------------------------------------
-  -- O documento e montado como CLOB e convertido no fim, entao tudo o que se
-  -- escreve nele faz um percurso de ida e volta pelo charset do banco. Este
-  -- caso manda os 256 valores de byte pelos dois caminhos e compara.
-  SELECT value INTO l_charset
-    FROM nls_database_parameters
-   WHERE parameter = 'NLS_CHARACTERSET';
-  DBMS_OUTPUT.PUT_LINE('  NLS_CHARACTERSET = ' || l_charset);
-
-  l_origem := NULL;
-  FOR i IN 0 .. 255 LOOP
-    l_origem := UTL_RAW.CONCAT(l_origem, HEXTORAW(TO_CHAR(i, 'FM0X')));
-  END LOOP;
-
-  l_pdf := ida_e_volta(UTL_RAW.CAST_TO_VARCHAR2(l_origem));
-  DBMS_OUTPUT.PUT_LINE('  como caracteres:  256 bytes entraram, '
-                       || DBMS_LOB.GETLENGTH(l_pdf) || ' sairam');
-  IF DBMS_LOB.GETLENGTH(l_pdf) = 256
-     AND UTL_RAW.COMPARE(DBMS_LOB.SUBSTR(l_pdf, 256, 1), l_origem) = 0 THEN
-    pulou('este banco preserva byte cru no percurso - charset de um byte, '
-          || 'entao o caso nao distingue as duas codificacoes');
-  ELSE
-    passou('byte cru nao sobrevive ao percurso, que e por que o stream nao '
-           || 'e escrito assim');
-  END IF;
-  DBMS_LOB.FREETEMPORARY(l_pdf);
-
-  l_texto := RAWTOHEX(l_origem);
-  l_pdf   := ida_e_volta(l_texto);
-  DBMS_OUTPUT.PUT_LINE('  como hexadecimal: ' || LENGTH(l_texto)
-                       || ' caracteres entraram, ' || DBMS_LOB.GETLENGTH(l_pdf)
-                       || ' bytes sairam');
-  IF DBMS_LOB.GETLENGTH(l_pdf) = LENGTH(l_texto)
-     AND UTL_RAW.COMPARE(UTL_RAW.CAST_TO_RAW(l_texto),
-                         DBMS_LOB.SUBSTR(l_pdf, DBMS_LOB.GETLENGTH(l_pdf), 1)) = 0 THEN
-    passou('hexadecimal atravessa o percurso intacto');
-  ELSE
-    falhou('hexadecimal nao sobreviveu - a premissa da codificacao nao vale aqui');
-  END IF;
-  DBMS_LOB.FREETEMPORARY(l_pdf);
-
-  --------------------------------------------------------------------------
-  caso('O package segue gerando documento');
-  --------------------------------------------------------------------------
-  -- O p_out esta no caminho de toda linha do documento, entao qualquer mexida
-  -- na escrita de stream passa por aqui.
-  PL_FPDF.Reset;
-  PL_FPDF.Init('P', 'mm', 'A4');
-  PL_FPDF.AddPage;
-  PL_FPDF.SetFont('Arial', 'B', 16);
-  PL_FPDF.Cell(0, 10, 'stream', '0', 1, 'C');
-  l_pdf := PL_FPDF.OutputBlob;
-
-  IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
-    passou('documento gerado, ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
-  ELSE
-    falhou('OutputBlob devolveu LOB vazio');
-  END IF;
-
-  --------------------------------------------------------------------------
-  caso('A imagem inteira, do parser ao stream');
-  --------------------------------------------------------------------------
-  -- Pelo ImageFromBlob, que recebe os bytes prontos: sem HTTP, sem ACL, nada
-  -- fora do schema. O PNG abaixo tem 2x2 pixels e paleta de quatro cores,
-  -- indexado de proposito, porque a paleta e a parte que o percurso binario
-  -- mais toca.
-  l_hex := '89504E470D0A1A0A0000000D494844520000000200000002080300000045';
-  l_hex := l_hex || '68FD160000000C504C5445FF000000FF000000FFFFFF00D6028F7B000000';
-  l_hex := l_hex || '0E4944415478DA63606064606206000011000783CA64640000000049454E';
-  l_hex := l_hex || '44AE426082';
-
-  PL_FPDF.Reset;
-  PL_FPDF.Init('P', 'mm', 'A4');
-  PL_FPDF.AddPage;
-  PL_FPDF.ImageFromBlob(HEXTORAW(l_hex), 'TESTE_PNG', 10, 10, 40);
-  l_pdf := PL_FPDF.OutputBlob;
-
-  IF acha(l_pdf, '/ASCIIHexDecode') > 0 THEN
-    passou('o stream declara /ASCIIHexDecode');
-  ELSE
-    falhou('/ASCIIHexDecode ausente - o binario nao atravessaria o CLOB');
-  END IF;
-
-  IF acha(l_pdf, '/DecodeParms [') > 0 THEN
-    passou('/DecodeParms saiu como vetor, acompanhando o /Filter');
-  ELSE
-    falhou('/DecodeParms nao e vetor - o /Predictor cairia no filtro errado');
-  END IF;
-
-  IF acha(l_pdf, '/Subtype /Image') > 0 AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
-    passou('PDF com imagem gerado, ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
-  ELSE
-    falhou('o objeto de imagem nao foi emitido');
-  END IF;
-
-  --------------------------------------------------------------------------
-  caso('Formato nao suportado e recusado, nao aceito em silencio');
-  --------------------------------------------------------------------------
-  -- Um SVG comeca com '<?xml' ou '<svg': nao tem assinatura binaria de PNG nem
-  -- marcador SOI de JPEG. Recusar com erro proprio vale mais que gravar um
-  -- objeto de imagem que nenhum leitor desenha.
-  BEGIN
-    PL_FPDF.Reset;
-    PL_FPDF.Init('P', 'mm', 'A4');
-    PL_FPDF.AddPage;
-    PL_FPDF.ImageFromBlob(UTL_RAW.CAST_TO_RAW('<svg xmlns="http://www.w3.org/2000/svg"/>'),
-                          'TESTE_SVG', 10, 10, 40);
-    falhou('o SVG foi aceito - deveria ter sido recusado');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF INSTR(SQLERRM, 'ORA-20303') > 0
-         OR INSTR(SQLERRM, 'Unsupported image format') > 0 THEN
-        passou('formato nao suportado recusado com erro proprio');
-      ELSE
-        falhou('recusou, mas com outro erro: ' || SQLERRM);
-      END IF;
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
-                       || ' | PASS: ' || l_ok
-                       || ' | FAIL: ' || l_falhas
-                       || ' | SKIP: ' || l_skip);
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
-    RAISE;
-END;
-/
-
---------------------------------------------------------------------------------
--- Texto acentuado (WinAnsi)
--- origem: tests/test_winansi.sql
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- PL_FPDF - Texto acentuado nas fontes padrao (conversao WinAnsi)
---
--- O dicionario da fonte declara /Encoding /WinAnsiEncoding e o texto sai do
--- banco em AL32UTF8. Sem conversao, cada acentuado chegava ao leitor como DOIS
--- bytes e ele desenhava dois glifos: 'cobranca' com cedilha virava 'cobranA§a'.
--- Sem erro nenhum, num arquivo que abre normalmente -- so se percebia olhando.
---
--- Medido antes do conserto, e vale registrar porque nenhuma das duas suposicoes
--- do relato se confirmou:
---
---   CHR(231) e 1 byte (E7); SUBSTR('c cedilha',1,1) sao 2 (C3A7)
---   GetStringWidth('Sao Paulo') = 19.5326
---   GetStringWidth('Sao Paulo' com til) levantava ORA-06502 -- nao
---     NO_DATA_FOUND: o subtipo car tem UM byte e o caractere tem dois, entao
---     estourava antes de consultar a tabela
---
--- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
---
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
---------------------------------------------------------------------------------
-
-DECLARE
-  l_total  PLS_INTEGER := 0;
-  l_ok     PLS_INTEGER := 0;
-  l_falhas PLS_INTEGER := 0;
-  l_skip   PLS_INTEGER := 0;
-
-  l_pdf    BLOB;
-  l_larg   NUMBER;
-  l_larg2  NUMBER;
-  l_erro   VARCHAR2(400);
-  l_txt    VARCHAR2(200);
-
-  PROCEDURE caso(p_nome VARCHAR2) IS
-  BEGIN
-    l_total := l_total + 1;
-    DBMS_OUTPUT.PUT_LINE('');
-    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
-    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
-  END;
-
-  PROCEDURE passou(p_msg VARCHAR2) IS
-  BEGIN
-    l_ok := l_ok + 1;
-    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
-  END;
-
-  PROCEDURE falhou(p_msg VARCHAR2) IS
-  BEGIN
-    l_falhas := l_falhas + 1;
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
-  END;
-
-  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
-  BEGIN
-    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
-  END acha;
-
-  FUNCTION pdf_com(p_texto IN VARCHAR2) RETURN BLOB IS
-    l_b BLOB;
-  BEGIN
-    PL_FPDF.Reset;
-    PL_FPDF.Init('P', 'mm', 'A4');
-    PL_FPDF.AddPage;
-    PL_FPDF.SetFont('Helvetica', '', 12);
-    PL_FPDF.Cell(100, 10, p_texto);
-    l_b := PL_FPDF.OutputBlob;
-    PL_FPDF.Reset;
-    RETURN l_b;
-  END pdf_com;
-BEGIN
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF - conversao WinAnsi');
-  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-
-  --------------------------------------------------------------------------
-  caso('O acentuado sai como escape octal, nao como UTF-8 cru');
-  --------------------------------------------------------------------------
-  -- O byte convertido NAO pode ir cru: o documento e montado num CLOB e
-  -- convertido no fim por CONVERTTOBLOB, que recodifica pelo charset do banco.
-  -- Medido no diag: 256 bytes entram, 422 saem. O escape octal e ASCII e
-  -- atravessa intacto.
-  l_pdf := pdf_com('cobrança');
-
-  IF acha(l_pdf, '\347') > 0 THEN
-    passou('o cedilha saiu como \347, que o leitor resolve como 0xE7');
-  ELSE
-    falhou('nao ha \347 no arquivo - a conversao nao aconteceu');
-  END IF;
-
-  IF DBMS_LOB.INSTR(l_pdf, HEXTORAW('C3A7'), 1, 1) = 0 THEN
-    passou('os bytes C3 A7 (UTF-8 cru) sumiram do arquivo');
-  ELSE
-    falhou('C3 A7 ainda esta no arquivo - o texto continua cru');
-  END IF;
-
-  --------------------------------------------------------------------------
-  caso('Texto sem acento nao mudou');
-  --------------------------------------------------------------------------
-  -- O ASCII coincide nas duas codificacoes, entao o caminho comum tem de sair
-  -- exatamente como saia. E onde uma regressao passaria despercebida.
-  l_pdf := pdf_com('Sao Paulo');
-  IF acha(l_pdf, 'Sao Paulo') > 0 THEN
-    passou('o texto ASCII continua legivel no arquivo, sem escape');
-  ELSE
-    falhou('o texto ASCII foi alterado');
-  END IF;
-
-  --------------------------------------------------------------------------
-  caso('Parenteses e barra seguem escapados');
-  --------------------------------------------------------------------------
-  -- Sao o escape que o PDF ja exigia, e a conversao nao pode ter comido.
-  l_pdf := pdf_com('Total (liquido) \ 50%');
-  IF acha(l_pdf, '\(liquido\)') > 0 THEN
-    passou('parenteses escapados');
-  ELSE
-    falhou('parenteses nao escapados - a string do PDF quebra');
-  END IF;
-
-  --------------------------------------------------------------------------
-  caso('GetStringWidth mede acentuado sem levantar');
-  --------------------------------------------------------------------------
-  -- Antes levantava ORA-06502, e agora mede.
-  --
-  -- A primeira versao deste caso exigia que as duas medidas DIFERISSEM, no
-  -- palpite de que o 'a' com til seria mais largo. Errado: nas 14 fontes
-  -- padrao do PDF o glifo acentuado tem a MESMA largura de avanco do glifo
-  -- base. Conferido na propria tabela do package: 'a' e 'a til' medem 556,
-  -- 'c' e 'c cedilha' medem 500. Medir igual e o certo.
-  --
-  -- Entao afere-se o que de fato distingue: que nao levanta, e que um
-  -- caractere de largura reconhecidamente diferente -- o travessao, 1000
-  -- contra 333 do hifen -- e medido como tal. Se a conversao caisse num
-  -- caractere so, essa comparacao denunciaria.
-  PL_FPDF.Reset;
-  PL_FPDF.Init('P', 'mm', 'A4');
-  PL_FPDF.AddPage;
-  PL_FPDF.SetFont('Helvetica', '', 12);
-
-  BEGIN
-    l_larg  := PL_FPDF.GetStringWidth('Sao Paulo');
-    l_larg2 := PL_FPDF.GetStringWidth('São Paulo');
-    passou('mediu as duas: ' || TO_CHAR(l_larg) || ' e ' || TO_CHAR(l_larg2));
-
-    IF l_larg2 = l_larg THEN
-      passou('as duas medem igual, como manda a tabela: o acentuado tem a '
-             || 'largura de avanco do glifo base');
-    ELSE
-      falhou('as larguras diferem (' || TO_CHAR(l_larg) || ' e '
-             || TO_CHAR(l_larg2) || ') - o acentuado caiu na posicao errada');
-    END IF;
-
-    -- travessao contra hifen: 1000 contra 333 em Helvetica
-    IF PL_FPDF.GetStringWidth(UNISTR('\2014')) >
-       PL_FPDF.GetStringWidth('-') * 2 THEN
-      passou('o travessao mede mais que o dobro do hifen, como na tabela');
-    ELSE
-      falhou('o travessao nao foi medido pela posicao dele');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('ainda levanta: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------
-  caso('Alinhamento a direita com acento nao levanta mais');
-  --------------------------------------------------------------------------
-  -- O Cell so chama GetStringWidth para align C e R. Era ai que o ORA-06502
-  -- aparecia, enquanto o alinhamento a esquerda desenhava errado calado.
-  BEGIN
-    PL_FPDF.Reset;
-    PL_FPDF.Init('P', 'mm', 'A4');
-    PL_FPDF.AddPage;
-    PL_FPDF.SetFont('Helvetica', '', 12);
-    PL_FPDF.Cell(100, 10, 'Endereço de cobrança', '0', 1, 'R');
-    PL_FPDF.Cell(100, 10, 'Endereço de cobrança', '0', 1, 'C');
-    l_pdf := PL_FPDF.OutputBlob;
-    PL_FPDF.Reset;
-    passou('alinhado a direita e centralizado, ' || DBMS_LOB.GETLENGTH(l_pdf)
-           || ' bytes');
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('levantou: ' || SQLERRM);
-  END;
-
-  --------------------------------------------------------------------------
-  caso('Caractere fora do WinAnsi e recusado com erro proprio');
-  --------------------------------------------------------------------------
-  -- O criterio: recusar, e nao virar '?' em silencio. E o erro tem de ser o
-  -- nosso, com a posicao -- se voltar ORA-06502, o conserto so trocou de
-  -- sintoma. Ideograma escolhido por nao existir em WinAnsi de forma alguma.
-  BEGIN
-    l_pdf := pdf_com('Relatorio ' || UNISTR('\4E2D') || ' final');
-    falhou('aceitou o caractere fora da tabela');
-  EXCEPTION
-    WHEN OTHERS THEN
-      l_erro := SQLERRM;
-      IF INSTR(l_erro, 'ORA-20203') > 0 THEN
-        passou('recusado com ORA-20203');
-        IF INSTR(l_erro, 'posicao 11') > 0 THEN
-          passou('a mensagem diz a posicao');
-        ELSE
-          falhou('a mensagem nao diz a posicao: ' || l_erro);
-        END IF;
-      ELSIF INSTR(l_erro, 'ORA-06502') > 0 THEN
-        falhou('ORA-06502 - trocou de sintoma, nao consertou');
-      ELSE
-        falhou('recusou com outro erro: ' || l_erro);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------
-  caso('As 27 excecoes do cp1252 atravessam');
-  --------------------------------------------------------------------------
-  -- De 0xA0 a 0xFF o cp1252 e o Latin-1, e o byte e o proprio ponto de codigo.
-  -- As 27 posicoes entre 0x80 e 0x9F sao as unicas que precisam de tabela, e
-  -- sao as que um teste de acento comum nao alcanca: travessao, aspas curvas,
-  -- euro, reticencias.
-  l_txt := UNISTR('\20AC \2014 \201C \201D \2026 \2122');   -- EUR - " " ... TM
-  BEGIN
-    l_pdf := pdf_com(l_txt);
-    IF acha(l_pdf, '\200') > 0 AND acha(l_pdf, '\227') > 0
-       AND acha(l_pdf, '\223') > 0 AND acha(l_pdf, '\231') > 0 THEN
-      passou('euro, travessao, aspas curvas e marca registrada convertidos');
-    ELSE
-      falhou('alguma das 27 excecoes nao saiu como octal');
-    END IF;
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('levantou: ' || SQLERRM);
-  END;
-
-  DBMS_OUTPUT.PUT_LINE('');
-  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
-                       || ' | PASS: ' || l_ok
-                       || ' | FAIL: ' || l_falhas
-                       || ' | SKIP: ' || l_skip);
-EXCEPTION
-  WHEN OTHERS THEN
-    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
-    RAISE;
-END;
-/
-
---------------------------------------------------------------------------------
 -- Compatibilidade com 0.9.4 e 2.0.0
 -- origem: tests/test_compat_legado.sql
 --------------------------------------------------------------------------------
@@ -6377,7 +6385,7 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- APIs publicas que ninguem chamava
+-- APIs públicas que ninguém chamava
 -- origem: tests/test_api_sem_chamador.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
