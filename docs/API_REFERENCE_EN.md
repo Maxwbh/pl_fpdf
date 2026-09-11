@@ -840,7 +840,7 @@ PROCEDURE PL_FPDF.Cell(
 | `pln` | NUMBER | Where the cursor goes afterwards. | 0 = to the right of the cell (default), 1 = start of the next line, 2 = below the cell | `0` |
 | `palign` | VARCHAR2 | Text alignment. | 'L' (left), 'C' (centre), 'R' (right) or '' (default, left) | `''` |
 | `pfill` | NUMBER | Fills the background with the SetFillColor colour. | 0 = transparent (default), 1 = filled | `0` |
-| `plink` | VARCHAR2 | Makes the cell clickable. | URL ('https://...') or the identifier returned by AddLink | `''` |
+| `plink` | VARCHAR2 | Makes the cell clickable. | URL ('https://...'); an AddLink identifier is refused with ORA-20601 | `''` |
 
 #### Example
 
@@ -890,7 +890,7 @@ PROCEDURE PL_FPDF.CellRotated(
 | `p_ln` | NUMBER | Cursor position afterwards. | 0 = to the right, 1 = next line, 2 = below | `0` |
 | `p_align` | VARCHAR2 | Alignment. | 'L', 'C' or 'R' | `''` |
 | `p_fill` | NUMBER | Fill. | 0 or 1 | `0` |
-| `p_link` | VARCHAR2 | Optional link. | URL or an AddLink identifier | `''` |
+| `p_link` | VARCHAR2 | Optional link. | URL; an AddLink identifier is refused with ORA-20601 | `''` |
 | `p_rotation` | PLS_INTEGER | Rotation angle of the text. | 0 (default), 90, 180 or 270 — any other value raises an error | `0` |
 
 #### Errors
@@ -1150,7 +1150,7 @@ PROCEDURE PL_FPDF.Write(
 |-----------|------|-----------|-------------------|--------|
 | `pH` | VARCHAR2 | Line height. | Number in the unit set by Init (mm, cm, pt or in) | — |
 | `ptxt` | VARCHAR2 | Text to write. | Any VARCHAR2 | — |
-| `plink` | VARCHAR2 | Optional link applied to the text. | URL or an AddLink identifier; NULL (default) = no link | `null` |
+| `plink` | VARCHAR2 | Optional link applied to the text. | URL; NULL (default) = no link. An AddLink identifier is refused with ORA-20601 | `null` |
 
 #### Example
 
@@ -1184,7 +1184,7 @@ PROCEDURE PL_FPDF.WriteRotated(
 |-----------|------|-----------|-------------------|--------|
 | `p_height` | NUMBER | Line height. | Number in the unit set by Init (mm, cm, pt or in) | — |
 | `p_text` | VARCHAR2 | Text to write. | Any VARCHAR2 | — |
-| `p_link` | VARCHAR2 | Optional link. | URL or an AddLink identifier; NULL = no link | `null` |
+| `p_link` | VARCHAR2 | Optional link. | URL; NULL = no link. An AddLink identifier is refused with ORA-20601 | `null` |
 | `p_rotation` | PLS_INTEGER | Rotation angle. | 0 (default), 90, 180 or 270 | `0` |
 
 #### Errors
@@ -1542,7 +1542,7 @@ PROCEDURE PL_FPDF.image(
 | `pWidth` | NUMBER | Desired width. | Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the height | `0` |
 | `pHeight` | NUMBER | Desired height. | Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the width, keeping the aspect ratio | `0` |
 | `pType` | VARCHAR2 | Image format. | 'PNG', 'JPG'/'JPEG', or NULL (default) to detect it automatically | `null` |
-| `pLink` | VARCHAR2 | Makes the image clickable. | URL or an AddLink identifier; NULL = no link | `null` |
+| `pLink` | VARCHAR2 | Makes the image clickable. | URL; NULL = no link. An AddLink identifier is refused with ORA-20601 | `null` |
 
 #### Example
 
@@ -1588,7 +1588,7 @@ PROCEDURE PL_FPDF.ImageFromBlob(
 | `pY` | NUMBER | Y of the top-left corner. | Number in the unit set in Init (mm, cm, pt or in) | — |
 | `pWidth` | NUMBER | Requested width. | Number in the unit set in Init; 0 (default) derives it from the height | `0` |
 | `pHeight` | NUMBER | Requested height. | Number in the unit set in Init; 0 (default) derives it from the width, keeping the aspect ratio | `0` |
-| `pLink` | VARCHAR2 | Makes the image clickable. | URL or an AddLink identifier; NULL = no link | `null` |
+| `pLink` | VARCHAR2 | Makes the image clickable. | URL; NULL = no link. An AddLink identifier is refused with ORA-20601 | `null` |
 
 #### Errors
 
@@ -1619,7 +1619,9 @@ END;
 
 ### AddLink
 
-Creates an internal link, still without a destination, and returns its identifier — used later in SetLink and in the text APIs.
+Creates an internal link, still without a destination, and returns its identifier.
+
+> **Internal links are not supported.** Passing the identifier returned by `AddLink` raises **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.
 
 #### Syntax
 
@@ -1635,9 +1637,8 @@ NUMBER — the link identifier.
 #### Example
 
 ```sql
-l_link := PL_FPDF.AddLink;
-PL_FPDF.SetLink(l_link, 0, 3);
-PL_FPDF.Cell(60, 8, 'Go to chapter 3', plink => l_link);
+-- A URL link, which is what works today
+PL_FPDF.Cell(60, 8, 'Documentation', plink => 'https://maxwbh.github.io/pl_fpdf/en/');
 ```
 
 **See also:** [SetLink](#setlink), [Link](#link)
@@ -1647,6 +1648,10 @@ PL_FPDF.Cell(60, 8, 'Go to chapter 3', plink => l_link);
 ### Link
 
 Creates a clickable rectangle anywhere on the page.
+
+> **Internal links are not supported.** Passing the identifier returned by `AddLink` raises **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.
+
+> **One area per page.** A second call on the same page replaces the first.
 
 #### Syntax
 
@@ -1667,7 +1672,7 @@ PROCEDURE PL_FPDF.Link(
 | `py` | NUMBER | Y of the top-left corner. | Number in the unit set by Init (mm, cm, pt or in) | — |
 | `pw` | NUMBER | Width of the area. | Number in the unit set by Init (mm, cm, pt or in) | — |
 | `ph` | NUMBER | Height of the area. | Number in the unit set by Init (mm, cm, pt or in) | — |
-| `plink` | VARCHAR2 | Destination. | URL ('https://...') or an AddLink identifier | — |
+| `plink` | VARCHAR2 | Destination. | URL ('https://...'); an AddLink identifier is refused with ORA-20601 | — |
 
 **See also:** [AddLink](#addlink), [SetLink](#setlink)
 
@@ -1676,6 +1681,8 @@ PROCEDURE PL_FPDF.Link(
 ### SetLink
 
 Sets the destination of an internal link created by AddLink.
+
+> **Internal links are not supported.** Passing the identifier returned by `AddLink` raises **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.
 
 #### Syntax
 

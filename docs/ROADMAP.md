@@ -1,6 +1,6 @@
 # PL_FPDF Roadmap
 
-**Versao Atual:** 3.4.0 | **Atualizado:** 2026-09-10
+**Versao Atual:** 3.4.0 | **Atualizado:** 2026-09-11
 
 Revisado em 10/09/2026, e antes em 28/08/2026, conferindo cada afirmacao contra
 o codigo. As correcoes estao marcadas ao longo do documento; a mais importante
@@ -98,7 +98,7 @@ passaram a ser conferidos por decodificadores reais.
 
 | Item | Situacao |
 |------|----------|
-| **Link interno produz PDF malformado** | **Aberto, achado em setembro/2026 na revisao dos comentarios.** `Link` com `plink` numerico — o identificador que `AddLink` devolve — cai num ramo que **nao existe**: o `else` que escreveria o `/Dest` saiu comentado no porte original e nunca voltou. O dicionario do `/Annot` fica **aberto**, sem o `>>` que o fecha, e sai `<</Type /Annot ... /Border [0 0 0] ]`. Nao e "link que nao navega": e arquivo estruturalmente invalido. Ficou escondido porque **nenhum teste e nenhum exemplo chama `AddLink` ou `SetLink`** — e o achado da HU-05 em forma concreta. `Link` com URL nao passa por ali e esta correto. Duas saidas: escrever o `/Dest`, ou recusar `plink` numerico com erro proprio enquanto isso — recusar vale mais que entregar arquivo quebrado. Documentado na spec como limitacao ate ser decidido. |
+| ~~**Link interno produz PDF malformado**~~ | **Resolvido por recusa, em setembro/2026; achado na revisao dos comentarios.** `Link` com `plink` numerico caia num ramo que **nao existe**: o `else` que escreveria o `/Dest` saiu comentado no porte original e nunca voltou, e o dicionario do `/Annot` ficava **aberto** — `<</Type /Annot ... /Border [0 0 0] ]`, sem o `>>`. Nao era "link que nao navega": era arquivo estruturalmente invalido. E havia um segundo lado, que atingia o caso COMUM: o `Link` estende a colecao ate a pagina corrente, e as paginas anteriores ficavam com entrada vazia; o emissor so testava `.exists(i)`, entao um `Link` na pagina 3 punha `/Annots` quebrado nas paginas 1 e 2, que nao pediram link nenhum. Agora `Link` recusa destino que nao seja URL com **-20601**, e o emissor exige entrada COM destino. Recusar vale mais que gravar o arquivo que o leitor nao abre. Ficou escondido porque **nenhum teste chamava `AddLink` ou `SetLink`** — a HU-05 em forma concreta; ha caso de regressao para os dois lados em `dev/tests/test_regressoes_revisao.sql`. **Continua faltando** escrever o `/Dest` para que o link interno funcione de verdade. |
 | ~~**`EncryptPDF` nao cifra os fluxos de conteudo**~~ | **Resolvido.** `sec_cifrar_objetos` aplica RC4 com a chave de cada objeto aos streams e as strings; `DecryptPDF` desfaz. Referencia em `dev/scripts/pdfcrypt_reference/`, validada no MuPDF. |
 | ~~**Marcas d'agua e overlays de texto nao sao rasterizados**~~ | **Resolvido.** Cada pagina afetada ganha um objeto de conteudo proprio e um `/Resources` proprio — no PDF do PL_FPDF o `/Resources` e compartilhado por todas as paginas, e mescla-lo espalharia a fonte da marca por todo o documento. Referencia em `dev/scripts/pdfoverlay_reference/`. |
 | ~~**Overlay de imagem nao e rasterizado**~~ | **Resolvido.** JPEG entra inteiro como `/DCTDecode`; os IDAT do PNG ja sao zlib, que e o `/FlateDecode` do PDF, entao sao concatenados e declarados com `/Predictor 15`. Referencia em `dev/scripts/pdfimage_reference/`, validada pelos pixels desenhados. |

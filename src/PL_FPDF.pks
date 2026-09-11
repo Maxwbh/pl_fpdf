@@ -611,6 +611,14 @@ PRAGMA EXCEPTION_INIT(exc_file_access_denied, -20402);
 exc_file_write_error EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_file_write_error, -20403);
 
+-- Links e anotacoes / Links and annotations (-20601 a -20610)
+-- Destino de link nao suportado. Hoje so URL: o link interno de
+-- AddLink/SetLink nunca teve o /Dest escrito, e emiti-lo assim produzia um
+-- /Annot com o dicionario aberto. Recusar vale mais que gravar um PDF que o
+-- leitor nao abre.
+exc_link_nao_suportado EXCEPTION;
+PRAGMA EXCEPTION_INIT(exc_link_nao_suportado, -20601);
+
 -- Cor e desenho / Colour and drawing (-20501 a -20510)
 exc_invalid_color EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_color, -20501);
@@ -1356,14 +1364,14 @@ procedure Rect(px in number, py in number, pw in number, ph in number, pstyle in
 *       ainda não existe: é o SetLink que o define, depois, quando a página de
 *       chegada já tiver sido escrita.
 *       ATENÇÃO: a cadeia AddLink/SetLink/Link não chega ao arquivo -- o Link
-*       não escreve o /Dest e produz um /Annot malformado. Ver a limitação 2
-*       no bloco do Link.
+*       recusa o identificador com -20601, porque o /Dest nunca foi escrito.
+*       Ver a limitação 2 no bloco do Link.
 *   EN: Reserves an internal link and returns its identifier. The destination
 *       does not exist yet: SetLink defines it later, once the target page has
 *       been written.
 *       WARNING: the AddLink/SetLink/Link chain does not reach the file --
-*       Link writes no /Dest and produces a malformed /Annot. See limitation 2
-*       in Link's block.
+*       Link refuses the identifier with -20601, because the /Dest was never
+*       written. See limitation 2 in Link's block.
 *
 * Retorna / Returns:
 *   NUMBER - o identificador do link / the link identifier
@@ -1378,10 +1386,11 @@ function  AddLink return number;
 *
 * Descrição / Description:
 *   PT: Diz para onde um link criado por AddLink leva. O destino fica
-*       guardado, mas não chega ao arquivo: ver a limitação 2 no bloco do
-*       Link.
+*       guardado, mas não chega ao arquivo -- o Link recusa o identificador
+*       com -20601. Ver a limitação 2 no bloco do Link.
 *   EN: Says where a link created by AddLink goes. The destination is stored
-*       but never reaches the file: see limitation 2 in Link's block.
+*       but never reaches the file -- Link refuses the identifier with -20601.
+*       See limitation 2 in Link's block.
 *
 * Parâmetros / Parameters:
 *   plink - identificador devolvido por AddLink / identifier from AddLink
@@ -1413,24 +1422,27 @@ procedure SetLink(plink in number, py in number default 0, ppage in number defau
 *   PT: 1. Uma área por página. Uma segunda chamada na mesma página substitui
 *          a primeira, em silêncio -- a estrutura guarda um registro por
 *          página. Documentado por ser assim, não por ser o desejável.
-*       2. LINK INTERNO NÃO FUNCIONA. Passar aqui o identificador que o
-*          AddLink devolve produz um /Annot com o dicionário ABERTO, sem o >>
-*          que o fecha: o arquivo sai malformado, e não apenas sem navegação.
-*          O ramo que escreveria o /Dest saiu comentado no porte original e
-*          nunca voltou. Use URL até que isto seja consertado; ver
-*          docs/ROADMAP.md, pendências.
+*       2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que
+*          escreveria o /Dest saiu comentado no porte original e nunca voltou;
+*          emiti-lo assim produzia um /Annot com o dicionário aberto, isto é,
+*          arquivo malformado. Desde setembro/2026 a chamada levanta erro em
+*          vez de gravar o arquivo quebrado. Use URL.
 *   EN: 1. One area per page. A second call on the same page silently replaces
 *          the first -- the structure holds one record per page. Documented
 *          because that is how it behaves, not because it is desirable.
-*       2. INTERNAL LINKS DO NOT WORK. Passing the identifier returned by
-*          AddLink produces an /Annot whose dictionary is left OPEN, with no
-*          closing >>: the file comes out malformed, not merely unnavigable.
-*          The branch that would write the /Dest was commented out in the
-*          original port and never came back. Use a URL until this is fixed;
-*          see docs/ROADMAP.md, pendências.
+*       2. Internal links are not supported and are REFUSED with -20601. The
+*          branch that would write the /Dest was commented out in the original
+*          port and never came back; emitting it as it stood produced an
+*          /Annot with an open dictionary, i.e. a malformed file. Since
+*          September 2026 the call raises instead of writing the broken file.
+*          Use a URL.
 *
 * Exemplo / Example:
 *   PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
+*
+* Erros / Raises:
+*   -20601: destino não é URL -- link interno ou NULL /
+*           destination is not a URL -- internal link or NULL
 *******************************************************************************/
 procedure Link(px in number, py in number, pw in number, ph in number, plink in varchar2);
 

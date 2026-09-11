@@ -307,12 +307,20 @@ Still refused: interlaced with fewer than 8 bits per component, and indexed
 ## 7. Links
 
 ```sql
-l_link := PL_FPDF.AddLink;                 -- create an internal link
-PL_FPDF.SetLink(l_link, 0, 3);             -- destination: top of page 3
-PL_FPDF.Cell(60, 8, 'Go to chapter 3', plink => l_link);
 PL_FPDF.Cell(60, 8, 'Website', plink => 'https://maxwbh.github.io/pl_fpdf/');
 PL_FPDF.Link(10, 10, 50, 12, 'https://...');   -- an arbitrary clickable area
 ```
+
+**URL links only.** Internal links -- `AddLink` and `SetLink`, which would jump
+to another page of the same document -- are **not supported**, and passing
+their identifier raises `ORA-20601`. The internal destination (`/Dest`) was
+never written to the file: the fragment that would write it was commented out
+in the original port and never came back, and emitting it as it stood produced
+a malformed PDF that readers refuse. Since 3.4.0 the call is refused instead of
+writing the broken file.
+
+One note on the clickable area: there is **one per page**. A second `Link` call
+on the same page replaces the first.
 
 ---
 

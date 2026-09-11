@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [3.4.0] - 2026-09-10
+## [3.4.0] - 2026-09-11
 
 ### Corrigido
 - Texto acentuado saía com dois glifos nas fontes padrão: o documento declarava
@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
 - Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
   último byte
+- `Link` numa página emitia `/Annots` com dicionário aberto nas páginas
+  anteriores, que nunca pediram link
 
 ### Adicionado
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
@@ -29,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Alterado
 - **Incompatível:** caractere fora do WinAnsi levanta `ORA-20203` com a posição,
   em vez de sair como `?`. Para outras escritas, embuta uma fonte TrueType
+- **Incompatível:** `Link` só aceita URL e recusa o resto com `ORA-20601`. O
+  link interno de `AddLink`/`SetLink` nunca teve o `/Dest` escrito e gravava PDF
+  malformado
 
 ---
 

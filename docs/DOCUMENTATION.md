@@ -305,12 +305,19 @@ Seguem recusados: entrelaçado com menos de 8 bits por componente, e indexado
 ## 7. Links
 
 ```sql
-l_link := PL_FPDF.AddLink;                 -- cria link interno
-PL_FPDF.SetLink(l_link, 0, 3);             -- destino: topo da página 3
-PL_FPDF.Cell(60, 8, 'Ir ao capítulo 3', plink => l_link);
 PL_FPDF.Cell(60, 8, 'Site', plink => 'https://maxwbh.github.io/pl_fpdf/');
 PL_FPDF.Link(10, 10, 50, 12, 'https://...');   -- área clicável arbitrária
 ```
+
+**Só link por URL.** O link interno — `AddLink` e `SetLink`, que levariam a
+outra página do mesmo documento — **não é suportado**, e passar o identificador
+deles levanta `ORA-20601`. O destino interno (`/Dest`) nunca chegou a ser
+escrito no arquivo: o trecho que o escreveria saiu comentado no porte original
+e nunca voltou, e emiti-lo como estava produzia um PDF malformado, que o leitor
+recusa. Desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado.
+
+Uma observação sobre a área clicável: é **uma por página**. Uma segunda chamada
+de `Link` na mesma página substitui a primeira.
 
 ---
 

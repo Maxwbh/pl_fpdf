@@ -840,7 +840,7 @@ PROCEDURE PL_FPDF.Cell(
 | `pln` | NUMBER | Para onde o cursor vai depois. | 0 = à direita da célula (padrão), 1 = início da próxima linha, 2 = abaixo da célula | `0` |
 | `palign` | VARCHAR2 | Alinhamento do texto. | 'L' (*left*, esquerda), 'C' (*center*, centro), 'R' (*right*, direita) ou '' (padrão, esquerda) | `''` |
 | `pfill` | NUMBER | Preenche o fundo com a cor de SetFillColor. | 0 = transparente (padrão), 1 = preenchido | `0` |
-| `plink` | VARCHAR2 | Torna a célula clicável. | URL ('https://…') ou identificador retornado por AddLink | `''` |
+| `plink` | VARCHAR2 | Torna a célula clicável. | URL ('https://…'); identificador de AddLink é recusado com ORA-20601 | `''` |
 
 #### Exemplo
 
@@ -890,7 +890,7 @@ PROCEDURE PL_FPDF.CellRotated(
 | `p_ln` | NUMBER | Posição do cursor depois. | 0 = à direita, 1 = próxima linha, 2 = abaixo | `0` |
 | `p_align` | VARCHAR2 | Alinhamento. | 'L' (*left*, esquerda), 'C' (*center*, centro) ou 'R' (*right*, direita) | `''` |
 | `p_fill` | NUMBER | Preenchimento. | 0 ou 1 | `0` |
-| `p_link` | VARCHAR2 | Link opcional. | URL ou identificador de AddLink | `''` |
+| `p_link` | VARCHAR2 | Link opcional. | URL; identificador de AddLink é recusado com ORA-20601 | `''` |
 | `p_rotation` | PLS_INTEGER | Ângulo de rotação do texto. | 0 (padrão), 90, 180 ou 270 — outros valores geram erro | `0` |
 
 #### Erros
@@ -1150,7 +1150,7 @@ PROCEDURE PL_FPDF.Write(
 |-----------|------|-----------|-------------------|--------|
 | `pH` | VARCHAR2 | Altura da linha. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `ptxt` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | — |
-| `plink` | VARCHAR2 | Link opcional aplicado ao texto. | URL ou identificador de AddLink; NULL (padrão) = sem link | `null` |
+| `plink` | VARCHAR2 | Link opcional aplicado ao texto. | URL; NULL (padrão) = sem link. Identificador de AddLink é recusado com ORA-20601 | `null` |
 
 #### Exemplo
 
@@ -1184,7 +1184,7 @@ PROCEDURE PL_FPDF.WriteRotated(
 |-----------|------|-----------|-------------------|--------|
 | `p_height` | NUMBER | Altura da linha. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `p_text` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | — |
-| `p_link` | VARCHAR2 | Link opcional. | URL ou identificador de AddLink; NULL = sem link | `null` |
+| `p_link` | VARCHAR2 | Link opcional. | URL; NULL = sem link. Identificador de AddLink é recusado com ORA-20601 | `null` |
 | `p_rotation` | PLS_INTEGER | Ângulo de rotação. | 0 (padrão), 90, 180 ou 270 | `0` |
 
 #### Erros
@@ -1542,7 +1542,7 @@ PROCEDURE PL_FPDF.image(
 | `pWidth` | NUMBER | Largura desejada. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) calcula a partir da altura | `0` |
 | `pHeight` | NUMBER | Altura desejada. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) calcula a partir da largura, mantendo a proporção | `0` |
 | `pType` | VARCHAR2 | Formato da imagem. | 'PNG', 'JPG'/'JPEG' ou NULL (padrão) para autodetecção | `null` |
-| `pLink` | VARCHAR2 | Torna a imagem clicável. | URL ou identificador de AddLink; NULL = sem link | `null` |
+| `pLink` | VARCHAR2 | Torna a imagem clicável. | URL; NULL = sem link. Identificador de AddLink é recusado com ORA-20601 | `null` |
 
 #### Exemplo
 
@@ -1588,7 +1588,7 @@ PROCEDURE PL_FPDF.ImageFromBlob(
 | `pY` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
 | `pWidth` | NUMBER | Largura desejada. | Número na unidade definida em Init; 0 (padrão) calcula a partir da altura | `0` |
 | `pHeight` | NUMBER | Altura desejada. | Número na unidade definida em Init; 0 (padrão) calcula a partir da largura, mantendo a proporção | `0` |
-| `pLink` | VARCHAR2 | Torna a imagem clicável. | URL ou identificador de AddLink; NULL = sem link | `null` |
+| `pLink` | VARCHAR2 | Torna a imagem clicável. | URL; NULL = sem link. Identificador de AddLink é recusado com ORA-20601 | `null` |
 
 #### Erros
 
@@ -1619,7 +1619,9 @@ END;
 
 ### AddLink
 
-Cria um link interno (ainda sem destino) e retorna seu identificador, usado depois em SetLink e nas APIs de texto.
+Cria um link interno (ainda sem destino) e retorna seu identificador.
+
+> **Link interno não é suportado.** Passar aqui o identificador que o `AddLink` devolve levanta **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.
 
 #### Sintaxe
 
@@ -1635,9 +1637,8 @@ NUMBER — identificador do link.
 #### Exemplo
 
 ```sql
-l_link := PL_FPDF.AddLink;
-PL_FPDF.SetLink(l_link, 0, 3);
-PL_FPDF.Cell(60, 8, 'Ir ao capítulo 3', plink => l_link);
+-- Link por URL, que é o que funciona hoje
+PL_FPDF.Cell(60, 8, 'Documentação', plink => 'https://maxwbh.github.io/pl_fpdf/');
 ```
 
 **Veja também:** [SetLink](#setlink), [Link](#link)
@@ -1647,6 +1648,10 @@ PL_FPDF.Cell(60, 8, 'Ir ao capítulo 3', plink => l_link);
 ### Link
 
 Cria uma área retangular clicável em qualquer região da página.
+
+> **Link interno não é suportado.** Passar aqui o identificador que o `AddLink` devolve levanta **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.
+
+> **Uma área por página.** Uma segunda chamada na mesma página substitui a primeira.
 
 #### Sintaxe
 
@@ -1676,6 +1681,8 @@ PROCEDURE PL_FPDF.Link(
 ### SetLink
 
 Define o destino de um link interno criado por AddLink.
+
+> **Link interno não é suportado.** Passar aqui o identificador que o `AddLink` devolve levanta **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.
 
 #### Sintaxe
 

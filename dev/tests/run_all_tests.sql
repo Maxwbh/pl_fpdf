@@ -5373,6 +5373,101 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
+  caso('Link so aceita URL, e recusa o link interno em vez de gravar quebrado');
+  --------------------------------------------------------------------------
+  -- O ramo que escreveria o /Dest do link INTERNO saiu comentado no porte
+  -- original e nunca voltou. Com plink numerico o dicionario do /Annot ficava
+  -- ABERTO -- sai "<</Type /Annot ... /Border [0 0 0] ]", sem o >> que fecha.
+  -- Nao e link que nao navega: e PDF que o leitor recusa.
+  --
+  -- Ninguem reparou porque nenhum teste chamava AddLink ou SetLink. Este caso
+  -- existe para que a recusa nao volte a virar arquivo quebrado em silencio.
+  DECLARE
+    l_pdf   BLOB;
+    l_link  NUMBER;
+    l_erro  VARCHAR2(400);
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+
+    l_link := PL_FPDF.AddLink;
+    PL_FPDF.SetLink(l_link, 0, 1);
+    BEGIN
+      PL_FPDF.Link(20, 40, 60, 10, TO_CHAR(l_link));
+      falhou('aceitou o link interno - o arquivo sairia malformado');
+    EXCEPTION
+      WHEN OTHERS THEN
+        l_erro := SQLERRM;
+        IF INSTR(l_erro, 'ORA-20601') > 0 THEN
+          passou('link interno recusado com ORA-20601');
+        ELSE
+          falhou('recusou com outro erro: ' || l_erro);
+        END IF;
+    END;
+
+    -- URL continua funcionando, e e o caminho que sempre esteve correto
+    PL_FPDF.Link(20, 60, 60, 10, 'https://example.com');
+    l_pdf := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    IF acha(l_pdf, '/Subtype /Link') > 0 AND acha(l_pdf, '/URI') > 0 THEN
+      passou('o link por URL saiu no arquivo');
+    ELSE
+      falhou('o link por URL sumiu');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
+  caso('Link na pagina 3 nao estraga as paginas 1 e 2');
+  --------------------------------------------------------------------------
+  -- O Link estende a colecao ate a pagina corrente, e as paginas anteriores
+  -- ficavam com entrada VAZIA. O emissor so testava .exists(i), entao essas
+  -- paginas ganhavam um /Annots com /Rect vazio e o dicionario aberto -- sem
+  -- que ninguem tivesse pedido link nenhum nelas.
+  DECLARE
+    l_pdf BLOB;
+    l_n   PLS_INTEGER;
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;  PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Cell(50, 10, 'Pagina 1');
+    PL_FPDF.AddPage;  PL_FPDF.Cell(50, 10, 'Pagina 2');
+    PL_FPDF.AddPage;  PL_FPDF.Cell(50, 10, 'Pagina 3');
+    PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
+    l_pdf := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- tres paginas, UM /Annots so
+    l_n := 0;
+    FOR i IN 1 .. 3 LOOP
+      IF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW('/Annots ['), 1, i) > 0 THEN
+        l_n := i;
+      END IF;
+    END LOOP;
+    IF l_n = 1 THEN
+      passou('so a pagina com link tem /Annots');
+    ELSE
+      falhou('ha ' || l_n || ' /Annots no arquivo, e so uma pagina tem link');
+    END IF;
+
+    -- e nenhum dicionario de anotacao ficou aberto
+    IF acha(l_pdf, '/Border [0 0 0] ]') = 0 THEN
+      passou('nenhum /Annot com o dicionario aberto');
+    ELSE
+      falhou('ha /Annot fechado com ] em vez de >> - dicionario aberto');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
   DBMS_OUTPUT.PUT_LINE('');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 80, '='));
   DBMS_OUTPUT.PUT_LINE('Total: ' || l_total ||

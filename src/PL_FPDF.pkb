@@ -2345,7 +2345,12 @@ begin
 	    end if; 
 		  p_out('/Resources 2 0 R');
 		
-      if(PageLinks.exists(i)) then
+      -- A entrada precisa EXISTIR e ter destino. O Link estende a colecao ate a
+      -- pagina corrente, e as paginas anteriores ficam com entrada vazia: sem o
+      -- teste de quatre, elas emitiam um /Annots com o dicionario aberto e um
+      -- /Rect vazio, so por existirem. Um Link na pagina 3 estragava as duas
+      -- primeiras.
+      if(PageLinks.exists(i) and PageLinks(i).quatre is not null) then
 			   --Links     [one/page]
 			   annots := '/Annots [';
          v_0 := PageLinks(i).zero;
@@ -3358,7 +3363,22 @@ procedure Link(px in number, py in number, pw in number, ph in number, plink in 
   v_ntoextend integer;
   v_rec rec5;
 begin
-	-- Put a link on the page
+  -- So URL. O destino INTERNO nunca chegou a ser escrito: o ramo que emitiria
+  -- o /Dest saiu comentado no porte original, e sem ele o dicionario do /Annot
+  -- ficava ABERTO -- arquivo malformado, nao apenas link que nao navega.
+  -- Recusar aqui, na chamada, vale mais que entregar o arquivo quebrado: o erro
+  -- aponta a linha que errou, e nao um PDF que o leitor recusa depois.
+  -- O NVL e a armadilha ja paga desta base: funcao BOOLEAN pode devolver NULL,
+  -- e IF NOT f() nao dispara.
+  if not nvl(nao_e_numero(plink), false) then
+    raise_application_error(-20601,
+      'Link: destino invalido (' ||
+      nvl(plink, 'NULL') ||
+      '). So URL e suportada. O link interno de AddLink/SetLink NAO esta ' ||
+      'implementado: o /Dest nunca e escrito e o PDF sairia malformado. ' ||
+      'Use Link(x, y, w, h, ''https://...''). Ver docs/ROADMAP.md, pendencias.');
+  end if;
+
   -- Init PageLinks, if not exists
   begin
      v_last_plink := PageLinks.count;
