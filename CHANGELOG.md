@@ -23,10 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Adicionado
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
+- Fonte TrueType embutida de verdade: o `SetFont` passa a usar a fonte
+  registrada, as métricas saem do arquivo e o `/FontFile2` vai para o PDF
 
-### Documentado
-- `AddTTFFont`/`LoadTTFFromFile` guardam a fonte num cache que **nada consome**:
-  `SetFont` não a usa, e as métricas são fixas no código
 
 ### Removido
 - **Incompatível:** `SetUTF8Enabled` e `IsUTF8Enabled`. Não faziam nada — a

@@ -592,9 +592,9 @@ PROCEDURE PL_FPDF.AddFont(
 
 ### AddTTFFont
 
-Guarda uma fonte TrueType num cache de sessão, a partir de um BLOB.
+Registra uma fonte TrueType a partir de um BLOB e a deixa disponível para o `SetFont`. As tabelas do arquivo são lidas de verdade, e a fonte vai embutida no PDF como `/FontFile2`.
 
-> **A fonte registrada não chega ao documento.** O `SetFont` não consulta este cache e nada emite os bytes no PDF — o que existe hoje é o registro, consultável por `IsTTFFontLoaded` e `GetTTFFontInfo`. Para texto em português com acento não é preciso fonte embutida: as fontes padrão escrevem acentuado desde a 3.4.0. Ver `docs/ROADMAP.md`, pendências.
+> **O arquivo cresce.** O programa da fonte sai em hexadecimal, então ocupa o dobro do tamanho dela dentro do PDF, e ainda não há subset. Para texto em português com acento **não é preciso embutir nada**: as fontes padrão escrevem acentuado desde a 3.4.0.
 
 #### Sintaxe
 
@@ -613,7 +613,7 @@ PROCEDURE PL_FPDF.AddTTFFont(
 | `p_font_name` | VARCHAR2 | Nome pelo qual a fonte será referenciada em SetFont. | Texto livre, ex.: 'Roboto' | — |
 | `p_font_blob` | BLOB | Conteúdo binário do arquivo .ttf. | BLOB não nulo com fonte TrueType válida | — |
 | `p_encoding` | VARCHAR2 | Codificação da fonte. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
-| `p_embed` | BOOLEAN | Guardado no registro; **sem efeito hoje**, já que a fonte não é emitida. | TRUE ou FALSE; TRUE é o padrão | `true` |
+| `p_embed` | BOOLEAN | Embute o programa da fonte no PDF. | TRUE ou FALSE; TRUE é o padrão | `true` |
 
 #### Exemplo
 
@@ -623,8 +623,7 @@ DECLARE
 BEGIN
   SELECT arquivo INTO l_ttf FROM fontes WHERE nome = 'Roboto-Regular';
   PL_FPDF.AddTTFFont(p_font_name => 'Roboto', p_font_blob => l_ttf);
-  -- o registro fica consultável, mas o SetFont NÃO usa esta fonte:
-  IF PL_FPDF.IsTTFFontLoaded('Roboto') THEN NULL; END IF;
+  PL_FPDF.SetFont('Roboto', '', 12);
 END;
 ```
 
@@ -648,9 +647,7 @@ PROCEDURE PL_FPDF.ClearTTFFontCache;
 
 ### GetTTFFontInfo
 
-Retorna o registro de uma fonte TrueType guardada no cache.
-
-> **As métricas são constantes do código**, não saem do arquivo: 1000 unidades por em, ascendente 800, descendente -200. O parser confere o *magic number* e nada mais. Não use estes números para calcular layout.
+Retorna o registro de uma fonte TrueType: os bytes guardados e as métricas lidas do arquivo, já reescaladas para as 1000 unidades por em do PDF.
 
 #### Sintaxe
 

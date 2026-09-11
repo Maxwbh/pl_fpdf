@@ -3904,7 +3904,22 @@ type recTTFFont is record (
   is_bold boolean default false,
   is_italic boolean default false,
   is_embedded boolean default true,
-  loaded_at timestamp default systimestamp
+  loaded_at timestamp default systimestamp,
+  -- O que o PDF precisa saber, tudo reescalado para as 1000 unidades por em
+  -- que ele usa. A caixa e o angulo vao para o /FontDescriptor; as larguras,
+  -- para o /Widths -- 256 posicoes de quatro digitos, indexadas pelo byte
+  -- WinAnsi, na mesma forma das tabelas das fontes padrao.
+  --   What the PDF needs, rescaled to the 1000 units per em it uses. The box
+  --   and the angle go into the /FontDescriptor; the widths into /Widths --
+  --   256 four-digit positions, indexed by the WinAnsi byte, in the same shape
+  --   as the standard fonts' tables.
+  bbox_xmin number default 0,
+  bbox_ymin number default 0,
+  bbox_xmax number default 0,
+  bbox_ymax number default 0,
+  italic_angle number default 0,
+  flags pls_integer default 32,
+  larguras varchar2(1024)
 );
 
 /*******************************************************************************
@@ -3918,19 +3933,20 @@ type tTTFFonts is table of recTTFFont index by varchar2(100);
 * Procedure: AddTTFFont / Acrescentar fonte TrueType
 *
 * Descrição / Description:
-*   PT: Guarda uma fonte TrueType num cache de sessão, a partir de um BLOB.
-*       ATENÇÃO: **a fonte guardada aqui não chega ao documento.** O SetFont
-*       não consulta este cache, e nada emite os bytes no PDF -- o que existe
-*       hoje é o registro, consultável por IsTTFFontLoaded e GetTTFFontInfo, e
-*       nada além disso. Só o magic number do arquivo é conferido.
-*       Para texto em português com acento não é preciso fonte embutida: as
+*   PT: Registra uma fonte TrueType a partir de um BLOB e a deixa disponível
+*       para o SetFont, pelo nome dado aqui. As tabelas do arquivo são lidas de
+*       verdade -- head, hhea, hmtx, cmap, OS/2 e post --, e a fonte vai
+*       embutida no PDF como /FontFile2.
+*       O arquivo cresce: o programa da fonte sai em hexadecimal, então ocupa
+*       o DOBRO do tamanho dela, e ainda não há subset (ver docs/ROADMAP.md).
+*       Para texto em português com acento não é preciso embutir nada: as
 *       fontes padrão escrevem acentuado desde a 3.4.0.
-*   EN: Stores a TrueType font in a session cache, from a BLOB.
-*       WARNING: **a font stored here never reaches the document.** SetFont
-*       does not consult this cache, and nothing emits the bytes into the PDF
-*       -- what exists today is the registration, readable through
-*       IsTTFFontLoaded and GetTTFFontInfo, and nothing more. Only the file's
-*       magic number is checked.
+*   EN: Registers a TrueType font from a BLOB and makes it available to
+*       SetFont under the name given here. The file's tables are really parsed
+*       -- head, hhea, hmtx, cmap, OS/2 and post -- and the font is embedded in
+*       the PDF as /FontFile2.
+*       The file grows: the font program goes out as hexadecimal, so it takes
+*       TWICE its size, and there is no subsetting yet (see docs/ROADMAP.md).
 *       Accented Portuguese needs no embedded font: the core fonts handle it
 *       since 3.4.0.
 *
@@ -3959,14 +3975,12 @@ procedure AddTTFFont(
 * Procedure: LoadTTFFromFile / Carregar fonte TrueType de arquivo
 *
 * Descrição / Description:
-*   PT: Lê um .ttf de um DIRECTORY do banco e o guarda no mesmo cache do
-*       AddTTFFont -- com a mesma limitação: **a fonte não chega ao
-*       documento.** Exige READ no diretório concedido ao schema; sem isso,
-*       AddTTFFont recebe os bytes direto.
-*   EN: Reads a .ttf from a database DIRECTORY into the same cache as
-*       AddTTFFont -- with the same limitation: **the font never reaches the
-*       document.** Requires READ on that directory; without it, AddTTFFont
-*       takes the bytes directly.
+*   PT: Lê um .ttf de um DIRECTORY do banco e o registra como o AddTTFFont.
+*       Exige READ no diretório concedido ao schema; sem isso, AddTTFFont
+*       recebe os bytes direto, sem concessão nenhuma.
+*   EN: Reads a .ttf from a database DIRECTORY and registers it like
+*       AddTTFFont. Requires READ on that directory; without it, AddTTFFont
+*       takes the bytes directly, with no grant at all.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome pelo qual SetFont a chamará / name used by SetFont
@@ -3993,12 +4007,10 @@ procedure LoadTTFFromFile(
 * Function: IsTTFFontLoaded / Fonte TrueType carregada
 *
 * Descrição / Description:
-*   PT: Diz se a fonte está no cache desta sessão. O nome não diferencia
-*       maiúsculas de minúsculas. Estar no cache não quer dizer utilizável:
-*       ver a limitação no bloco do AddTTFFont.
-*   EN: Tells whether the font is in this session's cache. The name is
-*       case-insensitive. Being cached does not mean usable: see the
-*       limitation in AddTTFFont's block.
+*   PT: Diz se a fonte está registrada nesta sessão, e portanto disponível
+*       para o SetFont. O nome não diferencia maiúsculas de minúsculas.
+*   EN: Tells whether the font is registered in this session, and therefore
+*       available to SetFont. The name is case-insensitive.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome da fonte / font name
@@ -4015,16 +4027,14 @@ function IsTTFFontLoaded(p_font_name varchar2) return boolean;
 * Function: GetTTFFontInfo / Dados da fonte TrueType
 *
 * Descrição / Description:
-*   PT: Devolve o registro da fonte: os bytes guardados e um conjunto de
-*       métricas. As métricas são **valores fixos do código** -- 1000 unidades
-*       por em, ascendente 800, descendente -200 --, e não saem do arquivo: o
-*       parser confere o magic number e nada mais. Não use estes números para
-*       calcular layout.
-*   EN: Returns the font record: the stored bytes and a set of metrics. The
-*       metrics are **constants in the code** -- 1000 units per em, ascent
-*       800, descent -200 -- and do not come from the file: the parser checks
-*       the magic number and nothing else. Do not use these numbers for
-*       layout.
+*   PT: Devolve o registro da fonte: os bytes guardados e as métricas lidas do
+*       arquivo -- unidades por em, ascendente, descendente, altura de caixa
+*       alta, a caixa e o ângulo do itálico. Tudo já reescalado para as 1000
+*       unidades por em do PDF, menos o units_per_em, que é o do arquivo.
+*   EN: Returns the font record: the stored bytes and the metrics parsed from
+*       the file -- units per em, ascent, descent, cap height, the box and the
+*       italic angle. All rescaled to the PDF's 1000 units per em, except
+*       units_per_em itself, which is the file's.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome da fonte / font name
@@ -5099,7 +5109,9 @@ procedure AddFont (family in varchar2, style in varchar2 default '', filename in
 *
 * Erros / Raises:
 *   -20005: Init ainda não foi chamado / Init has not been called
-*   -20201: fonte não encontrada / font not found
+*   -20201: fonte não encontrada -- nem entre as padrão, nem no registro de
+*           TrueType / font not found -- neither a core font nor a registered
+*           TrueType one
 *   -20100: estilo inválido / invalid style
 *
 * Exemplo / Example:
@@ -7296,6 +7308,9 @@ type tv32k is table of varchar2(32767) index by pls_integer;
 type tclob is table of clob index by pls_integer;
 type tblob is table of blob index by pls_integer;
 type tpi is table of pls_integer index by pls_integer;
+
+-- Numero de objeto por nome de fonte TrueType, para o /FontFile2.
+type tTTFObjs is table of pls_integer index by varchar2(100);
 type tpi2 is table of tpi index by pls_integer;
 
 -- Limite da porcao ASCII de um objeto PDF na copia entre documentos
@@ -7538,6 +7553,10 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
  g_ttf_fonts tTTFFonts;                     -- TrueType font cache
  g_ttf_fonts_count pls_integer := 0;        -- Number of loaded TTF fonts
+ -- Numero do objeto /FontFile2 de cada TTF ja emitida neste documento. Fica
+ -- fora do recTTFFont de proposito: o tipo e publico e descreve a FONTE, nao
+ -- a numeracao interna de um documento em particular.
+ g_ttf_obj tTTFObjs;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -9136,6 +9155,47 @@ begin
 	    i:= diffs.next(i);
 	end loop;
 		
+	--------------------------------------------------------------------------
+	-- Programa das fontes TrueType vindas do cache (AddTTFFont/LoadTTFFromFile)
+	--
+	-- Vai em HEXADECIMAL, com /ASCIIHexDecode declarado, pela mesma razao da
+	-- imagem: o documento e montado num CLOB e convertido no fim por
+	-- CONVERTTOBLOB, que recodifica qualquer byte acima de 0x7F. Byte cru nao
+	-- atravessa -- sairia um arquivo maior e diferente.
+	--
+	-- /Length e o tamanho do hexadecimal mais o '>' que o fecha; /Length1 e o
+	-- tamanho do programa DESCOMPRIMIDO, que e o da fonte. Sem subset: a fonte
+	-- inteira entra, e dobra de tamanho aqui dentro. Ver a HU-02.
+	--------------------------------------------------------------------------
+	g_ttf_obj.delete;
+	k := fonts.first;
+	while k is not null loop
+	  if lower(fonts(k).type) = 'truetype'
+	     and fonts(k).file is not null
+	     and g_ttf_fonts.exists(fonts(k).file)
+	     and not g_ttf_obj.exists(fonts(k).file) then
+	    declare
+	      l_prog blob := g_ttf_fonts(fonts(k).file).font_blob;
+	      l_tam  number := dbms_lob.getlength(l_prog);
+	      l_off  number := 1;
+	    begin
+	      p_newobj();
+	      g_ttf_obj(fonts(k).file) := n;
+	      p_out('<</Filter /ASCIIHexDecode /Length ' || (l_tam * 2 + 1)
+	            || ' /Length1 ' || l_tam || '>>');
+	      p_out('stream');
+	      while l_off <= l_tam loop
+	        p_out(rawtohex(dbms_lob.substr(l_prog, 2000, l_off)), false);
+	        l_off := l_off + 2000;
+	      end loop;
+	      p_out('>');
+	      p_out('endstream');
+	      p_out('endobj');
+	    end;
+	  end if;
+	  k := fonts.next(k);
+	end loop;
+
 	-- foreach($this->FontFiles as $file=>$info)
 	v := FontFiles.first;
 	while (v is not null) 
@@ -9245,12 +9305,37 @@ begin
 			p_newobj();
 			s := '<</Type /FontDescriptor /FontName /' || myName;
 			
-			for l in fonts(k).dsc.first..fonts(k).dsc.last loop
+			-- O dsc so tem conteudo no caminho legado, e mesmo la e indexado
+			-- por PLS_INTEGER -- o que esta abaixo escreve "/1 valor". A
+			-- guarda existe porque .first e .last de tabela VAZIA sao NULOS, e
+			-- um FOR numerico com limite nulo levanta ORA-06502: a fonte vinda
+			-- do cache de TTF nao preenche o dsc, e sem isto estouraria aqui.
+			if fonts(k).dsc.count > 0 then
+			  for l in fonts(k).dsc.first..fonts(k).dsc.last loop
 				s := s || ' /' || l || ' ' || fonts(k).dsc(l);
-			end loop;
+			  end loop;
+			end if;
 			
 			myFile := fonts(k).file;
-			if (myFile is not null) then
+			if (myFile is not null and g_ttf_obj.exists(myFile)) then
+			  -- Fonte do cache: as metricas saem do arquivo que foi lido, e o
+			  -- programa e o objeto emitido acima. O .dsc nao serve aqui --
+			  -- e indexado por PLS_INTEGER, e o laco acima escreveria "/1".
+			  s := s || ' /Flags ' || g_ttf_fonts(myFile).flags
+			        || ' /FontBBox [' || tochar(g_ttf_fonts(myFile).bbox_xmin)
+			        || ' ' || tochar(g_ttf_fonts(myFile).bbox_ymin)
+			        || ' ' || tochar(g_ttf_fonts(myFile).bbox_xmax)
+			        || ' ' || tochar(g_ttf_fonts(myFile).bbox_ymax) || ']'
+			        || ' /ItalicAngle ' || tochar(g_ttf_fonts(myFile).italic_angle)
+			        || ' /Ascent ' || tochar(g_ttf_fonts(myFile).ascent)
+			        || ' /Descent ' || tochar(g_ttf_fonts(myFile).descent)
+			        || ' /CapHeight ' || tochar(g_ttf_fonts(myFile).cap_height)
+			        -- StemV nao esta no arquivo. A especificacao o exige, e ele
+			        -- so pesa na substituicao de fonte, que nao acontece com a
+			        -- fonte embutida; 80 e o valor da referencia em Python.
+			        || ' /StemV 80'
+			        || ' /FontFile2 ' || g_ttf_obj(myFile) || ' 0 R';
+			elsif (myFile is not null) then
 			    if (lower(myType) = 'type1') then
 				  theType := '';
 				 else 
@@ -11033,6 +11118,10 @@ begin
     if links is not null then
       links.delete;
     end if;
+    -- Numeracao de objeto e por DOCUMENTO: mantida entre um e outro, o
+    -- descritor da fonte apontaria para um /FontFile2 que nao existe mais.
+    -- E o mesmo defeito que o OrientationChanges pagou em setembro.
+    g_ttf_obj.delete;
   exception
     when others then
       log_message(2, 'Warning during cleanup: ' || sqlerrm);
@@ -11290,6 +11379,211 @@ end AddPage;
 -- Date: 2025-12-15
 --------------------------------------------------------------------------------
 
+--------------------------------------------------------------------------------
+-- Leitura das tabelas da fonte TrueType
+--
+-- Referencia em dev/scripts/ttfembed_reference/, validada no MuPDF. Ela confere
+-- tres coisas, e a terceira e a que pega erro AQUI: o texto sai, a fonte esta
+-- embutida, e a largura que o leitor MEDE bate com a que o /Widths declara.
+-- Ler o hmtx com o numberOfHMetrics errado, ou esquecer de reescalar de
+-- unitsPerEm para as 1000 unidades por em que o PDF quer, desenha o texto com
+-- o espacamento de outra fonte -- num arquivo que abre perfeitamente.
+--
+-- Tudo big-endian. As posicoes destes auxiliares sao as da especificacao, que
+-- comecam em ZERO; o DBMS_LOB.SUBSTR comeca em um, e o +1 fica aqui dentro.
+--------------------------------------------------------------------------------
+function ttf_u16(p_b in blob, p_pos in number) return pls_integer is
+begin
+  return to_number(rawtohex(dbms_lob.substr(p_b, 2, p_pos + 1)), 'XXXX');
+end ttf_u16;
+
+function ttf_s16(p_b in blob, p_pos in number) return pls_integer is
+  l_v pls_integer := ttf_u16(p_b, p_pos);
+begin
+  -- complemento de dois: metrica de fonte e negativa com frequencia (o
+  -- descendente, o yMin da caixa), e ler como sem sinal daria 65336 no lugar
+  -- de -200.
+  return case when l_v > 32767 then l_v - 65536 else l_v end;
+end ttf_s16;
+
+function ttf_u32(p_b in blob, p_pos in number) return number is
+begin
+  -- NUMBER, e nao PLS_INTEGER: 32 bits SEM sinal passa de 2147483647, e o
+  -- ORA-01426 chega em execucao, sem nome de variavel. E a armadilha que o
+  -- /P das permissoes e o Adler-32 do deflate ja pagaram nesta base.
+  return to_number(rawtohex(dbms_lob.substr(p_b, 4, p_pos + 1)), 'XXXXXXXX');
+end ttf_u32;
+
+--------------------------------------------------------------------------------
+-- ttf_tabela : onde comeca a tabela de quatro letras, e quanto mede.
+--
+-- A comparacao e em RAW de propósito. Converter o tag para VARCHAR2 passaria
+-- pelo charset do banco, que e a confusao entre byte e caractere ja paga aqui
+-- tres vezes; o tag e ASCII, entao cast_to_raw do lado do literal e exato.
+--------------------------------------------------------------------------------
+procedure ttf_tabela(p_b   in  blob,
+                     p_tag in  varchar2,
+                     o_off out number,
+                     o_len out number) is
+  l_qtd pls_integer;
+  l_p   number;
+begin
+  o_off := null;
+  o_len := null;
+  l_qtd := ttf_u16(p_b, 4);                      -- numTables
+  for i in 0 .. l_qtd - 1 loop
+    l_p := 12 + i * 16;                          -- o diretorio comeca em 12
+    if dbms_lob.substr(p_b, 4, l_p + 1) = utl_raw.cast_to_raw(p_tag) then
+      o_off := ttf_u32(p_b, l_p + 8);
+      o_len := ttf_u32(p_b, l_p + 12);
+      return;
+    end if;
+  end loop;
+end ttf_tabela;
+
+--------------------------------------------------------------------------------
+-- ttf_cmap_sub : o inicio da sub-tabela de mapeamento, em posicao absoluta.
+--
+-- Preferencia: (3,1) Windows Unicode BMP, depois (3,0) Windows Symbol, depois
+-- (0,x) Unicode. Devolve NULL quando nao ha nenhuma que sirva -- o chamador
+-- recusa a fonte, em vez de mapear tudo para o glifo zero e desenhar uma linha
+-- de caixinhas.
+--------------------------------------------------------------------------------
+function ttf_cmap_sub(p_b in blob, p_cmap in number) return number is
+  l_qtd  pls_integer;
+  l_p    number;
+  l_pid  pls_integer;
+  l_eid  pls_integer;
+  l_off  number;
+  l_esc  number := null;
+  l_peso pls_integer := 0;
+  l_p2   pls_integer;
+begin
+  l_qtd := ttf_u16(p_b, p_cmap + 2);
+  for i in 0 .. l_qtd - 1 loop
+    l_p   := p_cmap + 4 + i * 8;
+    l_pid := ttf_u16(p_b, l_p);
+    l_eid := ttf_u16(p_b, l_p + 2);
+    l_off := ttf_u32(p_b, l_p + 4);
+    l_p2  := case when l_pid = 3 and l_eid = 1 then 3
+                  when l_pid = 3 and l_eid = 0 then 2
+                  when l_pid = 0               then 1
+                  else 0 end;
+    if l_p2 > l_peso and ttf_u16(p_b, p_cmap + l_off) = 4 then
+      l_peso := l_p2;
+      l_esc  := p_cmap + l_off;
+    end if;
+  end loop;
+  return l_esc;
+end ttf_cmap_sub;
+
+--------------------------------------------------------------------------------
+-- ttf_glifo : ponto de codigo -> numero do glifo, pelo formato 4 do cmap.
+--
+-- O formato 4 e uma lista de segmentos ordenados por endCode. Achado o
+-- segmento, ha DOIS caminhos: idRangeOffset zero soma o idDelta direto, e
+-- diferente de zero aponta, a partir da PROPRIA POSICAO do idRangeOffset, para
+-- dentro do glyphIdArray. Essa aritmetica relativa a posicao do campo e a
+-- parte que se erra ao portar, e o sintoma e um texto de caixinhas.
+--------------------------------------------------------------------------------
+function ttf_glifo(p_b in blob, p_sub in number, p_cp in pls_integer)
+  return pls_integer is
+  l_seg   pls_integer;
+  l_fim   pls_integer;
+  l_ini   pls_integer;
+  l_delta pls_integer;
+  l_ro    pls_integer;
+  l_pos   number;
+  l_g     pls_integer;
+begin
+  if p_sub is null or p_cp is null then
+    return 0;
+  end if;
+  l_seg := ttf_u16(p_b, p_sub + 6) / 2;          -- segCountX2
+  for i in 0 .. l_seg - 1 loop
+    l_fim := ttf_u16(p_b, p_sub + 14 + i * 2);
+    if l_fim >= p_cp then
+      l_ini := ttf_u16(p_b, p_sub + 16 + l_seg * 2 + i * 2);
+      if l_ini > p_cp then
+        return 0;                                -- cai num vao entre segmentos
+      end if;
+      l_delta := ttf_s16(p_b, p_sub + 16 + l_seg * 4 + i * 2);
+      l_ro    := ttf_u16(p_b, p_sub + 16 + l_seg * 6 + i * 2);
+      if l_ro = 0 then
+        return mod(p_cp + l_delta + 65536, 65536);
+      end if;
+      l_pos := p_sub + 16 + l_seg * 6 + i * 2 + l_ro + (p_cp - l_ini) * 2;
+      l_g := ttf_u16(p_b, l_pos);
+      if l_g = 0 then
+        return 0;
+      end if;
+      return mod(l_g + l_delta + 65536, 65536);
+    end if;
+  end loop;
+  return 0;
+end ttf_glifo;
+
+--------------------------------------------------------------------------------
+-- ttf_avanco : a largura de avanco de um glifo, em unidades da fonte.
+--
+-- O hmtx tem numberOfHMetrics pares (avanco, lsb) e DEPOIS so lsb: as fontes
+-- monoespacadas, e a cauda das proporcionais, repetem o ultimo avanco. Ler
+-- alem do numberOfHMetrics como se ainda houvesse par produz largura de lixo
+-- para os ultimos glifos -- que costumam ser os acentuados.
+--------------------------------------------------------------------------------
+function ttf_avanco(p_b in blob, p_hmtx in number, p_nhm in pls_integer,
+                    p_glifo in pls_integer) return pls_integer is
+begin
+  if p_glifo < p_nhm then
+    return ttf_u16(p_b, p_hmtx + p_glifo * 4);
+  end if;
+  return ttf_u16(p_b, p_hmtx + (p_nhm - 1) * 4);
+end ttf_avanco;
+
+--------------------------------------------------------------------------------
+-- p_winansi_cp : o inverso do p_winansi_byte -- byte WinAnsi -> ponto de
+-- codigo. De 0xA0 a 0xFF o cp1252 e o Latin-1 e o byte E o ponto de codigo;
+-- so as 27 posicoes de 0x80 a 0x9F precisam de tabela, e cinco nao existem.
+--------------------------------------------------------------------------------
+function p_winansi_cp(p_byte in pls_integer) return pls_integer is
+begin
+  case p_byte
+    when 128 then return 8364;   -- 0x80  U+20AC
+    when 130 then return 8218;
+    when 131 then return 402;
+    when 132 then return 8222;
+    when 133 then return 8230;
+    when 134 then return 8224;
+    when 135 then return 8225;
+    when 136 then return 710;
+    when 137 then return 8240;
+    when 138 then return 352;
+    when 139 then return 8249;
+    when 140 then return 338;
+    when 142 then return 381;
+    when 145 then return 8216;
+    when 146 then return 8217;
+    when 147 then return 8220;
+    when 148 then return 8221;
+    when 149 then return 8226;
+    when 150 then return 8211;
+    when 151 then return 8212;
+    when 152 then return 732;
+    when 153 then return 8482;
+    when 154 then return 353;
+    when 155 then return 8250;
+    when 156 then return 339;
+    when 158 then return 382;
+    when 159 then return 376;
+    when 129 then return null;   -- as cinco indefinidas do cp1252
+    when 141 then return null;
+    when 143 then return null;
+    when 144 then return null;
+    when 157 then return null;
+    else return p_byte;
+  end case;
+end p_winansi_cp;
+
 /*******************************************************************************
 * Function: parse_ttf_header (Internal)
 * Description: Parses TTF/OTF header and extracts basic metrics
@@ -11297,43 +11591,157 @@ end AddPage;
 function parse_ttf_header(p_font_blob blob, p_font_name varchar2) return recTTFFont is
   l_font recTTFFont;
   l_magic_number raw(4);
-  l_valid_ttf boolean := false;
   c_ttf_magic constant raw(4) := hextoraw('00010000');
   c_otf_magic constant raw(4) := hextoraw('4F54544F');
   c_ttc_magic constant raw(4) := hextoraw('74746366');
+  c_true      constant raw(4) := hextoraw('74727565');   -- 'true', do OS X
+
+  l_head number;  l_head_len number;
+  l_hhea number;  l_hhea_len number;
+  l_hmtx number;  l_hmtx_len number;
+  l_cmap number;  l_cmap_len number;
+  l_os2  number;  l_os2_len  number;
+  l_post number;  l_post_len number;
+
+  l_upm   pls_integer;
+  l_nhm   pls_integer;
+  l_sub   number;
+  l_cp    pls_integer;
+  l_glifo pls_integer;
+  l_larg  pls_integer;
+  l_lista varchar2(1024);
+  l_ang   number;
+  l_sel   pls_integer;
+
+  -- unidades da fonte -> as 1000 por em que o PDF quer. E a conta que, se
+  -- esquecida, desenha o texto com o espacamento de outra fonte.
+  function mil(p_v in number) return pls_integer is
+  begin
+    return round(p_v * 1000 / l_upm);
+  end mil;
 begin
   if p_font_blob is null or dbms_lob.getlength(p_font_blob) < 12 then
     raise_application_error(-20202, 'Invalid font BLOB: NULL or too small (<12 bytes)');
   end if;
+
   l_magic_number := dbms_lob.substr(p_font_blob, 4, 1);
-  if l_magic_number = c_ttf_magic then
-    l_valid_ttf := true;
-    log_message(4, 'Detected TrueType font (version 1.0)');
-  elsif l_magic_number = c_otf_magic then
-    l_valid_ttf := true;
-    log_message(4, 'Detected OpenType font with CFF outlines');
-  elsif l_magic_number = c_ttc_magic then
+  if l_magic_number = c_ttc_magic then
     raise_application_error(-20202, 'TrueType Collections (.ttc) not yet supported');
-  else
-    raise_application_error(-20202, 'Invalid TTF/OTF magic number: ' || rawtohex(l_magic_number));
+  elsif l_magic_number not in (c_ttf_magic, c_otf_magic, c_true) then
+    raise_application_error(-20202,
+      'Invalid TTF/OTF magic number: ' || rawtohex(l_magic_number));
   end if;
+
   l_font.font_name := upper(p_font_name);
   l_font.font_blob := p_font_blob;
   l_font.encoding := 'UTF-8';
-  l_font.units_per_em := 1000;
-  l_font.ascent := 800;
-  l_font.descent := -200;
-  l_font.line_gap := 0;
-  l_font.cap_height := 700;
-  l_font.x_height := 500;
-  l_font.is_bold := false;
-  l_font.is_italic := false;
-  l_font.is_embedded := true;
   l_font.loaded_at := systimestamp;
-  log_message(4, 'TTF header parsed for font: ' || p_font_name || ', size: ' || dbms_lob.getlength(p_font_blob) || ' bytes');
+  l_font.is_embedded := true;
+
+  ttf_tabela(p_font_blob, 'head', l_head, l_head_len);
+  ttf_tabela(p_font_blob, 'hhea', l_hhea, l_hhea_len);
+  ttf_tabela(p_font_blob, 'hmtx', l_hmtx, l_hmtx_len);
+  ttf_tabela(p_font_blob, 'cmap', l_cmap, l_cmap_len);
+  ttf_tabela(p_font_blob, 'OS/2', l_os2,  l_os2_len);
+  ttf_tabela(p_font_blob, 'post', l_post, l_post_len);
+
+  -- As quatro primeiras sao obrigatorias na especificacao, e sem qualquer uma
+  -- delas nao ha como medir nem mapear. Recusar aqui vale mais que emitir uma
+  -- fonte que o leitor desenha como caixinhas.
+  if l_head is null or l_hhea is null or l_hmtx is null or l_cmap is null then
+    raise_application_error(-20202,
+      'Fonte sem tabela obrigatoria (head/hhea/hmtx/cmap): ' || p_font_name);
+  end if;
+
+  l_upm := ttf_u16(p_font_blob, l_head + 18);
+  if l_upm is null or l_upm = 0 then
+    raise_application_error(-20202, 'unitsPerEm invalido em ' || p_font_name);
+  end if;
+  l_font.units_per_em := l_upm;
+
+  l_font.bbox_xmin := mil(ttf_s16(p_font_blob, l_head + 36));
+  l_font.bbox_ymin := mil(ttf_s16(p_font_blob, l_head + 38));
+  l_font.bbox_xmax := mil(ttf_s16(p_font_blob, l_head + 40));
+  l_font.bbox_ymax := mil(ttf_s16(p_font_blob, l_head + 42));
+
+  l_font.ascent   := mil(ttf_s16(p_font_blob, l_hhea + 4));
+  l_font.descent  := mil(ttf_s16(p_font_blob, l_hhea + 6));
+  l_font.line_gap := mil(ttf_s16(p_font_blob, l_hhea + 8));
+  l_nhm := ttf_u16(p_font_blob, l_hhea + 34);
+  if l_nhm is null or l_nhm = 0 then
+    raise_application_error(-20202,
+      'numberOfHMetrics zerado em ' || p_font_name);
+  end if;
+
+  -- OS/2 e post sao opcionais: sem eles ficam os valores derivados do hhea,
+  -- que e o que a especificacao manda usar como substituto.
+  l_font.cap_height := l_font.ascent;
+  l_font.x_height   := 0;
+  l_font.is_bold    := false;
+  l_font.is_italic  := false;
+  l_font.italic_angle := 0;
+  if l_os2 is not null and l_os2_len >= 64 then
+    l_sel := ttf_u16(p_font_blob, l_os2 + 62);
+    l_font.is_italic := bitand(l_sel, 1) = 1;
+    l_font.is_bold   := bitand(l_sel, 32) = 32;
+    if ttf_u16(p_font_blob, l_os2) >= 2 and l_os2_len >= 90 then
+      l_font.cap_height := mil(ttf_s16(p_font_blob, l_os2 + 88));
+      l_font.x_height   := mil(ttf_s16(p_font_blob, l_os2 + 86));
+    end if;
+  end if;
+  if l_post is not null and l_post_len >= 8 then
+    -- italicAngle e Fixed 16.16 com sinal: a parte inteira e um s16.
+    l_ang := ttf_s16(p_font_blob, l_post + 4)
+             + ttf_u16(p_font_blob, l_post + 6) / 65536;
+    l_font.italic_angle := round(l_ang, 2);
+  end if;
+
+  -- /Flags do FontDescriptor (ISO 32000, tabela 123): bit 6 nao-simbolica,
+  -- bit 1 largura fixa, bit 7 italico. Serif nao se decide pelo arquivo sem
+  -- heuristica, e errar nele nao muda o desenho: fica de fora.
+  l_font.flags := 32;
+  if l_post is not null and l_post_len >= 20
+     and ttf_u32(p_font_blob, l_post + 16) != 0 then
+    l_font.flags := l_font.flags + 1;
+  end if;
+  if l_font.is_italic then
+    l_font.flags := l_font.flags + 64;
+  end if;
+
+  -- A tabela de larguras, na mesma forma das fontes padrao: 256 posicoes de
+  -- quatro digitos, indexadas pelo BYTE WinAnsi -- que e a codificacao com que
+  -- o texto sai deste package desde a 3.4.0. Posicao sem glifo fica zero.
+  l_sub := ttf_cmap_sub(p_font_blob, l_cmap);
+  if l_sub is null then
+    raise_application_error(-20202,
+      'Fonte sem cmap no formato 4 (Unicode BMP): ' || p_font_name);
+  end if;
+
+  l_lista := null;
+  for b in 0 .. 255 loop
+    l_larg := 0;
+    if b >= 32 then
+      l_cp := p_winansi_cp(b);
+      if l_cp is not null then
+        l_glifo := ttf_glifo(p_font_blob, l_sub, l_cp);
+        if l_glifo > 0 then
+          l_larg := mil(ttf_avanco(p_font_blob, l_hmtx, l_nhm, l_glifo));
+        end if;
+      end if;
+    end if;
+    l_lista := l_lista || lpad(to_char(least(greatest(l_larg, 0), 9999)), 4, '0');
+  end loop;
+  l_font.larguras := l_lista;
+
+  log_message(4, 'TTF lida: ' || p_font_name || ', upm ' || l_upm
+              || ', ascent ' || l_font.ascent || ', descent ' || l_font.descent
+              || ', ' || dbms_lob.getlength(p_font_blob) || ' bytes');
   return l_font;
 exception
   when others then
+    if sqlcode = -20202 then
+      raise;
+    end if;
     log_message(1, 'Error parsing TTF header for ' || p_font_name || ': ' || sqlerrm);
     raise_application_error(-20202, 'Error parsing TTF header: ' || sqlerrm);
 end parse_ttf_header;
@@ -11844,6 +12252,33 @@ begin
 			fonts(fontkey).up  := -100;  
 			fonts(fontkey).ut := 50;   
 			fonts(fontkey).cw  := fpdf_charwidths(fontkey);  
+		elsif g_ttf_fonts.exists(upper(myfamily)) then
+			-- Fonte TrueType registrada por AddTTFFont ou LoadTTFFromFile.
+			--
+			-- Ate setembro/2026 este ramo nao existia: o cache era consultavel
+			-- e nada mais, entao registrar uma fonte e chamar SetFont com o
+			-- nome dela dava "Undefined font". O cache nao tinha consumidor.
+			--
+			-- O estilo NAO escolhe arquivo aqui. Uma TTF e um arquivo por
+			-- estilo, e o chamador registra cada um com o nome que quiser --
+			-- pedir negrito de uma fonte registrada sem negrito devolveria a
+			-- regular fingindo ser negrito. A chave da colecao leva o estilo
+			-- para nao colidir com o core, mas a fonte e a mesma.
+			FontCount := nvl(fonts.count, 0) + 1;
+			fonts(fontkey).i    := FontCount;
+			fonts(fontkey).type := 'TrueType';
+			fonts(fontkey).name := replace(upper(myfamily), ' ', '');
+			fonts(fontkey).up   := -100;
+			fonts(fontkey).ut   := 50;
+			fonts(fontkey).cw   := p_larguras_de(
+			                         g_ttf_fonts(upper(myfamily)).larguras);
+			fonts(fontkey).enc  := 'WinAnsiEncoding';
+			-- O .file guarda a CHAVE no cache de TTF, e nao um nome de
+			-- arquivo: e por ela que o p_putfonts acha as metricas e os bytes
+			-- na hora de emitir. O .dsc fica vazio de proposito -- ele e
+			-- indexado por PLS_INTEGER, entao o laco que o emite escreveria
+			-- "/1 valor" no lugar de "/Ascent valor".
+			fonts(fontkey).file := upper(myfamily);
 		else
 			raise_application_error(-20201, 'Undefined font: ' || myfamily || ' ' || mystyle);
 		end if; 

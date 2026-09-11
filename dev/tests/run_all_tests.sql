@@ -7130,36 +7130,40 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  caso('Fonte TrueType de verdade, por BLOB, sem arquivo em disco');
+  caso('TTF por BLOB: as metricas saem do ARQUIVO, nao de constante');
   --------------------------------------------------------------------------
   -- O LoadTTFFromFile exige READ num DIRECTORY, e este projeto nao depende de
   -- concessao extra. O caminho equivalente e o AddTTFFont, que recebe BLOB --
   -- e o BLOB vem daqui, de uma TTF minima gerada por
   -- dev/scripts/ttf_reference/gerar.py e conferida reabrindo no fontTools.
-  -- Mesmo padrao do PNG em hexadecimal do test_stream_imagem.sql.
+  --
+  -- A fonte tem 2048 unidades por em DE PROPOSITO. Ate setembro/2026 o parser
+  -- conferia o magic number e inventava o resto -- upm 1000, ascent 800,
+  -- descent -200 eram literais no codigo. Com metricas incomuns, cada numero
+  -- abaixo so pode ter vindo do arquivo.
   -- fonte gerada por dev/scripts/ttf_reference/gerar.py
-  -- 716 bytes, upm 1000, ascent 800, descent -200, glifos ['.notdef', 'A']
+  -- 716 bytes, upm 2048, ascent 1900, descent -500, glifos ['.notdef', 'A']
   DECLARE
     l_hex  VARCHAR2(4000);
     l_ttf  BLOB;
   BEGIN
     -- TTF-INICIO
-    l_hex := '00010000000A0080000300204F532F32471542A50000012800000060636D6170'
-    l_hex := l_hex || '000C00940000019000000034676C7966CDF1F2A7000001CC0000001868656164'
-    l_hex := l_hex || '2E9D70C8000000AC000000366868656105160160000000E400000024686D7478'
-    l_hex := l_hex || '0226000000000188000000066C6F6361000C0000000001C4000000066D617870'
+    l_hex := '00010000000A0080000300204F532F324E3B45E20000012800000060636D6170'
+    l_hex := l_hex || '000C00940000019000000034676C796605614061000001CC0000001868656164'
+    l_hex := l_hex || '30F59170000000AC00000036686865610BBA03DF000000E400000024686D7478'
+    l_hex := l_hex || '08D2007800000188000000086C6F6361000C0000000001C4000000066D617870'
     l_hex := l_hex || '0004000500000108000000206E616D651B7229D2000001E4000000BD706F7374'
-    l_hex := l_hex || '00280000000002A4000000260001000000010000D86AF8685F0F3CF5000303E8'
-    l_hex := l_hex || '00000000E6C9969600000000E6C996960032000001C202BC0000000300020000'
-    l_hex := l_hex || '00000000000100000320FF38000001F40032003201C200010000000000000000'
-    l_hex := l_hex || '0000000000000001000100000002000300010000000000020000000000000000'
-    l_hex := l_hex || '0000000000000000000301F40190000500040000000000000000000000000000'
+    l_hex := l_hex || '00280000000002A40000002600010000000100003BF00F3A5F0F3CF500030800'
+    l_hex := l_hex || '00000000E6C9A37100000000E6C9A3710078000003D405960000000300020000'
+    l_hex := l_hex || '0000000000010000076CFE0C000004D2007800FE03D400010000000000000000'
+    l_hex := l_hex || '0000000000000002000100000002000300010000000000020000000000000000'
+    l_hex := l_hex || '0000000000000000000304690190000500040000000000000000000000000000'
     l_hex := l_hex || '0000000000000000000000000000000000000000000100000000000000000000'
-    l_hex := l_hex || '00003F3F3F3F0000004100410320FF38000000000000000000000000000001F4'
-    l_hex := l_hex || '02BC00000020000001F400000032000000000002000000030000001400030001'
+    l_hex := l_hex || '00003F3F3F3F000000410041076CFE0C000000000000000000000000000003E8'
+    l_hex := l_hex || '05960000002000000400000004D2007800000002000000030000001400030001'
     l_hex := l_hex || '0000001400040020000000040004000100000041FFFF00000041FFFFFFC00001'
-    l_hex := l_hex || '0000000000000000000C000000010032000001C202BC00020000332103320190'
-    l_hex := l_hex || 'C802BC0000000006004E0001000000000001000B000000010000000000020007'
+    l_hex := l_hex || '0000000000000000000C000000010078000003D405960002000033210178035C'
+    l_hex := l_hex || 'FE52059600000006004E0001000000000001000B000000010000000000020007'
     l_hex := l_hex || '000B000100000000000600130012000300010409000100160025000300010409'
     l_hex := l_hex || '0002000E003B000300010409000600260049504C465044465465737465526567'
     l_hex := l_hex || '756C6172504C4650444654657374652D526567756C61720050004C0046005000'
@@ -7180,13 +7184,53 @@ BEGIN
     END IF;
 
     l_fonte := PL_FPDF.GetTTFFontInfo('TesteBlob');
-    IF DBMS_LOB.GETLENGTH(l_fonte.font_blob) = DBMS_LOB.GETLENGTH(l_ttf) THEN
-      passou('os bytes guardados sao os que entraram ('
-             || TO_CHAR(DBMS_LOB.GETLENGTH(l_ttf)) || ')');
+
+    IF l_fonte.units_per_em = 2048 THEN
+      passou('unitsPerEm 2048, lido do head');
     ELSE
-      falhou('o BLOB guardado tem '
-             || TO_CHAR(DBMS_LOB.GETLENGTH(l_fonte.font_blob))
-             || ' bytes, e entraram ' || TO_CHAR(DBMS_LOB.GETLENGTH(l_ttf)));
+      falhou('unitsPerEm veio ' || TO_CHAR(l_fonte.units_per_em)
+             || ', esperado 2048 -- 1000 seria a constante antiga');
+    END IF;
+
+    -- 1900 e -500 em 2048 por em viram 928 e -244 em 1000 por em
+    IF l_fonte.ascent = 928 AND l_fonte.descent = -244 THEN
+      passou('ascendente 928 e descendente -244, reescalados de 2048 para 1000');
+    ELSE
+      falhou('ascendente/descendente vieram ' || TO_CHAR(l_fonte.ascent)
+             || '/' || TO_CHAR(l_fonte.descent) || ', esperado 928/-244');
+    END IF;
+
+    IF l_fonte.cap_height = 698 THEN
+      passou('altura de caixa alta 698, lida do OS/2');
+    ELSE
+      falhou('cap_height veio ' || TO_CHAR(l_fonte.cap_height)
+             || ', esperado 698');
+    END IF;
+
+    IF l_fonte.bbox_xmin = 59 AND l_fonte.bbox_ymin = 0
+       AND l_fonte.bbox_xmax = 479 AND l_fonte.bbox_ymax = 698 THEN
+      passou('a caixa [59 0 479 698] saiu do head');
+    ELSE
+      falhou('a caixa veio [' || TO_CHAR(l_fonte.bbox_xmin) || ' '
+             || TO_CHAR(l_fonte.bbox_ymin) || ' ' || TO_CHAR(l_fonte.bbox_xmax)
+             || ' ' || TO_CHAR(l_fonte.bbox_ymax) || '], esperado [59 0 479 698]');
+    END IF;
+
+    -- a largura e o que separa "a fonte esta la" de "o leitor usa a fonte que
+    -- esta la": o A avanca 1234/2048 = 603, e o B nao tem glifo nenhum
+    IF TO_NUMBER(SUBSTR(l_fonte.larguras, ASCII('A') * 4 + 1, 4)) = 603 THEN
+      passou('a largura do A e 603, do hmtx pelo cmap');
+    ELSE
+      falhou('a largura do A veio '
+             || SUBSTR(l_fonte.larguras, ASCII('A') * 4 + 1, 4)
+             || ', esperado 0603');
+    END IF;
+
+    IF TO_NUMBER(SUBSTR(l_fonte.larguras, ASCII('B') * 4 + 1, 4)) = 0 THEN
+      passou('o B, que a fonte nao tem, mede zero');
+    ELSE
+      falhou('o B mediu ' || SUBSTR(l_fonte.larguras, ASCII('B') * 4 + 1, 4)
+             || ', e esta fonte so tem o glifo A');
     END IF;
 
     PL_FPDF.ClearTTFFontCache;
@@ -7198,37 +7242,138 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  caso('TTF: as metricas NAO vem do arquivo, e o registro nao chega ao PDF');
+  caso('TTF: o SetFont a usa, e o programa da fonte vai para o arquivo');
   --------------------------------------------------------------------------
-  -- Os dois sao limitacao conhecida, e este caso existe para que ninguem
-  -- descubra de novo a duras penas:
-  --
-  -- 1. o parse_ttf_header confere o magic number e INVENTA o resto -- upm
-  --    1000, ascent 800, descent -200 sao literais no codigo. A fonte gerada
-  --    aqui tem esses mesmos valores DE VERDADE, entao aferir "800" nao
-  --    provaria nada; o que se afere e uma fonte cujo valor real DIFERE.
-  -- 2. o SetFont nunca consulta o cache de TTF: uma fonte registrada nao fica
-  --    utilizavel no documento. Ver docs/ROADMAP.md, pendencias.
+  -- Este e o caso que nao existia: o cache era consultavel e NADA o consumia.
+  -- O SetFont nunca olhava para ele, entao registrar uma fonte e pedi-la dava
+  -- "Undefined font"; e nada emitia os bytes no PDF.
+  -- fonte gerada por dev/scripts/ttf_reference/gerar.py
+  -- 716 bytes, upm 2048, ascent 1900, descent -500, glifos ['.notdef', 'A']
+  DECLARE
+    l_hex  VARCHAR2(4000);
+    l_ttf  BLOB;
+    l_doc  BLOB;
   BEGIN
+    -- TTF-INICIO
+    l_hex := '00010000000A0080000300204F532F324E3B45E20000012800000060636D6170'
+    l_hex := l_hex || '000C00940000019000000034676C796605614061000001CC0000001868656164'
+    l_hex := l_hex || '30F59170000000AC00000036686865610BBA03DF000000E400000024686D7478'
+    l_hex := l_hex || '08D2007800000188000000086C6F6361000C0000000001C4000000066D617870'
+    l_hex := l_hex || '0004000500000108000000206E616D651B7229D2000001E4000000BD706F7374'
+    l_hex := l_hex || '00280000000002A40000002600010000000100003BF00F3A5F0F3CF500030800'
+    l_hex := l_hex || '00000000E6C9A37100000000E6C9A3710078000003D405960000000300020000'
+    l_hex := l_hex || '0000000000010000076CFE0C000004D2007800FE03D400010000000000000000'
+    l_hex := l_hex || '0000000000000002000100000002000300010000000000020000000000000000'
+    l_hex := l_hex || '0000000000000000000304690190000500040000000000000000000000000000'
+    l_hex := l_hex || '0000000000000000000000000000000000000000000100000000000000000000'
+    l_hex := l_hex || '00003F3F3F3F000000410041076CFE0C000000000000000000000000000003E8'
+    l_hex := l_hex || '05960000002000000400000004D2007800000002000000030000001400030001'
+    l_hex := l_hex || '0000001400040020000000040004000100000041FFFF00000041FFFFFFC00001'
+    l_hex := l_hex || '0000000000000000000C000000010078000003D405960002000033210178035C'
+    l_hex := l_hex || 'FE52059600000006004E0001000000000001000B000000010000000000020007'
+    l_hex := l_hex || '000B000100000000000600130012000300010409000100160025000300010409'
+    l_hex := l_hex || '0002000E003B000300010409000600260049504C465044465465737465526567'
+    l_hex := l_hex || '756C6172504C4650444654657374652D526567756C61720050004C0046005000'
+    l_hex := l_hex || '440046005400650073007400650052006500670075006C006100720050004C00'
+    l_hex := l_hex || '4600500044004600540065007300740065002D0052006500670075006C006100'
+    l_hex := l_hex || '7200000000020000000000000000000000000000000000000000000000000000'
+    l_hex := l_hex || '000000000002000000240000';
+    -- TTF-FIM
+    l_ttf := HEXTORAW(l_hex);
+
+    PL_FPDF.Reset;
+    PL_FPDF.ClearTTFFontCache;
+    PL_FPDF.AddTTFFont('TesteBlob', l_ttf);
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+
+    BEGIN
+      PL_FPDF.SetFont('TesteBlob', '', 14);
+      passou('o SetFont aceitou a fonte do cache');
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF INSTR(SQLERRM, 'ORA-20201') > 0 THEN
+          falhou('"Undefined font": o SetFont voltou a nao consultar o cache');
+        ELSE
+          falhou('o SetFont levantou: ' || SQLERRM);
+        END IF;
+    END;
+
+    IF LOWER(PL_FPDF.GetCurrentFontFamily) = 'testeblob' THEN
+      passou('a fonte corrente e a registrada');
+    ELSE
+      falhou('a fonte corrente e "' || PL_FPDF.GetCurrentFontFamily || '"');
+    END IF;
+
+    -- o A mede 603 milesimos do corpo: 14 * 603 / 1000 = 8,442 pt, e em mm
+    -- isso e 8,442 / 2,8346 = 2,978
+    IF ROUND(PL_FPDF.GetStringWidth('A'), 2) = ROUND(14 * 603 / 1000 / (72/25.4), 2) THEN
+      passou('o GetStringWidth mede pela tabela da TTF');
+    ELSE
+      falhou('o GetStringWidth devolveu '
+             || TO_CHAR(ROUND(PL_FPDF.GetStringWidth('A'), 3))
+             || ', esperado ' || TO_CHAR(ROUND(14 * 603 / 1000 / (72/25.4), 3))
+             || ' -- esta medindo por outra tabela');
+    END IF;
+
+    PL_FPDF.Cell(40, 10, 'A');
+    l_doc := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
     PL_FPDF.ClearTTFFontCache;
 
-    -- 28 bytes: o magic number certo e mais nada. Nao ha tabela head, nao ha
-    -- hhea, nao ha de onde tirar metrica alguma -- e ainda assim o package
-    -- devolve numeros redondos.
-    PL_FPDF.AddTTFFont('TesteMetrica', HEXTORAW('0001000000000000'
-      || RPAD('00', 40, '0')));
-    l_fonte := PL_FPDF.GetTTFFontInfo('TesteMetrica');
-    IF l_fonte.units_per_em = 1000 AND l_fonte.ascent = 800 THEN
-      passou('confirmado: as metricas sao constantes do codigo -- uma fonte '
-             || 'de 24 bytes sem tabela nenhuma devolve upm 1000 e ascent 800');
+    IF acha(l_doc, '/Subtype /TrueType') > 0 THEN
+      passou('o dicionario da fonte saiu como /TrueType');
     ELSE
-      falhou('as metricas mudaram: o parser passou a ler o arquivo? '
-             || 'atualize a documentacao e este caso');
+      falhou('nao ha fonte /TrueType no arquivo');
     END IF;
-    PL_FPDF.ClearTTFFontCache;
+
+    IF acha(l_doc, '/FontFile2') > 0 THEN
+      passou('o descritor aponta o /FontFile2');
+    ELSE
+      falhou('o /FontFile2 nao foi emitido: a fonte nao esta embutida');
+    END IF;
+
+    IF acha(l_doc, '/Length1 716') > 0 THEN
+      passou('o /Length1 declara os 716 bytes do programa da fonte');
+    ELSE
+      falhou('o /Length1 nao confere com o tamanho da fonte');
+    END IF;
+
+    IF acha(l_doc, '/ASCIIHexDecode') > 0 THEN
+      passou('o programa saiu em hexadecimal, com o filtro declarado');
+    ELSE
+      falhou('sem /ASCIIHexDecode: byte cru nao atravessa o CLOB de montagem');
+    END IF;
+
+    -- 0603 na posicao do A dentro do /Widths
+    IF acha(l_doc, ' 603 ') > 0 THEN
+      passou('a largura 603 do A esta no /Widths');
+    ELSE
+      falhou('a largura da TTF nao chegou ao /Widths');
+    END IF;
   EXCEPTION
     WHEN OTHERS THEN
       falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
+  caso('TTF sem tabela obrigatoria e recusada, em vez de inventada');
+  --------------------------------------------------------------------------
+  -- Ate setembro/2026 um BLOB de 28 bytes com o magic number certo e mais nada
+  -- era ACEITO, e devolvia upm 1000 e ascent 800 -- as constantes. Agora nao
+  -- ha de onde tirar metrica, e recusar vale mais que inventar.
+  BEGIN
+    PL_FPDF.ClearTTFFontCache;
+    PL_FPDF.AddTTFFont('TesteVazia', HEXTORAW('0001000000000000'
+      || RPAD('00', 40, '0')));
+    falhou('aceitou uma fonte sem tabela nenhuma');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20202') > 0 THEN
+        passou('recusada com ORA-20202');
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
   END;
 
   --------------------------------------------------------------------------

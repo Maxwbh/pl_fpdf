@@ -14,16 +14,17 @@ precisa vir de algum lugar, e ler de arquivo é justamente o que se quer evitar.
 A saída daqui é uma constante hexadecimal que o teste embute, no mesmo padrão
 que `test_stream_imagem.sql` já usa para o PNG. Sem disco, sem rede, sem grant.
 
-Por que uma fonte DE VERDADE, se o parser só olha 4 bytes
-----------------------------------------------------------
-Hoje o `parse_ttf_header` confere o *magic number* e **inventa o resto** —
-`units_per_em := 1000`, `ascent := 800`, `descent := -200` são literais no
-código, não vêm do arquivo. Um `HEXTORAW('00010000')` seguido de lixo passaria.
+Por que uma fonte DE VERDADE, e com métricas incomuns
+-----------------------------------------------------
+Até setembro de 2026 o `parse_ttf_header` conferia o *magic number* e
+**inventava o resto**: `units_per_em := 1000`, `ascent := 800`,
+`descent := -200` eram literais no código. Um `HEXTORAW('00010000')` seguido de
+lixo passava.
 
-Passaria hoje. No dia em que alguém escrever o parser de verdade — é o que a
-HU-02 pede, para o subset —, o lixo deixaria de passar e o teste quebraria por
-ser falso, não por ter achado defeito. Uma fonte real custa ~2 KB de hexadecimal
-e não tem esse prazo de validade.
+Agora o parser lê as tabelas, e é por isso que esta fonte usa **2048 por em** e
+métricas que não coincidem com nenhum valor redondo: assim cada número que o
+package devolve só pode ter vindo do arquivo. Uma fonte com upm 1000 e
+ascendente 800 não distinguiria "leu" de "chutou o de sempre".
 
 O que a fonte tem: `.notdef` e a letra A, as tabelas obrigatórias, e nada mais.
 
@@ -44,7 +45,12 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 TESTE = os.path.join(RAIZ, 'dev', 'tests', 'test_api_sem_chamador.sql')
 
-UPM = 1000
+# 2048 de proposito, e nao 1000: ate setembro/2026 o parser INVENTAVA as
+# metricas -- upm 1000, ascent 800, descent -200 eram literais no codigo. Uma
+# fonte com esses mesmos valores nao distinguiria "leu do arquivo" de "chutou o
+# de sempre". Com 2048 e as metricas abaixo, cada numero que o package devolve
+# so pode ter vindo do arquivo.
+UPM = 2048
 NOME = 'PLFPDFTeste'
 
 
@@ -56,20 +62,20 @@ def montar():
     fb.setupCharacterMap({ord('A'): 'A'})
 
     caneta = TTGlyphPen(None)
-    caneta.moveTo((50, 0))
-    caneta.lineTo((450, 0))
-    caneta.lineTo((250, 700))
+    caneta.moveTo((120, 0))
+    caneta.lineTo((980, 0))
+    caneta.lineTo((550, 1430))
     caneta.closePath()
     glifo_a = caneta.glyph()
 
     vazio = TTGlyphPen(None).glyph()
     fb.setupGlyf({'.notdef': vazio, 'A': glifo_a})
-    fb.setupHorizontalMetrics({'.notdef': (500, 0), 'A': (500, 50)})
-    fb.setupHorizontalHeader(ascent=800, descent=-200, lineGap=0)
+    fb.setupHorizontalMetrics({'.notdef': (1024, 0), 'A': (1234, 120)})
+    fb.setupHorizontalHeader(ascent=1900, descent=-500, lineGap=0)
     fb.setupNameTable({'familyName': NOME, 'styleName': 'Regular',
                        'psName': NOME + '-Regular'})
-    fb.setupOS2(sTypoAscender=800, sTypoDescender=-200, sCapHeight=700,
-                sxHeight=500)
+    fb.setupOS2(sTypoAscender=1900, sTypoDescender=-500, sCapHeight=1430,
+                sxHeight=1000)
     fb.setupPost()
 
     buf = io.BytesIO()
@@ -81,8 +87,8 @@ def conferir(bytes_):
     """Reabre com o fontTools. Uma fonte que ele recusa nao serve de amostra."""
     f = TTFont(io.BytesIO(bytes_))
     assert f['head'].unitsPerEm == UPM, f['head'].unitsPerEm
-    assert f['hhea'].ascent == 800, f['hhea'].ascent
-    assert f['hhea'].descent == -200, f['hhea'].descent
+    assert f['hhea'].ascent == 1900, f['hhea'].ascent
+    assert f['hhea'].descent == -500, f['hhea'].descent
     assert 'A' in f.getGlyphOrder(), f.getGlyphOrder()
     assert bytes_[:4] == b'\x00\x01\x00\x00', bytes_[:4].hex()
     return {'tamanho': len(bytes_), 'upm': f['head'].unitsPerEm,
