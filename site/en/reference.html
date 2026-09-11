@@ -593,7 +593,8 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Filled in afterwards&#x27;</span>);</pr
 </article>
 <article class="api" id="addttffont">
 <h3>AddTTFFont <span class="kind">Procedure</span><a class="anchor" href="#addttffont" aria-label="link">#</a></h3>
-<p class="d">Loads a TrueType font from a BLOB — from an assets table, say — and makes it available to SetFont, with full UTF-8 support.</p>
+<p class="d">Stores a TrueType font in a session cache, from a BLOB.</p>
+<p class="aviso"><b>A registered font never reaches the document.</b> <code>SetFont</code> does not consult this cache and nothing emits the bytes into the PDF — what exists today is the registration, readable through <code>IsTTFFontLoaded</code> and <code>GetTTFFontInfo</code>. Accented Portuguese needs no embedded font: the core fonts handle it since 3.4.0.</p>
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddTTFFont(
     p_font_name <span class="k">varchar2</span>,
@@ -625,6 +626,7 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Filled in afterwards&#x27;</span>);</pr
 <article class="api" id="getttffontinfo">
 <h3>GetTTFFontInfo <span class="kind">Function</span><a class="anchor" href="#getttffontinfo" aria-label="link">#</a></h3>
 <p class="d">Returns the metadata of a loaded TrueType font.</p>
+<p class="aviso"><b>The metrics are constants in the code</b>, not read from the file: 1000 units per em, ascent 800, descent -200. The parser checks the <i>magic number</i> and nothing else.</p>
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetTTFFontInfo(
     p_font_name <span class="k">varchar2</span>)

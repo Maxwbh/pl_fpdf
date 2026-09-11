@@ -747,7 +747,219 @@ BEGIN
       END IF;
   END;
 
-  pulou('carregar fonte de verdade exige arquivo .ttf: fica para outro teste');
+  --------------------------------------------------------------------------
+  caso('Fonte TrueType de verdade, por BLOB, sem arquivo em disco');
+  --------------------------------------------------------------------------
+  -- O LoadTTFFromFile exige READ num DIRECTORY, e este projeto nao depende de
+  -- concessao extra. O caminho equivalente e o AddTTFFont, que recebe BLOB --
+  -- e o BLOB vem daqui, de uma TTF minima gerada por
+  -- dev/scripts/ttf_reference/gerar.py e conferida reabrindo no fontTools.
+  -- Mesmo padrao do PNG em hexadecimal do test_stream_imagem.sql.
+  -- fonte gerada por dev/scripts/ttf_reference/gerar.py
+  -- 716 bytes, upm 1000, ascent 800, descent -200, glifos ['.notdef', 'A']
+  DECLARE
+    l_hex  VARCHAR2(4000);
+    l_ttf  BLOB;
+  BEGIN
+    -- TTF-INICIO
+    l_hex := '00010000000A0080000300204F532F32471542A50000012800000060636D6170'
+    l_hex := l_hex || '000C00940000019000000034676C7966CDF1F2A7000001CC0000001868656164'
+    l_hex := l_hex || '2E9D70C8000000AC000000366868656105160160000000E400000024686D7478'
+    l_hex := l_hex || '0226000000000188000000066C6F6361000C0000000001C4000000066D617870'
+    l_hex := l_hex || '0004000500000108000000206E616D651B7229D2000001E4000000BD706F7374'
+    l_hex := l_hex || '00280000000002A4000000260001000000010000D86AF8685F0F3CF5000303E8'
+    l_hex := l_hex || '00000000E6C9969600000000E6C996960032000001C202BC0000000300020000'
+    l_hex := l_hex || '00000000000100000320FF38000001F40032003201C200010000000000000000'
+    l_hex := l_hex || '0000000000000001000100000002000300010000000000020000000000000000'
+    l_hex := l_hex || '0000000000000000000301F40190000500040000000000000000000000000000'
+    l_hex := l_hex || '0000000000000000000000000000000000000000000100000000000000000000'
+    l_hex := l_hex || '00003F3F3F3F0000004100410320FF38000000000000000000000000000001F4'
+    l_hex := l_hex || '02BC00000020000001F400000032000000000002000000030000001400030001'
+    l_hex := l_hex || '0000001400040020000000040004000100000041FFFF00000041FFFFFFC00001'
+    l_hex := l_hex || '0000000000000000000C000000010032000001C202BC00020000332103320190'
+    l_hex := l_hex || 'C802BC0000000006004E0001000000000001000B000000010000000000020007'
+    l_hex := l_hex || '000B000100000000000600130012000300010409000100160025000300010409'
+    l_hex := l_hex || '0002000E003B000300010409000600260049504C465044465465737465526567'
+    l_hex := l_hex || '756C6172504C4650444654657374652D526567756C61720050004C0046005000'
+    l_hex := l_hex || '440046005400650073007400650052006500670075006C006100720050004C00'
+    l_hex := l_hex || '4600500044004600540065007300740065002D0052006500670075006C006100'
+    l_hex := l_hex || '7200000000020000000000000000000000000000000000000000000000000000'
+    l_hex := l_hex || '000000000002000000240000';
+    -- TTF-FIM
+    l_ttf := HEXTORAW(l_hex);
+
+    PL_FPDF.ClearTTFFontCache;
+    PL_FPDF.AddTTFFont('TesteBlob', l_ttf);
+
+    IF NVL(PL_FPDF.IsTTFFontLoaded('TesteBlob'), FALSE) THEN
+      passou('a fonte foi registrada a partir do BLOB');
+    ELSE
+      falhou('AddTTFFont nao registrou a fonte');
+    END IF;
+
+    l_fonte := PL_FPDF.GetTTFFontInfo('TesteBlob');
+    IF DBMS_LOB.GETLENGTH(l_fonte.font_blob) = DBMS_LOB.GETLENGTH(l_ttf) THEN
+      passou('os bytes guardados sao os que entraram ('
+             || TO_CHAR(DBMS_LOB.GETLENGTH(l_ttf)) || ')');
+    ELSE
+      falhou('o BLOB guardado tem '
+             || TO_CHAR(DBMS_LOB.GETLENGTH(l_fonte.font_blob))
+             || ' bytes, e entraram ' || TO_CHAR(DBMS_LOB.GETLENGTH(l_ttf)));
+    END IF;
+
+    PL_FPDF.ClearTTFFontCache;
+    IF NOT NVL(PL_FPDF.IsTTFFontLoaded('TesteBlob'), TRUE) THEN
+      passou('o ClearTTFFontCache descarregou a fonte');
+    ELSE
+      falhou('a fonte sobreviveu ao ClearTTFFontCache');
+    END IF;
+  END;
+
+  --------------------------------------------------------------------------
+  caso('TTF: as metricas NAO vem do arquivo, e o registro nao chega ao PDF');
+  --------------------------------------------------------------------------
+  -- Os dois sao limitacao conhecida, e este caso existe para que ninguem
+  -- descubra de novo a duras penas:
+  --
+  -- 1. o parse_ttf_header confere o magic number e INVENTA o resto -- upm
+  --    1000, ascent 800, descent -200 sao literais no codigo. A fonte gerada
+  --    aqui tem esses mesmos valores DE VERDADE, entao aferir "800" nao
+  --    provaria nada; o que se afere e uma fonte cujo valor real DIFERE.
+  -- 2. o SetFont nunca consulta o cache de TTF: uma fonte registrada nao fica
+  --    utilizavel no documento. Ver docs/ROADMAP.md, pendencias.
+  BEGIN
+    PL_FPDF.ClearTTFFontCache;
+
+    -- 28 bytes: o magic number certo e mais nada. Nao ha tabela head, nao ha
+    -- hhea, nao ha de onde tirar metrica alguma -- e ainda assim o package
+    -- devolve numeros redondos.
+    PL_FPDF.AddTTFFont('TesteMetrica', HEXTORAW('0001000000000000'
+      || RPAD('00', 40, '0')));
+    l_fonte := PL_FPDF.GetTTFFontInfo('TesteMetrica');
+    IF l_fonte.units_per_em = 1000 AND l_fonte.ascent = 800 THEN
+      passou('confirmado: as metricas sao constantes do codigo -- uma fonte '
+             || 'de 24 bytes sem tabela nenhuma devolve upm 1000 e ascent 800');
+    ELSE
+      falhou('as metricas mudaram: o parser passou a ler o arquivo? '
+             || 'atualize a documentacao e este caso');
+    END IF;
+    PL_FPDF.ClearTTFFontCache;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
+  caso('Saida em arquivo: recusa sem DIRECTORY, e o BLOB e a alternativa');
+  --------------------------------------------------------------------------
+  -- OutputFile e Output gravam em DIRECTORY do banco, que exige WRITE
+  -- concedido. O caminho de RECUSA nao exige nada: diretorio inexistente da
+  -- ORA-29280, que o package traduz para -20401. E quem nao tem o grant tem o
+  -- OutputBlob, que devolve os mesmos bytes.
+  novo_doc;
+  PL_FPDF.Cell(50, 10, 'conteudo');
+  BEGIN
+    PL_FPDF.OutputFile('x.pdf', 'DIRETORIO_QUE_NAO_EXISTE_PLFPDF');
+    falhou('gravou num diretorio que nao existe');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20401') > 0 THEN
+        passou('diretorio inexistente recusado com ORA-20401');
+      ELSIF INSTR(SQLERRM, 'ORA-20402') > 0 THEN
+        passou('diretorio sem permissao recusado com ORA-20402');
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+
+  novo_doc;
+  PL_FPDF.Cell(50, 10, 'conteudo');
+  BEGIN
+    PL_FPDF.Output('x.pdf', 'I');
+    falhou('aceitou o modo de entrega ao navegador');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20306') > 0 THEN
+        passou('modo "I" recusado com ORA-20306, que aponta o substituto');
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+
+  novo_doc;
+  PL_FPDF.Cell(50, 10, 'conteudo');
+  BEGIN
+    PL_FPDF.Output('x.pdf', 'Z');
+    falhou('aceitou um destino que nao existe');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20100') > 0 THEN
+        passou('destino desconhecido recusado com ORA-20100');
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+  PL_FPDF.Reset;
+
+  --------------------------------------------------------------------------
+  caso('LoadTTFFromFile recusa diretorio inexistente sem precisar de grant');
+  --------------------------------------------------------------------------
+  BEGIN
+    PL_FPDF.LoadTTFFromFile('X', 'x.ttf', 'DIRETORIO_QUE_NAO_EXISTE_PLFPDF');
+    falhou('leu de um diretorio que nao existe');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20401') > 0
+         OR INSTR(SQLERRM, 'ORA-20402') > 0
+         OR INSTR(SQLERRM, 'ORA-20202') > 0 THEN
+        passou('recusado com erro proprio: ' || SUBSTR(SQLERRM, 1, 60));
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------
+  caso('AddFont registra sem ler arquivo nenhum');
+  --------------------------------------------------------------------------
+  -- O AddFont so registra na colecao de fontes e deriva o nome do arquivo de
+  -- metricas quando nao recebe um. Nao le disco, entao roda em qualquer
+  -- ambiente -- foi engano meu te-lo posto na lista dos que precisam de grant.
+  novo_doc;
+  BEGIN
+    PL_FPDF.AddFont('Helvetica', 'B');
+    passou('AddFont registrou a fonte sem tocar em arquivo');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('AddFont levantou: ' || SQLERRM);
+  END;
+  PL_FPDF.Reset;
+
+  --------------------------------------------------------------------------
+  caso('Imagem por URL: a alternativa sem rede e o ImageFromBlob');
+  --------------------------------------------------------------------------
+  -- Image e getImageFromUrl saem pela rede e exigem ACL concedida ao schema.
+  -- Sem ela o UTL_HTTP levanta ORA-24247, que o package embrulha em -20100 --
+  -- o MESMO codigo de uma URL invalida, entao o teste nao consegue distinguir
+  -- os dois casos, e nao finge que consegue.
+  --
+  -- O que da para afirmar sem ACL nenhuma: que a recusa acontece, e que o
+  -- caminho equivalente por BLOB funciona. Esse ja tem cobertura propria em
+  -- test_stream_imagem.sql.
+  novo_doc;
+  BEGIN
+    PL_FPDF.Image('http://nao.existe.invalid/x.png', 10, 10, 40);
+    falhou('aceitou uma URL que nao responde');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20100') > 0
+         OR INSTR(SQLERRM, 'ORA-24247') > 0 THEN
+        passou('recusou a URL, com ou sem ACL: '
+               || SUBSTR(REPLACE(SQLERRM, CHR(10), ' '), 1, 50));
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+  PL_FPDF.Reset;
 
   --------------------------------------------------------------------------
   DBMS_OUTPUT.PUT_LINE('');

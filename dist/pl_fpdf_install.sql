@@ -3918,15 +3918,21 @@ type tTTFFonts is table of recTTFFont index by varchar2(100);
 * Procedure: AddTTFFont / Acrescentar fonte TrueType
 *
 * Descrição / Description:
-*   PT: Registra uma fonte TrueType a partir de um BLOB que o chamador já tem
-*       em mãos. A fonte vai embutida no PDF por padrão, e o arquivo cresce o
-*       tamanho dela — a biblioteca ainda não faz subset (ver docs/ROADMAP.md).
-*       Para texto em português com acento não é preciso embutir nada: as
-*       fontes padrão já escrevem acentuado.
-*   EN: Registers a TrueType font from a BLOB the caller already has. The font
-*       is embedded by default and the file grows by its full size — subsetting
-*       is not implemented yet (see docs/ROADMAP.md). Accented Portuguese does
-*       not need an embedded font: the core fonts handle it.
+*   PT: Guarda uma fonte TrueType num cache de sessão, a partir de um BLOB.
+*       ATENÇÃO: **a fonte guardada aqui não chega ao documento.** O SetFont
+*       não consulta este cache, e nada emite os bytes no PDF -- o que existe
+*       hoje é o registro, consultável por IsTTFFontLoaded e GetTTFFontInfo, e
+*       nada além disso. Só o magic number do arquivo é conferido.
+*       Para texto em português com acento não é preciso fonte embutida: as
+*       fontes padrão escrevem acentuado desde a 3.4.0.
+*   EN: Stores a TrueType font in a session cache, from a BLOB.
+*       WARNING: **a font stored here never reaches the document.** SetFont
+*       does not consult this cache, and nothing emits the bytes into the PDF
+*       -- what exists today is the registration, readable through
+*       IsTTFFontLoaded and GetTTFFontInfo, and nothing more. Only the file's
+*       magic number is checked.
+*       Accented Portuguese needs no embedded font: the core fonts handle it
+*       since 3.4.0.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome pelo qual SetFont a chamará / name used by SetFont
@@ -3953,10 +3959,14 @@ procedure AddTTFFont(
 * Procedure: LoadTTFFromFile / Carregar fonte TrueType de arquivo
 *
 * Descrição / Description:
-*   PT: Lê um .ttf de um DIRECTORY do banco e registra a fonte. Exige READ no
-*       diretório concedido ao schema; sem isso, prefira AddTTFFont com o BLOB.
-*   EN: Reads a .ttf from a database DIRECTORY and registers the font. Requires
-*       READ on that directory; without it, use AddTTFFont with a BLOB instead.
+*   PT: Lê um .ttf de um DIRECTORY do banco e o guarda no mesmo cache do
+*       AddTTFFont -- com a mesma limitação: **a fonte não chega ao
+*       documento.** Exige READ no diretório concedido ao schema; sem isso,
+*       AddTTFFont recebe os bytes direto.
+*   EN: Reads a .ttf from a database DIRECTORY into the same cache as
+*       AddTTFFont -- with the same limitation: **the font never reaches the
+*       document.** Requires READ on that directory; without it, AddTTFFont
+*       takes the bytes directly.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome pelo qual SetFont a chamará / name used by SetFont
@@ -3983,10 +3993,12 @@ procedure LoadTTFFromFile(
 * Function: IsTTFFontLoaded / Fonte TrueType carregada
 *
 * Descrição / Description:
-*   PT: Diz se a fonte já foi registrada nesta sessão. O nome não diferencia
-*       maiúsculas de minúsculas.
-*   EN: Tells whether the font is already registered in this session. The name
-*       is case-insensitive.
+*   PT: Diz se a fonte está no cache desta sessão. O nome não diferencia
+*       maiúsculas de minúsculas. Estar no cache não quer dizer utilizável:
+*       ver a limitação no bloco do AddTTFFont.
+*   EN: Tells whether the font is in this session's cache. The name is
+*       case-insensitive. Being cached does not mean usable: see the
+*       limitation in AddTTFFont's block.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome da fonte / font name
@@ -4003,10 +4015,16 @@ function IsTTFFontLoaded(p_font_name varchar2) return boolean;
 * Function: GetTTFFontInfo / Dados da fonte TrueType
 *
 * Descrição / Description:
-*   PT: Devolve as métricas lidas do arquivo da fonte (unidades por em,
-*       ascendente, descendente, altura de caixa alta).
-*   EN: Returns the metrics parsed from the font file (units per em, ascent,
-*       descent, cap height).
+*   PT: Devolve o registro da fonte: os bytes guardados e um conjunto de
+*       métricas. As métricas são **valores fixos do código** -- 1000 unidades
+*       por em, ascendente 800, descendente -200 --, e não saem do arquivo: o
+*       parser confere o magic number e nada mais. Não use estes números para
+*       calcular layout.
+*   EN: Returns the font record: the stored bytes and a set of metrics. The
+*       metrics are **constants in the code** -- 1000 units per em, ascent
+*       800, descent -200 -- and do not come from the file: the parser checks
+*       the magic number and nothing else. Do not use these numbers for
+*       layout.
 *
 * Parâmetros / Parameters:
 *   p_font_name - nome da fonte / font name

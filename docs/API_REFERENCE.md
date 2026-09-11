@@ -592,7 +592,9 @@ PROCEDURE PL_FPDF.AddFont(
 
 ### AddTTFFont
 
-Carrega uma fonte TrueType a partir de um BLOB (por exemplo, de uma tabela de assets) e a disponibiliza para SetFont, com suporte completo a UTF-8.
+Guarda uma fonte TrueType num cache de sessão, a partir de um BLOB.
+
+> **A fonte registrada não chega ao documento.** O `SetFont` não consulta este cache e nada emite os bytes no PDF — o que existe hoje é o registro, consultável por `IsTTFFontLoaded` e `GetTTFFontInfo`. Para texto em português com acento não é preciso fonte embutida: as fontes padrão escrevem acentuado desde a 3.4.0. Ver `docs/ROADMAP.md`, pendências.
 
 #### Sintaxe
 
@@ -611,7 +613,7 @@ PROCEDURE PL_FPDF.AddTTFFont(
 | `p_font_name` | VARCHAR2 | Nome pelo qual a fonte será referenciada em SetFont. | Texto livre, ex.: 'Roboto' | — |
 | `p_font_blob` | BLOB | Conteúdo binário do arquivo .ttf. | BLOB não nulo com fonte TrueType válida | — |
 | `p_encoding` | VARCHAR2 | Codificação da fonte. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
-| `p_embed` | BOOLEAN | Embute a fonte no PDF (garante a aparência em qualquer leitor, aumenta o arquivo). | TRUE ou FALSE; TRUE é o padrão | `true` |
+| `p_embed` | BOOLEAN | Guardado no registro; **sem efeito hoje**, já que a fonte não é emitida. | TRUE ou FALSE; TRUE é o padrão | `true` |
 
 #### Exemplo
 
@@ -620,8 +622,9 @@ DECLARE
   l_ttf BLOB;
 BEGIN
   SELECT arquivo INTO l_ttf FROM fontes WHERE nome = 'Roboto-Regular';
-  PL_FPDF.AddTTFFont(p_font_name => 'Roboto', p_font_blob => l_ttf, p_embed => TRUE);
-  PL_FPDF.SetFont('Roboto', '', 12);
+  PL_FPDF.AddTTFFont(p_font_name => 'Roboto', p_font_blob => l_ttf);
+  -- o registro fica consultável, mas o SetFont NÃO usa esta fonte:
+  IF PL_FPDF.IsTTFFontLoaded('Roboto') THEN NULL; END IF;
 END;
 ```
 
@@ -645,7 +648,9 @@ PROCEDURE PL_FPDF.ClearTTFFontCache;
 
 ### GetTTFFontInfo
 
-Retorna os metadados de uma fonte TrueType carregada.
+Retorna o registro de uma fonte TrueType guardada no cache.
+
+> **As métricas são constantes do código**, não saem do arquivo: 1000 unidades por em, ascendente 800, descendente -200. O parser confere o *magic number* e nada mais. Não use estes números para calcular layout.
 
 #### Sintaxe
 

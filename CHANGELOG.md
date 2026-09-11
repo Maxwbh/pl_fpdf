@@ -24,6 +24,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Adicionado
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
 
+### Documentado
+- `AddTTFFont`/`LoadTTFFromFile` guardam a fonte num cache que **nada consome**:
+  `SetFont` não a usa, e as métricas são fixas no código
+
 ### Removido
 - **Incompatível:** `SetUTF8Enabled` e `IsUTF8Enabled`. Não faziam nada — a
   variável era escrita e lida, e nenhum outro ponto a consultava. A acentuação
@@ -32,9 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Alterado
 - **Incompatível:** caractere fora do WinAnsi levanta `ORA-20203` com a posição,
   em vez de sair como `?`. Para outras escritas, embuta uma fonte TrueType
-- **Incompatível:** `Link` só aceita URL, e `AddLink`, `SetLink` e `plink`
-  numérico recusam com `ORA-20601`. O link interno nunca teve o `/Dest` escrito,
-  e o `AddLink` falhava com `ORA-06531` desde a primeira versão
+- **Incompatível:** `Link` só aceita URL; `AddLink`, `SetLink` e `plink` numérico
+  recusam com `ORA-20601`. O link interno nunca teve o `/Dest` escrito
 
 ---
 

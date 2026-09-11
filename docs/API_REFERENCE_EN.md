@@ -592,7 +592,9 @@ PROCEDURE PL_FPDF.AddFont(
 
 ### AddTTFFont
 
-Loads a TrueType font from a BLOB — from an assets table, say — and makes it available to SetFont, with full UTF-8 support.
+Stores a TrueType font in a session cache, from a BLOB.
+
+> **A registered font never reaches the document.** `SetFont` does not consult this cache and nothing emits the bytes into the PDF — what exists today is the registration, readable through `IsTTFFontLoaded` and `GetTTFFontInfo`. Accented Portuguese needs no embedded font: the core fonts handle it since 3.4.0. See `docs/ROADMAP.md`, pendências.
 
 #### Syntax
 
@@ -611,7 +613,7 @@ PROCEDURE PL_FPDF.AddTTFFont(
 | `p_font_name` | VARCHAR2 | Name by which the font will be referenced in SetFont. | Free text, e.g. 'Roboto' | — |
 | `p_font_blob` | BLOB | Binary content of the .ttf file. | Non-null BLOB holding a valid TrueType font | — |
 | `p_encoding` | VARCHAR2 | Font encoding. | 'UTF-8' (default) or 'WINDOWS-1252' | `'UTF-8'` |
-| `p_embed` | BOOLEAN | Embeds the font in the PDF, which guarantees the look in any reader and grows the file. | TRUE or FALSE; TRUE is the default | `true` |
+| `p_embed` | BOOLEAN | Kept in the record; **no effect today**, since the font is not emitted. | TRUE or FALSE; TRUE is the default | `true` |
 
 #### Example
 
@@ -620,8 +622,9 @@ DECLARE
   l_ttf BLOB;
 BEGIN
   SELECT file INTO l_ttf FROM fonts WHERE name = 'Roboto-Regular';
-  PL_FPDF.AddTTFFont(p_font_name => 'Roboto', p_font_blob => l_ttf, p_embed => TRUE);
-  PL_FPDF.SetFont('Roboto', '', 12);
+  PL_FPDF.AddTTFFont(p_font_name => 'Roboto', p_font_blob => l_ttf);
+  -- the registration is readable, but SetFont does NOT use this font:
+  IF PL_FPDF.IsTTFFontLoaded('Roboto') THEN NULL; END IF;
 END;
 ```
 
@@ -645,7 +648,9 @@ PROCEDURE PL_FPDF.ClearTTFFontCache;
 
 ### GetTTFFontInfo
 
-Returns the metadata of a loaded TrueType font.
+Returns the record of a TrueType font held in the cache.
+
+> **The metrics are constants in the code**, not read from the file: 1000 units per em, ascent 800, descent -200. The parser checks the *magic number* and nothing else. Do not use these numbers for layout.
 
 #### Syntax
 

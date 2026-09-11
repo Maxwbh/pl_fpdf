@@ -593,7 +593,8 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
 </article>
 <article class="api" id="addttffont">
 <h3>AddTTFFont <span class="kind">Procedure</span><a class="anchor" href="#addttffont" aria-label="link">#</a></h3>
-<p class="d">Carrega uma fonte TrueType a partir de um BLOB (por exemplo, de uma tabela de assets) e a disponibiliza para SetFont, com suporte completo a UTF-8.</p>
+<p class="d">Guarda uma fonte TrueType num cache de sessao, a partir de um BLOB.</p>
+<p class="aviso"><b>A fonte registrada nao chega ao documento.</b> O <code>SetFont</code> nao consulta este cache e nada emite os bytes no PDF — o que existe hoje e o registro, consultavel por <code>IsTTFFontLoaded</code> e <code>GetTTFFontInfo</code>. Para texto em portugues com acento nao e preciso fonte embutida: as fontes padrao escrevem acentuado desde a 3.4.0.</p>
 <h5>Sintaxe</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddTTFFont(
     p_font_name <span class="k">varchar2</span>,
@@ -625,6 +626,7 @@ PL_FPDF.Cell(0, 8, <span class="s">&#x27;Preenchido depois&#x27;</span>);</pre><
 <article class="api" id="getttffontinfo">
 <h3>GetTTFFontInfo <span class="kind">Function</span><a class="anchor" href="#getttffontinfo" aria-label="link">#</a></h3>
 <p class="d">Retorna os metadados de uma fonte TrueType carregada.</p>
+<p class="aviso"><b>As metricas sao constantes do codigo</b>, nao saem do arquivo: 1000 unidades por em, ascendente 800, descendente -200. O parser confere o <i>magic number</i> e nada mais.</p>
 <h5>Sintaxe</h5>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetTTFFontInfo(
     p_font_name <span class="k">varchar2</span>)
