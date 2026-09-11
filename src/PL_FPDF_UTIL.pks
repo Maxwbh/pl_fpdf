@@ -1,7 +1,5 @@
 CREATE OR REPLACE PACKAGE PL_FPDF_UTIL AS
-
 co_version CONSTANT VARCHAR2(10) := '3.4.0';
-
 TYPE tqr IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
 
 PROCEDURE qr_matriz(p_dados   IN  VARCHAR2,
@@ -70,6 +68,5 @@ FUNCTION  aes_verificar_r6(p_senha IN  VARCHAR2,
                            o_dono  OUT BOOLEAN) RETURN BOOLEAN;
 
 PROCEDURE aes_autoteste;
-
 END PL_FPDF_UTIL;
 /

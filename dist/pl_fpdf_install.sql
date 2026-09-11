@@ -22,9 +22,7 @@
 -- PACKAGE PL_FPDF_UTIL — utilitário: QR Code, códigos de barras, DEFLATE e criptografia
 --------------------------------------------------------------------------------
 CREATE OR REPLACE PACKAGE PL_FPDF_UTIL AS
-
 co_version CONSTANT VARCHAR2(10) := '3.4.0';
-
 TYPE tqr IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
 
 PROCEDURE qr_matriz(p_dados   IN  VARCHAR2,
@@ -93,7 +91,6 @@ FUNCTION  aes_verificar_r6(p_senha IN  VARCHAR2,
                            o_dono  OUT BOOLEAN) RETURN BOOLEAN;
 
 PROCEDURE aes_autoteste;
-
 END PL_FPDF_UTIL;
 /
 
@@ -2319,15 +2316,10 @@ END PL_FPDF_UTIL;
 -- PACKAGE PL_FPDF — a biblioteca de PDF
 --------------------------------------------------------------------------------
 CREATE OR REPLACE PACKAGE PL_FPDF AS
-
 subtype word is varchar2(80);
-
 type tv4000a is table of varchar2(4000) index by word;
-
 type point is record (x number, y number);
-
 type tab_points is table of point index by pls_integer;
-
 type recImageBlob is record (
   image_blob blob,
   mime_type varchar2(100),
@@ -2338,7 +2330,6 @@ type recImageBlob is record (
   color_type integer,
   has_transparency boolean
 );
-
 co_version CONSTANT VARCHAR2(10) := '3.4.0';
 noParam tv4000a;
 
@@ -2353,12 +2344,10 @@ procedure Reset;
 
 function IsInitialized return boolean
   DETERMINISTIC;
-
 type recPageFormat is record (
   width number(10,5),
   height number(10,5)
 );
-
 type recPage is record (
   number_val pls_integer,
   orientation varchar2(1),
@@ -2367,9 +2356,7 @@ type recPage is record (
   content_clob clob,
   created_at timestamp default systimestamp
 );
-
 type tPages is table of recPage index by pls_integer;
-
 type recTTFFont is record (
   font_name varchar2(100),
   file_name varchar2(255),
@@ -2385,7 +2372,6 @@ type recTTFFont is record (
   is_italic boolean default false,
   is_embedded boolean default true,
   loaded_at timestamp default systimestamp,
-
   bbox_xmin number default 0,
   bbox_ymin number default 0,
   bbox_xmax number default 0,
@@ -2394,7 +2380,6 @@ type recTTFFont is record (
   flags pls_integer default 32,
   larguras varchar2(1024)
 );
-
 type tTTFFonts is table of recTTFFont index by varchar2(100);
 
 procedure AddTTFFont(
@@ -2421,67 +2406,46 @@ function UTF8ToPDFString(
   p_text varchar2,
   p_escape boolean default true
 ) return varchar2;
-
 exc_invalid_orientation EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_orientation, -20001);
-
 exc_invalid_unit EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_unit, -20002);
-
 exc_invalid_encoding EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_encoding, -20003);
-
 exc_not_initialized EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_not_initialized, -20005);
-
 exc_invalid_page_format EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_page_format, -20101);
-
 exc_page_not_found EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_page_not_found, -20106);
-
 exc_font_not_found EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_font_not_found, -20201);
-
 exc_invalid_font_file EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_font_file, -20202);
-
 exc_invalid_font_name EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_font_name, -20210);
-
 exc_invalid_font_blob EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_font_blob, -20211);
-
 exc_fora_de_winansi EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_fora_de_winansi, -20203);
-
 exc_invalid_image EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_image, -20301);
-
 exc_image_not_found EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_image_not_found, -20302);
-
 exc_unsupported_image_format EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_unsupported_image_format, -20303);
-
 exc_invalid_directory EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_directory, -20401);
-
 exc_file_access_denied EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_file_access_denied, -20402);
-
 exc_file_write_error EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_file_write_error, -20403);
-
 exc_link_nao_suportado EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_link_nao_suportado, -20601);
-
 exc_invalid_color EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_color, -20501);
-
 exc_invalid_line_width EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_invalid_line_width, -20502);
-
 exc_general_error EXCEPTION;
 PRAGMA EXCEPTION_INIT(exc_general_error, -20100);
 
@@ -2840,7 +2804,6 @@ PROCEDURE SetPermissions(
   p_assemble IN BOOLEAN DEFAULT FALSE,
   p_print_high IN BOOLEAN DEFAULT TRUE
 );
-
 END PL_FPDF;
 /
 
