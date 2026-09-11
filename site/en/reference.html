@@ -779,7 +779,8 @@ PL_FPDF.Cell(
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontFamily
     <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
-<h5>Returns</h5><p class="d">VARCHAR2 — the family name.</p>
+<h5>Returns</h5><p class="d">VARCHAR2 — the family name, always <b>lowercase</b>.</p>
+<p class="aviso"><code>SetFont</code> normalises it: <code>&#x27;Times&#x27;</code> goes in and <code>&#x27;times&#x27;</code> comes back. Comparing the result against <code>&#x27;Times&#x27;</code> never matches — use <code>LOWER()</code> on both sides.</p>
 <p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
 </article>
 <article class="api" id="getcurrentfontsize">

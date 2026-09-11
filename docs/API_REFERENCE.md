@@ -960,7 +960,9 @@ FUNCTION PL_FPDF.GetCurrentFontStyle
 
 #### Retorno
 
-VARCHAR2 — '', 'B', 'I', 'BI' ou 'U'.
+VARCHAR2 — '', 'B', 'I', 'BI' ou 'U', sempre em **maiúscula**.
+
+> O `SetFont` normaliza: `'b'` entra e `'B'` volta.
 
 **Veja também:** [SetFont](#setfont)
 

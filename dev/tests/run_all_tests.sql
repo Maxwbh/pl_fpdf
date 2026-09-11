@@ -6652,21 +6652,36 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Fonte: corpo, familia e estilo sao lidos de volta');
   --------------------------------------------------------------------------
+  -- O que se le de volta NAO e o eco do que se passou: o package NORMALIZA a
+  -- familia para minuscula e o estilo para maiuscula, como o FPDF original.
+  -- Entao "IF GetCurrentFontFamily = 'Times'" nunca casa, e o teste afere a
+  -- normalizacao de proposito -- foi assim que ela apareceu, com este caso
+  -- falhando contra a expectativa errada de quem o escreveu.
   novo_doc;
-  PL_FPDF.SetFont('Times', 'B', 14);
-  IF PL_FPDF.GetCurrentFontFamily = 'Times'
-     AND PL_FPDF.GetCurrentFontStyle = 'B'
-     AND PL_FPDF.GetCurrentFontSize = 14 THEN
-    passou('familia, estilo e corpo conferem com o que o SetFont recebeu');
+  PL_FPDF.SetFont('Times', 'b', 14);
+  IF PL_FPDF.GetCurrentFontFamily = 'times' THEN
+    passou('a familia volta em MINUSCULA, normalizada');
   ELSE
-    falhou('SetFont(Times,B,14) devolveu ' || PL_FPDF.GetCurrentFontFamily
-           || '/' || PL_FPDF.GetCurrentFontStyle || '/'
-           || TO_CHAR(PL_FPDF.GetCurrentFontSize));
+    falhou('a familia voltou como "' || PL_FPDF.GetCurrentFontFamily
+           || '", esperado "times" em minuscula');
+  END IF;
+
+  IF PL_FPDF.GetCurrentFontStyle = 'B' THEN
+    passou('o estilo volta em MAIUSCULA, normalizado ("b" virou "B")');
+  ELSE
+    falhou('o estilo voltou como "' || PL_FPDF.GetCurrentFontStyle
+           || '", esperado "B" em maiuscula');
+  END IF;
+
+  IF PL_FPDF.GetCurrentFontSize = 14 THEN
+    passou('o corpo confere');
+  ELSE
+    falhou('o corpo voltou ' || TO_CHAR(PL_FPDF.GetCurrentFontSize));
   END IF;
 
   PL_FPDF.SetFontSize(9);
   IF PL_FPDF.GetCurrentFontSize = 9
-     AND PL_FPDF.GetCurrentFontFamily = 'Times' THEN
+     AND PL_FPDF.GetCurrentFontFamily = 'times' THEN
     passou('SetFontSize troca so o corpo, e mantem a familia');
   ELSE
     falhou('depois do SetFontSize(9): '

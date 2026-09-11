@@ -655,8 +655,10 @@ function GetCurrentFontSize return number;
 * Descrição / Description:
 *   PT: Devolve o estilo em uso: '' (normal), 'B' (Bold, negrito),
 *       'I' (Italic, itálico), 'U' (Underline, sublinhado) ou a combinação.
+*       Sempre em MAIÚSCULA: o SetFont normaliza, então 'b' entra e 'B' volta.
 *   EN: Returns the current style: '' (regular), 'B' (bold), 'I' (italic),
-*       'U' (underline), or a combination.
+*       'U' (underline), or a combination. Always UPPERCASE: SetFont
+*       normalises it, so 'b' goes in and 'B' comes back.
 *
 * Retorna / Returns:
 *   VARCHAR2 - o estilo corrente / the current style
@@ -670,8 +672,12 @@ function GetCurrentFontStyle return varchar2;
 * Function: GetCurrentFontFamily / Família da fonte corrente
 *
 * Descrição / Description:
-*   PT: Devolve o nome da família em uso ('Helvetica', 'Times', 'Courier'...).
-*   EN: Returns the current font family ('Helvetica', 'Times', 'Courier'...).
+*   PT: Devolve o nome da família em uso. Sempre em MINÚSCULA: o SetFont
+*       normaliza, então 'Times' entra e 'times' volta. Comparar com
+*       'Times' nunca casa -- use LOWER() dos dois lados.
+*   EN: Returns the current font family. Always LOWERCASE: SetFont normalises
+*       it, so 'Times' goes in and 'times' comes back. Comparing against
+*       'Times' never matches -- use LOWER() on both sides.
 *
 * Retorna / Returns:
 *   VARCHAR2 - a família corrente / the current family
@@ -1533,6 +1539,12 @@ procedure AddFont (family in varchar2, style in varchar2 default '', filename in
 *             'U' sublinhado (Underline), ou a combinação /
 *             '' regular, 'B' bold, 'I' italic, 'U' underline, or a mix
 *   psize   - corpo em pontos / size in points (0 = mantém / keep current)
+*
+* Nota / Note:
+*   PT: A família é guardada em minúscula e o estilo em maiúscula. É o que os
+*       getters devolvem, e não o texto que entrou aqui.
+*   EN: The family is stored lowercase and the style uppercase. That is what
+*       the getters return -- not the text passed in here.
 *
 * Erros / Raises:
 *   -20005: Init ainda não foi chamado / Init has not been called
