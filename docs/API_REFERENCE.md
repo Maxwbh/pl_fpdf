@@ -1621,7 +1621,7 @@ END;
 
 Cria um link interno (ainda sem destino) e retorna seu identificador.
 
-> **Link interno não é suportado.** Passar aqui o identificador que o `AddLink` devolve levanta **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.
+> **Link interno não é suportado.** `AddLink`, `SetLink` e um `plink` numérico levantam **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; o `AddLink`, por sua vez, falhava com `ORA-06531` desde sempre, porque a coleção interna nunca foi inicializada. Desde a 3.4.0 os três recusam com mensagem que diz o que usar no lugar. Use URL.
 
 #### Sintaxe
 
@@ -1649,7 +1649,7 @@ PL_FPDF.Cell(60, 8, 'Documentação', plink => 'https://maxwbh.github.io/pl_fpdf
 
 Cria uma área retangular clicável em qualquer região da página.
 
-> **Link interno não é suportado.** Passar aqui o identificador que o `AddLink` devolve levanta **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.
+> **Link interno não é suportado.** `AddLink`, `SetLink` e um `plink` numérico levantam **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; o `AddLink`, por sua vez, falhava com `ORA-06531` desde sempre, porque a coleção interna nunca foi inicializada. Desde a 3.4.0 os três recusam com mensagem que diz o que usar no lugar. Use URL.
 
 > **Uma área por página.** Uma segunda chamada na mesma página substitui a primeira.
 
@@ -1682,7 +1682,7 @@ PROCEDURE PL_FPDF.Link(
 
 Define o destino de um link interno criado por AddLink.
 
-> **Link interno não é suportado.** Passar aqui o identificador que o `AddLink` devolve levanta **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.
+> **Link interno não é suportado.** `AddLink`, `SetLink` e um `plink` numérico levantam **ORA-20601**. O destino interno (`/Dest`) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; o `AddLink`, por sua vez, falhava com `ORA-06531` desde sempre, porque a coleção interna nunca foi inicializada. Desde a 3.4.0 os três recusam com mensagem que diz o que usar no lugar. Use URL.
 
 #### Sintaxe
 

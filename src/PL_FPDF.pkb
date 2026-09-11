@@ -3430,28 +3430,35 @@ end;
 
 ----------------------------------------------------------------------------------------
 function AddLink return number is
-nb_link number := links.count + 1;
 begin
-	-- Create a new internal link
-	links(nb_link).zero := 0;
-	links(nb_link).un := 0;
-	return nb_link;
+  -- Nunca funcionou, e falhava sem dizer o que era. A "links" e nested table e
+  -- ninguem a inicializa; a propria declaracao desta funcao chamava
+  -- links.count e levantava ORA-06531 -- "reference to uninitialized
+  -- collection" --, que nao diz ao chamador o que fazer. O Reset tem a guarda
+  -- "if links is not null" que faltava aqui.
+  --
+  -- Inicializar a colecao devolveria um identificador que nao leva a lugar
+  -- nenhum: o Link recusa destino que nao seja URL, porque o /Dest nunca chegou
+  -- a ser escrito. Entao a recusa e aqui, com o mesmo codigo e a mesma
+  -- mensagem do Link, em vez de um erro do Oracle.
+  raise_application_error(-20601,
+    'AddLink: link interno NAO esta implementado. O /Dest nunca e escrito no ' ||
+    'arquivo, e o Link recusa o identificador que esta funcao devolveria. ' ||
+    'Use Link(x, y, w, h, ''https://...'') ou o parametro plink das rotinas ' ||
+    'de texto com uma URL. Ver docs/ROADMAP.md, pendencias.');
+  return null;
 end AddLink;
 
 ----------------------------------------------------------------------------------------
 procedure SetLink(plink in number, py in number default 0, ppage in number default -1) is
-mypy number := py;
-myppage number := ppage;
 begin
-	-- Set destination of internal link
-	if(mypy=-1) then
-		mypy:=y;
-	end if; 
-	if(myppage=-1) then
-		myppage:=page;
-	end if; 
-	links(plink).zero:=myppage;
-	links(plink).un:=mypy;
+  -- Mesmo caso do AddLink: a "links" nunca e inicializada, entao a atribuicao
+  -- abaixo levantava ORA-06531. E guardar o destino nao adiantaria nada --
+  -- ninguem o le, porque o /Dest nao e emitido. Recusa com o erro proprio.
+  raise_application_error(-20601,
+    'SetLink: link interno NAO esta implementado. O destino nao chega ao ' ||
+    'arquivo: o /Dest nunca e escrito e o Link recusa o identificador. ' ||
+    'Use uma URL. Ver docs/ROADMAP.md, pendencias.');
 end SetLink;
 
 ----------------------------------------------------------------------------------------

@@ -309,12 +309,15 @@ PL_FPDF.Cell(60, 8, 'Site', plink => 'https://maxwbh.github.io/pl_fpdf/');
 PL_FPDF.Link(10, 10, 50, 12, 'https://...');   -- área clicável arbitrária
 ```
 
-**Só link por URL.** O link interno — `AddLink` e `SetLink`, que levariam a
-outra página do mesmo documento — **não é suportado**, e passar o identificador
-deles levanta `ORA-20601`. O destino interno (`/Dest`) nunca chegou a ser
-escrito no arquivo: o trecho que o escreveria saiu comentado no porte original
-e nunca voltou, e emiti-lo como estava produzia um PDF malformado, que o leitor
-recusa. Desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado.
+**Só link por URL.** O link interno — que levaria a outra página do mesmo
+documento — **não é suportado**: `AddLink`, `SetLink` e um `plink` numérico
+levantam `ORA-20601`. O destino interno (`/Dest`) nunca chegou a ser escrito no
+arquivo: o trecho que o escreveria saiu comentado no porte original e nunca
+voltou, e emiti-lo como estava produzia um PDF malformado, que o leitor recusa.
+O `AddLink`, por sua vez, falhava com `ORA-06531` desde a primeira versão,
+porque a coleção interna nunca foi inicializada — ou seja, a função nunca
+chegou a funcionar. Desde a 3.4.0 os três recusam com mensagem que diz o que
+usar no lugar, em vez de gravar arquivo quebrado ou falhar sem explicação.
 
 Uma observação sobre a área clicável: é **uma por página**. Uma segunda chamada
 de `Link` na mesma página substitui a primeira.

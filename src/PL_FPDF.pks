@@ -1360,24 +1360,30 @@ procedure Rect(px in number, py in number, pw in number, ph in number, pstyle in
 * Function: AddLink / Criar link interno
 *
 * Descrição / Description:
-*   PT: Reserva um link interno e devolve o identificador dele. O destino
-*       ainda não existe: é o SetLink que o define, depois, quando a página de
-*       chegada já tiver sido escrita.
-*       ATENÇÃO: a cadeia AddLink/SetLink/Link não chega ao arquivo -- o Link
-*       recusa o identificador com -20601, porque o /Dest nunca foi escrito.
-*       Ver a limitação 2 no bloco do Link.
-*   EN: Reserves an internal link and returns its identifier. The destination
-*       does not exist yet: SetLink defines it later, once the target page has
-*       been written.
-*       WARNING: the AddLink/SetLink/Link chain does not reach the file --
-*       Link refuses the identifier with -20601, because the /Dest was never
-*       written. See limitation 2 in Link's block.
+*   PT: RECUSA com -20601. Criaria um link interno, e link interno não está
+*       implementado: o /Dest nunca chegou a ser escrito no arquivo, então o
+*       identificador que esta função devolveria não levaria a lugar nenhum --
+*       e o Link o recusa. Até setembro/2026 a chamada levantava ORA-06531,
+*       "reference to uninitialized collection", porque a coleção interna
+*       nunca foi inicializada: nunca funcionou, em nenhuma versão. Passa a
+*       recusar com mensagem que diz o que usar no lugar.
+*   EN: REFUSES with -20601. It would create an internal link, and internal
+*       links are not implemented: the /Dest was never written to the file, so
+*       the identifier this function would return leads nowhere -- and Link
+*       refuses it. Until September 2026 the call raised ORA-06531, "reference
+*       to uninitialized collection", because the internal collection was
+*       never initialised: it never worked, in any version. It now refuses
+*       with a message that says what to use instead.
 *
 * Retorna / Returns:
-*   NUMBER - o identificador do link / the link identifier
+*   NUMBER - nunca devolve: levanta antes / never returns: it raises first
+*
+* Erros / Raises:
+*   -20601: link interno não implementado / internal links not implemented
 *
 * Exemplo / Example:
-*   l_link := PL_FPDF.AddLink;
+*   -- Use URL / use a URL:
+*   PL_FPDF.Cell(60, 8, 'Site', plink => 'https://example.com');
 *******************************************************************************/
 function  AddLink return number;
 
@@ -1385,12 +1391,12 @@ function  AddLink return number;
 * Procedure: SetLink / Destino do link interno
 *
 * Descrição / Description:
-*   PT: Diz para onde um link criado por AddLink leva. O destino fica
-*       guardado, mas não chega ao arquivo -- o Link recusa o identificador
-*       com -20601. Ver a limitação 2 no bloco do Link.
-*   EN: Says where a link created by AddLink goes. The destination is stored
-*       but never reaches the file -- Link refuses the identifier with -20601.
-*       See limitation 2 in Link's block.
+*   PT: RECUSA com -20601, pelo mesmo motivo do AddLink: guardar o destino não
+*       adiantaria, porque o /Dest não é emitido e ninguém o lê. Até
+*       setembro/2026 levantava ORA-06531.
+*   EN: REFUSES with -20601, for the same reason as AddLink: storing the
+*       destination would achieve nothing, since the /Dest is never emitted and
+*       nobody reads it. Until September 2026 it raised ORA-06531.
 *
 * Parâmetros / Parameters:
 *   plink - identificador devolvido por AddLink / identifier from AddLink
@@ -1399,9 +1405,12 @@ function  AddLink return number;
 *   ppage - página de chegada / destination page
 *           (-1 = a página corrente / the current page)
 *
+* Erros / Raises:
+*   -20601: link interno não implementado / internal links not implemented
+*
 * Exemplo / Example:
-*   PL_FPDF.SetLink(l_link);            -- aqui / here
-*   PL_FPDF.SetLink(l_link, 0, 3);      -- topo da página 3 / top of page 3
+*   -- Use URL / use a URL:
+*   PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
 *******************************************************************************/
 procedure SetLink(plink in number, py in number default 0, ppage in number default -1);
 

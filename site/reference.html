@@ -1142,7 +1142,7 @@ PL_FPDF.SetDrawColor(128);         <span class="c">-- cinza médio</span></pre><
 <article class="api" id="addlink">
 <h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="link">#</a></h3>
 <p class="d">Cria um link interno (ainda sem destino) e retorna seu identificador.</p>
-<p class="aviso"><b>Link interno não é suportado.</b> Passar o identificador que o <code>AddLink</code> devolve levanta <b>ORA-20601</b>. O destino interno (<code>/Dest</code>) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.</p>
+<p class="aviso"><b>Link interno não é suportado.</b> <code>AddLink</code>, <code>SetLink</code> e um <code>plink</code> numérico levantam <b>ORA-20601</b>. O destino interno (<code>/Dest</code>) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; o <code>AddLink</code>, por sua vez, falhava com <code>ORA-06531</code> desde sempre. Desde a 3.4.0 os três recusam com mensagem que diz o que usar no lugar. Use URL.</p>
 <h5>Sintaxe</h5>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AddLink
     <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
@@ -1154,7 +1154,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Documentação&#x27;</span>, plink =&g
 <article class="api" id="link">
 <h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="link">#</a></h3>
 <p class="d">Cria uma área retangular clicável em qualquer região da página.</p>
-<p class="aviso"><b>Link interno não é suportado.</b> Passar o identificador que o <code>AddLink</code> devolve levanta <b>ORA-20601</b>. O destino interno (<code>/Dest</code>) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.</p>
+<p class="aviso"><b>Link interno não é suportado.</b> <code>AddLink</code>, <code>SetLink</code> e um <code>plink</code> numérico levantam <b>ORA-20601</b>. O destino interno (<code>/Dest</code>) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; o <code>AddLink</code>, por sua vez, falhava com <code>ORA-06531</code> desde sempre. Desde a 3.4.0 os três recusam com mensagem que diz o que usar no lugar. Use URL.</p>
 <p class="aviso"><b>Uma área por página.</b> Uma segunda chamada na mesma página substitui a primeira.</p>
 <h5>Sintaxe</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
@@ -1175,7 +1175,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Documentação&#x27;</span>, plink =&g
 <article class="api" id="setlink">
 <h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="link">#</a></h3>
 <p class="d">Define o destino de um link interno criado por AddLink.</p>
-<p class="aviso"><b>Link interno não é suportado.</b> Passar o identificador que o <code>AddLink</code> devolve levanta <b>ORA-20601</b>. O destino interno (<code>/Dest</code>) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; desde a 3.4.0 a chamada é recusada em vez de gravar o arquivo quebrado. Use URL.</p>
+<p class="aviso"><b>Link interno não é suportado.</b> <code>AddLink</code>, <code>SetLink</code> e um <code>plink</code> numérico levantam <b>ORA-20601</b>. O destino interno (<code>/Dest</code>) nunca chegou a ser escrito no arquivo, e emiti-lo como estava produzia um PDF malformado; o <code>AddLink</code>, por sua vez, falhava com <code>ORA-06531</code> desde sempre. Desde a 3.4.0 os três recusam com mensagem que diz o que usar no lugar. Use URL.</p>
 <h5>Sintaxe</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLink(
     plink <span class="k">number</span>,

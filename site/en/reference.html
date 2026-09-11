@@ -1142,7 +1142,7 @@ PL_FPDF.SetDrawColor(128);         <span class="c">-- mid grey</span></pre></div
 <article class="api" id="addlink">
 <h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="link">#</a></h3>
 <p class="d">Creates an internal link, still without a destination, and returns its identifier.</p>
-<p class="aviso"><b>Internal links are not supported.</b> Passing the identifier returned by <code>AddLink</code> raises <b>ORA-20601</b>. The internal destination (<code>/Dest</code>) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.</p>
+<p class="aviso"><b>Internal links are not supported.</b> <code>AddLink</code>, <code>SetLink</code> and a numeric <code>plink</code> all raise <b>ORA-20601</b>. The internal destination (<code>/Dest</code>) was never written to the file, and emitting it as it stood produced a malformed PDF; <code>AddLink</code> itself had always failed with <code>ORA-06531</code>. Since 3.4.0 all three refuse with a message that says what to use instead. Use a URL.</p>
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AddLink
     <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
@@ -1154,7 +1154,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Documentation&#x27;</span>, plink =&gt
 <article class="api" id="link">
 <h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="link">#</a></h3>
 <p class="d">Creates a clickable rectangle anywhere on the page.</p>
-<p class="aviso"><b>Internal links are not supported.</b> Passing the identifier returned by <code>AddLink</code> raises <b>ORA-20601</b>. The internal destination (<code>/Dest</code>) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.</p>
+<p class="aviso"><b>Internal links are not supported.</b> <code>AddLink</code>, <code>SetLink</code> and a numeric <code>plink</code> all raise <b>ORA-20601</b>. The internal destination (<code>/Dest</code>) was never written to the file, and emitting it as it stood produced a malformed PDF; <code>AddLink</code> itself had always failed with <code>ORA-06531</code>. Since 3.4.0 all three refuse with a message that says what to use instead. Use a URL.</p>
 <p class="aviso"><b>One area per page.</b> A second call on the same page replaces the first.</p>
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
@@ -1175,7 +1175,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Documentation&#x27;</span>, plink =&gt
 <article class="api" id="setlink">
 <h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="link">#</a></h3>
 <p class="d">Sets the destination of an internal link created by AddLink.</p>
-<p class="aviso"><b>Internal links are not supported.</b> Passing the identifier returned by <code>AddLink</code> raises <b>ORA-20601</b>. The internal destination (<code>/Dest</code>) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.</p>
+<p class="aviso"><b>Internal links are not supported.</b> <code>AddLink</code>, <code>SetLink</code> and a numeric <code>plink</code> all raise <b>ORA-20601</b>. The internal destination (<code>/Dest</code>) was never written to the file, and emitting it as it stood produced a malformed PDF; <code>AddLink</code> itself had always failed with <code>ORA-06531</code>. Since 3.4.0 all three refuse with a message that says what to use instead. Use a URL.</p>
 <h5>Syntax</h5>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLink(
     plink <span class="k">number</span>,

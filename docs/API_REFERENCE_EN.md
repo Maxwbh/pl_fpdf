@@ -1621,7 +1621,7 @@ END;
 
 Creates an internal link, still without a destination, and returns its identifier.
 
-> **Internal links are not supported.** Passing the identifier returned by `AddLink` raises **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.
+> **Internal links are not supported.** `AddLink`, `SetLink` and a numeric `plink` all raise **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; `AddLink` itself had always failed with `ORA-06531`, because the internal collection was never initialised. Since 3.4.0 all three refuse with a message that says what to use instead. Use a URL.
 
 #### Syntax
 
@@ -1649,7 +1649,7 @@ PL_FPDF.Cell(60, 8, 'Documentation', plink => 'https://maxwbh.github.io/pl_fpdf/
 
 Creates a clickable rectangle anywhere on the page.
 
-> **Internal links are not supported.** Passing the identifier returned by `AddLink` raises **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.
+> **Internal links are not supported.** `AddLink`, `SetLink` and a numeric `plink` all raise **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; `AddLink` itself had always failed with `ORA-06531`, because the internal collection was never initialised. Since 3.4.0 all three refuse with a message that says what to use instead. Use a URL.
 
 > **One area per page.** A second call on the same page replaces the first.
 
@@ -1682,7 +1682,7 @@ PROCEDURE PL_FPDF.Link(
 
 Sets the destination of an internal link created by AddLink.
 
-> **Internal links are not supported.** Passing the identifier returned by `AddLink` raises **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; since 3.4.0 the call is refused instead of writing the broken file. Use a URL.
+> **Internal links are not supported.** `AddLink`, `SetLink` and a numeric `plink` all raise **ORA-20601**. The internal destination (`/Dest`) was never written to the file, and emitting it as it stood produced a malformed PDF; `AddLink` itself had always failed with `ORA-06531`, because the internal collection was never initialised. Since 3.4.0 all three refuse with a message that says what to use instead. Use a URL.
 
 #### Syntax
 

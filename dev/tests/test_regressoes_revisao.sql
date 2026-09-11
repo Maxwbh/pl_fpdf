@@ -409,31 +409,52 @@ BEGIN
   -- ABERTO -- sai "<</Type /Annot ... /Border [0 0 0] ]", sem o >> que fecha.
   -- Nao e link que nao navega: e PDF que o leitor recusa.
   --
-  -- Ninguem reparou porque nenhum teste chamava AddLink ou SetLink. Este caso
-  -- existe para que a recusa nao volte a virar arquivo quebrado em silencio.
+  -- Ninguem reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
+  -- escrever este caso que apareceu o terceiro lado do mesmo defeito: o
+  -- AddLink levantava ORA-06531, "reference to uninitialized collection", na
+  -- linha da propria declaracao. A colecao "links" e nested table e ninguem a
+  -- inicializa, entao o AddLink NUNCA funcionou -- nem uma vez, em nenhuma
+  -- versao. Os tres passam a recusar com ORA-20601 e mensagem que diz o que
+  -- usar no lugar.
   DECLARE
     l_pdf   BLOB;
-    l_link  NUMBER;
     l_erro  VARCHAR2(400);
+
+    PROCEDURE recusa(p_que VARCHAR2, p_erro VARCHAR2) IS
+    BEGIN
+      IF INSTR(p_erro, 'ORA-20601') > 0 THEN
+        passou(p_que || ' recusado com ORA-20601');
+      ELSIF INSTR(p_erro, 'ORA-06531') > 0 THEN
+        falhou(p_que || ' ainda levanta ORA-06531, que nao diz o que fazer');
+      ELSE
+        falhou(p_que || ' recusou com outro erro: ' || p_erro);
+      END IF;
+    END recusa;
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage;
     PL_FPDF.SetFont('Helvetica', '', 12);
 
-    l_link := PL_FPDF.AddLink;
-    PL_FPDF.SetLink(l_link, 0, 1);
     BEGIN
-      PL_FPDF.Link(20, 40, 60, 10, TO_CHAR(l_link));
-      falhou('aceitou o link interno - o arquivo sairia malformado');
+      l_erro := TO_CHAR(PL_FPDF.AddLink);
+      falhou('AddLink devolveu um identificador que nao leva a lugar nenhum');
     EXCEPTION
-      WHEN OTHERS THEN
-        l_erro := SQLERRM;
-        IF INSTR(l_erro, 'ORA-20601') > 0 THEN
-          passou('link interno recusado com ORA-20601');
-        ELSE
-          falhou('recusou com outro erro: ' || l_erro);
-        END IF;
+      WHEN OTHERS THEN recusa('AddLink', SQLERRM);
+    END;
+
+    BEGIN
+      PL_FPDF.SetLink(1, 0, 1);
+      falhou('SetLink aceitou guardar um destino que nao chega ao arquivo');
+    EXCEPTION
+      WHEN OTHERS THEN recusa('SetLink', SQLERRM);
+    END;
+
+    BEGIN
+      PL_FPDF.Link(20, 40, 60, 10, '1');
+      falhou('Link aceitou destino numerico - o arquivo sairia malformado');
+    EXCEPTION
+      WHEN OTHERS THEN recusa('Link com destino numerico', SQLERRM);
     END;
 
     -- URL continua funcionando, e e o caminho que sempre esteve correto

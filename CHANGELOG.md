@@ -31,9 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Alterado
 - **Incompatível:** caractere fora do WinAnsi levanta `ORA-20203` com a posição,
   em vez de sair como `?`. Para outras escritas, embuta uma fonte TrueType
-- **Incompatível:** `Link` só aceita URL e recusa o resto com `ORA-20601`. O
-  link interno de `AddLink`/`SetLink` nunca teve o `/Dest` escrito e gravava PDF
-  malformado
+- **Incompatível:** `Link` só aceita URL, e `AddLink`, `SetLink` e `plink`
+  numérico recusam com `ORA-20601`. O link interno nunca teve o `/Dest` escrito,
+  e o `AddLink` falhava com `ORA-06531` desde a primeira versão
 
 ---
 

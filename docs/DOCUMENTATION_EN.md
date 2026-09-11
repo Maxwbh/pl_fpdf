@@ -311,13 +311,16 @@ PL_FPDF.Cell(60, 8, 'Website', plink => 'https://maxwbh.github.io/pl_fpdf/');
 PL_FPDF.Link(10, 10, 50, 12, 'https://...');   -- an arbitrary clickable area
 ```
 
-**URL links only.** Internal links -- `AddLink` and `SetLink`, which would jump
-to another page of the same document -- are **not supported**, and passing
-their identifier raises `ORA-20601`. The internal destination (`/Dest`) was
-never written to the file: the fragment that would write it was commented out
-in the original port and never came back, and emitting it as it stood produced
-a malformed PDF that readers refuse. Since 3.4.0 the call is refused instead of
-writing the broken file.
+**URL links only.** Internal links -- which would jump to another page of the
+same document -- are **not supported**: `AddLink`, `SetLink` and a numeric
+`plink` all raise `ORA-20601`. The internal destination (`/Dest`) was never
+written to the file: the fragment that would write it was commented out in the
+original port and never came back, and emitting it as it stood produced a
+malformed PDF that readers refuse. `AddLink` itself had failed with `ORA-06531`
+since the first version, because the internal collection was never initialised
+-- that is, the function never once worked. Since 3.4.0 all three refuse with a
+message that says what to use instead, rather than writing a broken file or
+failing with no explanation.
 
 One note on the clickable area: there is **one per page**. A second `Link` call
 on the same page replaces the first.
