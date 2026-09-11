@@ -518,6 +518,57 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
+  caso('Link funciona no SEGUNDO documento da sessao');
+  --------------------------------------------------------------------------
+  -- O Link media o quanto estender pelo .last, e .last de colecao VAZIA e
+  -- NULL. Depois de um Reset a colecao fica exatamente assim: o delete zera a
+  -- contagem e nao anula a colecao. Entao "page - NULL" dava NULL, o IF nao
+  -- disparava e o PageLinks(page) estourava com ORA-06533 -- no primeiro Link
+  -- do segundo documento, e o erro nao fala de link nenhum.
+  --
+  -- Atinge o caminho COMUM, com URL, e quem gera documento em lote passa por
+  -- ele em toda emissao a partir da segunda.
+  DECLARE
+    l_um    BLOB;
+    l_dois  BLOB;
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Link(20, 40, 60, 10, 'https://example.com/um');
+    l_um := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- segundo documento na MESMA sessao: e aqui que estourava
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Link(20, 40, 60, 10, 'https://example.com/dois');
+    l_dois := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    IF acha(l_dois, 'https://example.com/dois') > 0 THEN
+      passou('o link do segundo documento saiu no arquivo');
+    ELSE
+      falhou('o link do segundo documento sumiu');
+    END IF;
+
+    IF acha(l_dois, 'https://example.com/um') = 0 THEN
+      passou('o link do primeiro documento nao vazou para o segundo');
+    ELSE
+      falhou('o link do documento anterior sobreviveu ao Reset');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-06533') > 0 THEN
+        falhou('ORA-06533: o Link ainda depende do .last de colecao vazia');
+      ELSE
+        falhou('excecao: ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------
   DBMS_OUTPUT.PUT_LINE('');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 80, '='));
   DBMS_OUTPUT.PUT_LINE('Total: ' || l_total ||

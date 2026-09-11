@@ -18,7 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
   último byte
 - `Link` numa página emitia `/Annots` com dicionário aberto nas páginas
-  anteriores, que nunca pediram link
+  anteriores, que nunca pediram link, e estourava `ORA-06533` no segundo
+  documento da sessão
 
 ### Adicionado
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG

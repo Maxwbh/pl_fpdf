@@ -3463,9 +3463,6 @@ end SetLink;
 
 ----------------------------------------------------------------------------------------
 procedure Link(px in number, py in number, pw in number, ph in number, plink in varchar2) is
-  v_last_plink integer;
-  v_ntoextend integer;
-  v_rec rec5;
 begin
   -- So URL. O destino INTERNO nunca chegou a ser escrito: o ramo que emitiria
   -- o /Dest saiu comentado no porte original -- esta logo abaixo, no
@@ -3484,18 +3481,21 @@ begin
   end if;
 
 	-- Put a link on the page
-  -- Init PageLinks, if not exists
-  begin
-     v_last_plink := PageLinks.count;
-  exception
-     when others then
-        PageLinks := linksArray(v_rec);
-  end;
-  -- extend, so PageLinks(page) exists
-  v_last_plink := PageLinks.last;
-  v_ntoextend := page-v_last_plink;
-  if v_ntoextend > 0 then
-     PageLinks.extend(v_ntoextend);
+  -- A colecao precisa existir e alcancar a pagina corrente.
+  --
+  -- Media pelo .last, e .last de colecao VAZIA e NULL. Depois de um Reset ela
+  -- fica exatamente assim: o delete zera a contagem e NAO anula a colecao,
+  -- entao o .count nao levanta, o init nao acontece, o "page - NULL" da NULL,
+  -- o IF nao dispara (comparacao com NULL nao e TRUE) e o PageLinks(page)
+  -- estoura com ORA-06533. Na pratica: o primeiro Link do SEGUNDO documento da
+  -- sessao falhava, e o erro nao fala de link nenhum.
+  --
+  -- O .count nao tem esse buraco: colecao vazia conta zero.
+  if PageLinks is null then
+     PageLinks := linksArray();
+  end if;
+  if PageLinks.count < page then
+     PageLinks.extend(page - PageLinks.count);
   end if;
   -- set values
 	PageLinks(page).zero:=px*k;
