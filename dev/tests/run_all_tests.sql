@@ -6465,7 +6465,6 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - Cursor, margens e quebra de pagina');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
 
-
   --------------------------------------------------------------------------
   caso('GetX/SetX: negativo conta a partir da borda direita');
   --------------------------------------------------------------------------
@@ -6756,7 +6755,6 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - Fonte corrente, entrelinha e escrita de texto');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
 
-
   --------------------------------------------------------------------------
   caso('Fonte: corpo, familia e estilo sao lidos de volta');
   --------------------------------------------------------------------------
@@ -7040,7 +7038,6 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - Tracejado e triangulo');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
 
-
   --------------------------------------------------------------------------
   caso('Tracejado: SetDash liga, e sem argumento volta a linha cheia');
   --------------------------------------------------------------------------
@@ -7197,7 +7194,6 @@ DECLARE
 BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - Metadados, preferencias de exibicao e configuracao');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-
 
   --------------------------------------------------------------------------
   caso('Metadados: assunto e criador chegam ao dicionario do documento');
@@ -7471,7 +7467,6 @@ DECLARE
 BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - Fonte TrueType: registro, metricas e embutimento');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-
 
   --------------------------------------------------------------------------
   caso('Fontes TrueType: cache responde sem fonte carregada');
@@ -7880,7 +7875,6 @@ DECLARE
 BEGIN
   DBMS_OUTPUT.PUT_LINE('PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
-
 
   --------------------------------------------------------------------------
   caso('ClosePDF fecha, e fechar de novo nao estraga');
