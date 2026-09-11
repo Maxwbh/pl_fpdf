@@ -235,40 +235,59 @@ chamar. Duas decisões, e o `check_spec_comments.py` guarda as duas.
 
 **1. Descrição de subprograma é bilíngue, com o PT-BR na frente.** O público
 principal escreve em português; o inglês vem em seguida, para quem chega de
-fora. Vale para o rótulo (`Descrição / Description:`) e para o corpo (a linha
-`PT:` antes da `EN:`).
+fora — a linha `PT:` antes da `EN:`.
 
 **2. Comentário no meio do código é só PT-BR.** Não é a mesma coisa e não se
 confere pelo mesmo verificador: ali o leitor é sempre quem mantém, e o que
 importa é dizer *por que* o código está assim — o sintoma, a causa e o
 conserto —, não repetir o que a linha já diz.
 
-O formato do bloco:
+O formato do bloco é o **Javadoc** da Trivadis PL/SQL Guidelines 4.4, seção
+*Comentários*:
 
 ```
-/*******************************************************************************
-* Procedure: Cell / Célula
-*
-* Descrição / Description:
-*   PT: ...
-*   EN: ...
-*
-* Parâmetros / Parameters:      (quando há parâmetros)
-*   pw - largura; 0 vai até a margem direita / width; 0 spans to the right
-*
-* Retorna / Returns:            (quando é function)
-*   NUMBER - ...
-*
-* Erros / Raises:               (quando levanta)
-*   -20100: ... / ...
-*
-* Exemplo / Example:
-*   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
-*******************************************************************************/
+/**
+ * PT: Escreve uma célula retangular: opcionalmente com borda, com fundo e
+ *     com texto dentro.
+ *
+ * EN: Writes a rectangular cell: optionally bordered, filled and with text
+ *     inside.
+ *
+ * @param pw largura; 0 vai até a margem direita / width; 0 spans to the
+ *        right margin
+ * @return NUMBER - ...                 (quando é function)
+ * @raises -20100 ... / ...             (quando levanta)
+ * @example
+ *   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
+ */
 ```
 
-Rótulos opcionais seguem a mesma ordem: `Nota / Note:`, `Limitação /
-Limitation:`, `Processo / Process:`, `Opções / Options:`.
+Tags opcionais: `@note`, `@limitation`, `@process`. **Tag é palavra-chave, e
+palavra-chave fica em inglês** — a mesma regra de `BEGIN` e `DBMS_LOB`.
+
+`@example` e as tags que carregam JSON ou tabela saem **literais**, sem
+reenrolar: o que está ali se copia e cola, e uma lista de campos reenrolada
+como prosa deixa de ser lista.
+
+> **Por que Javadoc, e não mais o banner.** Até outubro de 2026 o formato era um
+> banner de asteriscos com rótulos bilíngues (`Descrição / Description:`,
+> `Parâmetros / Parameters:`). O conteúdo era o certo; a notação é que estava
+> fora do padrão da casa. A troca não foi só de aparência: o banner escrevia o
+> parâmetro como texto solto (`pw     - largura; 0 vai até...`), e por isso
+> **nenhum verificador conseguia dizer se a documentação batia com a
+> assinatura** — acrescentar, renomear ou remover um parâmetro passava sem
+> ninguém reparar. O `@param` nomeia, e o verificador confere nos dois sentidos
+> e na ordem. É a deriva que acontece de verdade, porque mexer na assinatura é
+> comum e voltar no comentário é o que se esquece.
+>
+> A linha de título (`* Procedure: Cell / Célula`) caiu junto: o nome repete a
+> assinatura logo abaixo, e *comentário que repete o código* é antipattern
+> nomeado na própria Guideline. O apelido em português que ela carregava já
+> estava na primeira frase da descrição nos 137 blocos — conferido palavra a
+> palavra na conversão, que não perdeu nem inventou nenhuma outra.
+>
+> O bilíngue **não** veio da Guideline, que não trata do assunto, e ficou: esta
+> base tem público nos dois idiomas (`README_EN.md`, `docs/*_EN.md`).
 
 > **Por que virou verificação.** Na revisão de setembro de 2026 **metade da API
 > pública não tinha bloco nenhum** — 56 documentados, 64 sem uma linha —, e os

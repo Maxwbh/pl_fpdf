@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Toda API pública tem bloco de documentação, no mesmo formato, com o PT-BR na
-frente.
+Toda API pública tem bloco Javadoc, no mesmo formato, com o PT-BR na frente.
 
 DOCUMENTO DE MANUTENÇÃO.
 
@@ -22,12 +21,37 @@ Fase 4 bilíngue com `EN:` antes de `PT:`; o `ImageFromBlob` com rótulo em
 inglês e texto em português. Quem lia a spec de cima a baixo trocava de idioma
 três vezes.
 
+Por que Javadoc, e não mais o banner
+------------------------------------
+Até outubro de 2026 o formato era um banner de asteriscos com rótulos
+bilíngues (`Descrição / Description:`, `Parâmetros / Parameters:`). O conteúdo
+era o certo; a notação é que saiu do padrão. A Trivadis PL/SQL Guidelines 4.4,
+seção *Comentários*, prescreve o bloco Javadoc-like — descrição, depois
+`@param` e `@raises` —, e é o padrão que o resto do código desta casa segue.
+
+A troca não foi só de aparência. O banner escrevia o parâmetro como texto
+solto (`pw     - largura; 0 vai até...`), e por isso **nenhum verificador
+conseguia dizer se a documentação batia com a assinatura**: acrescentar um
+parâmetro, renomear ou remover um passava sem ninguém reparar. O `@param`
+nomeia, e a regra 6 abaixo confere — é a única checagem realmente nova, e é a
+que pega a deriva que acontece de verdade, porque mexer na assinatura é comum
+e voltar no comentário é o que se esquece.
+
+O que **não** mudou: o português vem na frente e o inglês em seguida. A
+Guideline não trata de bilíngue, e esta base tem público nos dois idiomas
+(`README_EN.md`, `docs/*_EN.md`).
+
+E a linha de título (`* Procedure: Cell / Célula`) **caiu**: o nome repete a
+assinatura logo abaixo, e "comentário que repete o código" é antipattern
+nomeado na própria Guideline. O apelido em português que ela carregava já
+estava na primeira frase da descrição em todos os 137 blocos — conferido palavra
+a palavra na conversão.
+
 Duas decisões de projeto, e este verificador guarda as duas:
 
 1. **Descrição de subprograma é bilíngue, PT-BR primeiro e inglês em seguida.**
-   O público principal escreve em português; o inglês fica para quem chega de
-   fora. O comentário no meio do código, esse é só PT-BR — não é a mesma coisa
-   e não se confere aqui.
+   O comentário no meio do código, esse é só PT-BR — não é a mesma coisa e não
+   se confere aqui.
 2. **Bloco faltando é defeito.** Não documentar `Cell` é pior do que não
    documentar `SplitPDF`: o primeiro é chamado cem vezes por relatório.
 
@@ -39,40 +63,38 @@ O formato
 ---------
 ::
 
-    /*********************************************************************
-    * Procedure: Cell / Célula
-    *
-    * Descrição / Description:
-    *   PT: ...
-    *   EN: ...
-    *
-    * Parâmetros / Parameters:      (quando há parâmetros)
-    *   pw - ... / ...
-    *
-    * Retorna / Returns:            (quando é function)
-    *   ...
-    *
-    * Erros / Raises:               (quando levanta)
-    *   -20100: ... / ...
-    *
-    * Exemplo / Example:
-    *   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
-    *********************************************************************/
+    /**
+     * PT: Escreve uma célula retangular: opcionalmente com borda, com fundo e
+     *     com texto dentro.
+     *
+     * EN: Writes a rectangular cell: optionally bordered, filled and with
+     *     text inside.
+     *
+     * @param pw largura; 0 vai até a margem direita / width; 0 spans to the
+     *        right margin
+     * @return NUMBER - ...                 (quando é function)
+     * @raises -20100 ... / ...             (quando levanta)
+     * @example
+     *   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
+     */
+
+Tag é palavra-chave, e palavra-chave fica em inglês nesta base — daí `@note`,
+`@limitation`, `@process` e `@options` para os rótulos opcionais.
 
 O que se confere
 ----------------
 1. todo subprograma público tem bloco imediatamente acima (sobrecargas
    compartilham o bloco da primeira);
-2. o título é ``Procedure:``/``Function:`` com o nome do subprograma;
-3. os rótulos são os bilíngues da tabela ROTULOS, e não a versão só em inglês;
-4. ``Descrição / Description`` está presente, e a linha ``PT:`` vem antes da
-   ``EN:``;
-5. function documenta ``Retorna / Returns``; subprograma com parâmetro
-   documenta ``Parâmetros / Parameters``.
+2. o bloco é Javadoc (`/**`), e não sobrou nada do banner antigo;
+3. a descrição tem as linhas ``PT:`` e ``EN:``, com o português na frente;
+4. só se usam as tags da tabela TAGS — pega `@throws`, `@returns`, `@params`;
+5. function documenta ``@return``;
+6. **todo parâmetro da assinatura tem `@param`, e todo `@param` corresponde a
+   um parâmetro** — nos dois sentidos, e na ordem da assinatura.
 
 O que NÃO se confere, de propósito: se o texto está certo. Isso é revisão
-humana. Aqui só se garante que existe, que está no formato e que o português
-vem primeiro.
+humana. Aqui só se garante que existe, que está no formato, que o português
+vem primeiro e que a lista de parâmetros bate.
 
 Uso:  python dev/scripts/plsql_lint/check_spec_comments.py
       python dev/scripts/plsql_lint/check_spec_comments.py src/PL_FPDF.pks
@@ -92,22 +114,86 @@ def do_repo(*partes):
 
 PADRAO = ['src/PL_FPDF.pks', 'src/PL_FPDF_UTIL.pks']
 
-# rótulo bilíngue esperado -> versão só em inglês que ficou para trás
-ROTULOS = {
-    'Descrição / Description': 'Description',
-    'Parâmetros / Parameters': 'Parameters',
-    'Retorna / Returns': 'Returns',
-    'Erros / Raises': 'Raises',
-    'Nota / Note': 'Note',
-    'Exemplo / Example': 'Example',
-}
-SO_INGLES = {v: k for k, v in ROTULOS.items()}
+TAGS = {'@param', '@return', '@raises', '@note', '@example', '@limitation',
+        '@process', '@options'}
+
+# tag errada -> a certa. Sao os enganos que a mao comete sozinha.
+ENGANOS = {'@returns': '@return', '@throws': '@raises', '@throw': '@raises',
+           '@params': '@param', '@exception': '@raises', '@arg': '@param',
+           '@ret': '@return'}
 
 DECL = re.compile(r'^\s{0,2}(procedure|function)\s+([A-Za-z_][A-Za-z_0-9]*)',
                   re.I)
-TITULO = re.compile(r'^\*\s*(Procedure|Function):\s*([A-Za-z_][A-Za-z_0-9]*)',
-                    re.M)
-ROTULO = re.compile(r'^\*\s{1,3}([A-Za-zÀ-ÿ][A-Za-zÀ-ÿ ()/]*?):')
+TAG = re.compile(r'^\s*\*\s*(@[A-Za-z_]+)')
+# o que sobrou do banner antigo, se a conversao passou por cima de alguem
+BANNER = re.compile(r'^\s*\*\s*(Procedure|Function|Descrição / Description|'
+                    r'Parâmetros / Parameters|Retorna / Returns|'
+                    r'Erros / Raises):')
+
+
+def parametros(linhas, n):
+    """Os nomes dos parametros da declaracao que comeca na linha n.
+
+    Percorre ate fechar o parentese, contando profundidade e respeitando
+    literal -- um default como `'[] 0'` tem espaco dentro, e `noParam` tem
+    parentese em outros casos.
+    """
+    texto = ''
+    i, prof, achou, fim = n, 0, False, False
+    while i < len(linhas) and i < n + 60 and not fim:
+        literal = False
+        for c in linhas[i]:
+            if literal:
+                if c == "'":
+                    literal = False
+                if prof >= 1:
+                    texto += c
+                continue
+            if c == "'":
+                literal = True
+            elif c == '(':
+                prof += 1
+                achou = True
+                if prof == 1:
+                    continue
+            elif c == ')':
+                prof -= 1
+                if prof == 0:
+                    fim = True
+                    break
+            elif c == ';' and prof == 0:
+                # `procedure Header;` nao tem parametro nenhum. Sem esta
+                # parada o laco seguia varrendo e achava o parentese do
+                # comentario do subprograma de baixo -- foi assim que o
+                # IsInitialized "ganhou" os parametros width e height.
+                fim = True
+                break
+            if prof >= 1:
+                texto += c
+        texto += ' '
+        i += 1
+    if not achou:
+        return []
+
+    nomes, atual, prof, literal = [], '', 0, False
+    for c in texto:
+        if literal:
+            if c == "'":
+                literal = False
+            continue
+        if c == "'":
+            literal = True
+        elif c == '(':
+            prof += 1
+        elif c == ')':
+            prof -= 1
+        elif c == ',' and prof == 0:
+            nomes.append(atual)
+            atual = ''
+            continue
+        atual += c
+    nomes.append(atual)
+    return [p.split()[0] for p in nomes if p.split()]
 
 
 def blocos_de(linhas):
@@ -115,9 +201,10 @@ def blocos_de(linhas):
     fim = {}
     i = 0
     while i < len(linhas):
-        if linhas[i].startswith('/****'):
+        s = linhas[i].strip()
+        if s.startswith('/**') or s.startswith('/***'):
             j = i
-            while j < len(linhas) and not linhas[j].rstrip().endswith('****/'):
+            while j < len(linhas) and not linhas[j].rstrip().endswith('*/'):
                 j += 1
             fim[j] = linhas[i:j + 1]
             i = j
@@ -142,64 +229,70 @@ def conferir(caminho):
             k -= 1
         bloco = fim.get(k)
 
+        def falha(motivo):
+            falhas.append((n + 1, nome, motivo))
+
         if bloco is None:
             if nome.lower() == (anterior or '').lower():
                 continue          # sobrecarga: usa o bloco da primeira
-            falhas.append((n + 1, nome, 'sem bloco de documentação'))
+            falha('sem bloco de documentação')
             anterior = nome
             continue
         anterior = nome
 
-        texto = '\n'.join(bloco)
-        mt = TITULO.search(texto)
-        if not mt:
-            falhas.append((n + 1, nome,
-                           'o bloco não começa com "Procedure:"/"Function:"'))
-        else:
-            if mt.group(2).lower() != nome.lower():
-                falhas.append((n + 1, nome,
-                               f'o título do bloco diz "{mt.group(2)}"'))
-            esperado = 'Function' if tipo == 'function' else 'Procedure'
-            if mt.group(1) != esperado:
-                falhas.append((n + 1, nome,
-                               f'o bloco diz "{mt.group(1)}:" e isto é '
-                               f'{esperado.lower()}'))
+        if not bloco[0].strip().startswith('/**') or \
+                bloco[0].strip().startswith('/****'):
+            falha('o bloco não abre com "/**" — o formato é Javadoc')
 
-        achados = [ROTULO.match(b).group(1).strip()
-                   for b in bloco if ROTULO.match(b)]
-        achados = [a for a in achados if a not in ('Procedure', 'Function')]
+        for b in bloco:
+            mb = BANNER.match(b)
+            if mb:
+                falha(f'sobrou o rótulo do formato antigo "{mb.group(1)}:"')
+                break
 
-        for a in achados:
-            if a in SO_INGLES:
-                falhas.append((n + 1, nome,
-                               f'rótulo "{a}:" só em inglês — o padrão é '
-                               f'"{SO_INGLES[a]}:"'))
+        achadas = []
+        for b in bloco:
+            mt = TAG.match(b)
+            if not mt:
+                continue
+            t = mt.group(1)
+            achadas.append(t)
+            if t.lower() in ENGANOS:
+                falha(f'tag "{t}" não existe aqui — é '
+                      f'"{ENGANOS[t.lower()]}"')
+            elif t not in TAGS:
+                falha(f'tag "{t}" fora do conjunto conhecido')
 
-        if 'Descrição / Description' not in achados:
-            falhas.append((n + 1, nome, 'sem "Descrição / Description:"'))
-        else:
-            pt = next((i for i, b in enumerate(bloco)
-                       if re.match(r'^\*\s+PT:', b)), None)
-            en = next((i for i, b in enumerate(bloco)
-                       if re.match(r'^\*\s+EN:', b)), None)
-            if pt is None or en is None:
-                falhas.append((n + 1, nome,
-                               'a descrição não tem as duas linhas "PT:" e '
-                               '"EN:"'))
-            elif pt > en:
-                falhas.append((n + 1, nome,
-                               'o "EN:" vem antes do "PT:" — o padrão é o '
-                               'português na frente'))
+        pt = next((i for i, b in enumerate(bloco)
+                   if re.match(r'^\s*\*\s+PT:', b)), None)
+        en = next((i for i, b in enumerate(bloco)
+                   if re.match(r'^\s*\*\s+EN:', b)), None)
+        if pt is None or en is None:
+            falha('a descrição não tem as duas linhas "PT:" e "EN:"')
+        elif pt > en:
+            falha('o "EN:" vem antes do "PT:" — o padrão é o português na '
+                  'frente')
 
-        if tipo == 'function' and 'Retorna / Returns' not in achados:
-            falhas.append((n + 1, nome, 'function sem "Retorna / Returns:"'))
+        if tipo == 'function' and '@return' not in achadas:
+            falha('function sem "@return"')
 
-        tem_param = '(' in l or (n + 1 < len(linhas)
-                                 and linhas[n + 1].lstrip().startswith('('))
-        if tem_param and 'Parâmetros / Parameters' not in achados:
-            falhas.append((n + 1, nome,
-                           'tem parâmetro e não tem "Parâmetros / '
-                           'Parameters:"'))
+        esperados = parametros(linhas, n)
+        documentados = [re.match(r'^\s*\*\s*@param\s+(\S+)', b).group(1)
+                        for b in bloco
+                        if re.match(r'^\s*\*\s*@param\s+\S', b)]
+        faltam = [p for p in esperados
+                  if p.lower() not in [d.lower() for d in documentados]]
+        sobram = [d for d in documentados
+                  if d.lower() not in [p.lower() for p in esperados]]
+        if faltam:
+            falha('parâmetro sem "@param": ' + ', '.join(faltam))
+        if sobram:
+            falha('"@param" para o que não é parâmetro: ' + ', '.join(sobram))
+        if not faltam and not sobram and \
+                [d.lower() for d in documentados] != \
+                [p.lower() for p in esperados]:
+            falha('os "@param" estão fora da ordem da assinatura: '
+                  + ', '.join(documentados) + ' contra ' + ', '.join(esperados))
     return falhas
 
 
@@ -218,8 +311,8 @@ def main():
               f'O padrão está em docs/MANUTENCAO.md, seção "Comentário de '
               f'API".')
         return 1
-    print(f'OK — os blocos de {len(arquivos)} spec(s) estão no formato, com o '
-          f'português na frente')
+    print(f'OK — os blocos de {len(arquivos)} spec(s) estão em Javadoc, com o '
+          f'português na frente e os @param batendo com a assinatura')
     return 0
 
 
