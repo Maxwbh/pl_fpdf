@@ -4888,9 +4888,15 @@ procedure Rect(px in number, py in number, pw in number, ph in number, pstyle in
 *   PT: Reserva um link interno e devolve o identificador dele. O destino
 *       ainda não existe: é o SetLink que o define, depois, quando a página de
 *       chegada já tiver sido escrita.
+*       ATENÇÃO: a cadeia AddLink/SetLink/Link não chega ao arquivo -- o Link
+*       não escreve o /Dest e produz um /Annot malformado. Ver a limitação 2
+*       no bloco do Link.
 *   EN: Reserves an internal link and returns its identifier. The destination
 *       does not exist yet: SetLink defines it later, once the target page has
 *       been written.
+*       WARNING: the AddLink/SetLink/Link chain does not reach the file --
+*       Link writes no /Dest and produces a malformed /Annot. See limitation 2
+*       in Link's block.
 *
 * Retorna / Returns:
 *   NUMBER - o identificador do link / the link identifier
@@ -4904,8 +4910,11 @@ function  AddLink return number;
 * Procedure: SetLink / Destino do link interno
 *
 * Descrição / Description:
-*   PT: Diz para onde um link criado por AddLink leva.
-*   EN: Says where a link created by AddLink goes.
+*   PT: Diz para onde um link criado por AddLink leva. O destino fica
+*       guardado, mas não chega ao arquivo: ver a limitação 2 no bloco do
+*       Link.
+*   EN: Says where a link created by AddLink goes. The destination is stored
+*       but never reaches the file: see limitation 2 in Link's block.
 *
 * Parâmetros / Parameters:
 *   plink - identificador devolvido por AddLink / identifier from AddLink
@@ -4924,27 +4933,34 @@ procedure SetLink(plink in number, py in number default 0, ppage in number defau
 * Procedure: Link / Área clicável
 *
 * Descrição / Description:
-*   PT: Marca uma área retangular como clicável. O destino é uma URL, quando o
-*       texto não for numérico, ou o identificador de um link interno criado
-*       por AddLink.
-*   EN: Marks a rectangular area as clickable. The destination is a URL when
-*       the text is not numeric, or the identifier of an internal link created
-*       by AddLink.
+*   PT: Marca uma área retangular como clicável, levando a uma URL.
+*   EN: Marks a rectangular area as clickable, pointing at a URL.
 *
 * Parâmetros / Parameters:
 *   px, py - canto superior esquerdo da área / top-left of the area
 *   pw     - largura / width
 *   ph     - altura / height
-*   plink  - a URL, ou o identificador do link interno /
-*            the URL, or the internal link identifier
+*   plink  - a URL / the URL
 *
-* Limitação / Limitation:
-*   PT: Uma área por página. Uma segunda chamada na mesma página substitui a
-*       primeira, em silêncio -- a estrutura guarda um registro por página.
-*       Documentado por ser assim, não por ser o desejável.
-*   EN: One area per page. A second call on the same page silently replaces
-*       the first -- the structure holds one record per page. Documented
-*       because that is how it behaves, not because it is desirable.
+* Limitações / Limitations:
+*   PT: 1. Uma área por página. Uma segunda chamada na mesma página substitui
+*          a primeira, em silêncio -- a estrutura guarda um registro por
+*          página. Documentado por ser assim, não por ser o desejável.
+*       2. LINK INTERNO NÃO FUNCIONA. Passar aqui o identificador que o
+*          AddLink devolve produz um /Annot com o dicionário ABERTO, sem o >>
+*          que o fecha: o arquivo sai malformado, e não apenas sem navegação.
+*          O ramo que escreveria o /Dest saiu comentado no porte original e
+*          nunca voltou. Use URL até que isto seja consertado; ver
+*          docs/ROADMAP.md, pendências.
+*   EN: 1. One area per page. A second call on the same page silently replaces
+*          the first -- the structure holds one record per page. Documented
+*          because that is how it behaves, not because it is desirable.
+*       2. INTERNAL LINKS DO NOT WORK. Passing the identifier returned by
+*          AddLink produces an /Annot whose dictionary is left OPEN, with no
+*          closing >>: the file comes out malformed, not merely unnavigable.
+*          The branch that would write the /Dest was commented out in the
+*          original port and never came back. Use a URL until this is fixed;
+*          see docs/ROADMAP.md, pendências.
 *
 * Exemplo / Example:
 *   PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
@@ -7443,7 +7459,6 @@ type ArrayCharWidths is table of charSet index by word;
  size2 word;
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-15
 --------------------------------------------------------------------------------
  g_initialized boolean := false;       -- Initialization state flag
  g_encoding varchar2(20) := 'UTF-8';   -- Character encoding
@@ -7453,7 +7468,6 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-15
 --------------------------------------------------------------------------------
  type tPageFormats is table of recPageFormat index by varchar2(20);
 
@@ -7466,19 +7480,16 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-15
 --------------------------------------------------------------------------------
  g_ttf_fonts tTTFFonts;                     -- TrueType font cache
  g_ttf_fonts_count pls_integer := 0;        -- Number of loaded TTF fonts
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-17
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-01-25
 --------------------------------------------------------------------------------
  -- PDF Specification Constants
  c_PDF_VERSION CONSTANT VARCHAR2(10) := '1.4'; -- PDF output version
@@ -7513,8 +7524,8 @@ type ArrayCharWidths is table of charSet index by word;
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-*                          PHASE 4: PDF PARSER                                 *
-*                   Global Variables for PDF Reading/Editing                   *
+* FASE 4: LEITURA DE PDF
+* Variaveis globais da leitura e da edicao
 *******************************************************************************/
 
 g_loaded_pdf BLOB;
@@ -7575,8 +7586,8 @@ g_watermarks watermark_list;
 g_watermark_count PLS_INTEGER := 0;
 
 /*******************************************************************************
-*                     PHASE 4.5: TEXT & IMAGE OVERLAY                          *
-*                   Global Variables for Overlay Management                    *
+* FASE 4.5: SOBREPOSICAO DE TEXTO E IMAGEM
+* Variaveis globais das sobreposicoes
 *******************************************************************************/
 
 -- Overlay tracking
@@ -7607,8 +7618,8 @@ g_overlays overlay_list;
 g_overlay_count PLS_INTEGER := 0;
 
 /*******************************************************************************
-*                     PHASE 4.6: PDF MERGE & SPLIT                             *
-*                   Global Variables for Multi-Document Management             *
+* FASE 4.6: MESCLAR E DIVIDIR
+* Variaveis globais dos varios documentos carregados
 *******************************************************************************/
 
 -- Multi-document tracking
@@ -7732,9 +7743,9 @@ c_PDF_PADDING CONSTANT RAW(32) := HEXTORAW(
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-*                                                                              *
-*           Protected methods : Internal function and procedures               *
-*                                                                              *
+*
+* Subprogramas internos: nao saem na spec
+*
 *******************************************************************************/
 ----------------------------------------------------------------------------------
 -- proc. and func. spécifiques ajoutées au portage.
@@ -8146,16 +8157,14 @@ end fpdf_charwidthsExists;
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 /*******************************************************************************
-* Procedure: log_message (Internal helper)
-* Description: Simple logging utility for debugging and monitoring
+* log_message (interno) — registro simples, so no DBMS_OUTPUT
 *******************************************************************************/
 --------------------------------------------------------------------------------
--- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* Procedure: log_message (Internal)
-* Description: Enhanced logging with DBMS_APPLICATION_INFO and DBMS_OUTPUT
+* log_message (interno) — registro no DBMS_OUTPUT e no
+* DBMS_APPLICATION_INFO, para acompanhar processo longo de fora
 *******************************************************************************/
 procedure log_message(
   p_level pls_integer,
@@ -8188,8 +8197,7 @@ begin
 end log_message;
 
 /*******************************************************************************
-* Procedure: SetLogLevel
-* Description: Sets the logging level for debugging
+* SetLogLevel — quanto a biblioteca escreve. Documentado na spec.
 *******************************************************************************/
 procedure SetLogLevel(p_level pls_integer) is
 begin
@@ -8213,8 +8221,7 @@ begin
 end SetLogLevel;
 
 /*******************************************************************************
-* Function: GetLogLevel
-* Description: Returns the current logging level
+* GetLogLevel — o nivel corrente. Documentado na spec.
 *******************************************************************************/
 function GetLogLevel return pls_integer is
 begin
@@ -8224,8 +8231,7 @@ end GetLogLevel;
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 /*******************************************************************************
-* Procedure: init_page_formats (Internal)
-* Description: Initializes standard page format definitions (in mm)
+* init_page_formats (interno) — carrega os formatos de pagina, em mm
 *******************************************************************************/
 procedure init_page_formats is
 begin
@@ -8301,7 +8307,6 @@ begin
 end get_page_format;
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -9548,16 +9553,17 @@ begin
          if nao_e_numero(PageLinks(i).quatre) then
 					  annots := annots ||'/A <</S /URI /URI '||p_textstring(PageLinks(i).quatre) 
                || '>>>>';
-             /* ????
-				else
-					l := links(PageLinks(i).quatre);
-					if (OrientationChanges(l.zero) is not null) then
-					  h := wPt;
-					else
-					  h := hPt;
-					end if;
-					annots := annots || '/Dest ('||tochar(1 + 2 * l.zero,2)||' 0 R /XYZ 0 '||tochar(h - l.un * k)||' null)>>';
-                */
+             /* O destino do link INTERNO nunca foi escrito.
+                Este ramo saiu comentado no porte original e ficou assim. Com
+                plink numerico -- o identificador que o AddLink devolve -- o
+                if acima e falso, nada e acrescentado, e o dicionario do
+                /Annot fica ABERTO: sai "<</Type /Annot ... /Border [0 0 0] ]",
+                sem o >> que o fecha. Nao e "link que nao navega", e PDF
+                malformado.
+                Ninguem reparou porque nenhum teste e nenhum exemplo chama
+                AddLink ou SetLink -- e o caso da HU-05, metade da API publica
+                sem chamador. Link com URL nao passa por aqui e esta correto.
+                Ver docs/ROADMAP.md, pendencias. */
          end if;
 			   --end loop;
 			   p_out(annots || ']');
@@ -9930,10 +9936,10 @@ exception
 end p_parseImage;
 
 /*******************************************************************************
-*                                                                              *
-*                               Public methods                                 *
-*                                                                              *
-********************************************************************************/
+*
+* Subprogramas publicos
+*
+*******************************************************************************/
 
 ------------------------------------------------------------------------------------
 -- Acrescimos ao FPDF original
@@ -10697,11 +10703,9 @@ begin
 end;
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-15
 --------------------------------------------------------------------------------
 /*******************************************************************************
-* Procedure: Init
-* Description: Modern initialization with validation and UTF-8 support
+* Init — inicializa o gerador. Documentado na spec.
 *******************************************************************************/
 procedure Init(
   p_orientation varchar2 default 'P',
@@ -10807,8 +10811,7 @@ exception
 end Init;
 
 /*******************************************************************************
-* Procedure: Reset
-* Description: Resets the PDF engine, freeing resources
+* Reset — limpa o estado da sessao. Documentado na spec.
 *******************************************************************************/
 procedure Reset is
 begin
@@ -10918,8 +10921,7 @@ end IsInitialized;
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* Function: GetCurrentPage
-* Description: Returns the current page number
+* GetCurrentPage — a pagina corrente. Documentado na spec.
 *******************************************************************************/
 function GetCurrentPage return pls_integer is
 begin
@@ -10927,8 +10929,7 @@ begin
 end GetCurrentPage;
 
 /*******************************************************************************
-* Procedure: SetPage
-* Description: Sets the current active page for content manipulation
+* SetPage — volta a uma pagina ja criada. Documentado na spec.
 *******************************************************************************/
 procedure SetPage(p_page_number pls_integer) is
 begin
@@ -11089,12 +11090,11 @@ end AddPage;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-15
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* Function: parse_ttf_header (Internal)
-* Description: Parses TTF/OTF header and extracts basic metrics
+* parse_ttf_header (interno) — le o cabecalho TTF/OTF e extrai as
+* metricas basicas da fonte
 *******************************************************************************/
 function parse_ttf_header(p_font_blob blob, p_font_name varchar2) return recTTFFont is
   l_font recTTFFont;
@@ -11275,12 +11275,11 @@ end ClearTTFFontCache;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-17
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* Function: UTF8ToPDFString
-* Description: Converts UTF-8 text to PDF-compatible string format
+* UTF8ToPDFString — escapa o que a string de PDF reserva.
+* Documentado na spec.
 *******************************************************************************/
 function UTF8ToPDFString(p_text varchar2, p_escape boolean default true) return varchar2 is
   l_result varchar2(32767);
@@ -12166,7 +12165,6 @@ begin
   end if;
 end ImageFromBlob;
 
-/* THIS PROCEDURE HANGS UP ........... */
 ----------------------------------------------------------------------------------------
 procedure Write(pH varchar2,ptxt varchar2,plink varchar2 default null) is
    charSetWidth CharSet;
@@ -12379,13 +12377,10 @@ end OutputFile;
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* Procedure: Output (Legacy - OWA dependencies removed)
-* Description: Legacy output procedure - now delegates to modern methods
-* Parameters:
-*   pname - Filename (required for 'F' mode)
-*   pdest - Destination: 'F' = File (only supported mode)
-* Note: 'I', 'D', 'S' modes removed (used OWA/HTP)
-*       Use OutputBlob() or OutputFile() directly for new code
+* Output (legado) — grava em arquivo, delegando ao OutputFile.
+* Os modos de entrega ao navegador ("I", "D", "S") sairam junto com o
+* OWA/HTP e hoje recusam com -20306, apontando o que usar no lugar.
+* Em codigo novo, OutputBlob ou OutputFile direto.
 *******************************************************************************/
 procedure Output(pname varchar2 default null, pdest varchar2 default null) is
   myName word := pname;
@@ -12482,12 +12477,10 @@ end ReturnBlob;
  
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* Procedure: CellRotated
-* Description: Modern Cell with text rotation support
+* CellRotated — celula com o texto girado. Documentado na spec.
 *******************************************************************************/
 procedure CellRotated(
   p_width number,
@@ -12548,11 +12541,10 @@ exception
 end CellRotated;
 
 /*******************************************************************************
-* Procedure: WriteRotated
-* Description: Modern Write with text rotation support
-* NOTE: Currently only 0° rotation is fully supported due to limitations
-*       with the legacy Write() procedure's internal positioning calculations.
-*       For non-zero rotations, use CellRotated() instead.
+* WriteRotated — escrita corrida com giro.
+* So o giro zero funciona: o posicionamento interno do Write legado
+* nao acompanha a matriz de rotacao. Com giro diferente de zero a
+* chamada e recusada, e o caminho certo e o CellRotated.
 *******************************************************************************/
 procedure WriteRotated(
   p_height number,
@@ -12589,7 +12581,6 @@ end WriteRotated;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
@@ -13323,8 +13314,8 @@ end AddBarcode;
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
- * HELPER FUNCTIONS - PDF PARSING
- ******************************************************************************/
+* AUXILIARES DA LEITURA DE PDF
+*******************************************************************************/
 
 --------------------------------------------------------------------------------
 -- extract_number_after_pattern: Extract number after pattern
@@ -13356,8 +13347,8 @@ EXCEPTION
 END extract_number_after_pattern;
 
 /*******************************************************************************
- * PHASE 4.1: PDF READING - BASIC PARSING
- ******************************************************************************/
+* FASE 4.1: LEITURA DE PDF — interpretacao basica
+*******************************************************************************/
 
 --------------------------------------------------------------------------------
 -- parse_pdf_header: Extract PDF version
@@ -13647,8 +13638,8 @@ BEGIN
 END count_pages;
 
 /*******************************************************************************
- * PUBLIC APIs - PHASE 4
- ******************************************************************************/
+* APIs PUBLICAS — FASE 4
+*******************************************************************************/
 
 --------------------------------------------------------------------------------
 -- LoadPDF: carrega um PDF existente na memoria
@@ -14402,7 +14393,7 @@ END ClearPDFCache;
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* OverlayText: Add text overlay at specific position
+* OverlayText — sobrepoe texto numa posicao. Documentado na spec.
 *******************************************************************************/
 PROCEDURE OverlayText(
   p_page_number IN PLS_INTEGER,
@@ -14481,7 +14472,7 @@ BEGIN
 END OverlayText;
 
 /*******************************************************************************
-* OverlayImage: Add image overlay at specific position
+* OverlayImage — sobrepoe imagem numa posicao. Documentado na spec.
 *******************************************************************************/
 PROCEDURE OverlayImage(
   p_page_number IN PLS_INTEGER,
@@ -14572,7 +14563,7 @@ BEGIN
 END OverlayImage;
 
 /*******************************************************************************
-* GetOverlays: Get list of applied overlays
+* GetOverlays — lista as sobreposicoes. Documentado na spec.
 *******************************************************************************/
 FUNCTION GetOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL)
   RETURN JSON_ARRAY_T
@@ -14634,7 +14625,7 @@ BEGIN
 END GetOverlays;
 
 /*******************************************************************************
-* RemoveOverlay: Remove specific overlay by ID
+* RemoveOverlay — remove uma sobreposicao pelo ID.
 *******************************************************************************/
 PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2) IS
 BEGIN
@@ -14647,7 +14638,7 @@ BEGIN
 END RemoveOverlay;
 
 /*******************************************************************************
-* ClearOverlays: Clear all overlays (optionally for specific page)
+* ClearOverlays — limpa as sobreposicoes, de tudo ou de uma pagina.
 *******************************************************************************/
 PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL) IS
   l_key VARCHAR2(50);
@@ -14685,7 +14676,8 @@ END ClearOverlays;
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* LoadPDFWithID: Load PDF with identifier for multi-document operations
+* LoadPDFWithID — carrega um PDF com identificador, para trabalhar
+* com varios ao mesmo tempo. Documentado na spec.
 *******************************************************************************/
 PROCEDURE LoadPDFWithID(
   p_pdf_id IN VARCHAR2,
@@ -14755,7 +14747,7 @@ BEGIN
 END LoadPDFWithID;
 
 /*******************************************************************************
-* GetLoadedPDFs: List all loaded PDFs
+* GetLoadedPDFs — lista os PDFs carregados.
 *******************************************************************************/
 FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T IS
   l_result JSON_ARRAY_T := JSON_ARRAY_T();
@@ -14786,7 +14778,7 @@ BEGIN
 END GetLoadedPDFs;
 
 /*******************************************************************************
-* UnloadPDF: Remove PDF from memory
+* UnloadPDF — descarrega um PDF da memoria.
 *******************************************************************************/
 PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2) IS
 BEGIN
@@ -17535,7 +17527,8 @@ BEGIN
 END rc4_key_xor;
 
 /*******************************************************************************
-* compute_object_key: Compute encryption key for specific object (Algorithm 1)
+* compute_object_key — deriva a chave de um objeto a partir da chave
+* do documento e da numeracao dele (algoritmo 1 da especificacao)
 *******************************************************************************/
 FUNCTION compute_object_key(
   p_enc_key RAW,
@@ -17563,7 +17556,7 @@ BEGIN
 END compute_object_key;
 
 /*******************************************************************************
-* compute_owner_key: Compute owner password hash (Algorithm 3 from PDF spec)
+* compute_owner_key — o hash da senha de dono (algoritmo 3)
 *******************************************************************************/
 FUNCTION compute_owner_key(
   p_owner_pwd VARCHAR2,
@@ -17693,7 +17686,7 @@ BEGIN
 END compute_encryption_key;
 
 /*******************************************************************************
-* compute_user_value: Compute /U value (Algorithm 4/5 from PDF spec)
+* compute_user_value — o valor /U (algoritmos 4 e 5)
 *******************************************************************************/
 FUNCTION compute_user_value(
   p_encryption_key RAW,
@@ -18161,12 +18154,10 @@ BEGIN
 END sec_cifrar_objetos;
 
 /*******************************************************************************
-* EncryptPDF: Encrypt existing PDF with password protection
-* Supports RC4-40 and RC4-128 encryption methods.
-* Modifies the PDF by:
-*   1. Adding /Encrypt dictionary
-*   2. Adding /ID to trailer
-*   3. Encrypting all string and stream objects
+* EncryptPDF — cifra um PDF ja pronto, com senha.
+* Acrescenta o dicionario /Encrypt, poe o /ID no trailer e cifra as
+* strings e os streams, cada objeto com a chave dele. RC4 e AES.
+* Documentado na spec.
 *******************************************************************************/
 FUNCTION EncryptPDF(
   p_pdf IN BLOB,
@@ -18391,8 +18382,8 @@ EXCEPTION
 END EncryptPDF;
 
 /*******************************************************************************
-* verify_password: Verify user or owner password against PDF encryption
-* Returns TRUE if password is valid, FALSE otherwise
+* verify_password — confere a senha de usuario ou de dono contra o
+* dicionario de criptografia. Devolve TRUE quando confere.
 *******************************************************************************/
 FUNCTION verify_password(
   p_password IN VARCHAR2,
@@ -18546,8 +18537,8 @@ EXCEPTION
 END sec_encrypt_dict;
 
 /*******************************************************************************
-* DecryptPDF: Remove encryption from PDF
-* Verifies password, then removes /Encrypt dictionary and /ID from trailer
+* DecryptPDF — tira a criptografia. Confere a senha, decifra o
+* conteudo e remove o /Encrypt e o /ID. Documentado na spec.
 *******************************************************************************/
 FUNCTION DecryptPDF(
   p_pdf IN BLOB,
@@ -18777,7 +18768,7 @@ EXCEPTION
 END DecryptPDF;
 
 /*******************************************************************************
-* IsEncrypted: Check if PDF is encrypted
+* IsEncrypted — se o PDF esta cifrado. Documentado na spec.
 *******************************************************************************/
 FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN IS
   l_len PLS_INTEGER;
@@ -18851,8 +18842,8 @@ BEGIN
 END parse_permissions;
 
 /*******************************************************************************
-* GetSecurityInfo: Get security information from PDF
-* Returns detailed encryption info including method, key length, and permissions
+* GetSecurityInfo — o que o /Encrypt diz: metodo, tamanho da chave e
+* permissoes. Documentado na spec.
 *******************************************************************************/
 FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T IS
   l_result JSON_OBJECT_T := JSON_OBJECT_T();
@@ -18951,11 +18942,9 @@ BEGIN
 END GetSecurityInfo;
 
 /*******************************************************************************
-* SetEncryption: Set encryption for PDF being generated
-* Also sets appropriate PDF version based on encryption method:
-*   - RC4-40/RC4-128: PDF 1.4
-*   - AES-128: PDF 1.5
-*   - AES-256: PDF 1.7
+* SetEncryption — cifra o documento que esta sendo gerado.
+* Sobe a versao do PDF conforme o metodo: RC4 pede 1.4, AES-128 pede
+* 1.5 e AES-256 pede 1.7. Documentado na spec.
 *******************************************************************************/
 PROCEDURE SetEncryption(
   p_encryption IN VARCHAR2,
@@ -18985,7 +18974,7 @@ BEGIN
 END SetEncryption;
 
 /*******************************************************************************
-* SetPDFVersion: Set PDF version for generated documents
+* SetPDFVersion — a versao declarada no arquivo gerado.
 *******************************************************************************/
 PROCEDURE SetPDFVersion(p_version IN VARCHAR2) IS
 BEGIN
@@ -19016,7 +19005,7 @@ BEGIN
 END SetPDFVersion;
 
 /*******************************************************************************
-* GetPDFVersion: Get current PDF version setting
+* GetPDFVersion — a versao corrente.
 *******************************************************************************/
 FUNCTION GetPDFVersion RETURN VARCHAR2 IS
 BEGIN
@@ -19024,7 +19013,7 @@ BEGIN
 END GetPDFVersion;
 
 /*******************************************************************************
-* SetPermissions: Set document permissions
+* SetPermissions — as permissoes do documento. Documentado na spec.
 *******************************************************************************/
 PROCEDURE SetPermissions(
   p_print IN BOOLEAN DEFAULT TRUE,
