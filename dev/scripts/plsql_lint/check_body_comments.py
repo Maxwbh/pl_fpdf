@@ -24,7 +24,10 @@ O que se confere
 ----------------
 1. **todo subprograma privado com corpo tem comentário imediatamente acima**;
    o público não precisa — está documentado na spec, e repetir aqui cria duas
-   versões que divergem;
+   versões que divergem. **Comentário de uma linha sobre subprograma público é
+   recusado**: com uma linha só não há como acrescentar o *porquê*, então ele
+   só pode estar repetindo a descrição. Eram 35, e 22 repetiam mais de metade
+   do bloco da spec;
 2. **o comentário é PT-BR**: sem marcador ``PT:``/``EN:``, sem par
    ``<português> / <english>`` e sem linha com cara de prosa inglesa. Nome
    próprio e jargão ficam em inglês e não contam — Portrait, WinAnsi, stream,
@@ -224,6 +227,24 @@ def conferir(pks, pkb):
     linhas = io.open(do_repo(pkb), encoding='utf-8').read().split('\n')
     falhas = []
 
+    # texto do bloco Javadoc de cada publico, para cruzar com o do body
+    esp = io.open(do_repo(pks), encoding='utf-8').read().split('\n')
+    bloco_spec = {}
+    for i, l in enumerate(esp):
+        m = re.match(r'^\s{0,2}(procedure|function)\s+(\w+)', l, re.I)
+        if not m:
+            continue
+        k = i - 1
+        while k >= 0 and not esp[k].strip():
+            k -= 1
+        if k >= 0 and esp[k].strip() == '*/':
+            j = k
+            while j >= 0 and not esp[j].strip().startswith('/**'):
+                j -= 1
+            bloco_spec.setdefault(m.group(2).lower(),
+                                  ' '.join(x.strip(' *')
+                                           for x in esp[j + 1:k]).lower())
+
     # nomes dos dois packages: um cabecalho pode ter ficado para tras na
     # separacao e nomear subprograma que hoje mora no outro arquivo
     nomes = set()
@@ -238,6 +259,33 @@ def conferir(pks, pkb):
 
     for n, nome in corpos(linhas):
         if nome.lower() in publicos:
+            # publico com comentario de UMA linha: so pode estar repetindo a
+            # spec, que ja descreve o que ele faz
+            k, bloco = n - 2, []
+            while k >= 0 and (linhas[k].strip().startswith(('--', '*'))
+                              or linhas[k].strip().endswith('*/')):
+                bloco.insert(0, linhas[k])
+                k -= 1
+                if len(bloco) > 30:
+                    break
+            util = [b for b in bloco if b.strip(' -*/')
+                    and not re.match(r'^\s*(-{15,}|\*{15,})\s*$', b)]
+            # O que se recusa nao e o TAMANHO, e a REPETICAO: uma linha pode
+            # acrescentar (`inflate: tira a casca zlib (RFC 1950)` diz o que a
+            # spec nao diz). O que nao pode e repetir a descricao, criando duas
+            # versoes que divergem.
+            # Curto E repetindo. Um comentario LONGO que divide vocabulario
+            # com a spec ainda acrescenta profundidade -- o do ImageFromBlob
+            # conta a ACL de rede, o formato lido pela assinatura e a chave do
+            # cache, nada disso na spec.
+            if util and len(util) <= 2:
+                palavras = re.findall(r'\w{5,}', ' '.join(util).lower())
+                repete = sum(1 for w in palavras
+                             if w in bloco_spec.get(nome.lower(), ''))
+                if palavras and repete / len(palavras) > 0.6:
+                    falhas.append((n, f'{nome} é público e o comentário do '
+                                      f'body repete a descrição da spec — duas '
+                                      f'versões que divergem'))
             continue
         # Regua nao e documentacao -- ela comeca com `--` e passava por
         # comentario --, mas tambem nao interrompe a busca: o padrao herdado

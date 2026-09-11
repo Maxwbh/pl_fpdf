@@ -1746,7 +1746,7 @@ BEGIN
       || ' desta funcao. Use crypto_rc4_blob.');
   END IF;
 
-  -- key-scheduling
+  -- escalonamento da chave (key-scheduling)
   FOR x IN 0 .. 255 LOOP
     l_s(x) := x;
   END LOOP;
@@ -1812,7 +1812,7 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20863, 'RC4: chave vazia');
   END IF;
 
-  -- key-scheduling: UMA vez para o fluxo inteiro
+  -- escalonamento da chave (key-scheduling): UMA vez para o fluxo inteiro
   FOR x IN 0 .. 255 LOOP
     l_s(x) := x;
   END LOOP;

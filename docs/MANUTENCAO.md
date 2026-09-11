@@ -278,6 +278,21 @@ packages deixou — `AddQRCode`, `AddBarcode`, `ovl_num`, `rc4_crypt` e
 enquanto o do `crypto_autoteste` fez o caminho inverso. Seis blocos, cada um
 descrevendo algo diferente do que vinha abaixo.
 
+**5. O comentário do body não repete a descrição da spec.** Duas versões da
+mesma frase divergem, e a do body é a que ninguém revisa. Um comentário
+**curto** sobre subprograma público que repita a descrição é recusado; um longo
+que compartilhe vocabulário, não — o do `ImageFromBlob` conta a ACL de rede, o
+formato lido pela assinatura do arquivo e a chave do cache, e nada disso está
+na spec.
+
+> **Como detectar texto fora do português.** Não se enumera o inglês: a lista é
+> infinita, e foi por isso que `Enables debug infos` e `Parse PNG header to
+> extract metadata` passaram por três varreduras. O critério é o inverso — um
+> comentário em português de três palavras ou mais **sempre** tem marca de
+> português (artigo, preposição ou acento), e a ausência dela é o sinal. E
+> acento **não** basta como prova: o francês também tem, e foi assim que
+> `SetDash Ecrire en pointillés` sobreviveu.
+
 > **O `@raises` também mente sozinho.** Cruzando o que a spec documenta com o
 > que o corpo realmente levanta, **15 subprogramas** levantavam código que o
 > bloco não listava — `AddWatermark`, `RemovePage` e `RotatePage` não
