@@ -218,10 +218,6 @@ g_inf_nbits PLS_INTEGER := 0;
 -- aes_init e quem monta essa tabela; ela fica junto do AES, mais abaixo.
 procedure aes_init;
 
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 --------------------------------------------------------------------------------
 -- Desenho do QR Code, inclusive com payload PIX.
 --
@@ -235,9 +231,8 @@ begin
   return a + b - 2 * bitand(a, b);
 end qr_xor;
 
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
+-- qr_init_gf: monta as tabelas de exponencial e logaritmo do corpo de Galois
+-- GF(256), uma vez por sessao. E o que permite multiplicar somando logaritmos.
 procedure qr_init_gf is
   x pls_integer := 1;
 begin
@@ -267,10 +262,6 @@ end qr_gf_mul;
 --------------------------------------------------------------------------------
 -- qr_field : n-esimo campo (base 1) de uma lista separada por p_sep
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- qr_field : n-esimo campo (base 1) de uma lista separada por p_sep
---------------------------------------------------------------------------------
 function qr_field(p_list varchar2, p_pos pls_integer, p_sep varchar2 default ',')
   return varchar2 is
   l_ini pls_integer := 1;
@@ -294,12 +285,6 @@ begin
   end if;
   return substr(p_list, l_ini, l_fim - l_ini);
 end qr_field;
-
---------------------------------------------------------------------------------
--- qr_ecc_params : parametros de bloco para (versao, nivel)
---   o_ec = codewords de correcao por bloco
---   o_g1/o_d1 = blocos e codewords de dados do grupo 1; o_g2/o_d2 idem grupo 2
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- qr_ecc_params : parametros de bloco para (versao, nivel)
@@ -334,10 +319,6 @@ end qr_ecc_params;
 --------------------------------------------------------------------------------
 -- qr_choose_version : menor versao que comporta os dados no nivel informado
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- qr_choose_version : menor versao que comporta os dados no nivel informado
---------------------------------------------------------------------------------
 function qr_choose_version(p_len pls_integer, p_ecl varchar2) return pls_integer is
   l_ec pls_integer; l_g1 pls_integer; l_d1 pls_integer;
   l_g2 pls_integer; l_d2 pls_integer;
@@ -354,10 +335,6 @@ begin
     'Conteudo excede a capacidade do QR Code (' || p_len ||
     ' bytes no nivel ' || p_ecl || '). Use um nivel de correcao menor.');
 end qr_choose_version;
-
---------------------------------------------------------------------------------
--- qr_encode : texto -> fluxo de codewords (dados + correcao, ja intercalados)
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- qr_encode : texto -> fluxo de codewords (dados + correcao, ja intercalados)
@@ -497,10 +474,6 @@ end qr_encode;
 --------------------------------------------------------------------------------
 -- qr_mask_bit : as oito mascaras da norma
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- qr_mask_bit : as oito mascaras da norma
---------------------------------------------------------------------------------
 function qr_mask_bit(p_k pls_integer, p_r pls_integer, p_c pls_integer)
   return boolean is
 begin
@@ -515,12 +488,6 @@ begin
     else        mod(mod(p_r + p_c, 2) + mod(p_r * p_c, 3), 2) = 0
   end;
 end qr_mask_bit;
-
---------------------------------------------------------------------------------
--- qr_build : padroes funcionais + dados em zigue-zague
---   o_m   = matriz (indice = linha * tamanho + coluna)
---   o_res = 1 nas posicoes reservadas (funcionais)
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- qr_build : padroes funcionais + dados em zigue-zague
@@ -653,10 +620,6 @@ end qr_build;
 --------------------------------------------------------------------------------
 -- qr_bch_format / qr_bch_version : codigos corretores dos campos de formato e versao
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- qr_bch_format / qr_bch_version : codigos corretores dos campos de formato e versao
---------------------------------------------------------------------------------
 function qr_bch_format(p_fmt pls_integer) return pls_integer is
   v pls_integer := p_fmt * 1024;              -- fmt << 10
 begin
@@ -667,7 +630,6 @@ begin
   end loop;
   return qr_xor(p_fmt * 1024 + v, 21522);     -- mascara 0b101010000010010
 end qr_bch_format;
-
 
 -- qr_bch_version: os 18 bits de informacao de versao (BCH 18,6). So entra no
 -- simbolo a partir da versao 7.
@@ -681,11 +643,6 @@ begin
   end loop;
   return p_ver * 4096 + v;
 end qr_bch_version;
-
---------------------------------------------------------------------------------
--- qr_place_format : bit i (menos significativo primeiro). Copia 1 desce a coluna
--- 8 e vira na linha 8; copia 2 percorre a linha 8 pela direita e desce a coluna 8.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- qr_place_format : bit i (menos significativo primeiro). Copia 1 desce a coluna
@@ -714,9 +671,8 @@ begin
   p_m((p_n - 8) * p_n + 8) := 1;              -- modulo escuro
 end qr_place_format;
 
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
+-- qr_place_version: escreve os 18 bits de informacao de versao nos dois
+-- blocos previstos. So existe a partir da versao 7.
 procedure qr_place_version(p_m in out nocopy tqr, p_n pls_integer,
                            p_ver pls_integer) is
   l_bits pls_integer;
@@ -732,11 +688,6 @@ begin
     p_m(r * p_n + (p_n - 11 + c))  := b;
   end loop;
 end qr_place_version;
-
---------------------------------------------------------------------------------
--- qr_penalty : as quatro regras de penalidade da norma, usadas para escolher a
--- mascara que produz o simbolo mais legivel.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- qr_penalty : as quatro regras de penalidade da norma, usadas para escolher a
@@ -855,19 +806,10 @@ end bc_ean_check;
 --------------------------------------------------------------------------------
 -- bc_only_digits : mantem apenas digitos
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- bc_only_digits : mantem apenas digitos
---------------------------------------------------------------------------------
 function bc_only_digits(p_str varchar2) return varchar2 is
 begin
   return regexp_replace(p_str, '[^0-9]', '');
 end bc_only_digits;
-
---------------------------------------------------------------------------------
--- bc_code39 : 9 elementos por caractere (barra/espaco alternados), n=1 / w=ratio,
---             delimitado por '*' e com um espaco estreito entre caracteres.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- bc_code39 : 9 elementos por caractere (barra/espaco alternados), n=1 / w=ratio,
@@ -899,11 +841,6 @@ begin
   end loop;
   return l_out;
 end bc_code39;
-
---------------------------------------------------------------------------------
--- bc_code128 : Code C (pares de digitos) quando o dado e numerico de tamanho
---              par; caso contrario Code B (ASCII 32..126). Checksum modulo 103.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- bc_code128 : Code C (pares de digitos) quando o dado e numerico de tamanho
@@ -954,11 +891,6 @@ begin
   end loop;
   return l_out;
 end bc_code128;
-
---------------------------------------------------------------------------------
--- bc_ean : EAN-13 (13 digitos) e EAN-8 (8 digitos). Aceita o codigo sem o
---          verificador e o calcula.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- bc_ean : EAN-13 (13 digitos) e EAN-8 (8 digitos). Aceita o codigo sem o
@@ -1022,19 +954,6 @@ end bc_ean;
 -- Sem ela o codigo de barras de um boleto NAO podia ser desenhado:
 -- AddBarcodeBoleto passava os 44 digitos como 'ITF14' e sempre levantava
 -- ORA-20887.
-
---------------------------------------------------------------------------------
--- bc_itf : Interleaved 2 of 5 puro — qualquer quantidade PAR de digitos, sem
---          verificador de simbologia.
---
--- E o que o boleto bancario usa: 44 digitos, e o digito de controle do boleto
--- fica DENTRO deles, na posicao 5, calculado pelo emissor e nao pela
--- simbologia. O ITF14 e um caso particular disto — 14 digitos, com verificador
--- proprio — e passou a ser construido sobre esta funcao.
---
--- Sem ela o codigo de barras de um boleto NAO podia ser desenhado:
--- AddBarcodeBoleto passava os 44 digitos como 'ITF14' e sempre levantava
--- ORA-20887.
 function bc_itf(p_data varchar2, p_ratio pls_integer default 3) return varchar2 is
   l_d   varchar2(4000) := bc_only_digits(p_data);
   l_out varchar2(32767);
@@ -1059,7 +978,6 @@ begin
   end loop;
   return l_out || rpad('1', p_ratio, '1') || '0' || '1';   -- stop: w n n
 end bc_itf;
-
 
 -- bc_itf14: padrao de barras do ITF-14, completando o digito verificador
 -- quando vem com 13.
@@ -1139,8 +1057,6 @@ BEGIN
 END inf_init;
 
 -- le p_n bits, do menos significativo para o mais
-
--- le p_n bits, do menos significativo para o mais
 FUNCTION inf_bits(p_n IN PLS_INTEGER) RETURN PLS_INTEGER IS
   l_v PLS_INTEGER;
 BEGIN
@@ -1160,12 +1076,6 @@ BEGIN
   g_inf_nbits := g_inf_nbits - p_n;
   RETURN l_v;
 END inf_bits;
-
--- monta a tabela canonica a partir dos comprimentos de codigo
---
--- p_qual escolhe o destino: 1 literais/comprimentos, 2 distancias, 3 alfabeto
--- de comprimentos. Escrever direto na global evita copiar duas colecoes por
--- chamada, que foi o que estourou a PGA.
 
 -- monta a tabela canonica a partir dos comprimentos de codigo
 --
@@ -1228,9 +1138,6 @@ END inf_huff;
 
 -- decodifica um simbolo da tabela p_qual
 -- os codigos vem do bit MAIS significativo para o menos
-
--- decodifica um simbolo da tabela p_qual
--- os codigos vem do bit MAIS significativo para o menos
 FUNCTION inf_sim(p_qual IN PLS_INTEGER) RETURN PLS_INTEGER IS
   l_cod  PLS_INTEGER := 0;
   l_prim PLS_INTEGER := 0;
@@ -1254,17 +1161,6 @@ BEGIN
   END LOOP;
   RAISE_APPLICATION_ERROR(-20891, 'INFLATE: codigo de Huffman nao encontrado');
 END inf_sim;
-
---------------------------------------------------------------------------------
--- pdf_inflate: DEFLATE cru (RFC 1951) -> BLOB
---
--- A saida vai para o BLOB em lotes, e a janela de 32 KB fica numa tabela
--- CIRCULAR indexada por MOD(posicao, 32768). A primeira versao acumulava a
--- saida inteira numa tabela indexada e apagava elemento a elemento; como o
--- DELETE de uma associative array nao devolve memoria, o consumo crescia com o
--- total descomprimido — e, somado ao record de Huffman copiado a cada simbolo,
--- estourou a PGA (ORA-04036) em 688 bytes de saida.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- pdf_inflate: DEFLATE cru (RFC 1951) -> BLOB
@@ -1469,10 +1365,6 @@ END pdf_inflate;
 --------------------------------------------------------------------------------
 -- inflate: tira a casca zlib (RFC 1950), que e o /FlateDecode do PDF
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- inflate: tira a casca zlib (RFC 1950), que e o /FlateDecode do PDF
---------------------------------------------------------------------------------
 PROCEDURE inflate(
   p_src IN            BLOB,
   o_dst IN OUT NOCOPY BLOB,
@@ -1509,27 +1401,6 @@ BEGIN
   DBMS_LOB.FREETEMPORARY(l_cru);
 END inflate;
 
-
---------------------------------------------------------------------------------
--- DEFLATE (RFC 1951) na direcao de COMPRIMIR
---
--- Validado contra o zlib (32 de 32 fluxos, descomprimidos de volta ao
--- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
---
--- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
--- limite de corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
--- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
--- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
--- erro de escrita que o proprio inflate da casa tolera passaria despercebido.
---
--- ATENCAO ao sentido dos bits, a mesma armadilha do inflate: dentro de cada
--- byte o DEFLATE grava do bit MENOS significativo para o mais, mas os codigos
--- de Huffman se formam do MAIS significativo para o menos. Por isso ha duas
--- rotinas, def_bits e def_codigo, e trocar uma pela outra produz um fluxo que
--- descomprime alguns bytes e depois vira lixo.
---------------------------------------------------------------------------------
-
-
 --------------------------------------------------------------------------------
 -- DEFLATE (RFC 1951) na direcao de COMPRIMIR
 --
@@ -1556,7 +1427,6 @@ BEGIN
   END IF;
 END def_descarregar;
 
-
 -- def_byte: acrescenta um byte a saida comprimida, descarregando o acumulador
 -- quando ele enche.
 PROCEDURE def_byte(p_b IN PLS_INTEGER, o_dst IN OUT NOCOPY BLOB) IS
@@ -1566,8 +1436,6 @@ BEGIN
     def_descarregar(o_dst);
   END IF;
 END def_byte;
-
--- bits do menos significativo para o mais (o sentido do fluxo)
 
 -- bits do menos significativo para o mais (o sentido do fluxo)
 PROCEDURE def_bits(p_v IN PLS_INTEGER, p_n IN PLS_INTEGER,
@@ -1584,8 +1452,6 @@ BEGIN
 END def_bits;
 
 -- um codigo de Huffman: bit mais significativo primeiro
-
--- um codigo de Huffman: bit mais significativo primeiro
 PROCEDURE def_codigo(p_v IN PLS_INTEGER, p_n IN PLS_INTEGER,
                      o_dst IN OUT NOCOPY BLOB) IS
 BEGIN
@@ -1593,9 +1459,6 @@ BEGIN
     def_bits(MOD(TRUNC(p_v / POWER(2, i)), 2), 1, o_dst);
   END LOOP;
 END def_codigo;
-
--- literal ou comprimento na arvore FIXA (RFC 1951, 3.2.6). Sao quatro faixas,
--- e trocar uma pela outra da um fluxo plausivel por alguns bytes e lixo depois.
 
 -- literal ou comprimento na arvore FIXA (RFC 1951, 3.2.6). Sao quatro faixas,
 -- e trocar uma pela outra da um fluxo plausivel por alguns bytes e lixo depois.
@@ -1611,11 +1474,6 @@ BEGIN
     def_codigo(192 + p_sim - 280, 8, o_dst);
   END IF;
 END def_lit;
-
--- Blocos ARMAZENADOS (BTYPE=00): 5 bytes de cabecalho por pedaco de 65535 e o
--- dado intacto. E o que impede o resultado de ficar MAIOR que a entrada — dado
--- incompressivel cresce ~5% com Huffman fixa, e num PDF isso e regressao: o
--- arquivo aumenta e ainda ganha um filtro para o leitor desfazer.
 
 -- Blocos ARMAZENADOS (BTYPE=00): 5 bytes de cabecalho por pedaco de 65535 e o
 -- dado intacto. E o que impede o resultado de ficar MAIOR que a entrada — dado
@@ -1643,9 +1501,6 @@ BEGIN
     EXIT WHEN l_fim = 1;
   END LOOP;
 END def_armazenado;
-
--- LZ77 + Huffman fixa. Quem decide se vale a pena e o deflate, comparando
--- o tamanho com o do bloco armazenado.
 
 -- LZ77 + Huffman fixa. Quem decide se vale a pena e o deflate, comparando
 -- o tamanho com o do bloco armazenado.
@@ -1775,8 +1630,6 @@ BEGIN
 END def_comprimido;
 
 -- Adler-32 (RFC 1950), o rodape do envelope zlib
-
--- Adler-32 (RFC 1950), o rodape do envelope zlib
 FUNCTION def_adler(p_src IN BLOB) RETURN NUMBER IS
   l_a   PLS_INTEGER := 1;
   l_b   PLS_INTEGER := 0;
@@ -1801,16 +1654,6 @@ BEGIN
   l_res := l_b;
   RETURN l_res * 65536 + l_a;
 END def_adler;
-
---------------------------------------------------------------------------------
--- deflate: o fluxo zlib completo (RFC 1950) — cabecalho, DEFLATE, Adler-32
---
--- 0x78 0x9C e o par canonico: CMF = 0x78 (deflate, janela de 32 KB) e FLG
--- escolhido para que CMF*256+FLG seja multiplo de 31, sem dicionario.
---
--- Entre comprimir e armazenar escolhe o MENOR, e a escolha e deterministica:
--- e o mesmo criterio da referencia, para que os dois produzam os mesmos bytes.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- deflate: o fluxo zlib completo (RFC 1950) — cabecalho, DEFLATE, Adler-32
@@ -1878,7 +1721,6 @@ BEGIN
   RETURN l_hash;
 END crypto_md5;
 
-
 FUNCTION crypto_rc4(p_src IN RAW, p_key IN RAW) RETURN RAW IS
   -- O resultado e montado em hexadecimal, dois caracteres por byte, entao o
   -- teto real desta funcao e 16383 bytes — nao os 32767 do RAW. Acima disso
@@ -1932,18 +1774,6 @@ BEGIN
   END LOOP;
   RETURN HEXTORAW(l_hex);
 END crypto_rc4;
-
---------------------------------------------------------------------------------
--- crypto_rc4_blob: RC4 sobre BLOB, sem limite de tamanho
---
--- O RC4 tem ESTADO: a caixa S e os indices i e j evoluem byte a byte. Chamar
--- crypto_rc4 uma vez por pedaco reiniciaria a cifra em cada um e produziria
--- lixo — foi por isso que a cifragem de um fluxo grande nao podia simplesmente
--- ser fatiada. Aqui a chave e agendada UMA vez e o estado atravessa os pedacos.
---
--- Antes disto, um documento com fluxo de conteudo acima de 16 KB rebentava com
--- ORA-06502 sem explicacao: o acumulador hexadecimal de crypto_rc4 estourava.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- crypto_rc4_blob: RC4 sobre BLOB, sem limite de tamanho
@@ -2078,10 +1908,6 @@ END aes_init;
 --------------------------------------------------------------------------------
 -- aes_expandir: sub-chaves de rodada, devolvidas como RAW de 16*(nr+1) bytes
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_expandir: sub-chaves de rodada, devolvidas como RAW de 16*(nr+1) bytes
---------------------------------------------------------------------------------
 FUNCTION aes_expandir(p_chave IN RAW, o_nr OUT PLS_INTEGER) RETURN RAW IS
   co_rcon CONSTANT VARCHAR2(28) := '01020408102040801B366CD8AB4D';
   l_nk  PLS_INTEGER := UTL_RAW.LENGTH(p_chave) / 4;
@@ -2146,13 +1972,6 @@ BEGIN
   END LOOP;
   RETURN HEXTORAW(l_hex);
 END aes_expandir;
-
---------------------------------------------------------------------------------
--- aes_bloco: cifra um bloco de 16 bytes
---
--- O estado e mantido num array de 16 inteiros (ordem de coluna, como no FIPS),
--- e nao em RAW: cada UTL_RAW.SUBSTR custaria uma chamada de funcao por byte.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_bloco: cifra um bloco de 16 bytes
@@ -2226,10 +2045,6 @@ BEGIN
   END LOOP;
   RETURN HEXTORAW(l_out);
 END aes_bloco;
-
---------------------------------------------------------------------------------
--- aes_bloco_inv: decifra um bloco de 16 bytes
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_bloco_inv: decifra um bloco de 16 bytes
@@ -2311,29 +2126,12 @@ END aes_bloco_inv;
 -- que nao se repita com a mesma chave — mas usar SYS_GUID em vez de um
 -- contador evita o pior caso de dois documentos cifrados no mesmo instante.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_iv: vetor de inicializacao aleatorio de 16 bytes
---
--- Nao precisa ser imprevisivel a nivel criptografico aqui — o CBC exige apenas
--- que nao se repita com a mesma chave — mas usar SYS_GUID em vez de um
--- contador evita o pior caso de dois documentos cifrados no mesmo instante.
---------------------------------------------------------------------------------
 FUNCTION aes_iv RETURN RAW IS
 BEGIN
   RETURN UTL_RAW.SUBSTR(crypto_md5(UTL_RAW.CONCAT(SYS_GUID(),
            UTL_RAW.CAST_TO_RAW(TO_CHAR(SYSTIMESTAMP,
                                'YYYYMMDDHH24MISSFF9')))), 1, 16);
 END aes_iv;
-
---------------------------------------------------------------------------------
--- aes_cbc_cifrar: AES-CBC com o IV no INICIO do resultado, como manda o PDF
---
--- Trabalha em BLOB porque um fluxo de conteudo passa facil dos 32 KB de um
--- RAW. O preenchimento e o PKCS#5: quando o dado ja e multiplo de 16 entra um
--- bloco INTEIRO de preenchimento — omiti-lo faria o decifrador comer 16 bytes
--- de dado real.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_cbc_cifrar: AES-CBC com o IV no INICIO do resultado, como manda o PDF
@@ -2388,13 +2186,6 @@ END aes_cbc_cifrar;
 -- Serve para as strings do dicionario, que sao pequenas. Streams usam a versao
 -- em BLOB: um fluxo de conteudo passa dos 32767 bytes que cabem num RAW.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_cbc_cifrar_raw: o mesmo para dados curtos, sem passar por BLOB
---
--- Serve para as strings do dicionario, que sao pequenas. Streams usam a versao
--- em BLOB: um fluxo de conteudo passa dos 32767 bytes que cabem num RAW.
---------------------------------------------------------------------------------
 FUNCTION aes_cbc_cifrar_raw(p_chave IN RAW, p_dados IN RAW) RETURN RAW IS
   l_ent BLOB;
   l_sai BLOB;
@@ -2411,10 +2202,6 @@ BEGIN
   DBMS_LOB.FREETEMPORARY(l_sai);
   RETURN l_out;
 END aes_cbc_cifrar_raw;
-
---------------------------------------------------------------------------------
--- aes_cbc_decifrar: inverso, tirando o IV e o preenchimento
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_cbc_decifrar: inverso, tirando o IV e o preenchimento
@@ -2467,10 +2254,6 @@ END aes_cbc_decifrar;
 --------------------------------------------------------------------------------
 -- aes_cbc_decifrar_raw: a volta para dados curtos (strings do dicionario)
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_cbc_decifrar_raw: a volta para dados curtos (strings do dicionario)
---------------------------------------------------------------------------------
 FUNCTION aes_cbc_decifrar_raw(p_chave IN RAW, p_dados IN RAW) RETURN RAW IS
   l_ent BLOB;
   l_sai BLOB;
@@ -2496,10 +2279,6 @@ END aes_cbc_decifrar_raw;
 --------------------------------------------------------------------------------
 -- aes_ecb_cifrar: ECB sem preenchimento, so para o /Perms do R6
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_ecb_cifrar: ECB sem preenchimento, so para o /Perms do R6
---------------------------------------------------------------------------------
 FUNCTION aes_ecb_cifrar(p_chave IN RAW, p_dados IN RAW) RETURN RAW IS
   l_nr  PLS_INTEGER;
   l_w   RAW(240);
@@ -2512,15 +2291,6 @@ BEGIN
   END LOOP;
   RETURN l_out;
 END aes_ecb_cifrar;
-
---------------------------------------------------------------------------------
--- aes_autoteste: confere o AES contra os vetores oficiais do FIPS-197
---
--- Vale o mesmo raciocinio do crypto_autoteste, e aqui e ainda mais necessario:
--- uma expansao de chave errada produz uma cifra que decifra CONSIGO MESMA e que
--- nenhum outro programa entende. Sem vetor conhecido, o PDF sairia "cifrado" e
--- so o leitor do usuario descobriria.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_autoteste: confere o AES contra os vetores oficiais do FIPS-197
@@ -2570,14 +2340,6 @@ END aes_autoteste;
 -- eles a chave sai diferente da que qualquer leitor calcula, e o documento
 -- abre com a senha certa e mostra lixo.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_chave_objeto: algoritmo 1 com AES (revisao 4, /CF com AESV2)
---
--- Igual ao do RC4, mais os quatro bytes 'sAlT' no fim da entrada do MD5. Sem
--- eles a chave sai diferente da que qualquer leitor calcula, e o documento
--- abre com a senha certa e mostra lixo.
---------------------------------------------------------------------------------
 FUNCTION aes_chave_objeto(
   p_chave   IN RAW,
   p_obj_num IN PLS_INTEGER,
@@ -2599,10 +2361,6 @@ END aes_chave_objeto;
 --------------------------------------------------------------------------------
 -- aes_sha: SHA-256, 384 ou 512 pelo STANDARD_HASH
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_sha: SHA-256, 384 ou 512 pelo STANDARD_HASH
---------------------------------------------------------------------------------
 FUNCTION aes_sha(p_src IN RAW, p_bits IN PLS_INTEGER) RETURN RAW IS
   l_out RAW(64);
 BEGIN
@@ -2613,15 +2371,6 @@ BEGIN
   END CASE;
   RETURN l_out;
 END aes_sha;
-
---------------------------------------------------------------------------------
--- aes_hash_r6: algoritmo 2.B da especificacao (PDF 2.0, 7.6.4.3.4)
---
--- Laco que alterna SHA-256/384/512 com AES-CBC. O criterio de parada olha o
--- ULTIMO byte do resultado da rodada e o compara com o numero da rodada, depois
--- de no minimo 64 voltas — e o ponto que quase todo mundo erra na primeira
--- tentativa, porque a leitura apressada da especificacao sugere parar em 64.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_hash_r6: algoritmo 2.B da especificacao (PDF 2.0, 7.6.4.3.4)
@@ -2702,18 +2451,6 @@ END aes_hash_r6;
 -- documento. E o /Perms carrega as permissoes cifradas em ECB, para que
 -- adulterar o /P do dicionario, que vai em claro, seja detectavel.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_valores_r6: /U, /UE, /O, /OE e /Perms do AES-256
---
--- No R6 a chave do arquivo e aleatoria e fica EMBRULHADA em /UE e /OE, cada uma
--- com uma chave derivada da senha correspondente. /U e /O tem 48 bytes: hash de
--- 32, validation salt de 8 e key salt de 8.
---
--- O /O leva os 48 bytes do /U no hash — e o que amarra as duas senhas ao mesmo
--- documento. E o /Perms carrega as permissoes cifradas em ECB, para que
--- adulterar o /P do dicionario, que vai em claro, seja detectavel.
---------------------------------------------------------------------------------
 PROCEDURE aes_valores_r6(
   p_senha_usr  IN  VARCHAR2,
   p_senha_dono IN  VARCHAR2,
@@ -2778,14 +2515,6 @@ END aes_valores_r6;
 -- documento, que levam o IV no inicio e sao preenchidos. Tratar os dois do
 -- mesmo jeito devolve uma chave errada por 16 bytes.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- aes_desembrulhar: recupera a chave do arquivo de /UE ou /OE
---
--- AES-CBC com IV de ZEROS e SEM preenchimento — diferente dos streams do
--- documento, que levam o IV no inicio e sao preenchidos. Tratar os dois do
--- mesmo jeito devolve uma chave errada por 16 bytes.
---------------------------------------------------------------------------------
 FUNCTION aes_desembrulhar(p_chave IN RAW, p_e IN RAW) RETURN RAW IS
   l_nr  PLS_INTEGER;
   l_w   RAW(240);
@@ -2802,17 +2531,6 @@ BEGIN
   END LOOP;
   RETURN l_out;
 END aes_desembrulhar;
-
---------------------------------------------------------------------------------
--- aes_verificar_r6: confere a senha do AES-256 e devolve a chave do arquivo
---
--- Os 48 bytes de /U e /O sao: hash de 32, validation salt de 8, key salt de 8.
---
--- A ordem importa: testa-se o USUARIO primeiro. Uma senha que sirva as duas
--- coisas tem de abrir como usuario — o caminho do proprietario existe para
--- quem vai alterar permissoes, e assumi-lo por engano daria ao leitor poderes
--- que o documento nao concedeu.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- aes_verificar_r6: confere a senha do AES-256 e devolve a chave do arquivo
@@ -2899,7 +2617,6 @@ BEGIN
 
   g_crypto_ok := TRUE;
 END crypto_autoteste;
-
 
 --------------------------------------------------------------------------------
 -- qr_matriz: a matriz do QR pronta, com a mascara ja escolhida

@@ -82,10 +82,21 @@ DEF = re.compile(r'^\s{0,2}(procedure|function)\s+(\w+)', re.I)
 # `a` e `as` ficaram de fora de proposito: sao palavras dos dois idiomas
 # (`for` e verbo, `so` e "so" sem acento) e marcavam prosa portuguesa como
 # inglesa.
+# Duas listas, e as duas precisam existir. FUNC pega a prosa por palavra
+# funcional; VERBO pega o titulo curto, que nao tem funcional nenhuma --
+# `Parse PNG header to extract metadata` tem so um "to" e passava batido.
 FUNC = set('''the of and to in with is are be by from on it its or not an
 that this which when will can must should would could has have had into only
 both all any more than then there here'''.split())
+VERBO = set('''parse extract check build write read create remove append
+insert returns returning compute calculate convert render draw store holds
+needs uses using called given based found missing supported unsupported
+invalid empty current first last only must should when this that these those
+with into from through after before while each every both either whether
+which what where why many much more most less least does did doing gets got
+sets puts make makes made take takes'''.split())
 LITERAL = re.compile(r"'(?:[^']|'')*'")
+ACENTO = re.compile(r'[áéíóúâêôàãõçÁÉÍÓÚÂÊÔÀÃÕÇ]')
 # linha de exemplo/codigo dentro de comentario nao conta como prosa
 CODIGO = re.compile(r'^\s*(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|FOR|LOOP|'
                     r'EXIT|PL_FPDF|DBMS_|UTL_|l_|:=|\{|\}|")', re.I)
@@ -110,6 +121,8 @@ def ingles(texto):
     if CODIGO.match(texto):
         return False
     t = LITERAL.sub(' ', texto)
+    # `.first`, `.last`, `.count`: metodo de colecao do PL/SQL, nao prosa.
+    t = re.sub(r'\.\w+', ' ', t)
     # Identificador nao e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
     # e `Parametro IN (nao IN OUT)` daria dois "in" -- os dois marcavam
     # portugues como ingles. Token com `_` e token TODO EM MAIUSCULA (palavra
@@ -117,8 +130,12 @@ def ingles(texto):
     p = [w for w in re.findall(r'[A-Za-zÀ-ÿ_]+', t)
          if '_' not in w and not w.isupper()]
     p = [w.lower() for w in p]
-    return any(sum(1 for k in range(j, min(j + 4, len(p)))
-                   if p[k] in FUNC) >= 2 for j in range(len(p)))
+    if any(sum(1 for k in range(j, min(j + 4, len(p)))
+               if p[k] in FUNC) >= 2 for j in range(len(p))):
+        return True
+    # sem acento e com dois verbos ingleses: e titulo em ingles
+    return (len(p) >= 3 and not ACENTO.search(' '.join(p))
+            and sum(1 for w in p if w in VERBO) >= 2)
 
 
 def comentarios(linhas):
@@ -222,11 +239,17 @@ def conferir(pks, pkb):
     for n, nome in corpos(linhas):
         if nome.lower() in publicos:
             continue
+        # Regua nao e documentacao -- ela comeca com `--` e passava por
+        # comentario --, mas tambem nao interrompe a busca: o padrao herdado
+        # do porte e `regua / texto / regua / subprograma`, e parar na
+        # primeira daria "sem comentario" para quem tem.
         k = n - 2
-        while k >= 0 and not linhas[k].strip():
+        while k >= 0 and (not linhas[k].strip()
+                          or re.match(r'^\s*(-{20,}|\*{20,})\s*$', linhas[k])):
             k -= 1
         anterior = linhas[k].strip() if k >= 0 else ''
-        if not (anterior.startswith('--') or anterior.endswith('*/')):
+        if not (anterior.startswith('--') or anterior.endswith('*/')
+                or anterior.startswith('*')):
             falhas.append((n, f'{nome} é privado e não tem comentário acima — '
                               f'a spec não o documenta, então este é o único '
                               f'lugar'))

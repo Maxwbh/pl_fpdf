@@ -143,14 +143,25 @@ LIVRE = re.compile(r"'[^']*'\s*/|/\s*'[^']*'|\w/\w|@example|@note \w")
 # `a` e `as` ficaram de fora de proposito: sao palavras dos dois idiomas
 # (`for` e verbo, `so` e "so" sem acento) e marcavam prosa portuguesa como
 # inglesa.
+# Duas listas, e as duas precisam existir. FUNC pega a prosa por palavra
+# funcional; VERBO pega o titulo curto, que nao tem funcional nenhuma --
+# `Parse PNG header to extract metadata` tem so um "to" e passava batido.
 FUNC = set('''the of and to in with is are be by from on it its or not an
 that this which when will can must should would could has have had into only
 both all any more than then there here'''.split())
+VERBO = set('''parse extract check build write read create remove append
+insert returns returning compute calculate convert render draw store holds
+needs uses using called given based found missing supported unsupported
+invalid empty current first last only must should when this that these those
+with into from through after before while each every both either whether
+which what where why many much more most less least does did doing gets got
+sets puts make makes made take takes'''.split())
 # linha de codigo de exemplo: `IF ... THEN`, `SELECT ... INTO`, chamada, JSON
 CODIGO = re.compile(r'^\s*\*\s+(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|'
                     r'FOR|LOOP|EXIT|PL_FPDF|DBMS_|l_|:=|\{|\}|"|--|/\*)',
                     re.I)
 LITERAL = re.compile(r"'(?:[^']|'')*'")
+ACENTO = re.compile(r'[áéíóúâêôàãõçÁÉÍÓÚÂÊÔÀÃÕÇ]')
 # Caminho de arquivo do repositorio dentro do bloco. Proibido: o comentario
 # tem de se bastar -- endereco envelhece, e ponteiro quebrado em comentario
 # nao quebra nada, entao ninguem descobre.
@@ -163,14 +174,19 @@ def ingles(linha):
     if CODIGO.match(linha):
         return False
     texto = LITERAL.sub(' ', re.sub(r'^\s*\*\s?', '', linha))
+    texto = re.sub(r'\.\w+', ' ', texto)   # `.first`/`.last`: metodo, nao prosa
     # Identificador nao e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
     # e `Parametro IN (nao IN OUT)` daria dois "in" -- os dois marcavam
     # portugues como ingles. Token com `_` e token TODO EM MAIUSCULA (palavra
     # reservada do PL/SQL, nome de tipo) ficam de fora da conta.
     p = [w.lower() for w in re.findall(r'[A-Za-zÀ-ÿ_]+', texto)
          if '_' not in w and not w.isupper()]
-    return any(sum(1 for k in range(j, min(j + 4, len(p)))
-                   if p[k] in FUNC) >= 2 for j in range(len(p)))
+    if any(sum(1 for k in range(j, min(j + 4, len(p)))
+               if p[k] in FUNC) >= 2 for j in range(len(p))):
+        return True
+    # sem acento e com dois verbos ingleses: e titulo em ingles
+    return (len(p) >= 3 and not ACENTO.search(' '.join(p))
+            and sum(1 for w in p if w in VERBO) >= 2)
 
 
 # o que sobrou do banner antigo, se a conversao passou por cima de alguem

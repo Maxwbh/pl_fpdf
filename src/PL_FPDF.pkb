@@ -255,7 +255,6 @@ type ArrayCharWidths is table of charSet index by word;
  g_default_format recPageFormat;           -- Default page format
  g_default_orientation varchar2(1) := 'P'; -- Default page orientation ('P' or 'L')
  g_formats_initialized boolean := false;  -- Flag indicating if page formats are initialized
---------------------------------------------------------------------------------
 
 -- Cache de fontes TrueType
  g_ttf_fonts tTTFFonts;                     -- TrueType font cache
@@ -264,7 +263,6 @@ type ArrayCharWidths is table of charSet index by word;
  -- fora do recTTFFont de proposito: o tipo e publico e descreve a FONTE, nao
  -- a numeracao interna de um documento em particular.
  g_ttf_obj tTTFObjs;
---------------------------------------------------------------------------------
 
 -- Limites e constantes da especificacao
  -- Versao declarada no cabecalho do arquivo
@@ -297,7 +295,6 @@ type ArrayCharWidths is table of charSet index by word;
  -- Assinatura dos formatos de imagem aceitos
  c_PNG_SIGNATURE CONSTANT RAW(8) := HEXTORAW('89504E470D0A1A0A');
  c_JPEG_SOI CONSTANT RAW(2) := HEXTORAW('FFD8');
---------------------------------------------------------------------------------
 
 -- =============================================================================
 -- Leitura e edicao de PDF: estado do documento carregado
@@ -347,7 +344,7 @@ g_pdf_modified BOOLEAN := FALSE;
 TYPE page_removal_list IS TABLE OF BOOLEAN INDEX BY PLS_INTEGER;
 g_removed_pages page_removal_list;
 
--- Marcas d agua pedidas
+-- Marcas d'agua pedidas
 TYPE watermark_rec IS RECORD (
   text VARCHAR2(200),
   opacity NUMBER,
@@ -495,8 +492,6 @@ c_PDF_PADDING CONSTANT RAW(32) := HEXTORAW(
   '2E2E00B6D0683E802F0CA9FE6453697A'
 );
 
---------------------------------------------------------------------------------
-
 -- =============================================================================
 -- Declaracoes antecipadas
 --
@@ -529,12 +524,9 @@ function pdf_parse_pages(p_spec in varchar2, p_total in pls_integer) return tpi;
 function pdf_assemble(p_srcs in out nocopy pdf_source_list,
                       p_sel  in out nocopy tpi2) return blob;
 
-
-
 function compute_object_key(p_enc_key raw, p_obj_num pls_integer,
                             p_gen_num pls_integer default 0,
                             p_key_length pls_integer default 128) return raw;
-
 
 -- Geradores dos operadores de marca d'agua e overlay: ficam junto do copiador,
 -- porque dependem de pdf_dict_value e companhia, mas quem os chama e
@@ -568,12 +560,12 @@ procedure ovl_img_xobject(p_img in blob, o_dic out varchar2,
                           o_msk_dic out varchar2,
                           o_msk_dat in out nocopy blob);
 
-----------------------------------------------------------------------------------------
+-- print: saida bruta do modo de depuracao. Nao participa da geracao do PDF.
 procedure print (pstr in varchar2) is
 begin
-  -- Choose the output mode...
+  -- escolhe o destino da saida
   htp.p(pstr);
-  -- My outpout method
+  -- o metodo de saida desta base
   -- affiche.p(pstr);
 end print;
 
@@ -609,7 +601,7 @@ exception
 end getPDFDocLength;
 
 ----------------------------------------------------------------------------------
--- Setting metric for courier Font
+-- larguras da familia Courier
 ----------------------------------------------------------------------------------
 -- <larguras-das-fontes: gerado, nao edite>
 ----------------------------------------------------------------------------------------
@@ -841,7 +833,7 @@ end p_larguras_da_fonte;
 -- </larguras-das-fontes>
 
 ----------------------------------------------------------------------------------
--- Inclusion des métriques d'une font.
+-- p_includeFont: carrega no cache as larguras de caractere de uma fonte padrao.
 ----------------------------------------------------------------------------------
 procedure p_includeFont (pfontname in varchar2) is
   mySet charSet;
@@ -861,7 +853,7 @@ begin
 end p_includeFont;
 
 ----------------------------------------------------------------------------------
--- p_getFontMetrics : récupérer les metric d'une font.
+-- p_getFontMetrics: as larguras de caractere de uma fonte ja carregada.
 ----------------------------------------------------------------------------------
 function p_getFontMetrics(pFontName in varchar2) return charSet is
 begin
@@ -869,8 +861,7 @@ begin
 end p_getFontMetrics;
 
 ----------------------------------------------------------------------------------
--- Parcours le tableau des images et renvoie true si l'image cherché existe 
--- dans le tableau.
+-- imageExists: se a imagem ja foi emitida neste documento, pela chave do cache.
 ----------------------------------------------------------------------------------
 function imageExists(pFile in varchar2) return boolean is
 begin
@@ -885,8 +876,7 @@ exception
 end imageExists;
 
 ----------------------------------------------------------------------------------
--- Parcours le tableau des charwidths et renvoie true si il existe pour la font
--- donnée.
+-- charwidthsExists: se as larguras de caractere desta fonte ja estao no cache.
 ----------------------------------------------------------------------------------
 function fpdf_charwidthsExists(pFontName in varchar2) return boolean is
 chTab charSet;
@@ -904,19 +894,8 @@ exception
 end fpdf_charwidthsExists;
 
 ----------------------------------------------------------------------------------
--- Parcours le tableau des fonts et renvoie true si il existe pour la font
--- donnée.
+-- fontsExists: se a fonte ja foi registrada neste documento.
 ----------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-/*******************************************************************************
-* Procedure: log_message (Internal helper)
-* Registro simples, para diagnostico e acompanhamento
-*******************************************************************************/
---------------------------------------------------------------------------------
--- Date: 2025-12-18
---------------------------------------------------------------------------------
 
 /*******************************************************************************
 * log_message (privada): registro no DBMS_APPLICATION_INFO e no DBMS_OUTPUT
@@ -978,12 +957,8 @@ begin
   return g_log_level;
 end GetLogLevel;
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-/*******************************************************************************
-* Procedure: init_page_formats (Internal)
-* Description: Initializes standard page format definitions (in mm)
-*******************************************************************************/
+-- init_page_formats: monta a tabela dos formatos de pagina padrao, em
+-- milimetros. Roda uma vez por sessao, na primeira pagina.
 procedure init_page_formats is
 begin
   if g_formats_initialized then
@@ -1000,7 +975,7 @@ begin
   g_page_formats('A5').width := 148;
   g_page_formats('A5').height := 210;
 
-  -- North American formats
+  -- formatos norte-americanos
   g_page_formats('LETTER').width := 215.9;
   g_page_formats('LETTER').height := 279.4;
 
@@ -1034,19 +1009,18 @@ exception
 end init_page_formats;
 
 /*******************************************************************************
-* Function: get_page_format (Internal)
-* Description: Returns dimensions for a named page format
+* get_page_format: as medidas de um formato de pagina pelo nome
 *******************************************************************************/
 function get_page_format(p_format_name varchar2) return recPageFormat is
   l_format recPageFormat;
   l_format_upper varchar2(20) := upper(p_format_name);
 begin
-  -- Ensure formats are initialized
+  -- garante que a tabela de formatos ja foi montada
   if not g_formats_initialized then
     init_page_formats();
   end if;
 
-  -- Look up format
+  -- procura o formato
   if g_page_formats.exists(l_format_upper) then
     l_format := g_page_formats(l_format_upper);
   else
@@ -1059,11 +1033,7 @@ begin
 end get_page_format;
 
 --------------------------------------------------------------------------------
--- Date: 2025-12-16
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Parse PNG header to extract metadata
+-- parse_png_header: le largura, altura e cor do IHDR de um PNG
 --------------------------------------------------------------------------------
 function parse_png_header(p_blob blob, p_img in out recImageBlob) return boolean is
   l_signature raw(8);
@@ -1073,7 +1043,7 @@ function parse_png_header(p_blob blob, p_img in out recImageBlob) return boolean
   l_pos integer := 1;
   c_png_signature constant raw(8) := hextoraw('89504E470D0A1A0A');
 begin
-  -- Validate PNG signature
+  -- confere a assinatura do PNG
   if dbms_lob.getlength(p_blob) < 33 then
     return false;
   end if;
@@ -1083,7 +1053,7 @@ begin
     return false;
   end if;
 
-  -- Read IHDR chunk (always first after signature)
+  -- o IHDR vem sempre logo depois da assinatura
   l_pos := 9;
   l_chunk_length := dbms_lob.substr(p_blob, 4, l_pos); -- tem de ser 0x0000000D (13 bytes)
   l_pos := l_pos + 4;
@@ -1094,7 +1064,7 @@ begin
     return false;
   end if;
 
-  -- Read IHDR data: width(4) height(4) bit_depth(1) color_type(1) ...
+  -- o IHDR: largura(4) altura(4) profundidade(1) tipo de cor(1) ...
   l_ihdr_data := dbms_lob.substr(p_blob, 13, l_pos);
 
   -- Extract width (bytes 0-3, big-endian)
@@ -1110,7 +1080,7 @@ begin
   -- 0=grayscale, 2=RGB, 3=indexed, 4=grayscale+alpha, 6=RGBA
   p_img.color_type := utl_raw.cast_to_binary_integer(utl_raw.substr(l_ihdr_data, 10, 1));
 
-  -- Check for transparency
+  -- procura transparencia
   p_img.has_transparency := (p_img.color_type = 4 or p_img.color_type = 6);
 
   p_img.file_format := 'PNG';
@@ -1127,7 +1097,7 @@ exception
 end parse_png_header;
 
 --------------------------------------------------------------------------------
--- Parse JPEG header to extract metadata
+-- parse_jpeg_header: le largura, altura e componentes do SOF de um JPEG
 --------------------------------------------------------------------------------
 function parse_jpeg_header(p_blob blob, p_img in out recImageBlob) return boolean is
   l_marker raw(2);
@@ -1146,7 +1116,7 @@ begin
     return false;
   end if;
 
-  -- Validate JPEG signature (SOI marker)
+  -- confere a assinatura do JPEG (marcador SOI)
   l_marker := dbms_lob.substr(p_blob, 2, 1);
   if l_marker != c_soi then
     return false;
@@ -1154,17 +1124,17 @@ begin
 
   l_pos := 3;
 
-  -- Scan for SOF marker to get dimensions
+  -- varre ate o marcador SOF, que traz as medidas
   while l_pos < l_length - 10 loop
     l_marker := dbms_lob.substr(p_blob, 2, l_pos);
 
     -- e um marcador SOF0 ou SOF2?
     if l_marker = c_sof0 or l_marker = c_sof2 then
-      -- Read segment length
+      -- le o tamanho do segmento
       l_seg_length := dbms_lob.substr(p_blob, 2, l_pos + 2);
       l_seg_len := utl_raw.cast_to_binary_integer(l_seg_length, utl_raw.big_endian);
 
-      -- Read SOF data: length(2) precision(1) height(2) width(2) ...
+      -- o SOF: tamanho(2) precisao(1) altura(2) largura(2) ...
       l_data := dbms_lob.substr(p_blob, 9, l_pos + 2);
 
       -- Precision (byte 2)
@@ -1189,9 +1159,9 @@ begin
       return true;
     end if;
 
-    -- Move to next marker
+    -- avanca para o proximo marcador
     if utl_raw.substr(l_marker, 1, 1) = hextoraw('FF') then
-      -- Read segment length and skip
+      -- le o tamanho do segmento and skip
       l_seg_length := dbms_lob.substr(p_blob, 2, l_pos + 2);
       l_seg_len := utl_raw.cast_to_binary_integer(l_seg_length, utl_raw.big_endian);
       l_pos := l_pos + 2 + l_seg_len;
@@ -1217,7 +1187,7 @@ function getImageFromUrl(p_Url in varchar2) return recImageBlob is
   urityp URIType;
   l_parsed boolean := false;
 begin
-  -- Initialize image BLOB
+  -- prepara o BLOB da imagem
   dbms_lob.createtemporary(l_img.image_blob, true, dbms_lob.session);
 
   -- Normalize URL
@@ -1228,7 +1198,7 @@ begin
   log_message(4, 'Fetching image from URL: ' || lv_url);
 
   begin
-    -- Fetch image using URIFactory
+    -- busca a imagem pela URL
     urityp := URIFactory.getURI(lv_url);
     l_img.image_blob := urityp.getBlob();
     l_img.mime_type := urityp.getContentType();
@@ -1241,7 +1211,7 @@ begin
       raise_application_error(-20302, 'Unable to fetch image from URL: ' || p_Url || ' - ' || sqlerrm);
   end;
 
-  -- Parse image header based on format
+  -- escolhe o leitor de cabecalho conforme o formato
   if l_img.mime_type like '%png%' or dbms_lob.substr(l_img.image_blob, 8, 1) = hextoraw('89504E470D0A1A0A') then
     l_parsed := parse_png_header(l_img.image_blob, l_img);
     if not l_parsed then
@@ -1274,7 +1244,7 @@ end getImageFromUrl;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- Enables debug infos
+-- liga o diagnostico
 --------------------------------------------------------------------------------
 procedure DebugEnabled is
 begin
@@ -1282,7 +1252,7 @@ begin
 end DebugEnabled;
 
 --------------------------------------------------------------------------------
--- disables debug infos
+-- desliga o diagnostico
 --------------------------------------------------------------------------------
 procedure DebugDisabled is
 begin
@@ -1290,40 +1260,36 @@ begin
 end DebugDisabled;
 
 --------------------------------------------------------------------------------
--- Returns the k property
+-- devolve o fator de escala
 --------------------------------------------------------------------------------
 function GetScaleFactor return number is
 begin
-	-- Get scale factor
+	-- o fator de escala
 	return k;
 end GetScaleFactor;
 
 --------------------------------------------------------------------------------
--- Returns the Linespacing property
+-- devolve a entrelinha
 --------------------------------------------------------------------------------
 function GetLineSpacing return number is
 begin
-	-- Get LineSpacing property
+	-- a entrelinha
 	return LineSpacing;
 end GetLineSpacing;
 
 --------------------------------------------------------------------------------
--- sets the Linespacing property
+-- define a entrelinha
 --------------------------------------------------------------------------------
 Procedure SetLineSpacing (pls in number) is
 begin
-    -- Set LineSpacing property
+    -- define a entrelinha
     LineSpacing := pls;
 end SetLineSpacing;
 
 ----------------------------------------------------------------------------------
--- Compatibilité PHP -> PLSQL : proc. and func. spécifiques au portages
--- 				 	 		  	ajoutée pour des facilités de traduction
+-- Rotinas que nao existem no FPDF original: entraram no porte de PHP para
+-- PL/SQL, onde a linguagem nao oferece equivalente.
 ----------------------------------------------------------------------------------
-
-
-
-
 
 -- Responde a mesma pergunta que o is_string do porte fazia: "este VARCHAR2 NAO
 -- contem um numero?". La a resposta vinha de provocar excecao no to_number e
@@ -1390,16 +1356,12 @@ begin
   return mynum;
 end tochar;
 
-
-
 -- Parametro IN (nao IN OUT): as funcoes so leem o argumento. Com IN OUT, o
 -- PL/SQL copiava o valor na entrada e na saida a cada chamada, e o chamador
 -- era obrigado a passar uma variavel — nunca uma expressao ou literal.
 
-
-
 ----------------------------------------------------------------------------------------
---  Traduction des méthodes PHP.
+-- Rotinas equivalentes as do FPDF original em PHP.
 ----------------------------------------------------------------------------------------
 procedure p_dochecks is
 begin
@@ -1410,7 +1372,6 @@ begin
   null;
 end p_dochecks;
 
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 -- p_ensure_page_clob : garante que a pagina possui um CLOB temporario alocado.
 ----------------------------------------------------------------------------------------
@@ -1475,7 +1436,12 @@ begin
   g_page_buf := null;
 end p_flush_page_buf;
 
-----------------------------------------------------------------------------------------
+-- p_out: TODA saida do documento passa por aqui.
+--
+-- Escreve no acumulador de pagina quando o estado e 2 (dentro de uma pagina)
+-- e no do documento nos demais. Concatena em VARCHAR2 e so descarrega no
+-- CLOB quando enche: sem isso seria uma chamada DBMS_LOB por instrucao
+-- emitida, e a pagina inteira seria recopiada a cada vez.
 procedure p_out(pstr in varchar2 default null, pCRLF in boolean default true) is 
 lv_CRLF varchar2(2);
   lv_output varchar2(32767);
@@ -1515,7 +1481,7 @@ exception
     error('p_out : '||sqlerrm);
 end p_out;
 
-----------------------------------------------------------------------------------------
+-- p_newobj: abre um objeto PDF novo, numera e guarda o offset para a xref.
 procedure p_newobj is
 begin
 	-- Begin a new object
@@ -1527,7 +1493,6 @@ exception
    error('p_newobj : '||sqlerrm);
 end p_newobj;
 
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 -- Escapa uma string literal do PDF: dentro de (...) a barra invertida inicia
 -- sequencia de escape, entao ela e os dois parenteses precisam de barra na
@@ -1671,13 +1636,15 @@ begin
   return l_saida;
 end p_texto_pdf;
 
-----------------------------------------------------------------------------------------
+-- p_escapa_pdf: escapa o que a sintaxe de string do PDF reserva -- a barra
+-- invertida e os dois parenteses. E a UNICA implementacao do escape; escrever
+-- o mesmo em outro lugar e o que o check_escape_pdf.py recusa.
 function p_escapa_pdf(p_txt in varchar2) return varchar2 is
 begin
   return replace(replace(replace(p_txt, '\', '\\'), '(', '\('), ')', '\)');
 end p_escapa_pdf;
 
-----------------------------------------------------------------------------------------
+-- p_textstring: um texto pronto para ir entre parenteses num objeto PDF.
 function p_textstring(pstr in varchar2) return varchar2 is
 begin
 	-- Format a text string
@@ -1685,7 +1652,6 @@ begin
 	return '(' || UTF8ToPDFString(pstr, true) || ')';
 end p_textstring;
 
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 -- p_putstream_clob : escreve o conteudo de uma pagina (CLOB) no documento em blocos,
 --                    sem materializar a pagina inteira em VARCHAR2.
@@ -1711,7 +1677,7 @@ exception
     error('p_putstream_clob : '||sqlerrm);
 end p_putstream_clob;
 
-----------------------------------------------------------------------------------------
+-- p_putstream: escreve um stream de texto, entre os marcadores da sintaxe.
 procedure p_putstream(pstr in varchar2) is 
 begin
 	p_out('stream');
@@ -1722,7 +1688,8 @@ exception
    error('p_putstream : '||sqlerrm);
 end p_putstream;
 
-----------------------------------------------------------------------------------------
+-- p_putstream (BLOB): a mesma coisa para dado binario, copiado por
+-- DBMS_LOB em pedacos -- por VARCHAR2 o byte acima de 0x7F nao sobreviveria.
 procedure p_putstream(pData in out NOCOPY blob) is 
 	lv_content_length number := dbms_lob.getlength(pdata);
 	offset integer := 1;
@@ -1763,7 +1730,8 @@ exception
    error('p_putstream : '||sqlerrm);
 end p_putstream;
 
-----------------------------------------------------------------------------------------
+-- p_putxobjectdict: o /XObject do dicionario de recursos, com uma entrada
+-- por imagem ja emitida.
 procedure p_putxobjectdict is
 v txt;
 begin
@@ -1777,7 +1745,7 @@ exception
   error('p_putxobjectdict : '||sqlerrm);
 end p_putxobjectdict;
 
-----------------------------------------------------------------------------------------
+-- p_putresourcedict: o dicionario de recursos -- /ProcSet, /Font e /XObject.
 procedure p_putresourcedict is
 v varchar2(200);
 begin
@@ -1798,7 +1766,8 @@ exception
    error('p_putresourcedict : '||sqlerrm);
 end p_putresourcedict;
 
-----------------------------------------------------------------------------------------
+-- p_putfonts: emite um objeto por fonte usada. Para a TrueType embutida sai
+-- tambem o programa da fonte em hexadecimal, no /FontFile2, e o descritor.
 procedure p_putfonts is 
 nf number := n;
 i pls_integer;
@@ -1873,11 +1842,10 @@ begin
 	v := FontFiles.first;
 	while (v is not null) 
 	loop
-		-- Font file embedding
+		-- embutir o arquivo da fonte
 		p_newobj();
 		FontFiles(v).n:= n;
 		myFont := null;
-		
 		
 		mySet := p_getFontMetrics(FontFiles(v).file);
 
@@ -1904,12 +1872,12 @@ begin
 			end if;
 			
 			if(myHeader) then
-				-- Strip first binary header
+				-- descarta o primeiro cabecalho binario
 				myFont := substr(myFont,6);
 			end if; 
 			
 			if(myHeader and ascii(substr(myFont,(FontFiles(v).length1), 1)) = 128) then
-				-- Strip second binary header
+				-- descarta o segundo cabecalho binario
 				myFont := substr(myFont, 1, FontFiles(v).length1) || substr(myFont, FontFiles(v).length1 + 6);
 			end if; 
 		end if; 
@@ -1947,7 +1915,7 @@ begin
 			p_out('>>');
 			p_out('endobj');
 		elsif(lower(myType) = 'type1' or lower(myType) = 'truetype') then
-			-- Additional Type1 or TrueType font
+			-- fonte Type1 ou TrueType acrescentada
 			p_newobj();
 			p_out('<</Type /Font');
 			p_out('/BaseFont /' || myName);
@@ -2019,14 +1987,13 @@ begin
 			p_out(s || '>>');
 			p_out('endobj');
 		else
-			-- Allow for additional types
+			-- abre espaco para outros tipos
 			methode := 'p_put' || lower(myType);
 			
 			if(not methode_exists(methode)) then
 				Error('Unsupported font type: ' || myType);
 -- 			else
 -- 			  plsqlmethode := 'begin pl_fpdf.'|| methode ||'(''' || fonts(k) || '''); end';
--- 			  execute immediate plsqlmethode;
 			end if;
 		end if;
 		
@@ -2037,7 +2004,8 @@ exception
    error('p_putfonts : '||sqlerrm);
 end p_putfonts;
 
-----------------------------------------------------------------------------------------
+-- p_putimages: emite um objeto de imagem por entrada do cache, com a paleta
+-- e a mascara de transparencia quando o PNG as tem.
 procedure p_putimages is
   info recImage;
   v txt;
@@ -2047,8 +2015,7 @@ begin
   -- Nao ha filtro a declarar aqui: a imagem traz o seu proprio (info.f, o
   -- /DCTDecode do JPEG por exemplo) e a paleta sai crua. O ramo que punha
   -- '/FlateDecode' quando b_compress estava ligado nao comprimia nada.
-	--while(list($file,$info)=each($this->images))
-	v := images.first;
+		v := images.first;
 	while (v is not null)  loop
 		p_newobj();
 		images(v).n := n;
@@ -2127,7 +2094,7 @@ exception
     error('p_putimages : '||sqlerrm);
 end p_putimages;
 
-----------------------------------------------------------------------------------------
+-- p_putresources: fontes, imagens e o dicionario que aponta para as duas.
 procedure p_putresources is
 begin
 	p_putfonts();
@@ -2144,7 +2111,7 @@ exception
     error('p_putresources : '||sqlerrm);
 end p_putresources;
 
-----------------------------------------------------------------------------------------
+-- p_putinfo: o dicionario /Info com os metadados do documento.
 procedure p_putinfo is
 begin
 	p_out('/Producer ' || p_textstring('PL_FPDF ' || co_version ));
@@ -2169,7 +2136,7 @@ exception
     error('p_putinfo : '||sqlerrm);
 end p_putinfo;
 
-----------------------------------------------------------------------------------------
+-- p_putcatalog: o /Catalog, raiz do documento, com o modo de exibicao.
 procedure p_putcatalog is
 begin
 	p_out('/Type /Catalog');
@@ -2195,13 +2162,13 @@ exception
     error('p_putcatalog : '||sqlerrm);
 end p_putcatalog;
 
-----------------------------------------------------------------------------------------
+-- p_putheader: a primeira linha do arquivo, que declara a versao.
 procedure p_putheader is
 begin
 	p_out('%PDF-' || PDFVersion);
 end p_putheader;
 
-----------------------------------------------------------------------------------------
+-- p_puttrailer: o trailer, com /Size, /Root, /Info e o /ID do documento.
 procedure p_puttrailer is
   l_id_hex VARCHAR2(100);
 begin
@@ -2209,12 +2176,12 @@ begin
   p_out('/Root ' || n || ' 0 R');
   p_out('/Info ' || (n-1) || ' 0 R');
 
-  -- Add encryption reference if enabled
+  -- referencia de cifragem, quando ligada
   IF g_encrypt_obj_num IS NOT NULL THEN
     p_out('/Encrypt ' || g_encrypt_obj_num || ' 0 R');
   END IF;
 
-  -- Add file ID (required for encryption, optional otherwise)
+  -- o /ID do arquivo: obrigatorio com cifragem, opcional sem ela
   IF g_file_id IS NOT NULL THEN
     l_id_hex := RAWTOHEX(g_file_id);
     p_out('/ID [<' || l_id_hex || '><' || l_id_hex || '>]');
@@ -2222,7 +2189,7 @@ begin
 end p_puttrailer;
 
 ----------------------------------------------------------------------------------------
--- Forward declarations for encryption functions (defined in Phase 5 section)
+-- declaracoes antecipadas das rotinas de cifragem, definidas mais abaixo
 ----------------------------------------------------------------------------------------
 FUNCTION generate_file_id RETURN RAW;
 FUNCTION compute_owner_key(p_owner_pwd VARCHAR2, p_user_pwd VARCHAR2, p_key_length PLS_INTEGER) RETURN RAW;
@@ -2231,7 +2198,7 @@ FUNCTION compute_encryption_key(p_user_pwd VARCHAR2, p_o_value RAW, p_permission
 FUNCTION compute_user_value(p_encryption_key RAW, p_file_id RAW, p_key_length PLS_INTEGER) RETURN RAW;
 
 ----------------------------------------------------------------------------------------
--- p_putencrypt: Write encryption dictionary
+-- p_putencrypt: emite o dicionario /Encrypt
 ----------------------------------------------------------------------------------------
 procedure p_putencrypt is
   l_v_value PLS_INTEGER;
@@ -2242,7 +2209,7 @@ begin
     RETURN;
   END IF;
 
-  -- Determine V, R, and key length
+  -- decide /V, /R e o tamanho da chave
   CASE g_encrypt_method
     WHEN 'RC4-40' THEN
       l_v_value := 1; l_r_value := 2; l_key_length := 40;
@@ -2256,17 +2223,17 @@ begin
       l_v_value := 2; l_r_value := 3; l_key_length := 128;
   END CASE;
 
-  -- Generate file ID if not exists
+  -- gera o /ID se ainda nao houver
   IF g_file_id IS NULL THEN
     g_file_id := generate_file_id();
   END IF;
 
-  -- Compute encryption values
+  -- calcula os valores da cifragem
   g_o_value := compute_owner_value(g_owner_password, g_user_password, l_key_length);
   g_encryption_key := compute_encryption_key(g_user_password, g_o_value, g_sec_permissions, g_file_id, l_key_length);
   g_u_value := compute_user_value(g_encryption_key, g_file_id, l_key_length);
 
-  -- Write encrypt dictionary
+  -- emite o dicionario
   p_newobj();
   g_encrypt_obj_num := n;
 
@@ -2284,14 +2251,16 @@ begin
   log_message(2, 'Encryption dictionary written: V=' || l_v_value || ', R=' || l_r_value);
 end p_putencrypt;
 
-----------------------------------------------------------------------------------------
+-- p_endpage: fecha a pagina corrente, devolvendo o estado a 1.
 procedure p_endpage is
 begin
 	-- End of page contents
 	state:=1;
 end p_endpage;
 
-----------------------------------------------------------------------------------------
+-- p_putpages: emite um objeto por pagina -- o conteudo, as areas clicaveis
+-- e o no /Pages que as reune --, comprimindo o fluxo quando a compressao
+-- esta ligada.
 procedure p_putpages is
    nb number := page;
    filter varchar2(200);
@@ -2320,7 +2289,7 @@ begin
    -- Garante que todo conteudo acumulado ja esta nos CLOBs das paginas
    p_flush_page_buf;
 
-   -- Replace number of pages
+   -- troca o marcador pelo total de paginas
 	 if AliasNbPages is not null then
 		   for i in 1..nb loop
 		      if pages.exists(i) and dbms_lob.getlength(pages(i)) > 0 then
@@ -2389,10 +2358,9 @@ begin
       -- /Rect vazio, so por existirem. Um Link na pagina 3 estragava as duas
       -- primeiras.
       if(PageLinks.exists(i) and PageLinks(i).quatre is not null) then
-			   --Links     [one/page]
+			   -- areas clicaveis, uma lista por pagina
 			   annots := '/Annots [';
-			   --for v in PageLinks(i).first..PageLinks(i).last loop
-         v_0 := PageLinks(i).zero;
+			            v_0 := PageLinks(i).zero;
          v_0n := tonumber(v_0);
          v_1 := PageLinks(i).un;
          v_1n := tonumber(v_1);
@@ -2483,9 +2451,7 @@ begin
 	 p_out('<</Type /Pages');
 	 kids := '/Kids [';
      
-      -- Bug dicoverd by Alexandre : arodichevski@newmed.net
-	 --for i in 0..nb loop
-     for i in 0..nb-1 loop
+      	      for i in 0..nb-1 loop
 	    kids := kids || to_char(3+2*i) || ' 0 R ';
 	 end loop;
 
@@ -2499,7 +2465,8 @@ exception
       error('p_putpages : '||sqlerrm);
 end p_putpages;
 
-----------------------------------------------------------------------------------------
+-- p_enddoc: fecha o documento: recursos, catalogo, xref e trailer, nessa
+-- ordem, que e a que a especificacao exige.
 procedure p_enddoc is
 o number;
 begin
@@ -2524,7 +2491,7 @@ begin
 	p_out('>>');
 	p_out('endobj');
 
-	-- Encryption dictionary (if encryption enabled)
+	-- dicionario de cifragem, quando ligada
 	IF g_encrypt_method IS NOT NULL THEN
 	  p_putencrypt();
 	END IF;
@@ -2554,7 +2521,8 @@ exception
     error('p_enddoc : '||sqlerrm);
 end p_enddoc;
 
-----------------------------------------------------------------------------------------
+-- p_beginpage: abre uma pagina, fixando orientacao, medidas e a margem que
+-- dispara a quebra automatica.
 procedure p_beginpage(orientation in varchar2) is
 Myorientation word := orientation;
 begin
@@ -2597,7 +2565,8 @@ exception
     error('p_beginpage : '||sqlerrm);
 end p_beginpage;
 
-----------------------------------------------------------------------------------------
+-- p_dounderline: o retangulo que desenha o sublinhado, na espessura e na
+-- profundidade que a fonte corrente declara.
 function p_dounderline(px in number, py in number, ptxt in varchar2) return varchar2 is
 up word := CurrentFont.up;
 ut word := CurrentFont.ut;
@@ -2637,7 +2606,8 @@ function p_parseImage(pFile in varchar2,
   ct word;
   colors pls_integer;
   myType word;
-  ---------------------------------------------------------------------------------------------
+  -- freadb: le pLength bytes do BLOB a partir de pHandle, em RAW, e avanca o
+  -- cursor. E a base do fread e do fread_blob.
   function freadb(pBlob in out nocopy blob, pHandle in out number, pLength in out number) return raw is
     l_data_raw  raw(8192);
   begin
@@ -2664,8 +2634,6 @@ function p_parseImage(pFile in varchar2,
     pHandle := pHandle + pLength;
   end fread_blob;
 
-  ---------------------------------------------------------------------------------------------
-
 begin
   dbms_lob.createtemporary(chunk_content, true );
   dbms_lob.open(chunk_content,dbms_lob.LOB_READWRITE);
@@ -2675,7 +2643,7 @@ begin
   myImgInfo.data := imgBlob;
   dbms_lob.open(myImgInfo.data,dbms_lob.LOB_READWRITE);
 
-  -- Fetch and parse image using native BLOB handling
+  -- busca e interpreta a imagem direto em BLOB
   if p_blob is null then
     myImg := getImageFromUrl(pFile);
   else
@@ -2689,7 +2657,7 @@ begin
   end if;
   myblob := myImg.image_blob;  -- Use BLOB field directly
   myImgInfo.i := 1;
-    -- reading the blob
+    -- le o BLOB
 
     --Check signature
     if(utl_raw.compare(freadb(myblob, f, signature_len), c_PNG_SIGNATURE) != 0) then
@@ -2700,23 +2668,23 @@ begin
   myImgInfo.w := myImg.width;
   myImgInfo.h := myImg.height;
 
-    -- scan chunks looking for palette, transparency and image data
+    -- varre os blocos atras da paleta, da transparencia e dos dados
     loop
     
         chunkdata_len := utl_raw.cast_to_binary_integer(freadb(myblob, f, chunklength_len));
         myType := fread(myblob, f, chunktype_len);
-    --read chunk contents into separate blob
+    -- le o conteudo do bloco num BLOB proprio
     if( chunkdata_len > 0 ) then
       fread_blob(myblob,f,chunkdata_len,chunk_content);
       f_chunk := 1;
     end if;
     chunk_num := chunk_num + 1;
-    --discard the crc
+    -- descarta o CRC
     bufRaw := freadb(myblob, f, crc_len);
     if( chunk_num = 1 and myType != 'IHDR' ) then
       Error('Incorrect PNG file: ' || pFile);
     elsif(myType = 'IHDR') then
-      -- ^^^ I have already get width and height, so go forward (read 4 Bytes twice)
+      -- largura e altura ja foram lidas; avanca 4 bytes duas vezes
       bufRaw := freadb(chunk_content, f_chunk, widthheight_len);
 
       myImgInfo.bpc := to_number(rawtohex(freadb(chunk_content, f_chunk, hdrflag_len)), 'XX');    
@@ -2755,7 +2723,7 @@ begin
             -- Read palette
             myImgInfo.pal := freadb(chunk_content, f_chunk, chunkdata_len);
         elsif(myType = 'tRNS') then
-            --   Read transparency info
+            -- le a informacao de transparencia
             bufRaw := freadb(chunk_content, f_chunk, chunkdata_len);
             if(ct = 0) then
                 myImgInfo.trns(1) := to_number(rawtohex(utl_raw.substr(bufRaw,1,1)),'XX');
@@ -2802,8 +2770,7 @@ end p_parseImage;
 ********************************************************************************/
 
 ----------------------------------------------------------------------------------------
--- Methods added to FPDF primary class
-----------------------------------------------------------------------------------------
+-- rotinas acrescentadas a classe principal do FPDF
 ----------------------------------------------------------------------------------------
 -- SetDash Ecrire en pointillés
 ----------------------------------------------------------------------------------------
@@ -2820,7 +2787,6 @@ end SetDash;
   
 ----------------------------------------------------------------------------------------
 -- Methods from FPDF primary class
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 procedure Error(pmsg in varchar2) is
   v_clob_content varchar2(32767);
@@ -2872,31 +2838,27 @@ begin
 	end;
 end Error;
 
-----------------------------------------------------------------------------------------
 function GetCurrentFontSize return number is
 begin
 	-- Get fontsizePt
 	return fontsizePt;
 end GetCurrentFontSize;
 
-----------------------------------------------------------------------------------------
 function GetCurrentFontStyle return varchar2 is
 begin
 	-- Get fontStyle
 	return fontStyle;
 end GetCurrentFontStyle;
 
-----------------------------------------------------------------------------------------
 function GetCurrentFontFamily return varchar2 is
 begin
 	-- Get fontStyle
 	return FontFamily;
 end GetCurrentFontFamily;
 
-----------------------------------------------------------------------------------------
 procedure Ln(h number default null) is
 begin
-	-- Line feed; default value is last cell height
+	-- quebra de linha; por padrao desce a altura da ultima celula
 	x :=lMargin;
 	if(nao_e_numero(h)) then
 		y:= y + lasth;
@@ -2905,17 +2867,15 @@ begin
     end if; 
 end Ln;
 
-----------------------------------------------------------------------------------------
 function GetX return number is
 begin
-	-- Get x position
+	-- a abscissa corrente
 	return x;
 end GetX;
 
-----------------------------------------------------------------------------------------
 procedure SetX(px in number) is
 begin
-	-- Set x position
+	-- define a abscissa
 	if(px>=0) then 
 		x:=px;
 	else
@@ -2923,17 +2883,15 @@ begin
 	end if; 
 end SetX;
 
-----------------------------------------------------------------------------------------
 function GetY return number is
 begin
-	-- Get y position
+	-- a ordenada corrente
 	return y;
 end GetY;
 
-----------------------------------------------------------------------------------------
 procedure SetY(py in number) is 
 begin
-	-- Set y position and reset x
+	-- define a ordenada e devolve o x a margem
 	x:=lMargin;
 	if(py>=0) then
 		y:=py;
@@ -2942,16 +2900,15 @@ begin
 	end if; 
 end SetY;
 
-----------------------------------------------------------------------------------------
 procedure SetXY(x in number,y in number) is 
 begin
-	-- Set x and y positions
+	-- define as duas coordenadas
 	SetY(y);
 	SetX(x);
 end SetXY;
 
 ----------------------------------------------------------------------------------------
--- SetHeaderProc : setting header Callback
+-- SetHeaderProc: registra a rotina de cabecalho
 ----------------------------------------------------------------------------------------
 procedure SetHeaderProc(headerprocname in varchar2, paramTable tv4000a default noParam) is
 begin
@@ -2967,7 +2924,7 @@ begin
 end;
 
 ----------------------------------------------------------------------------------------
--- SetFooterProc : setting footer Callback
+-- SetFooterProc: registra a rotina de rodape
 ----------------------------------------------------------------------------------------
 procedure SetFooterProc(footerprocname in varchar2, paramTable tv4000a default noParam) is
 begin
@@ -2980,11 +2937,10 @@ begin
    end if;
 end;
 
-----------------------------------------------------------------------------------------
 procedure SetMargins(left in number, top in number, right in number default -1) is 
 myright margin := right;
 begin
-	-- Set left, top and right margins
+	-- define as margens esquerda, superior e direita
 	lMargin:=left;
 	tMargin:=top;
 	if(myright=-1) then
@@ -2993,43 +2949,38 @@ begin
 	rMargin:=myright;
 end SetMargins;
 
-----------------------------------------------------------------------------------------
 procedure SetLeftMargin(pMargin in number) is
 begin
-	-- Set left margin
+	-- define a margem esquerda
 	lMargin:=pMargin;
 	if(page > 0 and  x < pMargin) then
 		x:= pMargin;
 	end if; 
 end SetLeftMargin;
 
-----------------------------------------------------------------------------------------
 procedure SetTopMargin(pMargin in number) is
 begin
-	-- Set top margin
+	-- define a margem superior
 	tMargin := pMargin;
 end SetTopMargin;
 
-----------------------------------------------------------------------------------------
 procedure SetRightMargin(pMargin in number) is 
 begin
-	-- Set right margin
+	-- define a margem direita
 	rMargin := pMargin;
 end SetRightMargin;
 
-----------------------------------------------------------------------------------------
 procedure SetAutoPageBreak(pauto in boolean, pMargin in number default 0) is  
 begin
-	-- Set auto page break mode and triggering margin
+	-- liga a quebra automatica e fixa a margem que a dispara
 	AutoPageBreak := pauto;
 	bMargin := pMargin;
 	pageBreakTrigger:=h-pMargin;
 end SetAutoPageBreak;
 
-----------------------------------------------------------------------------------------
 procedure SetDisplayMode(zoom in varchar2, layout in varchar2 default 'continuous') is
 begin
-	-- Set display mode in viewer
+	-- modo de exibicao sugerido ao leitor
 	if(zoom in ('fullpage', 'fullwidth', 'real', 'default') or not nao_e_numero(zoom)) then
 		ZoomMode:= zoom;
 	else
@@ -3042,7 +2993,6 @@ begin
 	end if; 
 end SetDisplayMode;
 
-----------------------------------------------------------------------------------------
 procedure SetCompression(p_compress in boolean default false) is
 begin
 	-- Ate agosto/2026 isto era um no-op: perguntava por uma funcao de zlib que
@@ -3051,45 +3001,39 @@ begin
 	b_compress := nvl(p_compress, false);
 end SetCompression;
 
-----------------------------------------------------------------------------------------
 procedure SetTitle(ptitle in varchar2) is
 begin
-	-- Title of document
+	-- titulo do documento
 	title:=ptitle;
 end SetTitle;
 
-----------------------------------------------------------------------------------------
 procedure SetSubject(psubject in varchar2) is
 begin
-	-- Subject of document
+	-- assunto do documento
 	subject:= psubject;
 end SetSubject;
 
-----------------------------------------------------------------------------------------
 procedure SetAuthor(pauthor in varchar2) is
 begin
-	-- Author of document
+	-- autor do documento
 	author:=pauthor;
 end SetAuthor;
 
-----------------------------------------------------------------------------------------
 procedure SetKeywords(pkeywords in varchar2) is
 begin
-	-- Keywords of document
+	-- palavras-chave do documento
 	keywords:=pkeywords;
 end SetKeywords;
 
-----------------------------------------------------------------------------------------
 procedure SetCreator(pcreator in varchar2) is
 begin
-	-- Creator of document
+	-- criador do documento
 	creator:=pcreator;
 end SetCreator;
 
-----------------------------------------------------------------------------------------
 procedure SetAliasNbPages(palias in varchar2 default '{nb}') is
 begin
-	-- Define an alias for total number of pages
+	-- marcador a ser trocado pelo total de paginas
 	AliasNbPages:=palias;
 end SetAliasNbPages;
 
@@ -3097,7 +3041,6 @@ end SetAliasNbPages;
 -- p_assert_callback_name: confere que o nome da rotina de cabecalho ou de
 -- rodape e um identificador SQL valido antes de entrar no bloco dinamico.
 -- E o unico ponto onde um nome vindo de fora e concatenado em codigo.
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 -- p_assert_callback_name : valida o nome de uma rotina de callback.
 --
@@ -3137,7 +3080,9 @@ exception
     return null;
 end p_assert_callback_name;
 
-----------------------------------------------------------------------------------------
+-- buildPlsqlStatment: monta o bloco anonimo que chama a rotina de cabecalho
+-- ou de rodape registrada pelo chamador, com os parametros ligados por bind.
+-- O nome passa antes pelo p_assert_callback_name.
 function buildPlsqlStatment(callbackProc in varchar2,
                             tParam in tv4000a default noParam) return varchar2 is
     plsqStmt bigtext;
@@ -3169,7 +3114,7 @@ end buildPlsqlStatment;
 procedure Header is
     plsqStmt bigtext;
 begin
-	-- MyHeader_Proc defined in Declaration
+	-- MyHeader_Proc esta entre as globais
 	if (MyHeader_Stmt is not null) then
         -- bloco ja montado e validado em SetHeaderProc
         plsqStmt := MyHeader_Stmt;
@@ -3186,7 +3131,7 @@ end Header;
 procedure Footer is
     plsqStmt bigtext;
 begin
-	-- MyFooter_Proc defined in Declaration
+	-- MyFooter_Proc esta entre as globais
 	if (MyFooter_Stmt is not null) then
         -- bloco ja montado e validado em SetFooterProc
         plsqStmt := MyFooter_Stmt;
@@ -3197,19 +3142,16 @@ exception
         error('Footer : '||sqlerrm||' statment : '||plsqStmt);
 end Footer;
 
-----------------------------------------------------------------------------------------
 function PageNo return number is 
 begin
-	-- Get current page number
+	-- o numero da pagina corrente
 	return page;
 end PageNo;
 
-----------------------------------------------------------------------------------------
 procedure SetDrawColor(r in number, g in number default -1, b in number default -1) is
 begin
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
-	-- Validate RGB values (0-255 range)
+	-- confere cada componente RGB na faixa 0..255
 	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
 		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
@@ -3222,7 +3164,7 @@ begin
 		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	-- Set color for all stroking operations
+	-- cor de todo tracado seguinte
 	if((r=0 and g=0 and b=0) or g=-1)  then
 		DrawColor:=tochar(r/255,3)||' G';
 	else
@@ -3233,12 +3175,10 @@ begin
 	end if;
 end SetDrawColor;
 
-----------------------------------------------------------------------------------------
 procedure SetFillColor (r in number, g in number default -1, b in number default -1) is
 begin
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
-	-- Validate RGB values (0-255 range)
+	-- confere cada componente RGB na faixa 0..255
 	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
 		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
@@ -3251,7 +3191,7 @@ begin
 		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	-- Set color for all filling operations
+	-- cor de todo preenchimento seguinte
 	if((r=0 and g=0 and b=0) or g=-1) then
 		FillColor:=tochar(r/255,3) || ' g';
 	else
@@ -3267,12 +3207,10 @@ begin
 	end if;
 end SetFillColor;
 
-----------------------------------------------------------------------------------------
 procedure SetTextColor (r in number, g in number default -1, b in number default -1) is
 begin
 	--------------------------------------------------------------------------------
-	--------------------------------------------------------------------------------
-	-- Validate RGB values (0-255 range)
+	-- confere cada componente RGB na faixa 0..255
 	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
 		raise_application_error(-20501, 'Invalid red value: ' || r || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
@@ -3285,7 +3223,7 @@ begin
 		raise_application_error(-20501, 'Invalid blue value: ' || b || '. Must be ' || c_MIN_COLOR_VALUE || '-' || c_MAX_COLOR_VALUE);
 	end if;
 
-	-- Set color for text
+	-- cor do texto
 	if((r=0 and g=0 and b=0) or g=-1) then
 		TextColor:=tochar(r/255,3) || ' g';
 	else
@@ -3298,24 +3236,21 @@ begin
 	end if;
 end SetTextColor;
 
-----------------------------------------------------------------------------------------
 procedure SetLineWidth(width in number) is
 begin
-	--------------------------------------------------------------------------------
 	--------------------------------------------------------------------------------
 	-- a espessura tem de ser positiva
 	if width <= 0 then
 		raise_application_error(-20502, 'Invalid line width: ' || width || '. Must be positive');
 	end if;
 
-	-- Set line width
+	-- espessura do traco
 	LineWidth:=width;
 	if(page>0) then
 		p_out(tochar(width*k,2) ||' w');
 	end if;
 end SetLineWidth;
 
-----------------------------------------------------------------------------------------
 procedure Line(x1 in number, y1 in number, x2 in number, y2 in number) is 
 begin
 	-- Draw a line
@@ -3325,7 +3260,6 @@ begin
 		   ' ' || tochar((h-y2)*k,2) || ' l S');
 end Line;
 
-----------------------------------------------------------------------------------------
 procedure Rect(px in number, py in number, pw in number, ph in number, pstyle in varchar2 default '') is
 op word;
 begin
@@ -3385,7 +3319,6 @@ begin
     Poly(points, true, pstyle);
 end;
 
-----------------------------------------------------------------------------------------
 procedure Poly(points in tab_points, pclose in boolean, pstyle in varchar2 default '') is
 op word;
 pdf_cmd varchar2(1000);
@@ -3410,17 +3343,14 @@ begin
     
     pdf_cmd := pdf_cmd || ' ' || op || CHR(10);
     
-    --htp.p(pdf_cmd);
-    p_out(pdf_cmd);
+        p_out(pdf_cmd);
 end;
 
-----------------------------------------------------------------------------------------
 procedure SetLineDashPattern(pdash in varchar2 default '[] 0') is
 begin
     p_out(pdash || ' d');
 end;
 
-----------------------------------------------------------------------------------------
 function AddLink return number is
 begin
   -- Nunca funcionou, e falhava sem dizer o que era. A "links" e nested table e
@@ -3441,7 +3371,6 @@ begin
   return null;
 end AddLink;
 
-----------------------------------------------------------------------------------------
 procedure SetLink(plink in number, py in number default 0, ppage in number default -1) is
 begin
   -- Mesmo caso do AddLink: a "links" nunca e inicializada, entao a atribuicao
@@ -3453,7 +3382,6 @@ begin
     'Use uma URL.');
 end SetLink;
 
-----------------------------------------------------------------------------------------
 procedure Link(px in number, py in number, pw in number, ph in number, plink in varchar2) is
 begin
   -- So URL. O destino INTERNO nunca chegou a ser escrito: o ramo que emitiria
@@ -3497,7 +3425,6 @@ begin
 	PageLinks(page).quatre:=plink;
 end Link;
 
-----------------------------------------------------------------------------------------
 procedure Text(px in number, py in number, ptxt in varchar2) is
 s varchar2(2000);
 begin
@@ -3512,21 +3439,18 @@ begin
 	p_out(s);
 end Text;
 
-----------------------------------------------------------------------------------------
 function AcceptPageBreak return boolean is
 begin
 	-- Liga ou desliga a quebra de pagina automatica
 	return AutoPageBreak;
 end AcceptPageBreak;
 
-----------------------------------------------------------------------------------------
 procedure OpenPDF is
 begin
 	-- Begin document
 	state:=1;
 end OpenPDF;
 
-----------------------------------------------------------------------------------------
 procedure ClosePDF is
 begin
 
@@ -3553,8 +3477,7 @@ begin
 end ClosePDF;
 
 ----------------------------------------------------------------------------------------
---------------------------------------------------------------------------------
--- Internal legacy AddPage implementation (renamed to avoid overload ambiguity)
+-- o AddPage legado, renomeado para nao criar sobrecarga ambigua
 -- Chamada pelo AddPage(), que e a rotina publica
 --------------------------------------------------------------------------------
 procedure p_addpage_internal(orientation in varchar2 default '') is
@@ -3584,11 +3507,11 @@ begin
 		-- Close page
 		p_endpage();
 	end if;
-	-- Start new page
+	-- abre pagina nova
 	p_beginpage(orientation);
-	-- Set line cap style to square
+	-- ponta de linha quadrada
 	p_out('2 J');
-	-- Set line width
+	-- espessura do traco
 	LineWidth:=lw;
 	p_out(tochar(lw*k)||' w');
 	-- Set font
@@ -3608,7 +3531,7 @@ begin
 	ColorFlag:= cf;
 	-- Page header
 	header();
-	-- Restore line width
+	-- devolve a espessura anterior
 	if(LineWidth!=lw) then
 		LineWidth:=lw;
 		p_out(tochar(lw*k)||' w');
@@ -3631,18 +3554,14 @@ begin
 	ColorFlag:=cf;
 end p_addpage_internal;
 
-----------------------------------------------------------------------------------------
+-- update_line_spacing: reajusta a entrelinha minima do MultiCell quando o
+-- corpo da fonte muda.
 procedure update_line_spacing is
 begin
 	Linespacing := (fontsizePt / k);	-- minimum line spacing in multicell
 end;
 
---------------------------------------------------------------------------------
--- Date: 2025-12-15
---------------------------------------------------------------------------------
-/*******************************************************************************
-* Init: prepara o gerador, validando os argumentos e aceitando UTF-8
-*******************************************************************************/
+-- Init: prepara o gerador para um documento novo, validando os argumentos.
 procedure Init(
   p_orientation varchar2 default 'P',
   p_unit varchar2 default 'mm',
@@ -3659,7 +3578,7 @@ begin
   -- 1. VALIDATE PARAMETERS
   -- ========================================================================
 
-  -- Validate orientation (handle NULL by using default)
+  -- confere a orientacao; NULL assume a padrao
   l_orientation := upper(substr(nvl(p_orientation, 'P'), 1, 1));
   if l_orientation not in ('P', 'L') then
     raise_application_error(
@@ -3668,7 +3587,8 @@ begin
     );
   end if;
 
-  -- Validate unit (validate BEFORE assignment to avoid buffer overflow, handle NULL)
+  -- confere a unidade ANTES de atribuir, para nao estourar o destino; NULL
+  -- assume a padrao
   if lower(nvl(p_unit, 'mm')) not in ('mm', 'cm', 'in', 'pt') then
     raise_application_error(
       -20002,
@@ -3677,7 +3597,7 @@ begin
   end if;
   l_unit := lower(nvl(p_unit, 'mm'));
 
-  -- Validate encoding (handle NULL by using default)
+  -- confere a codificacao; NULL assume a padrao
   if upper(nvl(p_encoding, 'UTF-8')) not in ('UTF-8', 'UTF8', 'AL32UTF8', 'ISO-8859-1', 'WINDOWS-1252') then
     raise_application_error(
       -20003,
@@ -3686,7 +3606,7 @@ begin
   end if;
 
   -- ========================================================================
-  -- 2. RESET IF ALREADY INITIALIZED (re-initialization)
+  -- 2. se ja estava inicializado, limpa antes
   -- ========================================================================
 
   if g_initialized then
@@ -3712,7 +3632,7 @@ begin
   log_message(4, 'Encoding set to: ' || g_encoding);
 
   -- ========================================================================
-  -- 5. CONFIGURE SESSION FOR UTF-8 (best effort)
+  -- 5. tenta acertar a sessao para UTF-8
   -- ========================================================================
 
   -- A sessao do chamador nao e mais alterada: tochar/tonumber convertem com NLS
@@ -3721,7 +3641,7 @@ begin
 
   -- ========================================================================
   -- 6. CALL LEGACY fpdf() CONSTRUCTOR
-  --    (maintains compatibility with existing code)
+  --    (mantem o codigo antigo funcionando)
   -- ========================================================================
 
   l_format := upper(p_format);
@@ -3752,7 +3672,7 @@ procedure Reset is
 begin
   log_message(3, 'Resetting PL_FPDF engine...');
 
-  -- Clear arrays and CLOB (using existing structures)
+  -- esvazia as tabelas e libera os CLOBs
   begin
     -- libera o CLOB do documento
     if dbms_lob.istemporary(pdfDoc) = 1 then
@@ -3789,7 +3709,7 @@ begin
       log_message(2, 'Warning during cleanup: ' || sqlerrm);
   end;
 
-  -- Reset state variables
+  -- devolve as variaveis de estado ao inicio
   g_initialized := false;
   state := 0;
   page := 0;
@@ -3805,7 +3725,7 @@ begin
   MyFooter_Stmt := NULL;
   MyFooter_ProcParam.delete;
 
-  -- Reset encryption variables
+  -- devolve as variaveis de cifragem ao inicio
   g_encrypt_method := NULL;
   g_user_password := NULL;
   g_owner_password := NULL;
@@ -3848,11 +3768,6 @@ begin
 end IsInitialized;
 
 --------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Date: 2025-12-15
---------------------------------------------------------------------------------
 -- init_page_formats() e get_page_format() subiram no arquivo (para logo
 -- depois de log_message) porque o Init() as chama: chamada a subprograma
 -- definido mais abaixo da PLS-00313.
@@ -3870,23 +3785,23 @@ begin
       'PL_FPDF not initialized. Call Init() first.');
   end if;
 
-  -- Validate page exists
+  -- confere que a pagina existe
   if not g_pages.exists(p_page_number) then
     raise_application_error(-20106,
       'Page ' || p_page_number || ' does not exist. Total pages: ' || g_current_page);
   end if;
 
-  -- Close current page if different
+  -- fecha a pagina corrente, se for outra
   if g_current_page > 0 and g_current_page != p_page_number then
     -- o p_endpage() e chamado pelo caminho legado, quando preciso
     null;
   end if;
 
-  -- Switch to specified page
+  -- passa para a pagina pedida
   g_current_page := p_page_number;
   page := p_page_number;  -- Update legacy variable for compatibility
 
-  -- Update global dimensions to match this page
+  -- acerta as medidas globais para as desta pagina
   w := g_pages(p_page_number).format.width;
   h := g_pages(p_page_number).format.height;
 
@@ -3929,12 +3844,12 @@ begin
     end if;
   end if;
 
-  -- Get page format
+  -- o formato da pagina
   if p_format is not null then
     -- Check for custom format (e.g., "100,200" or "100x200")
     -- Try to parse as custom format if it contains separators
     if instr(p_format, ',') > 0 or instr(p_format, 'x') > 0 or instr(p_format, 'X') > 0 then
-      -- Attempt to parse custom format: "width,height" or "widthxheight"
+      -- tenta ler o formato livre: "largura,altura" ou "larguraxaltura"
       declare
         l_separator varchar2(1);
         l_pos pls_integer;
@@ -3954,7 +3869,7 @@ begin
           l_pos := instr(p_format, 'X');
         end if;
 
-        -- Extract width and height
+        -- separa largura e altura
         l_width := trim(substr(p_format, 1, l_pos - 1));
         l_height := trim(substr(p_format, l_pos + 1));
 
@@ -3997,14 +3912,14 @@ begin
       'Invalid rotation: ' || p_rotation || '. Must be 0, 90, 180, or 270 degrees.');
   end if;
 
-  -- Call internal legacy AddPage implementation for actual page setup
+  -- chama o AddPage legado, que e quem monta a pagina
   -- isto incrementa a variavel 'page' do caminho legado
   p_addpage_internal(l_orientation);
 
-  -- Sync modern page counter with legacy
+  -- sincroniza o contador de paginas com o do caminho legado
   g_current_page := page;
 
-  -- Store page metadata AFTER page creation
+  -- guarda os dados da pagina DEPOIS de cria-la
   g_pages(g_current_page).number_val := g_current_page;
   g_pages(g_current_page).orientation := l_orientation;
   g_pages(g_current_page).format := l_format;
@@ -4021,13 +3936,6 @@ exception
     log_message(1, 'Error in AddPage (modern): ' || sqlerrm);
     raise;
 end AddPage;
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Date: 2025-12-15
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- Leitura das tabelas da fonte TrueType
@@ -4237,8 +4145,7 @@ begin
 end p_winansi_cp;
 
 /*******************************************************************************
-* Function: parse_ttf_header (Internal)
-* Description: Parses TTF/OTF header and extracts basic metrics
+* parse_ttf_header: le o cabecalho e as tabelas de metrica de uma TTF ou OTF
 *******************************************************************************/
 function parse_ttf_header(p_font_blob blob, p_font_name varchar2) return recTTFFont is
   l_font recTTFFont;
@@ -4529,13 +4436,6 @@ exception
     raise;
 end ClearTTFFontCache;
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Date: 2025-12-17
---------------------------------------------------------------------------------
-
 function UTF8ToPDFString(p_text varchar2, p_escape boolean default true) return varchar2 is
   l_result varchar2(32767);
 begin
@@ -4543,25 +4443,24 @@ begin
     return null;
   end if;
 
-  -- UTF-8 encoding (Oracle VARCHAR2 stores in database charset, typically AL32UTF8)
-  -- For PDF output: standard fonts use internal handling, TTF fonts use Unicode encoding
+  -- o VARCHAR2 guarda no charset do banco, normalmente AL32UTF8
+  -- na saida: fonte padrao segue o caminho interno, TrueType vai em Unicode
   l_result := p_text;
 
-  -- Escape PDF special characters if requested: \, (, )
+  -- escapa o que a sintaxe do PDF reserva: a barra invertida e os parenteses
   if p_escape then
     l_result := p_escapa_pdf(l_result);
   end if;
 
-  -- Note: Full Unicode support with glyph mapping requires TTF font embedding
+  -- Unicode completo, com mapa de glifos, exige a TrueType embutida
   -- deixa o texto UTF-8 passar direto para o PDF
-  -- Advanced features (CMAP tables, glyph substitution) in Phase 3
-
+  
   return l_result;
 
 exception
   when others then
     log_message(1, 'Error in UTF8ToPDFString: ' || sqlerrm);
-    -- Fallback: return text with basic escaping
+    -- na duvida, devolve o texto so com o escape basico
     if p_escape then
       return p_escapa_pdf(p_text);
     else
@@ -4569,12 +4468,6 @@ exception
     end if;
 end UTF8ToPDFString;
 
-
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
-----------------------------------------------------------------------------------------
 procedure fpdf
   (orientation varchar2 default 'P',
    unit varchar2 default 'mm',
@@ -4585,10 +4478,10 @@ procedure fpdf
 begin
 	-- Some checks
 	p_dochecks();
-	-- Initialization of properties
+	-- valores iniciais
 	page:=0;
 	n:=2;
-	-- Open the final structure for the PDF document.
+	-- abre a estrutura final do documento
   -- o buffer do documento e um CLOB temporario; era uma tabela de VARCHAR2,
   -- que tinha teto de 32 KB por elemento
   if dbms_lob.istemporary(pdfDoc) = 1 then
@@ -4639,7 +4532,7 @@ begin
 		Error('Incorrect unit: ' || unit);
 	end if; 
 	
-	-- Others added properties
+	-- demais propriedades acrescentadas no porte
     update_line_spacing;
 	
 	-- Page format
@@ -4687,20 +4580,20 @@ begin
 	CurOrientation:=DefOrientation;
 	w:=wPt/k;
 	h:=hPt/k;
-	-- Page margins (1 cm) 
+	-- margens da pagina (1 cm) 
 	mymargin:=28.35/k;
 	SetMargins(mymargin,mymargin);
-	-- Interior cell margin (1 mm) 
+	-- respiro interno da celula (1 mm) 
 	cMargin:=mymargin/10;
-	-- Line width (0.2 mm)
+	-- espessura do traco (0,2 mm)
 	LineWidth:=.567/k;
-	-- Automatic page break
+	-- quebra de pagina automatica
 	SetAutoPageBreak(true,2*mymargin);
-	-- Full width display mode
+	-- exibicao em largura cheia
 	SetDisplayMode('fullwidth');
 	-- Disable compression
 	SetCompression(false);
-	-- Set default PDF version number
+	-- versao de PDF padrao
 	PDFVersion:='1.4';
 	-- fpdf() e o construtor legado (Init() o chama por dentro): depois dele o
 	-- package esta pronto. Sem marcar aqui, quem chamasse fpdf() direto ficava
@@ -4708,7 +4601,6 @@ begin
 	g_initialized := true;
 end fpdf;
 
-----------------------------------------------------------------------------------------
 procedure AddFont (family in varchar2, style in varchar2 default '', filename in varchar2 default '') is
   myfamily word := family;
   mystyle  word := style;
@@ -4753,7 +4645,7 @@ begin
 	fonts(fontkey).file := myfile;
 	
 	if(myDiff is not null) then
-		-- Search existing encodings
+		-- procura entre as codificacoes ja registradas
 		d:=0;
 		nb:=diffs.count;
 		for i in 1..nb
@@ -4780,7 +4672,6 @@ begin
 	end if; 
 end AddFont;
 
-----------------------------------------------------------------------------------------
 procedure SetFont(pfamily in varchar2, pstyle in varchar2 default '', psize in number default 0) is
 myfamily word;
 mystyle	 word;
@@ -4795,21 +4686,21 @@ begin
 	-- Valida ANTES de atribuir qualquer variavel: uma atribuicao que estoure
 	-- deixaria o estado pela metade
 	--------------------------------------------------------------------------------
-	-- Validate font family (before assignment to avoid buffer overflow)
+	-- confere a familia antes de atribuir, para nao estourar o destino
 	if pfamily is not null and length(pfamily) > c_MAX_FONT_NAME_LENGTH then
 		raise_application_error(-20100, 'Font family name too long (max ' || c_MAX_FONT_NAME_LENGTH || ' characters)');
 	end if;
 
-	-- Validate font style (allow empty, N, B, I, BI, IB, U or combinations)
+	-- confere o estilo: vazio, N, B, I, BI, IB, U ou combinacao
 	-- primeiro sobe para maiuscula, DEPOIS tira o 'U' (Underline, sublinhado):
 	-- na ordem inversa um 'u' minusculo escaparia da remocao
 	if pstyle is not null and length(pstyle) > 0 then
-		-- Uppercase first, then remove U
+		-- sobe para maiuscula primeiro, so entao tira o U
 		l_clean_style := replace(upper(pstyle), 'U', '');
 
-		-- N = Normal, B = Bold, I = Italic, BI/IB = Bold+Italic
+		-- N normal, B negrito (Bold), I italico (Italic), BI ou IB os dois
 		-- tirado o U, so estes valem (ou a cadeia vazia)
-		-- Use nested structure to ensure proper evaluation
+		-- aninhado para garantir a ordem de avaliacao
 		if length(l_clean_style) > 0 then
 			if l_clean_style not in ('N', 'B', 'I', 'BI', 'IB') then
 				raise_application_error(-20100, 'Invalid font style: ''' || pstyle || '''. Valid: N, B, I, BI, IB (with optional U)');
@@ -4817,7 +4708,7 @@ begin
 		end if;
 	end if;
 
-	-- Validate font size
+	-- confere o corpo da fonte
 	if psize is not null and (psize < c_MIN_FONT_SIZE or psize > c_MAX_FONT_SIZE) then
 		raise_application_error(-20100, 'Invalid font size: ' || psize || '. Must be ' || c_MIN_FONT_SIZE || '-' || c_MAX_FONT_SIZE || ' points');
 	end if;
@@ -4841,7 +4732,7 @@ begin
 	end if;
 	mystyle:=upper(mystyle);
 
-	-- Normalize 'N' (Normal) to empty string for font key lookup
+	-- 'N' (Normal) vira cadeia vazia para formar a chave da fonte
 	if mystyle = 'N' then
 		mystyle := '';
 	end if;
@@ -4859,7 +4750,7 @@ begin
 		mysize:=fontsizePt;
 	end if; 
 
-	-- Test if font is already selected
+	-- a fonte ja esta selecionada?
 	if(FontFamily=myfamily and fontstyle=mystyle and fontsizePt=mysize) then
 		return;
 	end if; 
@@ -4871,7 +4762,7 @@ begin
 	    'PL_FPDF not initialized. Call Init() first.');
 	end if;
 
-	-- Test if used for the first time	
+	-- primeira vez que esta fonte e usada?	
 	fontkey:=nvl(myfamily || mystyle, '');
 
 	--if(not fontsExists(fontkey)) then
@@ -4881,7 +4772,7 @@ begin
 		if(CoreFonts.exists(fontkey)) then
 			--if(not fpdf_charwidthsExists(fontkey)) then
 			if(not fpdf_charwidths.exists(fontkey)) then
-				-- Load metric file
+				-- carrega as larguras de caractere
 				
 				myFontFile:=myfamily;
 				if(myfamily='times' or myfamily='helvetica') then
@@ -4946,7 +4837,6 @@ begin
     update_line_spacing;
 end SetFont;
 
-----------------------------------------------------------------------------------------
 function GetStringWidth(pstr in varchar2) return number is
 charSetWidth CharSet;
 w number;
@@ -4983,10 +4873,9 @@ begin
 	return w * fontsize/1000;
 end GetStringWidth;
 
-----------------------------------------------------------------------------------------
 procedure SetFontSize(psize in number) is
 begin
-	-- Set font size in points
+	-- corpo da fonte, em pontos
 	if(fontsizePt=psize) then
 		return;
 	end if; 
@@ -4997,7 +4886,6 @@ begin
 	end if; 
 end SetFontSize;
 
-----------------------------------------------------------------------------------------
 procedure Cell
 		 (pw in number,
 		  ph in number default 0,
@@ -5020,7 +4908,7 @@ begin
   null;
 	-- Output a cell 
 	if( ( y + ph > pageBreakTrigger) and  not InFooter and AcceptPageBreak()) then
-		-- Automatic page break
+		-- quebra de pagina automatica
 		if(myWS > 0) then
 			ws:=0;
 			p_out('0 Tw');
@@ -5096,7 +4984,7 @@ begin
 
 	lasth := ph;
 	if( pln>0 ) then
-		-- Go to next line
+		-- passa para a proxima linha
 		y := y + ph;
 		if(pln=1) then
 			x := lMargin;
@@ -5112,7 +5000,7 @@ end Cell;
 ----------------------------------------------------------------------------------------
 -- MultiCell: escreve texto quebrando linha sozinho, ou onde o texto mandar
 -- phMax: altura maxima da MultiCell; 0 quando nao se aplica
--- if ph is null : the minimum height is the value of the property LineSpacing
+-- com ph nulo, a altura minima e a entrelinha corrente
 ----------------------------------------------------------------------------------------
 function MultiCell
   ( pw in number,
@@ -5186,10 +5074,10 @@ begin
 	while(i <= myNB)
 	loop
 	    lb_skip := false;
-		-- Get next character
+		-- pega o proximo caractere
 		carac := substr(myS,i,1);
 		if(carac = CHR(10)) then
-			-- Explicit line break
+			-- quebra de linha pedida pelo texto
 			if(ws > 0) then
 				ws := 0;
 				p_out('0 Tw');
@@ -5206,7 +5094,7 @@ begin
 				myB := myB2;
 			end if; 
 			-- chegando aqui, segue para a proxima volta do laco 
-			-- en PHP il y avait l'instruction "continue" .
+			-- no PHP havia o comando "continue"
 			lb_skip := true;
 		end if; 
 		
@@ -5218,7 +5106,7 @@ begin
 			end if; 
 			l := l + charSetWidth (carac);
 			if( l > wmax) then
-				-- Automatic line break
+				-- quebra de linha automatica
 				if(sep=-1) then
 					if(i=j) then
 						i := i + 1;
@@ -5298,7 +5186,7 @@ end MultiCell;
 ----------------------------------------------------------------------------------------
 -- MultiCell: escreve texto quebrando linha sozinho, ou onde o texto mandar
 -- phMax: altura maxima da MultiCell; 0 quando nao se aplica
--- if ph is null : the minimum height is the value of the property LineSpacing
+-- com ph nulo, a altura minima e a entrelinha corrente
 ----------------------------------------------------------------------------------------
 procedure MultiCell
   ( pwidth in number,
@@ -5315,7 +5203,6 @@ begin
                               palign => palignment, pfill => pfillin, phMax => phMaximum);
 end multicell;
 
-----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 -- p_jpegImage : monta o objeto de imagem de um JPEG recebido como BLOB.
 --
@@ -5373,16 +5260,16 @@ procedure image ( pFile in varchar2,
 begin
     -- Coloca uma imagem na pagina
 	if ( not imageExists(myFile) ) then
-		--First use of image, get info
+		-- primeira vez desta imagem: le o cabecalho
 		info := p_parseImage(myFile);
 		info.i := nvl(images.count, 0) + 1;
 		images(lower(myFile)) := info;
 	else
 		info := images(lower(myFile));
 	end if;
-	--Automatic width and height calculation if needed
+	-- calcula largura e altura quando nao vierem
 	if(myW = 0 and myH = 0) then
-		--Put image at 72 dpi
+		-- coloca a imagem a 72 dpi
 		myW := info.w / k;
 		myH := info.h / k;
 	end if;
@@ -5491,7 +5378,7 @@ procedure Write(pH varchar2,ptxt varchar2,plink varchar2 default null) is
    lsep pls_integer;
    lastl pls_integer;
 begin
-	-- Output text in flowing mode
+	-- escreve o texto corrido
 	charSetWidth := CurrentFont.cw;
 	myW := w - rMargin - x;
 	myWmax := (myW - 2 * cMargin) * 1000 / FontSize;
@@ -5503,15 +5390,15 @@ begin
 	l := 0;      -- string length since last written
   lsep := 0;   -- position of last blank
   lastl := 0;  -- length till that blank
-  -- Loop over all characters
+  -- percorre todos os caracteres
 	while i <= nb  loop
-		-- Get next character
+		-- pega o proximo caractere
 		c := substr(s, i, 1);
     
-    -- Explicit line break
+    -- quebra de linha pedida pelo texto
 		if(c = chr(10)) then
 			Cell(myW, pH, substr(s,j,i-j), 0, 1, '', 0, plink);   
-      -- positioned at beginning of new line
+      -- posicionado no inicio da linha nova
 			i := i + 1;
 			sep := -1;
 			j := i;
@@ -5529,7 +5416,7 @@ begin
 			end if; 
 			l := l + charSetWidth(c);
 			if l > myWmax then
-				-- Automatic line break
+				-- quebra de linha automatica
 				if sep = -1 then  -- forced
           Cell(myW, pH, substr(s,j,i-j+1), 0, 1, '', 0, plink);
 					i := i + 1;
@@ -5559,9 +5446,6 @@ exception
       error('write : '||sqlerrm);
 end write;
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 function OutputBlob return blob is
   v_doc blob;
   -- usadas em dbms_lob.convertToBlob logo abaixo; os avisos de "declarada e
@@ -5579,12 +5463,12 @@ begin
       'PL_FPDF not initialized. Call Init() first.');
   end if;
 
-  -- Finish document if necessary
+  -- fecha o documento, se ainda estiver aberto
   if state < 3 then
     ClosePDF();
   end if;
 
-  -- Create temporary BLOB
+  -- cria o BLOB temporario
   dbms_lob.createtemporary(v_doc, false, dbms_lob.session);
 
   -- Descarrega o que restou no acumulador antes de converter para BLOB
@@ -5631,7 +5515,7 @@ begin
   log_message(3, 'OutputFile: Saving ' || v_blob_len || ' bytes to ' || p_filename ||
               ' in directory ' || p_directory);
 
-  -- Open file for writing
+  -- abre o arquivo para escrita
   begin
     v_file := utl_file.fopen(p_directory, p_filename, 'wb', 32767);
   exception
@@ -5669,7 +5553,7 @@ begin
       raise_application_error(-20403, 'Error writing file: ' || sqlerrm);
   end;
 
-  -- Free temporary BLOB
+  -- libera o BLOB temporario
   if dbms_lob.istemporary(v_pdf_blob) = 1 then
     dbms_lob.freetemporary(v_pdf_blob);
   end if;
@@ -5681,21 +5565,18 @@ exception
     raise;
 end OutputFile;
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
 procedure Output(pname varchar2 default null, pdest varchar2 default null) is
   myName word := pname;
   myDest word := pdest;
 begin
-  -- Finish document if necessary
+  -- fecha o documento, se ainda estiver aberto
   if state < 3 then
     ClosePDF();
   end if;
 
   myDest := upper(myDest);
 
-  -- Default destination is 'F' (File)
+  -- o destino padrao e 'F' (File, arquivo)
   if myDest is null then
     if myName is null then
       myName := 'doc.pdf';
@@ -5710,7 +5591,7 @@ begin
         'Filename required for Output with pdest=''F''. Example: Output(''report.pdf'', ''F'')');
     end if;
 
-    -- Delegate to OutputFile
+    -- delega ao OutputFile
     OutputFile(myName, 'PDF_DIR');
     log_message(3, 'Output: Saved to file ' || myName);
 
@@ -5756,8 +5637,8 @@ v_len pls_integer;
 begin
 dbms_lob.createtemporary(v_blob, false, dbms_lob.session);
 dbms_lob.createtemporary(v_doc, false, dbms_lob.session);
--- Output PDF to some destination
--- Finish document if necessary
+-- entrega o PDF ao destino pedido
+-- fecha o documento, se ainda estiver aberto
 if state < 3 then
 ClosePDF();
 end if;
@@ -5781,11 +5662,6 @@ exception
     return null;
 end ReturnBlob;
  
-
---------------------------------------------------------------------------------
--- Date: 2025-12-16
---------------------------------------------------------------------------------
-
 procedure CellRotated(
   p_width number,
   p_height number default 0,
@@ -5815,25 +5691,25 @@ begin
     return;
   end if;
 
-  -- Apply rotation transformation
+  -- aplica a matriz de rotacao
   l_x := x;
   l_y := y;
   l_angle := p_rotation * 3.14159265359 / 180;  -- Convert to radians
   l_cos := cos(l_angle);
   l_sin := sin(l_angle);
 
-  -- Save graphics state and apply combined rotation transformation
-  -- Single matrix for rotating around point (l_x, l_y)
+  -- guarda o estado grafico e aplica a rotacao combinada
+  -- uma matriz so, girando em torno de (l_x, l_y)
   p_out('q');  -- Save graphics state
   p_out(tochar(l_cos, 5) || ' ' || tochar(l_sin, 5) || ' ' ||
         tochar(-l_sin, 5) || ' ' || tochar(l_cos, 5) || ' ' ||
         tochar(l_x * k * (1 - l_cos) + (h - l_y) * k * l_sin, 2) || ' ' ||
         tochar((h - l_y) * k * (1 - l_cos) - l_x * k * l_sin, 2) || ' cm');
 
-  -- Call legacy Cell implementation
+  -- chama o Cell legado
   Cell(p_width, p_height, p_text, p_border, p_ln, p_align, p_fill, p_link);
 
-  -- Restore graphics state
+  -- devolve o estado grafico
   p_out('Q');
 
   log_message(4, 'CellRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
@@ -5865,14 +5741,14 @@ begin
   end if;
 
   -- por ora o Write so gira 0 grau
-  -- For rotated text, use CellRotated instead
+  -- para texto girado, use o CellRotated
   if p_rotation <> 0 then
     raise_application_error(-20111,
       'WriteRotated currently only supports 0° rotation. ' ||
       'Use CellRotated() for rotated text output.');
   end if;
 
-  -- Call legacy Write implementation
+  -- chama o Write legado
   Write(p_height, p_text, p_link);
 
   log_message(4, 'WriteRotated: text="' || substr(p_text, 1, 50) || '", rotation=' || p_rotation);
@@ -5883,19 +5759,12 @@ exception
     raise;
 end WriteRotated;
 
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Date: 2025-12-18
---------------------------------------------------------------------------------
-
 procedure SetDocumentConfig(p_config JSON_OBJECT_T) is
   l_keys JSON_KEY_LIST;
   l_key VARCHAR2(100);
   l_value VARCHAR2(4000);
 begin
-  -- Handle NULL config gracefully
+  -- configuracao nula nao e erro: nada a fazer
   if p_config is null then
     log_message(c_LOG_WARN, 'SetDocumentConfig: NULL config provided, ignoring');
     return;
@@ -5905,7 +5774,7 @@ begin
 
   l_keys := p_config.get_keys;
 
-  -- Process each configuration key
+  -- percorre cada chave da configuracao
   for i in 1..l_keys.count loop
     l_key := l_keys(i);
 
@@ -5935,23 +5804,23 @@ begin
         -- Page configuration
         when 'ORIENTATION' then
           l_value := p_config.get_String(l_key);
-          -- ALWAYS validate orientation
+          -- confere a orientacao SEMPRE
           if upper(substr(l_value, 1, 1)) not in ('P', 'L') then
             raise_application_error(-20001,
               'Invalid orientation: ' || l_value || '. Must be P or L.');
           end if;
-          -- Set based on initialization state
+          -- decide conforme ja estar inicializado ou nao
           if not g_initialized then
             g_default_orientation := upper(substr(l_value, 1, 1));
           else
-            -- Already initialized - orientation cannot be changed
+            -- ja inicializado: a orientacao padrao nao muda mais
             log_message(c_LOG_WARN, 'Cannot change orientation after initialization');
           end if;
           log_message(c_LOG_DEBUG, 'Set orientation: ' || l_value);
 
         when 'UNIT' then
           l_value := lower(p_config.get_String(l_key));
-          -- ALWAYS validate unit
+          -- confere a unidade SEMPRE
           if l_value not in ('mm', 'cm', 'in', 'pt') then
             raise_application_error(-20002,
               'Invalid unit: ' || l_value || '. Must be mm, cm, in, or pt.');
@@ -6077,7 +5946,7 @@ begin
 
   -- tenta deduzir o formato a partir do formato padrao
   if g_formats_initialized and g_default_format.width is not null then
-    -- Match against known formats
+    -- compara com os formatos conhecidos
     if g_default_format.width = 210 and g_default_format.height = 297 then
       l_metadata.put('format', 'A4');
     elsif g_default_format.width = 216 and g_default_format.height = 279 then
@@ -6110,7 +5979,7 @@ exception
 end GetDocumentMetadata;
 
 --------------------------------------------------------------------------------
--- read_blob_chunk: Read chunk of BLOB as text
+-- read_blob_chunk: um pedaco do BLOB como texto
 --------------------------------------------------------------------------------
 FUNCTION read_blob_chunk(
   p_blob BLOB,
@@ -6127,7 +5996,7 @@ EXCEPTION
 END read_blob_chunk;
 
 --------------------------------------------------------------------------------
--- get_pdf_object: Load object by ID
+-- get_pdf_object: carrega um objeto pelo numero
 --------------------------------------------------------------------------------
 FUNCTION get_pdf_object(p_obj_id PLS_INTEGER) RETURN CLOB IS
   l_offset PLS_INTEGER;
@@ -6147,7 +6016,7 @@ BEGIN
     RETURN g_object_cache(p_obj_id);
   END IF;
 
-  -- Check if object exists
+  -- o objeto existe?
   IF NOT g_xref_table.EXISTS(p_obj_id) THEN
     raise_application_error(-20805, 'Object ' || p_obj_id || ' not in xref table');
   END IF;
@@ -6181,7 +6050,7 @@ BEGIN
 END get_pdf_object;
 
 --------------------------------------------------------------------------------
--- parse_page_tree: Parse page tree and populate page info table
+-- parse_page_tree: percorre a arvore de paginas e preenche a tabela de dados
 --------------------------------------------------------------------------------
 PROCEDURE parse_page_tree IS
   l_catalog CLOB;
@@ -6199,7 +6068,7 @@ BEGIN
   l_catalog := get_pdf_object(g_root_obj_id);
   log_message(3, 'Catalog (Root=' || g_root_obj_id || '): ' || SUBSTR(l_catalog, 1, 300));
 
-  -- Extract Pages object ID
+  -- o numero do objeto /Pages
   l_pages_id := TO_NUMBER(
     REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
   );
@@ -6209,33 +6078,33 @@ BEGIN
     raise_application_error(-20810, 'Pages not found in Catalog');
   END IF;
 
-  -- Store Pages object ID for inherited properties lookup
+  -- guarda o /Pages: e de la que vem o que a pagina herda
   g_pages_obj_id := l_pages_id;
   log_message(3, 'Pages object ID: ' || l_pages_id);
 
-  -- Get Pages object
+  -- pega o objeto /Pages
   l_pages_obj := get_pdf_object(l_pages_id);
   log_message(3, 'Pages object content (first 300 chars): ' || SUBSTR(l_pages_obj, 1, 300));
 
-  -- Extract Kids array: /Kids [4 0 R 5 0 R 6 0 R]
-  -- Using INSTR/SUBSTR instead of REGEXP for better Oracle compatibility
+  -- le o /Kids: /Kids [4 0 R 5 0 R 6 0 R]
+  -- INSTR/SUBSTR em vez de REGEXP: o REGEXP_SUBSTR falha em algumas versoes
   DECLARE
     l_kids_start PLS_INTEGER;
     l_kids_end PLS_INTEGER;
   BEGIN
-    -- Find /Kids position
+    -- acha onde comeca o /Kids
     l_kids_start := INSTR(l_pages_obj, '/Kids');
 
     IF l_kids_start > 0 THEN
-      -- Find opening bracket after /Kids
+      -- acha o colchete que abre
       l_kids_start := INSTR(l_pages_obj, '[', l_kids_start);
 
       IF l_kids_start > 0 THEN
-        -- Find closing bracket
+        -- acha o colchete que fecha
         l_kids_end := INSTR(l_pages_obj, ']', l_kids_start);
 
         IF l_kids_end > l_kids_start THEN
-          -- Extract content between brackets
+          -- pega o conteudo entre colchetes
           l_kids_array := SUBSTR(l_pages_obj, l_kids_start + 1, l_kids_end - l_kids_start - 1);
           log_message(3, 'Kids array extracted via INSTR: ' || l_kids_array);
         END IF;
@@ -6243,7 +6112,7 @@ BEGIN
     END IF;
   END;
 
-  -- Fallback error if not found
+  -- nao achou: levanta erro
   IF l_kids_array IS NULL THEN
     log_message(1, 'ERROR: Kids array not found. Pages object content:');
     log_message(1, SUBSTR(l_pages_obj, 1, 500));
@@ -6253,17 +6122,17 @@ BEGIN
 
   log_message(3, 'Kids array extracted: ' || l_kids_array);
 
-  -- Parse each page object reference
+  -- le cada referencia de objeto de pagina
   l_pos := 1;
   LOOP
-    -- Find next number in Kids array
+    -- o proximo numero dentro do /Kids
     l_page_obj_id := TO_NUMBER(
       REGEXP_SUBSTR(l_kids_array, '([0-9]+)\s+0\s+R', 1, l_pos, NULL, 1)
     );
 
     EXIT WHEN l_page_obj_id IS NULL;
 
-    -- Store page object ID
+    -- guarda o numero do objeto da pagina
     g_page_info_table(l_page_num).page_obj_id := l_page_obj_id;
 
     l_page_num := l_page_num + 1;
@@ -6274,16 +6143,16 @@ BEGIN
 END parse_page_tree;
 
 --------------------------------------------------------------------------------
--- get_page_object_id: Get object ID for specific page number
+-- get_page_object_id: o numero do objeto de uma pagina
 --------------------------------------------------------------------------------
 FUNCTION get_page_object_id(p_page_number PLS_INTEGER) RETURN PLS_INTEGER IS
 BEGIN
-  -- Ensure page tree is parsed
+  -- garante que a arvore de paginas ja foi lida
   IF g_page_info_table.COUNT = 0 THEN
     parse_page_tree();
   END IF;
 
-  -- Validate page number
+  -- confere o numero da pagina
   IF p_page_number < 1 OR p_page_number > g_page_info_table.COUNT THEN
     raise_application_error(-20812,
       'Invalid page number: ' || p_page_number ||
@@ -6294,7 +6163,7 @@ BEGIN
 END get_page_object_id;
 
 --------------------------------------------------------------------------------
--- extract_page_info: Extract detailed page information
+-- extract_page_info: os dados de uma pagina, com a heranca ja resolvida
 --------------------------------------------------------------------------------
 PROCEDURE extract_page_info(p_page_number PLS_INTEGER) IS
   l_page_obj_id PLS_INTEGER;
@@ -6306,16 +6175,16 @@ PROCEDURE extract_page_info(p_page_number PLS_INTEGER) IS
 BEGIN
   l_page_obj_id := get_page_object_id(p_page_number);
 
-  -- Check if already parsed
+  -- ja foi lido?
   IF g_page_info_table(p_page_number).media_box IS NOT NULL THEN
     RETURN;  -- Already parsed
   END IF;
 
-  -- Get page object
+  -- pega o objeto da pagina
   l_page_obj := get_pdf_object(l_page_obj_id);
 
-  -- Extract MediaBox: /MediaBox [0 0 612 792]
-  -- Using INSTR/SUBSTR for Oracle compatibility (REGEXP_SUBSTR fails in some Oracle versions)
+  -- le o /MediaBox: [0 0 612 792]
+  -- INSTR/SUBSTR: o REGEXP_SUBSTR falha em algumas versoes do Oracle
   DECLARE
     l_start PLS_INTEGER;
     l_end PLS_INTEGER;
@@ -6332,7 +6201,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- Extract Rotate: /Rotate 90
+    -- le o /Rotate: /Rotate 90
     l_start := INSTR(l_page_obj, '/Rotate');
     IF l_start > 0 THEN
       l_tmp := SUBSTR(l_page_obj, l_start + 7, 10);
@@ -6342,7 +6211,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- Extract Resources object ID: /Resources 2 0 R
+    -- le o /Resources: 2 0 R
     l_start := INSTR(l_page_obj, '/Resources');
     IF l_start > 0 THEN
       l_tmp := SUBSTR(l_page_obj, l_start + 10, 20);
@@ -6352,7 +6221,7 @@ BEGIN
       END IF;
     END IF;
 
-    -- Extract Contents object ID: /Contents 4 0 R
+    -- le o /Contents: 4 0 R
     l_start := INSTR(l_page_obj, '/Contents');
     IF l_start > 0 THEN
       l_tmp := SUBSTR(l_page_obj, l_start + 9, 20);
@@ -6363,7 +6232,7 @@ BEGIN
     END IF;
   END;
 
-  -- If MediaBox not found in Page object, check parent Pages object (inheritance)
+  -- sem /MediaBox na pagina, procura no /Pages pai: e herdado
   IF l_media_box IS NULL AND g_pages_obj_id IS NOT NULL THEN
     DECLARE
       l_pages_obj CLOB;
@@ -6385,7 +6254,7 @@ BEGIN
     END;
   END IF;
 
-  -- Default MediaBox to Letter size if still not found
+  -- sem /MediaBox em lugar nenhum, assume Letter
   IF l_media_box IS NULL THEN
     l_media_box := '0 0 612 792';
     log_message(3, 'MediaBox defaulting to Letter size: ' || l_media_box);
@@ -6395,7 +6264,7 @@ BEGIN
     l_rotate := 0;  -- Default: no rotation
   END IF;
 
-  -- Store extracted info
+  -- guarda o que foi lido
   g_page_info_table(p_page_number).media_box := l_media_box;
   g_page_info_table(p_page_number).rotate := l_rotate;
   g_page_info_table(p_page_number).resources_id := l_resources_id;
@@ -6414,16 +6283,16 @@ begin
   IF g_loaded_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(g_loaded_pdf) > 0 THEN
     l_page_num := NVL(p_page_number, 1);
 
-    -- Validate page number for loaded PDF
+    -- confere o numero da pagina for loaded PDF
     IF l_page_num < 1 OR l_page_num > g_loaded_page_count THEN
       raise_application_error(-20812,
         'Invalid page number: ' || l_page_num || '. Valid range: 1-' || g_loaded_page_count);
     END IF;
 
-    -- Extract page info if not already done
+    -- le os dados da pagina, se ainda nao foram
     extract_page_info(l_page_num);
 
-    -- Build JSON response for loaded PDF
+    -- monta o JSON de resposta
     l_page_info.put('pageNumber', l_page_num);
     l_page_info.put('pageObjectId', g_page_info_table(l_page_num).page_obj_id);
     l_page_info.put('mediaBox', g_page_info_table(l_page_num).media_box);
@@ -6435,7 +6304,7 @@ begin
     RETURN l_page_info;
   END IF;
 
-  -- Generation mode: return info about page being generated
+  -- em geracao: devolve os dados da pagina que esta sendo montada
   -- decide de que pagina se esta falando
   if p_page_number is null then
     l_page_num := g_current_page;
@@ -6443,13 +6312,13 @@ begin
     l_page_num := p_page_number;
   end if;
 
-  -- Validate page number
+  -- confere o numero da pagina
   if l_page_num < 1 or l_page_num > g_current_page then
     raise_application_error(-20106,
       'Invalid page number: ' || l_page_num || '. Must be between 1 and ' || g_current_page);
   end if;
 
-  -- Check if page exists in modern collection
+  -- a pagina existe na colecao?
   if not g_pages.exists(l_page_num) then
     raise_application_error(-20106,
       'Page ' || l_page_num || ' not found in page collection');
@@ -6472,7 +6341,7 @@ begin
   -- Rotation
   l_page_info.put('rotation', g_pages(l_page_num).rotation);
 
-  -- Format name (if standard)
+  -- nome do formato, quando for um dos padrao
   if g_pages(l_page_num).format.width = 210 and g_pages(l_page_num).format.height = 297 then
     l_page_info.put('format', 'A4');
   elsif g_pages(l_page_num).format.width = 216 and g_pages(l_page_num).format.height = 279 then
@@ -6622,15 +6491,15 @@ exception
 end AddBarcode;
 
 --------------------------------------------------------------------------------
--- PHASE 4: PDF PARSER - Helper Functions and Core Implementation
+-- Leitura de PDF: rotinas de apoio e o nucleo
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
- * HELPER FUNCTIONS - PDF PARSING
+ * Rotinas de apoio a leitura de PDF
  ******************************************************************************/
 
 --------------------------------------------------------------------------------
--- extract_number_after_pattern: Extract number after pattern
+-- extract_number_after_pattern: o numero que vem logo depois de um padrao
 --------------------------------------------------------------------------------
 FUNCTION extract_number_after_pattern(
   p_text VARCHAR2,
@@ -6645,7 +6514,7 @@ BEGIN
     RETURN NULL;
   END IF;
 
-  -- Extract digits after pattern
+  -- pega os digitos depois do padrao
   l_num_str := REGEXP_SUBSTR(
     SUBSTR(p_text, l_pos + LENGTH(p_pattern)),
     '^\s*([0-9]+)',
@@ -6659,11 +6528,11 @@ EXCEPTION
 END extract_number_after_pattern;
 
 /*******************************************************************************
- * PHASE 4.1: PDF READING - BASIC PARSING
+ * Leitura de PDF: interpretacao basica
  ******************************************************************************/
 
 --------------------------------------------------------------------------------
--- parse_pdf_header: Extract PDF version
+-- parse_pdf_header: a versao declarada no cabecalho do arquivo
 --------------------------------------------------------------------------------
 FUNCTION parse_pdf_header(p_pdf BLOB) RETURN VARCHAR2 IS
   l_header VARCHAR2(50);
@@ -6672,18 +6541,18 @@ FUNCTION parse_pdf_header(p_pdf BLOB) RETURN VARCHAR2 IS
 BEGIN
   l_header := read_blob_chunk(p_pdf, 1, 50);
 
-  -- Validate header %PDF-
+  -- confere o cabecalho %PDF-
   IF NOT l_header LIKE '%PDF-%' THEN
     raise_application_error(-20801,
       'Invalid PDF header. Expected %PDF-x.x, got: ' || SUBSTR(l_header, 1, 20));
   END IF;
 
-  -- Extract version (e.g., "1.7" from "%PDF-1.7")
-  -- Using INSTR/SUBSTR instead of REGEXP for better Oracle compatibility
+  -- a versao: "1.7" de "%PDF-1.7"
+  -- INSTR/SUBSTR em vez de REGEXP: o REGEXP_SUBSTR falha em algumas versoes
   l_pos := INSTR(l_header, '%PDF-');
   IF l_pos > 0 THEN
     l_version := SUBSTR(l_header, l_pos + 5, 3);  -- Extract "1.7" after "%PDF-"
-    -- Validate version format (digit.digit)
+    -- confere o formato da versao (digito.digito)
     IF SUBSTR(l_version, 1, 1) BETWEEN '0' AND '9'
        AND SUBSTR(l_version, 2, 1) = '.'
        AND SUBSTR(l_version, 3, 1) BETWEEN '0' AND '9' THEN
@@ -6691,12 +6560,12 @@ BEGIN
     END IF;
   END IF;
 
-  -- Fallback: return default version if parsing fails
+  -- sem conseguir ler, devolve a versao padrao
   RETURN '1.4';
 END parse_pdf_header;
 
 --------------------------------------------------------------------------------
--- find_startxref: Locate xref table offset
+-- find_startxref: onde o arquivo diz que a xref comeca
 --------------------------------------------------------------------------------
 FUNCTION find_startxref(p_pdf BLOB) RETURN PLS_INTEGER IS
   l_file_size PLS_INTEGER;
@@ -6705,10 +6574,10 @@ FUNCTION find_startxref(p_pdf BLOB) RETURN PLS_INTEGER IS
 BEGIN
   l_file_size := DBMS_LOB.GETLENGTH(p_pdf);
 
-  -- Read last 2KB of file
+  -- le os ultimos 2 KB do arquivo
   l_tail := read_blob_chunk(p_pdf, GREATEST(1, l_file_size - 2047), 2048);
 
-  -- Extract number after "startxref"
+  -- o numero que vem depois de "startxref"
   l_offset := extract_number_after_pattern(l_tail, 'startxref');
 
   IF l_offset IS NULL THEN
@@ -6719,7 +6588,7 @@ BEGIN
 END find_startxref;
 
 --------------------------------------------------------------------------------
--- parse_xref_table: Parse cross-reference table
+-- parse_xref_table: le a tabela xref, em texto ou em stream
 --------------------------------------------------------------------------------
 PROCEDURE parse_xref_table(p_pdf BLOB, p_xref_offset PLS_INTEGER) IS
   l_xref_section VARCHAR2(32767);
@@ -6739,7 +6608,7 @@ BEGIN
   g_xref_table.DELETE;
   g_objstm_body.DELETE;
 
-  -- Read xref section at reported offset
+  -- le a xref no offset anunciado
   l_xref_section := read_blob_chunk(p_pdf, p_xref_offset + 1, 32767);
 
   -- PDF 1.5+: o que startxref aponta nao e a tabela de texto, e um objeto
@@ -6775,7 +6644,7 @@ BEGIN
     END;
   END IF;
 
-  -- If xref not found at exact position, search nearby
+  -- nao estando ali, procura em volta
   IF l_xref_section IS NULL OR NOT l_xref_section LIKE 'xref%' THEN
     -- procura 'xref' de tras para frente, a partir do fim do arquivo
     DECLARE
@@ -6802,9 +6671,9 @@ BEGIN
       END;
 
       IF l_xref_pos > 0 THEN
-        l_actual_offset := l_search_start + l_xref_pos - 2; -- Convert to 0-based
+        l_actual_offset := l_search_start + l_xref_pos - 2; -- passa para base 0
         l_xref_section := read_blob_chunk(p_pdf, l_actual_offset + 1, 32767);
-        -- Update global offset so parse_trailer uses correct position
+        -- corrige o offset global para o parse_trailer partir do lugar certo
         g_xref_offset := l_actual_offset;
         log_message(2, 'xref found at offset ' || l_actual_offset ||
                        ' (startxref said ' || p_xref_offset || ')');
@@ -6842,20 +6711,20 @@ BEGIN
       'arquivo). Este PDF nao e suportado pela leitura de xref classica.');
   END IF;
 
-  -- Normalize line endings: remove CR, keep LF only
+  -- normaliza o fim de linha: tira o CR, fica so o LF
   l_xref_section := REPLACE(l_xref_section, CHR(13), '');
 
-  -- Skip line "xref"
+  -- pula a linha "xref"
   l_pos := INSTR(l_xref_section, CHR(10)) + 1;
 
-  -- Line 2: subsection header "0 N" where N = number of objects
+  -- a segunda linha e o cabecalho da subsecao: "0 N", com N objetos
   l_line_end := INSTR(l_xref_section, CHR(10), l_pos);
   l_line := TRIM(SUBSTR(l_xref_section, l_pos, l_line_end - l_pos));
   l_obj_start := TO_NUMBER(REGEXP_SUBSTR(l_line, '^[0-9]+'));
   l_obj_count := TO_NUMBER(REGEXP_SUBSTR(l_line, '[0-9]+$'));
   l_pos := l_line_end + 1;
 
-  -- Process xref entries
+  -- percorre as entradas
   l_obj_id := l_obj_start;
 
   FOR idx IN 1..l_obj_count LOOP
@@ -6869,7 +6738,7 @@ BEGIN
     l_line := SUBSTR(l_xref_section, l_pos, l_line_end - l_pos);
     EXIT WHEN l_line LIKE 'trailer%';
 
-    -- Format: "NNNNNNNNNN GGGGG f/n"
+    -- formato: "NNNNNNNNNN GGGGG f/n"
     -- Example: "0000000015 00000 n"
     IF LENGTH(l_line) >= 18 THEN
       l_offset := TO_NUMBER(TRIM(SUBSTR(l_line, 1, 10)));
@@ -6892,16 +6761,16 @@ BEGIN
 END parse_xref_table;
 
 --------------------------------------------------------------------------------
--- parse_trailer: Extract trailer information
+-- parse_trailer: le o trailer e guarda /Root e /Info
 --------------------------------------------------------------------------------
 PROCEDURE parse_trailer(p_pdf BLOB, p_xref_offset PLS_INTEGER) IS
   l_trailer VARCHAR2(4000);
   l_root_id PLS_INTEGER;
 BEGIN
-  -- Read trailer (after xref)
+  -- le o trailer, que vem depois da xref
   l_trailer := read_blob_chunk(p_pdf, p_xref_offset + 1, 4000);
 
-  -- Extract /Root object ID
+  -- le o numero do /Root
   l_root_id := TO_NUMBER(
     REGEXP_SUBSTR(l_trailer, '/Root\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
   );
@@ -6916,7 +6785,7 @@ BEGIN
 END parse_trailer;
 
 --------------------------------------------------------------------------------
--- count_pages: Count pages in PDF
+-- count_pages: quantas paginas o PDF tem
 --------------------------------------------------------------------------------
 FUNCTION count_pages RETURN PLS_INTEGER IS
   l_catalog CLOB;
@@ -6927,7 +6796,7 @@ BEGIN
   -- 1. Get Catalog
   l_catalog := get_pdf_object(g_root_obj_id);
 
-  -- 2. Extract Pages object ID
+  -- 2. le o numero do /Pages
   l_pages_id := TO_NUMBER(
     REGEXP_SUBSTR(l_catalog, '/Pages\s+([0-9]+)\s+0\s+R', 1, 1, NULL, 1)
   );
@@ -6936,7 +6805,7 @@ BEGIN
     raise_application_error(-20807, 'Pages not found in Catalog');
   END IF;
 
-  -- 3. Get Pages object
+  -- 3. pega o objeto /Pages
   l_pages_obj := get_pdf_object(l_pages_id);
 
   -- 4. Extract /Count
@@ -6952,11 +6821,11 @@ BEGIN
 END count_pages;
 
 /*******************************************************************************
- * PUBLIC APIs - PHASE 4
+ * Rotinas publicas de leitura e manipulacao de PDF
  ******************************************************************************/
 
 --------------------------------------------------------------------------------
--- LoadPDF: Load existing PDF into memory
+-- LoadPDF: carrega na memoria um PDF que ja existe
 --------------------------------------------------------------------------------
 PROCEDURE LoadPDF(p_pdf_blob BLOB) IS
 BEGIN
@@ -6967,7 +6836,7 @@ BEGIN
     raise_application_error(-20800, 'Invalid PDF: NULL or too small');
   END IF;
 
-  -- Clear previous state
+  -- limpa o estado anterior
   g_loaded_pdf := p_pdf_blob;
   g_object_cache.DELETE;
   g_xref_table.DELETE;
@@ -6980,7 +6849,7 @@ BEGIN
   g_xref_offset := find_startxref(p_pdf_blob);
   log_message(3, 'startxref value: ' || g_xref_offset);
 
-  -- Parse xref table (may correct g_xref_offset if startxref was inaccurate)
+  -- le a xref; pode corrigir g_xref_offset se o startxref estiver errado
   parse_xref_table(p_pdf_blob, g_xref_offset);
 
   -- le o trailer, procurando a partir da posicao real da xref
@@ -6989,7 +6858,7 @@ BEGIN
   -- Count pages
   g_loaded_page_count := count_pages();
 
-  -- Parse page tree
+  -- le a arvore de paginas
   parse_page_tree();
 
   log_message(2, 'PDF loaded successfully: ' || g_loaded_page_count || ' pages, version ' || g_pdf_version);
@@ -7013,7 +6882,7 @@ BEGIN
 END GetPageCount;
 
 --------------------------------------------------------------------------------
--- GetPDFInfo: Get information about loaded PDF
+-- GetPDFInfo: os dados do PDF carregado
 --------------------------------------------------------------------------------
 FUNCTION GetPDFInfo RETURN JSON_OBJECT_T IS
   l_info JSON_OBJECT_T := JSON_OBJECT_T();
@@ -7041,16 +6910,16 @@ BEGIN
     raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- Validate rotation value
+  -- confere o valor do giro
   IF INSTR(l_valid_rotations, TO_CHAR(p_rotation)) = 0 THEN
     raise_application_error(-20813,
       'Invalid rotation: ' || p_rotation || '. Valid values: 0, 90, 180, 270');
   END IF;
 
-  -- Extract page info if not already done
+  -- le os dados da pagina, se ainda nao foram
   extract_page_info(p_page_number);
 
-  -- Update rotation in cache
+  -- atualiza o giro no cache
   g_page_info_table(p_page_number).rotate := p_rotation;
 
   log_message(3, 'Page ' || p_page_number || ' rotation set to ' || p_rotation || ' degrees');
@@ -7068,14 +6937,14 @@ BEGIN
     raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- Validate page number
+  -- confere o numero da pagina
   IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
     raise_application_error(-20812,
       'Invalid page number: ' || p_page_number ||
       '. Valid range: 1-' || g_loaded_page_count);
   END IF;
 
-  -- Check if already removed
+  -- ja estava marcada para remocao?
   IF g_removed_pages.EXISTS(p_page_number) AND g_removed_pages(p_page_number) THEN
     raise_application_error(-20814,
       'Page ' || p_page_number || ' is already marked for removal');
@@ -7089,7 +6958,7 @@ BEGIN
 END RemovePage;
 
 --------------------------------------------------------------------------------
--- GetActivePageCount: Get count of non-removed pages
+-- GetActivePageCount: quantas paginas sobram depois das remocoes
 --------------------------------------------------------------------------------
 FUNCTION GetActivePageCount RETURN PLS_INTEGER IS
   l_count PLS_INTEGER := 0;
@@ -7109,7 +6978,7 @@ BEGIN
 END GetActivePageCount;
 
 --------------------------------------------------------------------------------
--- IsPageRemoved: Check if page is marked for removal
+-- IsPageRemoved: a pagina esta marcada para remocao?
 --------------------------------------------------------------------------------
 FUNCTION IsPageRemoved(p_page_number PLS_INTEGER) RETURN BOOLEAN IS
 BEGIN
@@ -7120,7 +6989,7 @@ BEGIN
 END IsPageRemoved;
 
 --------------------------------------------------------------------------------
--- IsPDFModified: Check if PDF has been modified
+-- IsPDFModified: se ha alteracao pendente de OutputModifiedPDF
 --------------------------------------------------------------------------------
 FUNCTION IsPDFModified RETURN BOOLEAN IS
 BEGIN
@@ -7129,7 +6998,7 @@ END IsPDFModified;
 
 --------------------------------------------------------------------------------
 -- split_string: parte um texto pelo separador e devolve a colecao
--- Replaces apex_string.split for Oracle environments without APEX
+-- substitui o apex_string.split: esta base nao depende do APEX
 --------------------------------------------------------------------------------
 FUNCTION split_string(
   p_string VARCHAR2,
@@ -7163,7 +7032,7 @@ BEGIN
 END split_string;
 
 --------------------------------------------------------------------------------
--- parse_page_range: Parse page range string to determine applicable pages
+-- parse_page_range: interpreta a faixa de paginas e diz quais valem
 --------------------------------------------------------------------------------
 FUNCTION parse_page_range(
   p_range VARCHAR2,
@@ -7187,7 +7056,7 @@ BEGIN
     RETURN RTRIM(l_result, ',');
   END IF;
 
-  -- Handle comma-separated list: '1,3,5' or ranges '1-5,7,9-12'
+  -- aceita lista '1,3,5' e faixas '1-5,7,9-12'
   l_parts := split_string(l_range, ',');
 
   FOR i IN 1..l_parts.COUNT LOOP
@@ -7243,7 +7112,7 @@ BEGIN
 END is_page_in_range;
 
 --------------------------------------------------------------------------------
--- AddWatermark: Add watermark to specified pages
+-- AddWatermark: marca d'agua nas paginas pedidas
 --------------------------------------------------------------------------------
 PROCEDURE AddWatermark(
   p_text VARCHAR2,
@@ -7276,10 +7145,10 @@ BEGIN
       'Rotation must be 0, 45, 90, 135, 180, 225, 270, or 315 degrees');
   END IF;
 
-  -- Parse page range
+  -- interpreta a faixa de paginas
   l_parsed_range := parse_page_range(p_pages, g_loaded_page_count);
 
-  -- Create watermark record
+  -- monta o registro da marca d'agua
   g_watermark_count := g_watermark_count + 1;
   l_watermark.text := p_text;
   l_watermark.opacity := p_opacity;
@@ -7310,7 +7179,7 @@ BEGIN
     raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- Build JSON array of watermarks
+  -- monta o array JSON das marcas d'agua
   l_idx := g_watermarks.FIRST;
   WHILE l_idx IS NOT NULL LOOP
     l_watermark := JSON_OBJECT_T();
@@ -7677,7 +7546,7 @@ BEGIN
 END FlateEncode;
 
 --------------------------------------------------------------------------------
--- ClearPDFCache: Clear loaded PDF and free memory
+-- ClearPDFCache: descarrega o PDF e libera a memoria
 --------------------------------------------------------------------------------
 PROCEDURE ClearPDFCache IS
 BEGIN
@@ -7710,11 +7579,11 @@ BEGIN
 END ClearPDFCache;
 
 --------------------------------------------------------------------------------
--- PHASE 4.5: TEXT & IMAGE OVERLAY IMPLEMENTATION
+-- Sobreposicao de texto e de imagem
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* OverlayText: Add text overlay at specific position
+* OverlayText: sobrepoe texto numa posicao
 *******************************************************************************/
 PROCEDURE OverlayText(
   p_page_number IN PLS_INTEGER,
@@ -7728,13 +7597,13 @@ PROCEDURE OverlayText(
   l_page_height NUMBER;
   l_page_info JSON_OBJECT_T;
 BEGIN
-  -- Validate PDF loaded
+  -- confere que ha PDF carregado
   IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
     
     RAISE_APPLICATION_ERROR(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- Validate page number
+  -- confere o numero da pagina
   IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
     RAISE_APPLICATION_ERROR(-20810, 'Invalid page number: ' || p_page_number ||
                         '. PDF has ' || g_loaded_page_count || ' pages.');
@@ -7745,11 +7614,11 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
   END IF;
 
-  -- Generate overlay ID
+  -- gera o identificador da sobreposicao
   g_overlay_count := g_overlay_count + 1;
   l_overlay_id := 'OVL_TEXT_' || LPAD(g_overlay_count, 5, '0');
 
-  -- Initialize overlay record
+  -- monta o registro da sobreposicao
   l_overlay.overlay_id := l_overlay_id;
   l_overlay.overlay_type := 'TEXT';
   l_overlay.page_number := p_page_number;
@@ -7758,7 +7627,7 @@ BEGIN
   l_overlay.content := p_text;
   l_overlay.created_date := SYSTIMESTAMP;
 
-  -- Parse options or set defaults
+  -- le as opcoes, ou assume os padroes
   IF p_options IS NOT NULL THEN
     l_overlay.font_name := NVL(p_options.get_string('font'), 'Helvetica');
     l_overlay.font_size := NVL(p_options.get_number('fontSize'), 12);
@@ -7794,7 +7663,7 @@ BEGIN
 END OverlayText;
 
 /*******************************************************************************
-* OverlayImage: Add image overlay at specific position
+* OverlayImage: sobrepoe uma imagem numa posicao
 *******************************************************************************/
 PROCEDURE OverlayImage(
   p_page_number IN PLS_INTEGER,
@@ -7809,12 +7678,12 @@ PROCEDURE OverlayImage(
   l_overlay_id VARCHAR2(50);
   l_img_signature RAW(8);
 BEGIN
-  -- Validate PDF loaded
+  -- confere que ha PDF carregado
   IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
     RAISE_APPLICATION_ERROR(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- Validate page number
+  -- confere o numero da pagina
   IF p_page_number < 1 OR p_page_number > g_loaded_page_count THEN
     RAISE_APPLICATION_ERROR(-20810, 'Invalid page number: ' || p_page_number);
   END IF;
@@ -7824,12 +7693,12 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20821, 'Invalid position coordinates. X and Y must be >= 0.');
   END IF;
 
-  -- Validate image blob
+  -- confere o BLOB da imagem
   IF p_image_blob IS NULL OR DBMS_LOB.GETLENGTH(p_image_blob) = 0 THEN
     RAISE_APPLICATION_ERROR(-20823, 'Invalid image: image blob is empty or NULL.');
   END IF;
 
-  -- Validate image format (JPEG or PNG)
+  -- confere o formato: so JPEG ou PNG
   l_img_signature := DBMS_LOB.SUBSTR(p_image_blob, 8, 1);
   IF l_img_signature != c_PNG_SIGNATURE AND
      DBMS_LOB.SUBSTR(p_image_blob, 2, 1) != c_JPEG_SOI THEN
@@ -7844,11 +7713,11 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20824, 'Invalid height. Must be > 0 or NULL for original size.');
   END IF;
 
-  -- Generate overlay ID
+  -- gera o identificador da sobreposicao
   g_overlay_count := g_overlay_count + 1;
   l_overlay_id := 'OVL_IMG_' || LPAD(g_overlay_count, 5, '0');
 
-  -- Initialize overlay record
+  -- monta o registro da sobreposicao
   l_overlay.overlay_id := l_overlay_id;
   l_overlay.overlay_type := 'IMAGE';
   l_overlay.page_number := p_page_number;
@@ -7859,7 +7728,7 @@ BEGIN
   l_overlay.image_blob := p_image_blob;
   l_overlay.created_date := SYSTIMESTAMP;
 
-  -- Parse options or set defaults
+  -- le as opcoes, ou assume os padroes
   IF p_options IS NOT NULL THEN
     l_overlay.opacity := NVL(p_options.get_number('opacity'), 1.0);
     l_overlay.rotation := NVL(p_options.get_number('rotation'), 0);
@@ -7887,7 +7756,7 @@ BEGIN
 END OverlayImage;
 
 /*******************************************************************************
-* GetOverlays: Get list of applied overlays
+* GetOverlays: a lista das sobreposicoes aplicadas
 *******************************************************************************/
 FUNCTION GetOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL)
   RETURN JSON_ARRAY_T
@@ -7897,17 +7766,17 @@ IS
   l_overlay overlay_rec;
   l_key VARCHAR2(50);
 BEGIN
-  -- Validate PDF loaded
+  -- confere que ha PDF carregado
   IF g_loaded_pdf IS NULL OR DBMS_LOB.GETLENGTH(g_loaded_pdf) = 0 THEN
     RAISE_APPLICATION_ERROR(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- Iterate through overlays
+  -- percorre as sobreposicoes
   l_key := g_overlays.FIRST;
   WHILE l_key IS NOT NULL LOOP
     l_overlay := g_overlays(l_key);
 
-    -- Filter by page if specified
+    -- filtra por pagina, quando pedida
     IF p_page_number IS NULL OR l_overlay.page_number = p_page_number THEN
       l_overlay_obj := JSON_OBJECT_T();
       l_overlay_obj.put('overlayId', l_overlay.overlay_id);
@@ -7950,7 +7819,7 @@ BEGIN
 END GetOverlays;
 
 /*******************************************************************************
-* RemoveOverlay: Remove specific overlay by ID
+* RemoveOverlay: remove uma sobreposicao pelo identificador
 *******************************************************************************/
 PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2) IS
 BEGIN
@@ -7963,7 +7832,7 @@ BEGIN
 END RemoveOverlay;
 
 /*******************************************************************************
-* ClearOverlays: Clear all overlays (optionally for specific page)
+* ClearOverlays: remove todas as sobreposicoes, ou so as de uma pagina
 *******************************************************************************/
 PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL) IS
   l_key VARCHAR2(50);
@@ -7972,12 +7841,12 @@ PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL) IS
   l_keys_to_delete key_list := key_list();
 BEGIN
   IF p_page_number IS NULL THEN
-    -- Clear all overlays
+    -- remove todas
     g_overlays.DELETE;
     g_overlay_count := 0;
     log_message(3, 'All overlays cleared');
   ELSE
-    -- Clear overlays for specific page
+    -- remove so as da pagina
     l_key := g_overlays.FIRST;
     WHILE l_key IS NOT NULL LOOP
       l_overlay := g_overlays(l_key);
@@ -7988,7 +7857,7 @@ BEGIN
       l_key := g_overlays.NEXT(l_key);
     END LOOP;
 
-    -- Delete collected keys
+    -- apaga as chaves recolhidas
     FOR i IN 1..l_keys_to_delete.COUNT LOOP
       g_overlays.DELETE(l_keys_to_delete(i));
     END LOOP;
@@ -7999,11 +7868,11 @@ BEGIN
 END ClearOverlays;
 
 --------------------------------------------------------------------------------
--- PHASE 4.6: PDF MERGE & SPLIT IMPLEMENTATION
+-- Mesclar e dividir PDF
 --------------------------------------------------------------------------------
 
 /*******************************************************************************
-* LoadPDFWithID: Load PDF with identifier for multi-document operations
+* LoadPDFWithID: carrega um PDF sob um identificador, para trabalhar com varios
 *******************************************************************************/
 PROCEDURE LoadPDFWithID(
   p_pdf_id IN VARCHAR2,
@@ -8011,7 +7880,7 @@ PROCEDURE LoadPDFWithID(
 ) IS
   l_doc pdf_document_rec;
 BEGIN
-  -- Validate PDF ID
+  -- confere o identificador
   IF p_pdf_id IS NULL OR LENGTH(TRIM(p_pdf_id)) = 0 THEN
     RAISE_APPLICATION_ERROR(-20830, 'Invalid PDF ID: cannot be empty or NULL');
   END IF;
@@ -8020,12 +7889,12 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20830, 'Invalid PDF ID: maximum length is 50 characters');
   END IF;
 
-  -- Check if already loaded
+  -- ja esta carregado?
   IF g_loaded_pdfs.EXISTS(p_pdf_id) THEN
     RAISE_APPLICATION_ERROR(-20828, 'PDF ID already loaded: ' || p_pdf_id);
   END IF;
 
-  -- Check max PDFs limit
+  -- confere o teto de PDFs abertos
   IF g_loaded_pdf_count >= c_max_loaded_pdfs THEN
     RAISE_APPLICATION_ERROR(-20829, 'Maximum loaded PDFs exceeded. Limit is ' ||
                 c_max_loaded_pdfs || ' PDFs. Unload some PDFs first.');
@@ -8036,25 +7905,25 @@ BEGIN
     RAISE_APPLICATION_ERROR(-20830, 'Invalid PDF: blob is empty or NULL');
   END IF;
 
-  -- Initialize document record
+  -- monta o registro do documento
   l_doc.pdf_id := p_pdf_id;
   l_doc.pdf_blob := p_pdf_blob;
   l_doc.file_size := DBMS_LOB.GETLENGTH(p_pdf_blob);
   l_doc.loaded_date := SYSTIMESTAMP;
 
-  -- Parse PDF to get page count
+  -- le o PDF para saber quantas paginas tem
   BEGIN
-    -- Save current state
+    -- guarda o estado corrente
     DECLARE
       l_saved_blob BLOB := g_loaded_pdf;
       l_saved_count PLS_INTEGER := g_loaded_page_count;
     BEGIN
-      -- Parse this PDF
+      -- interpreta este PDF
       LoadPDF(p_pdf_blob);
       l_doc.page_count := g_loaded_page_count;
       l_doc.pdf_version := g_pdf_version;
 
-      -- Restore previous state if needed
+      -- devolve o estado anterior, se preciso
       IF l_saved_blob IS NOT NULL THEN
         g_loaded_pdf := l_saved_blob;
         g_loaded_page_count := l_saved_count;
@@ -8076,7 +7945,7 @@ BEGIN
 END LoadPDFWithID;
 
 /*******************************************************************************
-* GetLoadedPDFs: List all loaded PDFs
+* GetLoadedPDFs: os identificadores dos PDFs carregados
 *******************************************************************************/
 FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T IS
   l_result JSON_ARRAY_T := JSON_ARRAY_T();
@@ -8084,7 +7953,7 @@ FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T IS
   l_doc pdf_document_rec;
   l_key VARCHAR2(50);
 BEGIN
-  -- Iterate through loaded PDFs
+  -- percorre os PDFs carregados
   l_key := g_loaded_pdfs.FIRST;
   WHILE l_key IS NOT NULL LOOP
     l_doc := g_loaded_pdfs(l_key);
@@ -8107,7 +7976,7 @@ BEGIN
 END GetLoadedPDFs;
 
 /*******************************************************************************
-* UnloadPDF: Remove PDF from memory
+* UnloadPDF: descarrega da memoria o PDF de um identificador
 *******************************************************************************/
 PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2) IS
 BEGIN
@@ -10871,7 +10740,7 @@ BEGIN
 END rc4_key_xor;
 
 /*******************************************************************************
-* compute_object_key: Compute encryption key for specific object (Algorithm 1)
+* compute_object_key: a chave de UM objeto (algoritmo 1)
 *******************************************************************************/
 FUNCTION compute_object_key(
   p_enc_key RAW,
@@ -10899,7 +10768,7 @@ BEGIN
 END compute_object_key;
 
 /*******************************************************************************
-* compute_owner_key: Compute owner password hash (Algorithm 3 from PDF spec)
+* compute_owner_key: o hash da senha de proprietario (algoritmo 3)
 *******************************************************************************/
 FUNCTION compute_owner_key(
   p_owner_pwd VARCHAR2,
@@ -10911,7 +10780,7 @@ FUNCTION compute_owner_key(
   l_hash RAW(32);
   l_key_len PLS_INTEGER;
 BEGIN
-  -- Use owner password or user password if owner is empty
+  -- usa a senha de proprietario; vazia, usa a de usuario
   l_pwd_to_use := NVL(p_owner_pwd, p_user_pwd);
 
   -- Pad password to 32 bytes (senha + inicio da string de preenchimento)
@@ -10920,7 +10789,7 @@ BEGIN
   -- MD5 hash
   l_hash := PL_FPDF_UTIL.crypto_md5(l_padded);
 
-  -- For 128-bit, hash 50 more times
+  -- com 128 bits, sao mais 50 rodadas de hash
   IF p_key_length > 40 THEN
     FOR i IN 1..50 LOOP
       l_hash := PL_FPDF_UTIL.crypto_md5(l_hash);
@@ -10933,7 +10802,7 @@ BEGIN
 END compute_owner_key;
 
 /*******************************************************************************
-* compute_owner_value: Compute /O value (Algorithm 3 from PDF spec)
+* compute_owner_value: a entrada /O do dicionario de cifragem (algoritmo 3)
 *******************************************************************************/
 FUNCTION compute_owner_value(
   p_owner_pwd VARCHAR2,
@@ -10944,7 +10813,7 @@ FUNCTION compute_owner_value(
   l_user_padded RAW(32);
   l_result RAW(32);
 BEGIN
-  -- Get owner key
+  -- a chave do proprietario
   l_key := compute_owner_key(p_owner_pwd, p_user_pwd, p_key_length);
 
   -- Pad user password (senha + inicio da string de preenchimento)
@@ -10999,7 +10868,7 @@ BEGIN
   -- MD5 hash
   l_hash := PL_FPDF_UTIL.crypto_md5(l_input);
 
-  -- For 128-bit, hash 50 more times
+  -- com 128 bits, sao mais 50 rodadas de hash
   IF p_key_length > 40 THEN
     l_key_len := p_key_length / 8;
     FOR i IN 1..50 LOOP
@@ -11013,7 +10882,7 @@ BEGIN
 END compute_encryption_key_raw;
 
 /*******************************************************************************
-* compute_encryption_key: Compute document encryption key (Algorithm 2)
+* compute_encryption_key: a chave do documento (algoritmo 2)
 *   Recebe a senha como texto, preenche ate 32 bytes e delega.
 *******************************************************************************/
 -- compute_encryption_key: a chave do documento (algoritmo 2) a partir da senha
@@ -11031,7 +10900,7 @@ BEGIN
 END compute_encryption_key;
 
 /*******************************************************************************
-* compute_user_value: Compute /U value (Algorithm 4/5 from PDF spec)
+* compute_user_value: a entrada /U do dicionario de cifragem (algoritmos 4 e 5)
 *******************************************************************************/
 FUNCTION compute_user_value(
   p_encryption_key RAW,
@@ -11042,10 +10911,10 @@ FUNCTION compute_user_value(
   l_hash RAW(16);
 BEGIN
   IF p_key_length <= 40 THEN
-    -- Algorithm 4: RC4 encrypt padding
+    -- algoritmo 4: cifra o enchimento com RC4
     l_result := PL_FPDF_UTIL.crypto_rc4(c_PDF_PADDING, p_encryption_key);
   ELSE
-    -- Algorithm 5: MD5 hash of padding + file ID
+    -- algoritmo 5: MD5 do enchimento com o /ID
     l_hash := PL_FPDF_UTIL.crypto_md5(UTL_RAW.CONCAT(c_PDF_PADDING, p_file_id));
 
     -- RC4 encrypt
@@ -11067,7 +10936,7 @@ BEGIN
 END compute_user_value;
 
 /*******************************************************************************
-* generate_file_id: Generate unique file ID
+* generate_file_id: gera o /ID do documento
 *******************************************************************************/
 FUNCTION generate_file_id RETURN RAW IS
 BEGIN
@@ -11542,7 +11411,7 @@ FUNCTION EncryptPDF(
   l_pdf_size PLS_INTEGER;
   l_owner_pwd VARCHAR2(100);
 BEGIN
-  -- Validate encryption method
+  -- confere o metodo de cifragem
   IF p_encryption NOT IN ('RC4-40', 'RC4-128', 'AES-128', 'AES-256') THEN
     RAISE_APPLICATION_ERROR(-20850, 'Invalid encryption method: ' || p_encryption ||
       '. Valid: RC4-40, RC4-128, AES-128, AES-256');
@@ -11556,12 +11425,12 @@ BEGIN
   -- Recusa cedo se o package de criptografia nao cifra de verdade
   PL_FPDF_UTIL.crypto_autoteste;
 
-  -- Check if already encrypted
+  -- ja esta cifrado?
   IF IsEncrypted(p_pdf) THEN
     RAISE_APPLICATION_ERROR(-20859, 'PDF is already encrypted. Decrypt first.');
   END IF;
 
-  -- Set key length based on method
+  -- tamanho da chave conforme o metodo
   CASE p_encryption
     WHEN 'RC4-40' THEN l_key_length := 40; l_v_value := 1; l_r_value := 2;
     WHEN 'RC4-128' THEN l_key_length := 128; l_v_value := 2; l_r_value := 3;
@@ -11594,7 +11463,7 @@ BEGIN
     IF NVL(p_permissions.get_boolean('printHighQuality'), FALSE) THEN l_permissions := l_permissions + 2048; END IF;
   END IF;
 
-  -- Generate file ID
+  -- gera o /ID
   l_file_id := generate_file_id();
 
   IF l_r6 THEN
@@ -11616,10 +11485,10 @@ BEGIN
     -- Compute O value (owner password hash)
     l_o_value := compute_owner_value(l_owner_pwd, p_user_password, l_key_length);
 
-    -- Compute encryption key
+    -- calcula a chave
     l_enc_key := compute_encryption_key(p_user_password, l_o_value, l_permissions, l_file_id, l_key_length);
 
-    -- Compute U value (user password verification)
+    -- calcula o /U, que confere a senha de usuario
     l_u_value := compute_user_value(l_enc_key, l_file_id, l_key_length);
   END IF;
 
@@ -11731,8 +11600,8 @@ EXCEPTION
 END EncryptPDF;
 
 /*******************************************************************************
-* verify_password: Verify user or owner password against PDF encryption
-* Returns TRUE if password is valid, FALSE otherwise
+* verify_password: confere a senha, de usuario ou de proprietario.
+* Devolve TRUE quando ela serve.
 *******************************************************************************/
 FUNCTION verify_password(
   p_password IN VARCHAR2,
@@ -11798,8 +11667,8 @@ BEGIN
     l_decrypted := rc4_crypt(l_decrypted, l_owner_key);
   END IF;
 
-  -- l_decrypted should now be the user password if owner password was correct
-  -- Verify by computing U
+  -- se a senha de proprietario conferiu, l_decrypted e a senha de usuario
+  -- confere recalculando o /U
   -- l_decrypted JA e a senha de usuario preenchida em 32 bytes: usa-la como
   -- RAW evita o round-trip por VARCHAR2, que corrompia o preenchimento.
   l_enc_key := compute_encryption_key_raw(
@@ -11949,7 +11818,7 @@ BEGIN
     DBMS_LOB.SUBSTR(p_pdf, LEAST(l_pdf_size, 4000),
                     GREATEST(1, l_pdf_size - 3999)));
 
-  -- Extract encryption parameters
+  -- le os parametros da cifragem
   BEGIN
     -- /V e /R nao sao mais lidos aqui: o filtro vem do /CFM, que e o que
     -- distingue AESV2 de AESV3 e de RC4. Ler os dois so para descartar dava a
@@ -11967,7 +11836,7 @@ BEGIN
       END IF;
     END;
 
-    -- Extract U value
+    -- le o /U
     DECLARE
       l_u_hex VARCHAR2(100);
     BEGIN
@@ -11977,7 +11846,7 @@ BEGIN
       END IF;
     END;
 
-    -- Extract file ID
+    -- le o /ID
     DECLARE
       l_id_hex VARCHAR2(100);
     BEGIN
@@ -12118,7 +11987,7 @@ EXCEPTION
 END DecryptPDF;
 
 /*******************************************************************************
-* IsEncrypted: Check if PDF is encrypted
+* IsEncrypted: o PDF esta protegido por senha?
 *******************************************************************************/
 FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN IS
   l_len PLS_INTEGER;
@@ -12146,7 +12015,7 @@ BEGIN
 END IsEncrypted;
 
 /*******************************************************************************
-* parse_permissions: Parse permission integer into individual flags
+* parse_permissions: separa o inteiro de permissoes nos bits que o compoem
 *******************************************************************************/
 FUNCTION parse_permissions(p_perm_value PLS_INTEGER) RETURN JSON_OBJECT_T IS
   l_perms JSON_OBJECT_T := JSON_OBJECT_T();
@@ -12157,35 +12026,35 @@ FUNCTION parse_permissions(p_perm_value PLS_INTEGER) RETURN JSON_OBJECT_T IS
   -- falsas — o que fazia os testes que esperavam FALSE passarem por engano.
   l_perm NUMBER;
 BEGIN
-  -- Handle negative values (two's complement)
+  -- valor negativo vem em complemento de dois
   IF p_perm_value < 0 THEN
     l_perm := p_perm_value + 4294967296;  -- Convert to unsigned
   ELSE
     l_perm := p_perm_value;
   END IF;
 
-  -- Bit 3: Print (low quality for R3+)
+  -- bit 3: imprimir (em baixa qualidade, do R3 em diante)
   l_perms.put('print', BITAND(l_perm, 4) = 4);
 
-  -- Bit 4: Modify contents
+  -- bit 4: alterar o conteudo
   l_perms.put('modify', BITAND(l_perm, 8) = 8);
 
-  -- Bit 5: Copy or extract text/graphics
+  -- bit 5: copiar ou extrair texto e desenho
   l_perms.put('copy', BITAND(l_perm, 16) = 16);
 
-  -- Bit 6: Add or modify annotations, fill forms
+  -- bit 6: anotar e preencher formulario
   l_perms.put('annotate', BITAND(l_perm, 32) = 32);
 
-  -- Bit 9: Fill form fields (R3+)
+  -- bit 9: preencher campo de formulario (R3+)
   l_perms.put('fillForms', BITAND(l_perm, 256) = 256);
 
-  -- Bit 10: Extract for accessibility (R3+)
+  -- bit 10: extrair para acessibilidade (R3+)
   l_perms.put('extract', BITAND(l_perm, 512) = 512);
 
-  -- Bit 11: Assemble document (R3+)
+  -- bit 11: montar o documento (R3+)
   l_perms.put('assemble', BITAND(l_perm, 1024) = 1024);
 
-  -- Bit 12: Print high quality (R3+)
+  -- bit 12: imprimir em alta qualidade (R3+)
   l_perms.put('printHighQuality', BITAND(l_perm, 2048) = 2048);
 
   RETURN l_perms;
@@ -12193,7 +12062,7 @@ END parse_permissions;
 
 /*******************************************************************************
 * GetSecurityInfo: Get security information from PDF
-* Returns detailed encryption info including method, key length, and permissions
+* Devolve o metodo, o tamanho da chave e as permissoes.
 *******************************************************************************/
 FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T IS
   l_result JSON_OBJECT_T := JSON_OBJECT_T();
@@ -12220,7 +12089,7 @@ BEGIN
 
   l_result.put('encrypted', TRUE);
 
-  -- Extract V value (encryption version)
+  -- le o /V, a versao da cifragem
   BEGIN
     l_v_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/V\s+(\d+)', 1, 1, NULL, 1));
     l_result.put('version', l_v_value);
@@ -12238,7 +12107,7 @@ BEGIN
     l_result.put('version', 0);
   END;
 
-  -- Extract R value (revision)
+  -- le o /R, o revisionamento
   BEGIN
     l_r_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/R\s+(\d+)', 1, 1, NULL, 1));
     l_result.put('revision', l_r_value);
@@ -12246,7 +12115,7 @@ BEGIN
     l_result.put('revision', 0);
   END;
 
-  -- Extract key length
+  -- le o tamanho da chave
   BEGIN
     -- Corta antes do /CF: o sub-dicionario do filtro tem um /Length PROPRIO, em
     -- BYTES (16 ou 32), e o primeiro casamento do REGEXP pegaria esse se a
@@ -12265,14 +12134,14 @@ BEGIN
     l_result.put('keyLength', 40);
   END;
 
-  -- Extract and parse permissions
+  -- le e interpreta as permissoes
   BEGIN
     l_perm_value := TO_NUMBER(REGEXP_SUBSTR(l_content, '/P\s+(-?\d+)', 1, 1, NULL, 1));
     l_result.put('permissionValue', l_perm_value);
     l_perms := parse_permissions(l_perm_value);
     l_result.put('permissions', l_perms);
   EXCEPTION WHEN OTHERS THEN
-    -- Default permissions (all restricted)
+    -- permissoes padrao: tudo restrito
     l_perms := JSON_OBJECT_T();
     l_perms.put('print', FALSE);
     l_perms.put('modify', FALSE);
@@ -12293,9 +12162,9 @@ BEGIN
 END GetSecurityInfo;
 
 /*******************************************************************************
-* SetEncryption: Set encryption for PDF being generated
-* Also sets appropriate PDF version based on encryption method:
-*   - RC4-40/RC4-128: PDF 1.4
+* SetEncryption: liga a cifragem do documento que esta sendo gerado
+* Ajusta tambem a versao de PDF conforme o metodo de cifragem:
+*   - RC4-40 e RC4-128: PDF 1.4
 *   - AES-128: PDF 1.5
 *   - AES-256: PDF 1.7
 *******************************************************************************/
@@ -12316,7 +12185,7 @@ BEGIN
   g_user_password := p_user_password;
   g_owner_password := NVL(p_owner_password, p_user_password);
 
-  -- Set PDF version based on encryption method
+  -- acerta a versao de PDF conforme o metodo
   CASE p_encryption
     WHEN 'RC4-40' THEN PDFVersion := '1.4';   -- Minimum for security
     WHEN 'RC4-128' THEN PDFVersion := '1.4';  -- PDF 1.4 standard
@@ -12328,7 +12197,7 @@ BEGIN
 END SetEncryption;
 
 /*******************************************************************************
-* SetPDFVersion: Set PDF version for generated documents
+* SetPDFVersion: a versao declarada nos documentos gerados
 *******************************************************************************/
 PROCEDURE SetPDFVersion(p_version IN VARCHAR2) IS
 BEGIN
@@ -12337,7 +12206,7 @@ BEGIN
       '. Valid versions: 1.4, 1.5, 1.6, 1.7, 2.0');
   END IF;
 
-  -- Validate encryption compatibility
+  -- confere se a cifragem cabe nessa versao
   IF g_encrypt_method IS NOT NULL THEN
     CASE g_encrypt_method
       WHEN 'AES-128' THEN
@@ -12359,7 +12228,7 @@ BEGIN
 END SetPDFVersion;
 
 /*******************************************************************************
-* GetPDFVersion: Get current PDF version setting
+* GetPDFVersion: a versao de PDF corrente
 *******************************************************************************/
 FUNCTION GetPDFVersion RETURN VARCHAR2 IS
 BEGIN
@@ -12367,7 +12236,7 @@ BEGIN
 END GetPDFVersion;
 
 /*******************************************************************************
-* SetPermissions: Set document permissions
+* SetPermissions: as permissoes do documento
 *******************************************************************************/
 PROCEDURE SetPermissions(
   p_print IN BOOLEAN DEFAULT TRUE,
