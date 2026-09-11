@@ -6385,25 +6385,19 @@ END;
 /
 
 --------------------------------------------------------------------------------
--- APIs públicas que ninguém chamava
--- origem: tests/test_api_sem_chamador.sql
+-- Cursor, margens e quebra de página
+-- origem: tests/test_cursor_margens.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - APIs publicas que ninguem chamava
+-- PL_FPDF - Cursor, margens e quebra de pagina
 --
--- 48 das 119 APIs publicas nao tinham UM chamador em dev/tests/ nem em
--- examples/. Compilar nao prova nada: o AddLink compilava e levantava
--- ORA-06531 na linha da propria declaracao, em toda versao que ja existiu, e
--- so apareceu quando alguem escreveu a primeira chamada. Foram QUATRO defeitos
--- no mesmo Link, achados um a cada teste novo.
+-- Onde o proximo desenho vai cair. E a metade da biblioteca que nao aparece
+-- no arquivo: o cursor, as margens e a quebra automatica decidem a posicao de
+-- tudo, e erram em silencio -- o texto sai, so que no lugar errado.
 --
--- Este arquivo escreve a primeira chamada das que nao dependem de nada de fora
--- do schema. Ficam para outro dia as que exigem DIRECTORY (LoadTTFFromFile,
--- OutputFile) ou ACL de rede (Image por URL, getImageFromUrl).
---
--- O criterio de cada caso: afere o que DISTINGUE a rotina, nao que ela "roda".
--- Chamar e ver se nao levanta prova pouco -- o AddWatermark passou meses sem
--- desenhar nada e ninguem reparou.
+-- Duas regras aqui nao estao no nome da rotina, e sao as que mordem:
+-- coordenada NEGATIVA conta a partir da borda oposta, e o SetY devolve o x
+-- para a margem esquerda.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
@@ -6468,8 +6462,9 @@ DECLARE
   END novo_doc;
 
 BEGIN
-  DBMS_OUTPUT.PUT_LINE('PL_FPDF - APIs publicas que ninguem chamava');
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - Cursor, margens e quebra de pagina');
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+
 
   --------------------------------------------------------------------------
   caso('GetX/SetX: negativo conta a partir da borda direita');
@@ -6658,6 +6653,111 @@ BEGIN
   END IF;
 
   --------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
+  IF l_falhas > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: FALHOU');
+  ELSIF l_skip > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK, com ' || l_skip
+                         || ' caso(s) sem conclusao — leia os [SKIP] acima');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
+    RAISE;
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Fonte corrente, entrelinha e texto
+-- origem: tests/test_fonte_texto.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF - Fonte corrente, entrelinha e escrita de texto
+--
+-- A fonte que esta valendo, e o texto escrito com ela fora da celula.
+--
+-- O que distingue estas rotinas: o SetFont NORMALIZA -- familia em minuscula,
+-- estilo em maiuscula --, entao comparar o retorno com o que se passou nunca
+-- casa; o Text escreve num ponto e NAO move o cursor; e o giro tem dois erros
+-- diferentes, um para o angulo que nao existe e outro para o que existe e a
+-- rotina nao faz.
+--
+-- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+--------------------------------------------------------------------------------
+
+DECLARE
+  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
+  -- invalidou --, entao se procura no lugar errado.
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
+
+  l_pdf    BLOB;
+  l_n      NUMBER;
+  l_n2     NUMBER;
+  l_txt    VARCHAR2(400);
+  l_erro   VARCHAR2(400);
+  l_json   JSON_OBJECT_T;
+  l_fonte  PL_FPDF.recTTFFont;
+
+  PROCEDURE caso(p_nome VARCHAR2) IS
+  BEGIN
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END caso;
+
+  PROCEDURE passou(p_msg VARCHAR2) IS
+  BEGIN
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END passou;
+
+  PROCEDURE falhou(p_msg VARCHAR2) IS
+  BEGIN
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END falhou;
+
+  PROCEDURE pulou(p_msg VARCHAR2) IS
+  BEGIN
+    l_skip := l_skip + 1;
+    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
+  END pulou;
+
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
+  PROCEDURE novo_doc(p_orient VARCHAR2 DEFAULT 'P') IS
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init(p_orient, 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+  END novo_doc;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - Fonte corrente, entrelinha e escrita de texto');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+
+
+  --------------------------------------------------------------------------
   caso('Fonte: corpo, familia e estilo sao lidos de volta');
   --------------------------------------------------------------------------
   -- O que se le de volta NAO e o eco do que se passou: o package NORMALIZA a
@@ -6803,6 +6903,145 @@ BEGIN
   END IF;
 
   --------------------------------------------------------------------------
+  caso('UTF8ToPDFString escapa o que a sintaxe do PDF reserva');
+  --------------------------------------------------------------------------
+  -- Parentese e barra invertida terminam a string do PDF antes da hora, e o
+  -- arquivo quebra a partir dali.
+  l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido) 50\%');
+  IF INSTR(l_txt, '\(') > 0 AND INSTR(l_txt, '\)') > 0 THEN
+    passou('os parenteses sairam escapados');
+  ELSE
+    falhou('parenteses nao escapados: ' || l_txt);
+  END IF;
+
+  IF PL_FPDF.UTF8ToPDFString(NULL) IS NULL THEN
+    passou('NULL entra e NULL sai, sem levantar');
+  ELSE
+    falhou('NULL devolveu alguma coisa');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('AddFont registra sem ler arquivo nenhum');
+  --------------------------------------------------------------------------
+  -- O AddFont so registra na colecao de fontes e deriva o nome do arquivo de
+  -- metricas quando nao recebe um. Nao le disco, entao roda em qualquer
+  -- ambiente -- foi engano meu te-lo posto na lista dos que precisam de grant.
+  novo_doc;
+  BEGIN
+    PL_FPDF.AddFont('Helvetica', 'B');
+    passou('AddFont registrou a fonte sem tocar em arquivo');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('AddFont levantou: ' || SQLERRM);
+  END;
+  PL_FPDF.Reset;
+
+  --------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
+  IF l_falhas > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: FALHOU');
+  ELSIF l_skip > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK, com ' || l_skip
+                         || ' caso(s) sem conclusao — leia os [SKIP] acima');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
+    RAISE;
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Tracejado e triângulo
+-- origem: tests/test_desenho.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF - Tracejado e triangulo
+--
+-- O desenho vetorial que o test_geracao_basica nao cobre: o padrao de
+-- tracejado e o triangulo.
+--
+-- Os dois se aferem pelo operador que sai no fluxo de conteudo -- '[] 0 d'
+-- para linha cheia, 'm' e 'l' para o caminho --, porque "nao levantou" nao
+-- prova desenho nenhum. Foi assim que a marca d'agua passou meses marcada
+-- como pronta sem desenhar nada.
+--
+-- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+--------------------------------------------------------------------------------
+
+DECLARE
+  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
+  -- invalidou --, entao se procura no lugar errado.
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
+
+  l_pdf    BLOB;
+  l_n      NUMBER;
+  l_n2     NUMBER;
+  l_txt    VARCHAR2(400);
+  l_erro   VARCHAR2(400);
+  l_json   JSON_OBJECT_T;
+  l_fonte  PL_FPDF.recTTFFont;
+
+  PROCEDURE caso(p_nome VARCHAR2) IS
+  BEGIN
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END caso;
+
+  PROCEDURE passou(p_msg VARCHAR2) IS
+  BEGIN
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END passou;
+
+  PROCEDURE falhou(p_msg VARCHAR2) IS
+  BEGIN
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END falhou;
+
+  PROCEDURE pulou(p_msg VARCHAR2) IS
+  BEGIN
+    l_skip := l_skip + 1;
+    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
+  END pulou;
+
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
+  PROCEDURE novo_doc(p_orient VARCHAR2 DEFAULT 'P') IS
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init(p_orient, 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+  END novo_doc;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - Tracejado e triangulo');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+
+
+  --------------------------------------------------------------------------
   caso('Tracejado: SetDash liga, e sem argumento volta a linha cheia');
   --------------------------------------------------------------------------
   -- O operador 'd' do PDF: '[] 0 d' e linha cheia, qualquer outra coisa e
@@ -6855,6 +7094,110 @@ BEGIN
   ELSE
     falhou('o Triangle nao desenhou nada');
   END IF;
+
+  --------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
+  IF l_falhas > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: FALHOU');
+  ELSIF l_skip > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK, com ' || l_skip
+                         || ' caso(s) sem conclusao — leia os [SKIP] acima');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
+    RAISE;
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Metadados, exibição e configuração
+-- origem: tests/test_metadados_config.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF - Metadados, preferencias de exibicao e configuracao
+--
+-- O que o documento diz sobre si mesmo, e o que o leitor recebe como
+-- preferencia de abertura.
+--
+-- Tudo aqui se afere no BLOB gerado, e nao no retorno da chamada: um
+-- SetSubject que nao chega ao dicionario nao levanta erro nenhum, e so
+-- aparece quando alguem procura o assunto do arquivo e nao acha.
+--
+-- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+--------------------------------------------------------------------------------
+
+DECLARE
+  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
+  -- invalidou --, entao se procura no lugar errado.
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
+
+  l_pdf    BLOB;
+  l_n      NUMBER;
+  l_n2     NUMBER;
+  l_txt    VARCHAR2(400);
+  l_erro   VARCHAR2(400);
+  l_json   JSON_OBJECT_T;
+  l_fonte  PL_FPDF.recTTFFont;
+
+  PROCEDURE caso(p_nome VARCHAR2) IS
+  BEGIN
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END caso;
+
+  PROCEDURE passou(p_msg VARCHAR2) IS
+  BEGIN
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END passou;
+
+  PROCEDURE falhou(p_msg VARCHAR2) IS
+  BEGIN
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END falhou;
+
+  PROCEDURE pulou(p_msg VARCHAR2) IS
+  BEGIN
+    l_skip := l_skip + 1;
+    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
+  END pulou;
+
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
+  PROCEDURE novo_doc(p_orient VARCHAR2 DEFAULT 'P') IS
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init(p_orient, 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+  END novo_doc;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - Metadados, preferencias de exibicao e configuracao');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+
 
   --------------------------------------------------------------------------
   caso('Metadados: assunto e criador chegam ao dicionario do documento');
@@ -7021,81 +7364,114 @@ BEGIN
   PL_FPDF.Reset;
 
   --------------------------------------------------------------------------
-  caso('UTF8ToPDFString escapa o que a sintaxe do PDF reserva');
-  --------------------------------------------------------------------------
-  -- Parentese e barra invertida terminam a string do PDF antes da hora, e o
-  -- arquivo quebra a partir dali.
-  l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido) 50\%');
-  IF INSTR(l_txt, '\(') > 0 AND INSTR(l_txt, '\)') > 0 THEN
-    passou('os parenteses sairam escapados');
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
+  IF l_falhas > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: FALHOU');
+  ELSIF l_skip > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK, com ' || l_skip
+                         || ' caso(s) sem conclusao — leia os [SKIP] acima');
   ELSE
-    falhou('parenteses nao escapados: ' || l_txt);
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK');
   END IF;
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
+    RAISE;
+END;
+/
 
-  IF PL_FPDF.UTF8ToPDFString(NULL) IS NULL THEN
-    passou('NULL entra e NULL sai, sem levantar');
-  ELSE
-    falhou('NULL devolveu alguma coisa');
-  END IF;
+--------------------------------------------------------------------------------
+-- Fonte TrueType: registro e embutimento
+-- origem: tests/test_fontes_truetype.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF - Fonte TrueType: registro, metricas e embutimento
+--
+-- Registrar uma fonte, medir por ela e embuti-la no arquivo.
+--
+-- Ate setembro/2026 nada disto funcionava: o cache de fontes NAO TINHA
+-- CONSUMIDOR -- o SetFont nunca o consultava e os bytes nunca iam para o PDF --
+-- e o parser conferia o magic number e INVENTAVA as metricas, com upm 1000 e
+-- ascendente 800 literais no codigo.
+--
+-- Por isso a fonte deste teste tem 2048 unidades por em e metricas que nao sao
+-- numero redondo: com upm 1000 nao se distinguiria "leu do arquivo" de "chutou
+-- a constante de sempre". Ela e gerada por dev/scripts/ttf_reference/gerar.py e
+-- conferida reabrindo no fontTools; a estrutura que sai daqui e validada no
+-- MuPDF por dev/scripts/ttfembed_reference/.
+--
+-- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+--------------------------------------------------------------------------------
 
-  --------------------------------------------------------------------------
-  caso('ClosePDF fecha, e fechar de novo nao estraga');
-  --------------------------------------------------------------------------
-  -- As rotinas de saida ja chamam o ClosePDF. Chamar antes, a mao, nao pode
-  -- gerar documento diferente nem levantar.
-  novo_doc;
-  PL_FPDF.Cell(50, 10, 'fechado a mao');
-  PL_FPDF.ClosePDF;
+DECLARE
+  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
+  -- invalidou --, entao se procura no lugar errado.
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
+
+  l_pdf    BLOB;
+  l_n      NUMBER;
+  l_n2     NUMBER;
+  l_txt    VARCHAR2(400);
+  l_erro   VARCHAR2(400);
+  l_json   JSON_OBJECT_T;
+  l_fonte  PL_FPDF.recTTFFont;
+
+  PROCEDURE caso(p_nome VARCHAR2) IS
   BEGIN
-    PL_FPDF.ClosePDF;
-    passou('fechar duas vezes nao levanta');
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('o segundo ClosePDF levantou: ' || SQLERRM);
-  END;
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END caso;
 
-  l_pdf := PL_FPDF.OutputBlob;
-  PL_FPDF.Reset;
-  IF acha(l_pdf, 'fechado a mao') > 0 AND acha(l_pdf, '%%EOF') > 0 THEN
-    passou('o documento fechado a mao sai inteiro');
-  ELSE
-    falhou('o documento fechado a mao saiu incompleto');
-  END IF;
-
-  --------------------------------------------------------------------------
-  caso('Header e Footer sem callback registrado nao fazem nada');
-  --------------------------------------------------------------------------
-  -- Sao chamadas pelo proprio motor a cada pagina. Sem SetHeaderProc, a
-  -- chamada tem de ser inocua -- nao levantar e nao escrever.
-  novo_doc;
+  PROCEDURE passou(p_msg VARCHAR2) IS
   BEGIN
-    PL_FPDF.Header;
-    PL_FPDF.Footer;
-    passou('as duas sao inocuas sem callback registrado');
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('levantou sem callback: ' || SQLERRM);
-  END;
-  PL_FPDF.Reset;
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END passou;
 
-  --------------------------------------------------------------------------
-  caso('Error levanta ORA-20100 com a mensagem dada');
-  --------------------------------------------------------------------------
-  -- E o caminho interno de erro da biblioteca, publico por heranca. Se ele
-  -- deixar de levantar, sessenta handlers do package passam a engolir erro.
+  PROCEDURE falhou(p_msg VARCHAR2) IS
   BEGIN
-    PL_FPDF.Error('mensagem de teste');
-    falhou('o Error nao levantou nada');
-  EXCEPTION
-    WHEN OTHERS THEN
-      l_erro := SQLERRM;
-      IF INSTR(l_erro, 'ORA-20100') > 0
-         AND INSTR(l_erro, 'mensagem de teste') > 0 THEN
-        passou('levantou ORA-20100 com a mensagem');
-      ELSE
-        falhou('levantou outra coisa: ' || l_erro);
-      END IF;
-  END;
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END falhou;
+
+  PROCEDURE pulou(p_msg VARCHAR2) IS
+  BEGIN
+    l_skip := l_skip + 1;
+    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
+  END pulou;
+
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
+  PROCEDURE novo_doc(p_orient VARCHAR2 DEFAULT 'P') IS
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init(p_orient, 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+  END novo_doc;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - Fonte TrueType: registro, metricas e embutimento');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+
 
   --------------------------------------------------------------------------
   caso('Fontes TrueType: cache responde sem fonte carregada');
@@ -7385,6 +7761,187 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
+  caso('LoadTTFFromFile recusa diretorio inexistente sem precisar de grant');
+  --------------------------------------------------------------------------
+  BEGIN
+    PL_FPDF.LoadTTFFromFile('X', 'x.ttf', 'DIRETORIO_QUE_NAO_EXISTE_PLFPDF');
+    falhou('leu de um diretorio que nao existe');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-20401') > 0
+         OR INSTR(SQLERRM, 'ORA-20402') > 0
+         OR INSTR(SQLERRM, 'ORA-20202') > 0 THEN
+        passou('recusado com erro proprio: ' || SUBSTR(SQLERRM, 1, 60));
+      ELSE
+        falhou('recusou com outro erro: ' || SQLERRM);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------
+  DBMS_OUTPUT.PUT_LINE('');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+  DBMS_OUTPUT.PUT_LINE('Casos: ' || l_total
+                       || ' | PASS: ' || l_ok
+                       || ' | FAIL: ' || l_falhas
+                       || ' | SKIP: ' || l_skip);
+  IF l_falhas > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: FALHOU');
+  ELSIF l_skip > 0 THEN
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK, com ' || l_skip
+                         || ' caso(s) sem conclusao — leia os [SKIP] acima');
+  ELSE
+    DBMS_OUTPUT.PUT_LINE('RESULTADO: OK');
+  END IF;
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+EXCEPTION
+  WHEN OTHERS THEN
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || SQLERRM);
+    RAISE;
+END;
+/
+
+--------------------------------------------------------------------------------
+-- Fechar, callbacks, erro e recursos externos
+-- origem: tests/test_ciclo_saida.sql
+--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
+-- PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant
+--
+-- As bordas do documento: fecha-lo, os callbacks de cabecalho e rodape, o
+-- caminho interno de erro, e as saidas que dependem de recurso de fora.
+--
+-- Os tres ultimos casos existem para provar que a RECUSA funciona sem
+-- concessao nenhuma -- diretorio inexistente e URL que nao responde --, e para
+-- apontar a alternativa que nao precisa de grant: o OutputBlob devolve os
+-- mesmos bytes que o OutputFile gravaria, e o ImageFromBlob dispensa a rede.
+--
+-- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
+--
+-- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+--------------------------------------------------------------------------------
+
+DECLARE
+  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
+  -- invalidou --, entao se procura no lugar errado.
+  l_total  PLS_INTEGER := 0;
+  l_ok     PLS_INTEGER := 0;
+  l_falhas PLS_INTEGER := 0;
+  l_skip   PLS_INTEGER := 0;
+
+  l_pdf    BLOB;
+  l_n      NUMBER;
+  l_n2     NUMBER;
+  l_txt    VARCHAR2(400);
+  l_erro   VARCHAR2(400);
+  l_json   JSON_OBJECT_T;
+  l_fonte  PL_FPDF.recTTFFont;
+
+  PROCEDURE caso(p_nome VARCHAR2) IS
+  BEGIN
+    l_total := l_total + 1;
+    DBMS_OUTPUT.PUT_LINE('');
+    DBMS_OUTPUT.PUT_LINE('Caso ' || l_total || ': ' || p_nome);
+    DBMS_OUTPUT.PUT_LINE(RPAD('-', 70, '-'));
+  END caso;
+
+  PROCEDURE passou(p_msg VARCHAR2) IS
+  BEGIN
+    l_ok := l_ok + 1;
+    DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_msg);
+  END passou;
+
+  PROCEDURE falhou(p_msg VARCHAR2) IS
+  BEGIN
+    l_falhas := l_falhas + 1;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_msg);
+  END falhou;
+
+  PROCEDURE pulou(p_msg VARCHAR2) IS
+  BEGIN
+    l_skip := l_skip + 1;
+    DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
+  END pulou;
+
+  FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
+  BEGIN
+    RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
+  END acha;
+
+  PROCEDURE novo_doc(p_orient VARCHAR2 DEFAULT 'P') IS
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init(p_orient, 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+  END novo_doc;
+
+BEGIN
+  DBMS_OUTPUT.PUT_LINE('PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant');
+  DBMS_OUTPUT.PUT_LINE(RPAD('=', 70, '='));
+
+
+  --------------------------------------------------------------------------
+  caso('ClosePDF fecha, e fechar de novo nao estraga');
+  --------------------------------------------------------------------------
+  -- As rotinas de saida ja chamam o ClosePDF. Chamar antes, a mao, nao pode
+  -- gerar documento diferente nem levantar.
+  novo_doc;
+  PL_FPDF.Cell(50, 10, 'fechado a mao');
+  PL_FPDF.ClosePDF;
+  BEGIN
+    PL_FPDF.ClosePDF;
+    passou('fechar duas vezes nao levanta');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('o segundo ClosePDF levantou: ' || SQLERRM);
+  END;
+
+  l_pdf := PL_FPDF.OutputBlob;
+  PL_FPDF.Reset;
+  IF acha(l_pdf, 'fechado a mao') > 0 AND acha(l_pdf, '%%EOF') > 0 THEN
+    passou('o documento fechado a mao sai inteiro');
+  ELSE
+    falhou('o documento fechado a mao saiu incompleto');
+  END IF;
+
+  --------------------------------------------------------------------------
+  caso('Header e Footer sem callback registrado nao fazem nada');
+  --------------------------------------------------------------------------
+  -- Sao chamadas pelo proprio motor a cada pagina. Sem SetHeaderProc, a
+  -- chamada tem de ser inocua -- nao levantar e nao escrever.
+  novo_doc;
+  BEGIN
+    PL_FPDF.Header;
+    PL_FPDF.Footer;
+    passou('as duas sao inocuas sem callback registrado');
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('levantou sem callback: ' || SQLERRM);
+  END;
+  PL_FPDF.Reset;
+
+  --------------------------------------------------------------------------
+  caso('Error levanta ORA-20100 com a mensagem dada');
+  --------------------------------------------------------------------------
+  -- E o caminho interno de erro da biblioteca, publico por heranca. Se ele
+  -- deixar de levantar, sessenta handlers do package passam a engolir erro.
+  BEGIN
+    PL_FPDF.Error('mensagem de teste');
+    falhou('o Error nao levantou nada');
+  EXCEPTION
+    WHEN OTHERS THEN
+      l_erro := SQLERRM;
+      IF INSTR(l_erro, 'ORA-20100') > 0
+         AND INSTR(l_erro, 'mensagem de teste') > 0 THEN
+        passou('levantou ORA-20100 com a mensagem');
+      ELSE
+        falhou('levantou outra coisa: ' || l_erro);
+      END IF;
+  END;
+
+  --------------------------------------------------------------------------
   caso('Saida em arquivo: recusa sem DIRECTORY, e o BLOB e a alternativa');
   --------------------------------------------------------------------------
   -- OutputFile e Output gravam em DIRECTORY do banco, que exige WRITE
@@ -7433,39 +7990,6 @@ BEGIN
       ELSE
         falhou('recusou com outro erro: ' || SQLERRM);
       END IF;
-  END;
-  PL_FPDF.Reset;
-
-  --------------------------------------------------------------------------
-  caso('LoadTTFFromFile recusa diretorio inexistente sem precisar de grant');
-  --------------------------------------------------------------------------
-  BEGIN
-    PL_FPDF.LoadTTFFromFile('X', 'x.ttf', 'DIRETORIO_QUE_NAO_EXISTE_PLFPDF');
-    falhou('leu de um diretorio que nao existe');
-  EXCEPTION
-    WHEN OTHERS THEN
-      IF INSTR(SQLERRM, 'ORA-20401') > 0
-         OR INSTR(SQLERRM, 'ORA-20402') > 0
-         OR INSTR(SQLERRM, 'ORA-20202') > 0 THEN
-        passou('recusado com erro proprio: ' || SUBSTR(SQLERRM, 1, 60));
-      ELSE
-        falhou('recusou com outro erro: ' || SQLERRM);
-      END IF;
-  END;
-
-  --------------------------------------------------------------------------
-  caso('AddFont registra sem ler arquivo nenhum');
-  --------------------------------------------------------------------------
-  -- O AddFont so registra na colecao de fontes e deriva o nome do arquivo de
-  -- metricas quando nao recebe um. Nao le disco, entao roda em qualquer
-  -- ambiente -- foi engano meu te-lo posto na lista dos que precisam de grant.
-  novo_doc;
-  BEGIN
-    PL_FPDF.AddFont('Helvetica', 'B');
-    passou('AddFont registrou a fonte sem tocar em arquivo');
-  EXCEPTION
-    WHEN OTHERS THEN
-      falhou('AddFont levantou: ' || SQLERRM);
   END;
   PL_FPDF.Reset;
 

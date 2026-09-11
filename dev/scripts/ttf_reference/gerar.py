@@ -43,7 +43,7 @@ from fontTools.ttLib import TTFont
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
-TESTE = os.path.join(RAIZ, 'dev', 'tests', 'test_api_sem_chamador.sql')
+TESTE = os.path.join(RAIZ, 'dev', 'tests', 'test_fontes_truetype.sql')
 
 # 2048 de proposito, e nao 1000: ate setembro/2026 o parser INVENTAVA as
 # metricas -- upm 1000, ascent 800, descent -200 eram literais no codigo. Uma

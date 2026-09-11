@@ -520,7 +520,7 @@ Nenhum deles aparecia em revisao de codigo: os quatro foram achados
 **escrevendo a chamada**. Vale como medida do que "compila e ninguem chama"
 esconde.
 
-Depois disso, `dev/tests/test_api_sem_chamador.sql` escreveu a primeira chamada
+Depois disso, `dev/tests/test_fontes_truetype.sql` escreveu a primeira chamada
 de tudo o que nao depende de recurso externo. **De 48 sem chamador para 6**, e
 os 6 que sobram precisam de DIRECTORY (`LoadTTFFromFile`, `OutputFile`,
 `Output`) ou de ACL de rede (`Image` por URL, `getImageFromUrl`), fora o

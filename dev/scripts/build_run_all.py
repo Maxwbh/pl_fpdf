@@ -53,10 +53,15 @@ TESTES = [
     # Segurança do documento
     ('test_seguranca.sql',             'Criptografia, senhas e permissões'),
 
-    # O que guarda o que já quebrou, e o que ninguém chamava
+    # O que guarda o que já quebrou
     ('test_regressoes_revisao.sql',    'Regressões das revisões de ago e set/2026'),
     ('test_compat_legado.sql',         'Compatibilidade com 0.9.4 e 2.0.0'),
-    ('test_api_sem_chamador.sql',      'APIs públicas que ninguém chamava'),
+    ('test_cursor_margens.sql',        'Cursor, margens e quebra de página'),
+    ('test_fonte_texto.sql',           'Fonte corrente, entrelinha e texto'),
+    ('test_desenho.sql',               'Tracejado e triângulo'),
+    ('test_metadados_config.sql',      'Metadados, exibição e configuração'),
+    ('test_fontes_truetype.sql',       'Fonte TrueType: registro e embutimento'),
+    ('test_ciclo_saida.sql',           'Fechar, callbacks, erro e recursos externos'),
 ]
 
 CABECALHO = """--------------------------------------------------------------------------------

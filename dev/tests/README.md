@@ -182,7 +182,14 @@ dev/tests/
 │   # o que guarda o que já quebrou
 ├── test_regressoes_revisao.sql     # regressões das revisões de ago e set/2026
 ├── test_compat_legado.sql          # o código da 0.9.4 e da 2.0.0 continua rodando
-├── test_api_sem_chamador.sql       # a primeira chamada de 28 APIs públicas
+│
+│   # o que era um arquivo só, separado por assunto
+├── test_cursor_margens.sql         # cursor, margens, quebra de página
+├── test_fonte_texto.sql            # fonte corrente, entrelinha, Text, giro
+├── test_desenho.sql                # tracejado e triângulo
+├── test_metadados_config.sql       # metadados, exibição, compressão, JSON
+├── test_fontes_truetype.sql        # registro, métricas e /FontFile2
+├── test_ciclo_saida.sql            # fechar, callbacks, erro, recursos externos
 │
 │   # diagnóstico: mede e imprime, para um humano ler
 ├── diag_inflate.sql                # INFLATE contra vetores do zlib
