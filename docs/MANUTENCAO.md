@@ -239,10 +239,28 @@ não têm substituto: traduzir por conta faria o leitor procurar no PDF um termo
 que não existe. Eles se repetem no texto em português, como já se faz com as
 siglas (`'P' (Portrait, retrato)`).
 
-**2. Comentário no meio do código é só PT-BR.** Não é a mesma coisa e não se
-confere pelo mesmo verificador: ali o leitor é sempre quem mantém, e o que
+**2. Comentário no body é outra coisa, e tem verificador próprio
+(`check_body_comments.py`).** Ali o leitor é sempre quem mantém, e o que
 importa é dizer *por que* o código está assim — o sintoma, a causa e o
 conserto —, não repetir o que a linha já diz.
+
+O body também é o **único** lugar onde os 206 subprogramas privados podem ser
+documentados: eles não aparecem em spec nenhuma. Um comentário acima de cada um
+é obrigatório; do público, não — está na spec, e repetir aqui cria duas versões
+que divergem.
+
+O body segue a estrutura da Guideline: seções marcadas com `-- ===`,
+`gc_nome_pacote` declarado no topo, e as declarações antecipadas só para
+subprograma **privado** chamado antes de ser definido.
+
+> **O que a primeira rodada do verificador achou.** 27 privados sem uma linha
+> de comentário — `ttf_u32`, `pdf_pad_password`, `gmul`, `xtime`,
+> `qr_bch_version`. 71 comentários em inglês e francês, herdados do porte
+> original, misturados aos escritos em português. Nove trechos de código
+> comentado, um deles o ramo do `/Dest` que nunca funcionou e fazia link
+> interno parecer meio implementado. E **doze comentários apontando para
+> `scripts/` e `tests/`**, pastas que viraram `dev/scripts/` e `dev/tests/` —
+> referência quebrada não quebra nada, então ninguém soube.
 
 O formato do bloco é o **Javadoc** da Trivadis PL/SQL Guidelines 4.4, seção
 *Comentários*:

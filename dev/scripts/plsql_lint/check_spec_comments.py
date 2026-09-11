@@ -134,11 +134,13 @@ TAG = re.compile(r'^\s*\*\s*(@[A-Za-z_]+)')
 # OS/2, docs/ROADMAP.md, http/https
 LIVRE = re.compile(r"'[^']*'\s*/|/\s*'[^']*'|\w/\w|@example|@note \w")
 
-# Palavra funcional inglesa. Duas ou mais entre quatro seguidas nao acontecem
-# em portugues -- e o sinal que separa prosa inglesa de jargao solto, que fica.
-FUNC = set('''the of and to in with for is are be by from on at it its as or
-not an that this which when will can must should would could has have had
-into only both all any more than then there here'''.split())
+# Palavra funcional inglesa que NAO existe em portugues. `for`, `so`, `no`,
+# `a` e `as` ficaram de fora de proposito: sao palavras dos dois idiomas
+# (`for` e verbo, `so` e "so" sem acento) e marcavam prosa portuguesa como
+# inglesa.
+FUNC = set('''the of and to in with is are be by from on it its or not an
+that this which when will can must should would could has have had into only
+both all any more than then there here'''.split())
 # linha de codigo de exemplo: `IF ... THEN`, `SELECT ... INTO`, chamada, JSON
 CODIGO = re.compile(r'^\s*\*\s+(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|'
                     r'FOR|LOOP|EXIT|PL_FPDF|DBMS_|l_|:=|\{|\}|"|--|/\*)',
@@ -151,7 +153,12 @@ def ingles(linha):
     if CODIGO.match(linha):
         return False
     texto = LITERAL.sub(' ', re.sub(r'^\s*\*\s?', '', linha))
-    p = [w.lower() for w in re.findall(r'[A-Za-zÀ-ÿ]+', texto)]
+    # Identificador nao e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
+    # e `Parametro IN (nao IN OUT)` daria dois "in" -- os dois marcavam
+    # portugues como ingles. Token com `_` e token TODO EM MAIUSCULA (palavra
+    # reservada do PL/SQL, nome de tipo) ficam de fora da conta.
+    p = [w.lower() for w in re.findall(r'[A-Za-zÀ-ÿ_]+', texto)
+         if '_' not in w and not w.isupper()]
     return any(sum(1 for k in range(j, min(j + 4, len(p)))
                    if p[k] in FUNC) >= 2 for j in range(len(p)))
 

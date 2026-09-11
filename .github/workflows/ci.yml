@@ -125,8 +125,11 @@ jobs:
       # metade sem bloco era a mais usada: Cell, SetFont, Text, Line, Output.
       # O que tinha vinha em tres dialetos. A spec e a documentacao que se le
       # sem sair do banco, e nao cumpria esse papel.
-      - name: Toda API publica documentada, no padrao, com o PT-BR na frente
+      - name: Toda API publica documentada, no padrao Javadoc e em PT-BR
         run: python dev/scripts/plsql_lint/check_spec_comments.py
+
+      - name: Comentários do body (privado documentado, PT-BR, sem código morto)
+        run: python dev/scripts/plsql_lint/check_body_comments.py
 
       # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na
       # revisao de setembro ela tinha 16 entradas para 21 passos: cinco
