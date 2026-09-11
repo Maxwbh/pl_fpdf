@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Toda API pública tem bloco Javadoc, no mesmo formato, com o PT-BR na frente.
+Toda API pública tem bloco Javadoc, no mesmo formato, em PT-BR.
 
 DOCUMENTO DE MANUTENÇÃO.
 
@@ -37,9 +37,17 @@ nomeia, e a regra 6 abaixo confere — é a única checagem realmente nova, e é
 que pega a deriva que acontece de verdade, porque mexer na assinatura é comum
 e voltar no comentário é o que se esquece.
 
-O que **não** mudou: o português vem na frente e o inglês em seguida. A
-Guideline não trata de bilíngue, e esta base tem público nos dois idiomas
-(`README_EN.md`, `docs/*_EN.md`).
+Por que só PT-BR
+----------------
+Até outubro de 2026 a descrição era bilíngue, com o inglês em seguida. Saiu:
+o texto da spec é em português, e o que fica em inglês é **nome próprio e
+jargão** -- Portrait, Landscape, WinAnsi, stream, xref, deflate, BLOB,
+FlateDecode --, que não têm substituto e cuja tradução inventada faria o leitor
+procurar no PDF um termo que não existe. É a mesma regra que esta casa já
+aplica às siglas: `'P' (Portrait, retrato)` mostra de onde a letra vem.
+
+A referência pública em inglês não depende disto: `gen_docs/parse_spec.py` tira
+os comentários e lê só as assinaturas.
 
 E a linha de título (`* Procedure: Cell / Célula`) **caiu**: o nome repete a
 assinatura logo abaixo, e "comentário que repete o código" é antipattern
@@ -49,9 +57,8 @@ a palavra na conversão.
 
 Duas decisões de projeto, e este verificador guarda as duas:
 
-1. **Descrição de subprograma é bilíngue, PT-BR primeiro e inglês em seguida.**
-   O comentário no meio do código, esse é só PT-BR — não é a mesma coisa e não
-   se confere aqui.
+1. **O texto é em PT-BR.** O que fica em inglês é nome próprio e jargão, que
+   não têm substituto. O comentário no meio do código segue a mesma regra.
 2. **Bloco faltando é defeito.** Não documentar `Cell` é pior do que não
    documentar `SplitPDF`: o primeiro é chamado cem vezes por relatório.
 
@@ -64,16 +71,12 @@ O formato
 ::
 
     /**
-     * PT: Escreve uma célula retangular: opcionalmente com borda, com fundo e
-     *     com texto dentro.
+     * Escreve uma célula retangular: opcionalmente com borda, com fundo e
+     * com texto dentro.
      *
-     * EN: Writes a rectangular cell: optionally bordered, filled and with
-     *     text inside.
-     *
-     * @param pw largura; 0 vai até a margem direita / width; 0 spans to the
-     *        right margin
+     * @param pw largura; 0 vai até a margem direita
      * @return NUMBER - ...                 (quando é function)
-     * @raises -20100 ... / ...             (quando levanta)
+     * @raises -20100 ...                   (quando levanta)
      * @example
      *   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
      */
@@ -86,15 +89,16 @@ O que se confere
 1. todo subprograma público tem bloco imediatamente acima (sobrecargas
    compartilham o bloco da primeira);
 2. o bloco é Javadoc (`/**`), e não sobrou nada do banner antigo;
-3. a descrição tem as linhas ``PT:`` e ``EN:``, com o português na frente;
+3. o bloco abre com descrição, e não sobrou marcador ``PT:``/``EN:`` nem par
+   bilíngue ``<português> / <english>`` do formato antigo;
 4. só se usam as tags da tabela TAGS — pega `@throws`, `@returns`, `@params`;
 5. function documenta ``@return``;
 6. **todo parâmetro da assinatura tem `@param`, e todo `@param` corresponde a
    um parâmetro** — nos dois sentidos, e na ordem da assinatura.
 
 O que NÃO se confere, de propósito: se o texto está certo. Isso é revisão
-humana. Aqui só se garante que existe, que está no formato, que o português
-vem primeiro e que a lista de parâmetros bate.
+humana. Aqui só se garante que existe, que está no formato, que é português e
+que a lista de parâmetros bate.
 
 Uso:  python dev/scripts/plsql_lint/check_spec_comments.py
       python dev/scripts/plsql_lint/check_spec_comments.py src/PL_FPDF.pks
@@ -125,6 +129,33 @@ ENGANOS = {'@returns': '@return', '@throws': '@raises', '@throw': '@raises',
 DECL = re.compile(r'^\s{0,2}(procedure|function)\s+([A-Za-z_][A-Za-z_0-9]*)',
                   re.I)
 TAG = re.compile(r'^\s*\*\s*(@[A-Za-z_]+)')
+
+# uma ` / ` dentro de literal ou de caminho nao e par bilingue: 'up'/'U',
+# OS/2, docs/ROADMAP.md, http/https
+LIVRE = re.compile(r"'[^']*'\s*/|/\s*'[^']*'|\w/\w|@example|@note \w")
+
+# Palavra funcional inglesa. Duas ou mais entre quatro seguidas nao acontecem
+# em portugues -- e o sinal que separa prosa inglesa de jargao solto, que fica.
+FUNC = set('''the of and to in with for is are be by from on at it its as or
+not an that this which when will can must should would could has have had
+into only both all any more than then there here'''.split())
+# linha de codigo de exemplo: `IF ... THEN`, `SELECT ... INTO`, chamada, JSON
+CODIGO = re.compile(r'^\s*\*\s+(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|'
+                    r'FOR|LOOP|EXIT|PL_FPDF|DBMS_|l_|:=|\{|\}|"|--|/\*)',
+                    re.I)
+LITERAL = re.compile(r"'(?:[^']|'')*'")
+
+
+def ingles(linha):
+    """A linha e prosa inglesa? Codigo de exemplo e literal nao contam."""
+    if CODIGO.match(linha):
+        return False
+    texto = LITERAL.sub(' ', re.sub(r'^\s*\*\s?', '', linha))
+    p = [w.lower() for w in re.findall(r'[A-Za-zÀ-ÿ]+', texto)]
+    return any(sum(1 for k in range(j, min(j + 4, len(p)))
+                   if p[k] in FUNC) >= 2 for j in range(len(p)))
+
+
 # o que sobrou do banner antigo, se a conversao passou por cima de alguem
 BANNER = re.compile(r'^\s*\*\s*(Procedure|Function|Descrição / Description|'
                     r'Parâmetros / Parameters|Retorna / Returns|'
@@ -263,15 +294,25 @@ def conferir(caminho):
             elif t not in TAGS:
                 falha(f'tag "{t}" fora do conjunto conhecido')
 
-        pt = next((i for i, b in enumerate(bloco)
-                   if re.match(r'^\s*\*\s+PT:', b)), None)
-        en = next((i for i, b in enumerate(bloco)
-                   if re.match(r'^\s*\*\s+EN:', b)), None)
-        if pt is None or en is None:
-            falha('a descrição não tem as duas linhas "PT:" e "EN:"')
-        elif pt > en:
-            falha('o "EN:" vem antes do "PT:" — o padrão é o português na '
-                  'frente')
+        corpo = [b for b in bloco[1:-1] if b.strip().strip('*').strip()]
+        if not corpo or TAG.match(corpo[0]):
+            falha('o bloco não abre com a descrição')
+
+        for b in bloco:
+            if re.match(r'^\s*\*\s+(PT|EN):', b):
+                falha('sobrou o marcador "PT:"/"EN:" do formato bilíngue')
+                break
+
+        for b in bloco:
+            if ' / ' in b and not LIVRE.search(b):
+                falha('linha com par bilíngue "<português> / <english>": '
+                      + b.strip()[:56])
+                break
+
+        for b in bloco:
+            if ingles(b):
+                falha('linha com cara de prosa inglesa: ' + b.strip()[:56])
+                break
 
         if tipo == 'function' and '@return' not in achadas:
             falha('function sem "@return"')
@@ -311,8 +352,8 @@ def main():
               f'O padrão está em docs/MANUTENCAO.md, seção "Comentário de '
               f'API".')
         return 1
-    print(f'OK — os blocos de {len(arquivos)} spec(s) estão em Javadoc, com o '
-          f'português na frente e os @param batendo com a assinatura')
+    print(f'OK — os blocos de {len(arquivos)} spec(s) estão em Javadoc, em '
+          f'PT-BR, com os @param batendo com a assinatura')
     return 0
 
 

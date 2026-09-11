@@ -233,9 +233,11 @@ A spec é a documentação que se lê **sem sair do banco**: quem abre o package
 PL/SQL Developer vê o bloco antes da assinatura, e é dali que decide como
 chamar. Duas decisões, e o `check_spec_comments.py` guarda as duas.
 
-**1. Descrição de subprograma é bilíngue, com o PT-BR na frente.** O público
-principal escreve em português; o inglês vem em seguida, para quem chega de
-fora — a linha `PT:` antes da `EN:`.
+**1. O texto é em PT-BR.** O que fica em inglês é **nome próprio e jargão** —
+Portrait, Landscape, WinAnsi, stream, xref, deflate, BLOB, FlateDecode —, que
+não têm substituto: traduzir por conta faria o leitor procurar no PDF um termo
+que não existe. Eles se repetem no texto em português, como já se faz com as
+siglas (`'P' (Portrait, retrato)`).
 
 **2. Comentário no meio do código é só PT-BR.** Não é a mesma coisa e não se
 confere pelo mesmo verificador: ali o leitor é sempre quem mantém, e o que
@@ -247,16 +249,12 @@ O formato do bloco é o **Javadoc** da Trivadis PL/SQL Guidelines 4.4, seção
 
 ```
 /**
- * PT: Escreve uma célula retangular: opcionalmente com borda, com fundo e
- *     com texto dentro.
+ * Escreve uma célula retangular: opcionalmente com borda, com fundo e com
+ * texto dentro.
  *
- * EN: Writes a rectangular cell: optionally bordered, filled and with text
- *     inside.
- *
- * @param pw largura; 0 vai até a margem direita / width; 0 spans to the
- *        right margin
+ * @param pw largura; 0 vai até a margem direita
  * @return NUMBER - ...                 (quando é function)
- * @raises -20100 ... / ...             (quando levanta)
+ * @raises -20100 ...                   (quando levanta)
  * @example
  *   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
  */
@@ -286,8 +284,15 @@ como prosa deixa de ser lista.
 > estava na primeira frase da descrição nos 137 blocos — conferido palavra a
 > palavra na conversão, que não perdeu nem inventou nenhuma outra.
 >
-> O bilíngue **não** veio da Guideline, que não trata do assunto, e ficou: esta
-> base tem público nos dois idiomas (`README_EN.md`, `docs/*_EN.md`).
+> **E o bilíngue saiu.** A descrição vinha em PT e EN; agora é só PT. A
+> referência pública em inglês não depende disto — `gen_docs/parse_spec.py`
+> tira os comentários e lê só as assinaturas.
+>
+> A remoção não foi um corte no ` / `: em 176 dos 432 trechos os valores
+> (`('A4', 'Letter')`, `(0..255)`, `: 'P' (Portrait, retrato)`) estavam
+> grudados no lado inglês, e cortar ali jogaria fora o que o leitor precisa.
+> O `check_spec_comments.py` guarda o resultado: recusa marcador `PT:`/`EN:`,
+> par `<português> / <english>` e linha com cara de prosa inglesa.
 
 > **Por que virou verificação.** Na revisão de setembro de 2026 **metade da API
 > pública não tinha bloco nenhum** — 56 documentados, 64 sem uma linha —, e os
