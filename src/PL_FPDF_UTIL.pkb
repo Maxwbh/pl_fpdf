@@ -121,11 +121,13 @@ g_aes_hex    tv4000; -- byte -> os dois digitos hexadecimais, para remontar o RA
 -- =============================================================================
 -- INFLATE (RFC 1951): tabelas da especificacao
 --
--- Portado de dev/scripts/pdfinflate_reference/, validado contra o zlib (53/53).
+-- Validado contra o zlib: 53 de 53 fluxos descomprimidos deram byte a byte o
+-- mesmo resultado.
 --
 -- Existe porque o UTL_COMPRESS nao serve: ele so descomprime com o CRC-32 e o
 -- tamanho do rodape gzip corretos, e o CRC e do conteudo DESCOMPRIMIDO — para
--- calcula-lo seria preciso descomprimir. Ver dev/tests/diag_utl_compress*.sql.
+-- calcula-lo seria preciso descomprimir -- o que e justamente o que se quer
+-- fazer. Medido contra o banco antes de escrever este codigo.
 --
 -- Sem isto o copiador recusa qualquer PDF com xref em stream ou object stream,
 -- que e o que todo produtor moderno gera.
@@ -146,7 +148,7 @@ co_inf_dextra CONSTANT VARCHAR2(100) :=
 -- ordem em que os comprimentos do alfabeto de comprimentos aparecem
 co_inf_ordem CONSTANT VARCHAR2(100) :=
   '16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15';
--- DEFLATE (comprimir), portado de dev/scripts/pdfdeflate_reference/
+-- DEFLATE (comprimir)
 --
 -- Um bloco so, BFINAL=1 e BTYPE=01 (Huffman FIXA), com LZ77 guloso. Escrever e
 -- mais facil que ler: o leitor tem de aceitar tudo o que a especificacao
@@ -840,8 +842,8 @@ end qr_penalty;
 -- simbologia real e nenhum leitor conseguia interpretar.
 --
 -- As simbologias abaixo foram validadas fora do banco contra o decodificador
--- zxing-cpp (47 de 47 codigos lidos corretamente). A referencia esta em
--- dev/scripts/barcode_reference/.
+-- zxing-cpp: 47 de 47 codigos foram lidos corretamente. A regua nao e "o
+-- simbolo foi desenhado", e sim "um leitor decodifica".
 --
 -- Convencao interna: cada rotina devolve uma cadeia de modulos, '1' = barra,
 -- '0' = espaco. O desenho e feito uma vez, agrupando modulos consecutivos.
@@ -1103,7 +1105,7 @@ end bc_itf14;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- INFLATE (RFC 1951), portado de dev/scripts/pdfinflate_reference/
+-- INFLATE (RFC 1951)
 --
 -- Estado do fluxo de bits em variaveis de pacote em vez de um record passado
 -- adiante: o decodificador de Huffman le UM bit por vez e e chamado uma vez por
@@ -1122,8 +1124,8 @@ PROCEDURE inf_init IS
   -- e NULL, e 'EXIT WHEN NULL = 0' NAO e verdadeiro — comparacao com NULL da
   -- NULL, e o EXIT so dispara com TRUE. O laco rodava para sempre atribuindo
   -- NULL a indices cada vez maiores, e a tabela indexada crescia ate estourar a
-  -- PGA (ORA-04036). E a mesma familia do 'IF NOT f() THEN' com BOOLEAN nulo
-  -- que ja esta anotada em docs/MANUTENCAO.md.
+  -- PGA (ORA-04036). E a mesma familia do 'IF NOT f() THEN' com uma funcao
+  -- BOOLEAN que devolve NULL: o IF nao dispara, e ninguem desconfia.
   --
   -- Aqui p_txt nunca e NULL e l_ini so cresce, entao o laco termina por
   -- construcao, sem depender de comparacao com NULL.
@@ -1539,10 +1541,11 @@ END inflate;
 --------------------------------------------------------------------------------
 -- DEFLATE (RFC 1951) na direcao de COMPRIMIR
 --
--- Portado de dev/scripts/pdfdeflate_reference/, validado contra o zlib (32/32) e
--- contra o MuPDF abrindo um PDF com o fluxo comprimido por ele.
+-- Validado contra o zlib (32 de 32 fluxos, descomprimidos de volta ao
+-- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
 --
--- Decisao por decisao igual a referencia — mesma dispersao, mesmo limite de
+-- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
+-- limite de
 -- corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
 -- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
 -- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
@@ -1559,10 +1562,11 @@ END inflate;
 --------------------------------------------------------------------------------
 -- DEFLATE (RFC 1951) na direcao de COMPRIMIR
 --
--- Portado de dev/scripts/pdfdeflate_reference/, validado contra o zlib (32/32) e
--- contra o MuPDF abrindo um PDF com o fluxo comprimido por ele.
+-- Validado contra o zlib (32 de 32 fluxos, descomprimidos de volta ao
+-- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
 --
--- Decisao por decisao igual a referencia — mesma dispersao, mesmo limite de
+-- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
+-- limite de
 -- corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
 -- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
 -- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
@@ -1885,7 +1889,8 @@ END deflate;
 --------------------------------------------------------------------------------
 -- Marcas d'agua e overlays: operadores do fluxo de conteudo
 --
--- Portado de dev/scripts/pdfoverlay_reference/, validado contra o MuPDF (18/18).
+-- Validado contra o MuPDF: 18 de 18 paginas redesenhadas trazem a
+-- sobreposicao na posicao e no angulo previstos.
 --
 -- O que existia antes (generate_watermark_stream e irmas) nao era PDF valido:
 -- 'TO_CHAR(rotacao) || '' rotate''' nao e operador — rotacao no PDF e matriz,
@@ -2043,7 +2048,7 @@ END crypto_rc4_blob;
 *******************************************************************************/
 
 --------------------------------------------------------------------------------
--- AES (FIPS-197), portado de dev/scripts/pdfaes_reference/
+-- AES (FIPS-197)
 --
 -- Escrito a mao porque nao ha DBMS_CRYPTO nesta base — foi eliminado de
 -- proposito, e o STANDARD_HASH cobre so os hashes. O PDF 2.0 removeu o RC4 da

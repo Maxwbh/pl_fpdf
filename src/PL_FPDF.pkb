@@ -428,7 +428,8 @@ c_max_loaded_pdfs CONSTANT PLS_INTEGER := 10;
 -- (DBMS_LOB.COPY), nunca por VARCHAR2, para nao corromper dado binario; so a
 -- porcao ASCII do dicionario e reescrita.
 --
--- O algoritmo foi validado contra o MuPDF em dev/scripts/pdfmerge_reference/.
+-- O algoritmo foi validado contra o MuPDF: o decodificador abre o documento
+-- mesclado e devolve as paginas e o texto de cada origem.
 --------------------------------------------------------------------------------
 -- Uma origem ja indexada: xref + arvore de paginas achatada com heranca resolvida
 TYPE pdf_source_rec IS RECORD (
@@ -615,9 +616,10 @@ end getPDFDocLength;
 ----------------------------------------------------------------------------------------
 -- Larguras das 14 fontes padrao do PDF, em milesimos de em.
 --
--- GERADO por dev/scripts/font_reference/gerar.py a partir das fontes
--- primarias: os AFM da Adobe, as tabelas do reportlab (que se conferem entre
--- si, glifo a glifo) e a WinAnsiEncoding. NAO EDITE A MAO: rode o gerador.
+-- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- reportlab -- que se conferem entre si, glifo a glifo -- e a
+-- WinAnsiEncoding. NAO EDITE A MAO: a tabela e regerada, e a edicao manual
+-- se perde na geracao seguinte.
 --
 -- Cada familia e uma sequencia de 256 campos de 4 digitos, um por posicao da
 -- codificacao. A chave da tabela indexada e chr(i).
@@ -1552,8 +1554,8 @@ end p_newobj;
 ----------------------------------------------------------------------------------------
 -- p_winansi_byte : o byte WinAnsi de um caractere, ou NULL se ele nao existe la.
 --
--- A tabela vem de dev/scripts/winansi_reference/, gerada do codec cp1252 e
--- conferida contra o MuPDF: das 217 posicoes desenhaveis o leitor devolve
+-- A tabela e gerada do codec cp1252 e conferida contra o MuPDF: das 217
+-- posicoes desenhaveis o leitor devolve
 -- todas com o caractere previsto, exceto 0xA0 e 0xAD, que o Anexo D do PDF
 -- manda tratar como espaco e hifen.
 --
@@ -3451,7 +3453,7 @@ begin
     'AddLink: link interno NAO esta implementado. O /Dest nunca e escrito no ' ||
     'arquivo, e o Link recusa o identificador que esta funcao devolveria. ' ||
     'Use Link(x, y, w, h, ''https://...'') ou o parametro plink das rotinas ' ||
-    'de texto com uma URL. Ver docs/ROADMAP.md, pendencias.');
+    'de texto com uma URL.');
   return null;
 end AddLink;
 
@@ -3464,7 +3466,7 @@ begin
   raise_application_error(-20601,
     'SetLink: link interno NAO esta implementado. O destino nao chega ao ' ||
     'arquivo: o /Dest nunca e escrito e o Link recusa o identificador. ' ||
-    'Use uma URL. Ver docs/ROADMAP.md, pendencias.');
+    'Use uma URL.');
 end SetLink;
 
 ----------------------------------------------------------------------------------------
@@ -3483,7 +3485,7 @@ begin
       nvl(plink, 'NULL') ||
       '). So URL e suportada. O link interno de AddLink/SetLink NAO esta ' ||
       'implementado: o /Dest nunca e escrito e o PDF sairia malformado. ' ||
-      'Use Link(x, y, w, h, ''https://...''). Ver docs/ROADMAP.md, pendencias.');
+      'Use Link(x, y, w, h, ''https://...'').');
   end if;
 
 	-- Marca uma area clicavel na pagina
@@ -4062,9 +4064,9 @@ end AddPage;
 --------------------------------------------------------------------------------
 -- Leitura das tabelas da fonte TrueType
 --
--- Referencia em dev/scripts/ttfembed_reference/, validada no MuPDF. Ela confere
--- tres coisas, e a terceira e a que pega erro AQUI: o texto sai, a fonte esta
--- embutida, e a largura que o leitor MEDE bate com a que o /Widths declara.
+-- Validado no MuPDF em tres pontos, e o terceiro e o que pega erro AQUI: o
+-- texto sai, a fonte esta embutida, e a largura que o leitor MEDE bate com a
+-- que o /Widths declara.
 -- Ler o hmtx com o numberOfHMetrics errado, ou esquecer de reescalar de
 -- unitsPerEm para as 1000 unidades por em que o PDF quer, desenha o texto com
 -- o espacamento de outra fonte -- num arquivo que abre perfeitamente.
@@ -5781,9 +5783,8 @@ begin
       'Use OutputBlob() to get the PDF as a BLOB, then deliver it yourself ' ||
       'with owa_util.mime_header(''application/pdf'', FALSE) and ' ||
       'wpg_docload.download_file() — without the Content-Type header the ' ||
-      'browser may render the PDF source as a web page. See "Entregar o PDF a ' ||
-      'um navegador" in docs/DOCUMENTATION.md. Or use OutputFile() to save to ' ||
-      'the filesystem.');
+      'browser may render the PDF source as a web page. Or use OutputFile() to ' ||
+      'save to the filesystem.');
 
   else
     raise_application_error(-20100,
@@ -7411,7 +7412,8 @@ END GetWatermarks;
 --
 -- Marcas d'agua e overlays sao desenhados no fluxo de conteudo: cada pagina que
 -- os tem ganha um objeto de stream com os operadores e um /Resources proprio.
--- Ver ovl_* e dev/scripts/pdfoverlay_reference/ (validado contra o MuPDF).
+-- Quem monta os operadores sao as rotinas ovl_*, logo abaixo. Validado contra
+-- o MuPDF, que redesenha a pagina e mostra a sobreposicao no lugar certo.
 --------------------------------------------------------------------------------
 FUNCTION OutputModifiedPDF RETURN BLOB IS
   l_srcs   pdf_source_list;
@@ -8196,7 +8198,7 @@ END UnloadPDF;
 --                    COPIADOR DE OBJETOS PDF (nivel de bytes)                 --
 --                                                                             --
 -- Base comum de MergePDFs, SplitPDF, ExtractPages e OutputModifiedPDF.        --
--- Referencia validada contra o MuPDF: dev/scripts/pdfmerge_reference/             --
+-- Validado contra o MuPDF, que abre o resultado e le todas as paginas.      --
 --------------------------------------------------------------------------------
 
 -- Declaracao antecipada: a varredura da arvore de paginas e recursiva
@@ -8777,7 +8779,8 @@ END pdf_walk_pages;
 --------------------------------------------------------------------------------
 -- xref em stream e object streams (PDF 1.5+)
 --
--- Portado de dev/scripts/pdfxref_reference/, validado contra o MuPDF (43/43).
+-- Validado contra o MuPDF: 43 de 43 arquivos com xref em stream abriram e
+-- devolveram as paginas certas.
 --
 -- A partir do PDF 1.5 a xref deixou de ser tabela de texto e virou um objeto
 -- com stream (/Type /XRef), comprimido; e os objetos sem stream foram para
@@ -9885,8 +9888,8 @@ END ovl_gs_entrada;
 --------------------------------------------------------------------------------
 -- PNG que precisa de reprocessamento de pixels
 --
--- Portado de dev/scripts/pdfimage_reference/, validado nos PIXELS que o MuPDF
--- desenha (25/25). Ate agosto/2026 estes casos eram recusados com ORA-20823
+-- Validado nos PIXELS que o MuPDF desenha: 25 de 25 imagens sairam iguais a
+-- origem. Ate agosto/2026 estes casos eram recusados com ORA-20823
 -- por falta de um inflate em PL/SQL; ele existe desde a xref em stream, e o
 -- desfazer do filtro por linha e o mesmo pdf_undo_pred do /Predictor do PDF.
 --
@@ -10060,8 +10063,8 @@ END ovl_png_separar_alfa;
 --------------------------------------------------------------------------------
 -- ovl_img_xobject: converte o BLOB de uma imagem no /XObject do PDF
 --
--- Portado de dev/scripts/pdfimage_reference/, validado contra o MuPDF: cada caso e
--- desenhado e os pixels sao conferidos, porque um /DecodeParms errado ou um
+-- Validado contra o MuPDF: cada caso e desenhado e os pixels sao conferidos,
+-- porque um /DecodeParms errado ou um
 -- /ColorSpace trocado produzem um arquivo valido que desenha ruido.
 --
 -- Nenhum dos dois formatos precisa ser descomprimido aqui:

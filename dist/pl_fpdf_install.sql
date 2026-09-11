@@ -423,11 +423,13 @@ g_aes_hex    tv4000; -- byte -> os dois digitos hexadecimais, para remontar o RA
 -- =============================================================================
 -- INFLATE (RFC 1951): tabelas da especificacao
 --
--- Portado de dev/scripts/pdfinflate_reference/, validado contra o zlib (53/53).
+-- Validado contra o zlib: 53 de 53 fluxos descomprimidos deram byte a byte o
+-- mesmo resultado.
 --
 -- Existe porque o UTL_COMPRESS nao serve: ele so descomprime com o CRC-32 e o
 -- tamanho do rodape gzip corretos, e o CRC e do conteudo DESCOMPRIMIDO — para
--- calcula-lo seria preciso descomprimir. Ver dev/tests/diag_utl_compress*.sql.
+-- calcula-lo seria preciso descomprimir -- o que e justamente o que se quer
+-- fazer. Medido contra o banco antes de escrever este codigo.
 --
 -- Sem isto o copiador recusa qualquer PDF com xref em stream ou object stream,
 -- que e o que todo produtor moderno gera.
@@ -448,7 +450,7 @@ co_inf_dextra CONSTANT VARCHAR2(100) :=
 -- ordem em que os comprimentos do alfabeto de comprimentos aparecem
 co_inf_ordem CONSTANT VARCHAR2(100) :=
   '16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15';
--- DEFLATE (comprimir), portado de dev/scripts/pdfdeflate_reference/
+-- DEFLATE (comprimir)
 --
 -- Um bloco so, BFINAL=1 e BTYPE=01 (Huffman FIXA), com LZ77 guloso. Escrever e
 -- mais facil que ler: o leitor tem de aceitar tudo o que a especificacao
@@ -1142,8 +1144,8 @@ end qr_penalty;
 -- simbologia real e nenhum leitor conseguia interpretar.
 --
 -- As simbologias abaixo foram validadas fora do banco contra o decodificador
--- zxing-cpp (47 de 47 codigos lidos corretamente). A referencia esta em
--- dev/scripts/barcode_reference/.
+-- zxing-cpp: 47 de 47 codigos foram lidos corretamente. A regua nao e "o
+-- simbolo foi desenhado", e sim "um leitor decodifica".
 --
 -- Convencao interna: cada rotina devolve uma cadeia de modulos, '1' = barra,
 -- '0' = espaco. O desenho e feito uma vez, agrupando modulos consecutivos.
@@ -1405,7 +1407,7 @@ end bc_itf14;
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
--- INFLATE (RFC 1951), portado de dev/scripts/pdfinflate_reference/
+-- INFLATE (RFC 1951)
 --
 -- Estado do fluxo de bits em variaveis de pacote em vez de um record passado
 -- adiante: o decodificador de Huffman le UM bit por vez e e chamado uma vez por
@@ -1424,8 +1426,8 @@ PROCEDURE inf_init IS
   -- e NULL, e 'EXIT WHEN NULL = 0' NAO e verdadeiro — comparacao com NULL da
   -- NULL, e o EXIT so dispara com TRUE. O laco rodava para sempre atribuindo
   -- NULL a indices cada vez maiores, e a tabela indexada crescia ate estourar a
-  -- PGA (ORA-04036). E a mesma familia do 'IF NOT f() THEN' com BOOLEAN nulo
-  -- que ja esta anotada em docs/MANUTENCAO.md.
+  -- PGA (ORA-04036). E a mesma familia do 'IF NOT f() THEN' com uma funcao
+  -- BOOLEAN que devolve NULL: o IF nao dispara, e ninguem desconfia.
   --
   -- Aqui p_txt nunca e NULL e l_ini so cresce, entao o laco termina por
   -- construcao, sem depender de comparacao com NULL.
@@ -1841,10 +1843,11 @@ END inflate;
 --------------------------------------------------------------------------------
 -- DEFLATE (RFC 1951) na direcao de COMPRIMIR
 --
--- Portado de dev/scripts/pdfdeflate_reference/, validado contra o zlib (32/32) e
--- contra o MuPDF abrindo um PDF com o fluxo comprimido por ele.
+-- Validado contra o zlib (32 de 32 fluxos, descomprimidos de volta ao
+-- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
 --
--- Decisao por decisao igual a referencia — mesma dispersao, mesmo limite de
+-- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
+-- limite de
 -- corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
 -- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
 -- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
@@ -1861,10 +1864,11 @@ END inflate;
 --------------------------------------------------------------------------------
 -- DEFLATE (RFC 1951) na direcao de COMPRIMIR
 --
--- Portado de dev/scripts/pdfdeflate_reference/, validado contra o zlib (32/32) e
--- contra o MuPDF abrindo um PDF com o fluxo comprimido por ele.
+-- Validado contra o zlib (32 de 32 fluxos, descomprimidos de volta ao
+-- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
 --
--- Decisao por decisao igual a referencia — mesma dispersao, mesmo limite de
+-- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
+-- limite de
 -- corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
 -- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
 -- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
@@ -2187,7 +2191,8 @@ END deflate;
 --------------------------------------------------------------------------------
 -- Marcas d'agua e overlays: operadores do fluxo de conteudo
 --
--- Portado de dev/scripts/pdfoverlay_reference/, validado contra o MuPDF (18/18).
+-- Validado contra o MuPDF: 18 de 18 paginas redesenhadas trazem a
+-- sobreposicao na posicao e no angulo previstos.
 --
 -- O que existia antes (generate_watermark_stream e irmas) nao era PDF valido:
 -- 'TO_CHAR(rotacao) || '' rotate''' nao e operador — rotacao no PDF e matriz,
@@ -2345,7 +2350,7 @@ END crypto_rc4_blob;
 *******************************************************************************/
 
 --------------------------------------------------------------------------------
--- AES (FIPS-197), portado de dev/scripts/pdfaes_reference/
+-- AES (FIPS-197)
 --
 -- Escrito a mao porque nao ha DBMS_CRYPTO nesta base — foi eliminado de
 -- proposito, e o STANDARD_HASH cobre so os hashes. O PDF 2.0 removeu o RC4 da
@@ -3449,7 +3454,8 @@ type tTTFFonts is table of recTTFFont index by varchar2(100);
  * SetFont, pelo nome dado aqui. As tabelas do arquivo são lidas de verdade --
  * head, hhea, hmtx, cmap, OS/2 e post --, e a fonte vai embutida no PDF como
  * /FontFile2. O arquivo cresce: o programa da fonte sai em hexadecimal, então
- * ocupa o DOBRO do tamanho dela, e ainda não há subset (ver docs/ROADMAP.md).
+ * ocupa o DOBRO do tamanho dela, e ainda não há subset — a fonte inteira vai
+ * embutida, mesmo que o documento use dez glifos.
  * Para texto em português com acento não é preciso embutir nada: as fontes
  * padrão escrevem acentuado desde a 3.4.0.
  *
@@ -4458,8 +4464,8 @@ procedure ClosePDF;
  *       (AddPage('L')) não sente nada; quem chama por nome
  *       (AddPage(orientation => 'L')) precisa acertar o nome. Não há como
  *       aceitar os dois: sobrecargas que diferem só pelo nome do parâmetro
- *       deixam a chamada ambígua, e o Oracle recusa com PLS-00307. Ver a seção
- *       de migração em docs/DOCUMENTATION.md.
+ *       deixam a chamada ambígua, e o Oracle recusa com PLS-00307. Quem chama
+ *       por posição não é afetado.
  * @example
  *   PL_FPDF.AddPage;
  *   PL_FPDF.AddPage('L');
@@ -5919,7 +5925,8 @@ c_max_loaded_pdfs CONSTANT PLS_INTEGER := 10;
 -- (DBMS_LOB.COPY), nunca por VARCHAR2, para nao corromper dado binario; so a
 -- porcao ASCII do dicionario e reescrita.
 --
--- O algoritmo foi validado contra o MuPDF em dev/scripts/pdfmerge_reference/.
+-- O algoritmo foi validado contra o MuPDF: o decodificador abre o documento
+-- mesclado e devolve as paginas e o texto de cada origem.
 --------------------------------------------------------------------------------
 -- Uma origem ja indexada: xref + arvore de paginas achatada com heranca resolvida
 TYPE pdf_source_rec IS RECORD (
@@ -6106,9 +6113,10 @@ end getPDFDocLength;
 ----------------------------------------------------------------------------------------
 -- Larguras das 14 fontes padrao do PDF, em milesimos de em.
 --
--- GERADO por dev/scripts/font_reference/gerar.py a partir das fontes
--- primarias: os AFM da Adobe, as tabelas do reportlab (que se conferem entre
--- si, glifo a glifo) e a WinAnsiEncoding. NAO EDITE A MAO: rode o gerador.
+-- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- reportlab -- que se conferem entre si, glifo a glifo -- e a
+-- WinAnsiEncoding. NAO EDITE A MAO: a tabela e regerada, e a edicao manual
+-- se perde na geracao seguinte.
 --
 -- Cada familia e uma sequencia de 256 campos de 4 digitos, um por posicao da
 -- codificacao. A chave da tabela indexada e chr(i).
@@ -7043,8 +7051,8 @@ end p_newobj;
 ----------------------------------------------------------------------------------------
 -- p_winansi_byte : o byte WinAnsi de um caractere, ou NULL se ele nao existe la.
 --
--- A tabela vem de dev/scripts/winansi_reference/, gerada do codec cp1252 e
--- conferida contra o MuPDF: das 217 posicoes desenhaveis o leitor devolve
+-- A tabela e gerada do codec cp1252 e conferida contra o MuPDF: das 217
+-- posicoes desenhaveis o leitor devolve
 -- todas com o caractere previsto, exceto 0xA0 e 0xAD, que o Anexo D do PDF
 -- manda tratar como espaco e hifen.
 --
@@ -8942,7 +8950,7 @@ begin
     'AddLink: link interno NAO esta implementado. O /Dest nunca e escrito no ' ||
     'arquivo, e o Link recusa o identificador que esta funcao devolveria. ' ||
     'Use Link(x, y, w, h, ''https://...'') ou o parametro plink das rotinas ' ||
-    'de texto com uma URL. Ver docs/ROADMAP.md, pendencias.');
+    'de texto com uma URL.');
   return null;
 end AddLink;
 
@@ -8955,7 +8963,7 @@ begin
   raise_application_error(-20601,
     'SetLink: link interno NAO esta implementado. O destino nao chega ao ' ||
     'arquivo: o /Dest nunca e escrito e o Link recusa o identificador. ' ||
-    'Use uma URL. Ver docs/ROADMAP.md, pendencias.');
+    'Use uma URL.');
 end SetLink;
 
 ----------------------------------------------------------------------------------------
@@ -8974,7 +8982,7 @@ begin
       nvl(plink, 'NULL') ||
       '). So URL e suportada. O link interno de AddLink/SetLink NAO esta ' ||
       'implementado: o /Dest nunca e escrito e o PDF sairia malformado. ' ||
-      'Use Link(x, y, w, h, ''https://...''). Ver docs/ROADMAP.md, pendencias.');
+      'Use Link(x, y, w, h, ''https://...'').');
   end if;
 
 	-- Marca uma area clicavel na pagina
@@ -9553,9 +9561,9 @@ end AddPage;
 --------------------------------------------------------------------------------
 -- Leitura das tabelas da fonte TrueType
 --
--- Referencia em dev/scripts/ttfembed_reference/, validada no MuPDF. Ela confere
--- tres coisas, e a terceira e a que pega erro AQUI: o texto sai, a fonte esta
--- embutida, e a largura que o leitor MEDE bate com a que o /Widths declara.
+-- Validado no MuPDF em tres pontos, e o terceiro e o que pega erro AQUI: o
+-- texto sai, a fonte esta embutida, e a largura que o leitor MEDE bate com a
+-- que o /Widths declara.
 -- Ler o hmtx com o numberOfHMetrics errado, ou esquecer de reescalar de
 -- unitsPerEm para as 1000 unidades por em que o PDF quer, desenha o texto com
 -- o espacamento de outra fonte -- num arquivo que abre perfeitamente.
@@ -11272,9 +11280,8 @@ begin
       'Use OutputBlob() to get the PDF as a BLOB, then deliver it yourself ' ||
       'with owa_util.mime_header(''application/pdf'', FALSE) and ' ||
       'wpg_docload.download_file() — without the Content-Type header the ' ||
-      'browser may render the PDF source as a web page. See "Entregar o PDF a ' ||
-      'um navegador" in docs/DOCUMENTATION.md. Or use OutputFile() to save to ' ||
-      'the filesystem.');
+      'browser may render the PDF source as a web page. Or use OutputFile() to ' ||
+      'save to the filesystem.');
 
   else
     raise_application_error(-20100,
@@ -12902,7 +12909,8 @@ END GetWatermarks;
 --
 -- Marcas d'agua e overlays sao desenhados no fluxo de conteudo: cada pagina que
 -- os tem ganha um objeto de stream com os operadores e um /Resources proprio.
--- Ver ovl_* e dev/scripts/pdfoverlay_reference/ (validado contra o MuPDF).
+-- Quem monta os operadores sao as rotinas ovl_*, logo abaixo. Validado contra
+-- o MuPDF, que redesenha a pagina e mostra a sobreposicao no lugar certo.
 --------------------------------------------------------------------------------
 FUNCTION OutputModifiedPDF RETURN BLOB IS
   l_srcs   pdf_source_list;
@@ -13687,7 +13695,7 @@ END UnloadPDF;
 --                    COPIADOR DE OBJETOS PDF (nivel de bytes)                 --
 --                                                                             --
 -- Base comum de MergePDFs, SplitPDF, ExtractPages e OutputModifiedPDF.        --
--- Referencia validada contra o MuPDF: dev/scripts/pdfmerge_reference/             --
+-- Validado contra o MuPDF, que abre o resultado e le todas as paginas.      --
 --------------------------------------------------------------------------------
 
 -- Declaracao antecipada: a varredura da arvore de paginas e recursiva
@@ -14268,7 +14276,8 @@ END pdf_walk_pages;
 --------------------------------------------------------------------------------
 -- xref em stream e object streams (PDF 1.5+)
 --
--- Portado de dev/scripts/pdfxref_reference/, validado contra o MuPDF (43/43).
+-- Validado contra o MuPDF: 43 de 43 arquivos com xref em stream abriram e
+-- devolveram as paginas certas.
 --
 -- A partir do PDF 1.5 a xref deixou de ser tabela de texto e virou um objeto
 -- com stream (/Type /XRef), comprimido; e os objetos sem stream foram para
@@ -15376,8 +15385,8 @@ END ovl_gs_entrada;
 --------------------------------------------------------------------------------
 -- PNG que precisa de reprocessamento de pixels
 --
--- Portado de dev/scripts/pdfimage_reference/, validado nos PIXELS que o MuPDF
--- desenha (25/25). Ate agosto/2026 estes casos eram recusados com ORA-20823
+-- Validado nos PIXELS que o MuPDF desenha: 25 de 25 imagens sairam iguais a
+-- origem. Ate agosto/2026 estes casos eram recusados com ORA-20823
 -- por falta de um inflate em PL/SQL; ele existe desde a xref em stream, e o
 -- desfazer do filtro por linha e o mesmo pdf_undo_pred do /Predictor do PDF.
 --
@@ -15551,8 +15560,8 @@ END ovl_png_separar_alfa;
 --------------------------------------------------------------------------------
 -- ovl_img_xobject: converte o BLOB de uma imagem no /XObject do PDF
 --
--- Portado de dev/scripts/pdfimage_reference/, validado contra o MuPDF: cada caso e
--- desenhado e os pixels sao conferidos, porque um /DecodeParms errado ou um
+-- Validado contra o MuPDF: cada caso e desenhado e os pixels sao conferidos,
+-- porque um /DecodeParms errado ou um
 -- /ColorSpace trocado produzem um arquivo valido que desenha ruido.
 --
 -- Nenhum dos dois formatos precisa ser descomprimido aqui:

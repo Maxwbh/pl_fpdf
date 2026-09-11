@@ -94,7 +94,12 @@ O que se confere
 4. só se usam as tags da tabela TAGS — pega `@throws`, `@returns`, `@params`;
 5. function documenta ``@return``;
 6. **todo parâmetro da assinatura tem `@param`, e todo `@param` corresponde a
-   um parâmetro** — nos dois sentidos, e na ordem da assinatura.
+   um parâmetro** — nos dois sentidos, e na ordem da assinatura;
+7. **nenhum bloco aponta para arquivo do repositório**. Quem lê a spec está no
+   PL/SQL Developer, muitas vezes sem o repositório à mão: mandá-lo abrir
+   `docs/ROADMAP.md` troca a explicação por um endereço que ele não pode
+   seguir. O que se cita é o que não se pode embutir — a norma, o formato, o
+   decodificador contra o qual se validou.
 
 O que NÃO se confere, de propósito: se o texto está certo. Isso é revisão
 humana. Aqui só se garante que existe, que está no formato, que é português e
@@ -146,6 +151,11 @@ CODIGO = re.compile(r'^\s*\*\s+(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|'
                     r'FOR|LOOP|EXIT|PL_FPDF|DBMS_|l_|:=|\{|\}|"|--|/\*)',
                     re.I)
 LITERAL = re.compile(r"'(?:[^']|'')*'")
+# Caminho de arquivo do repositorio dentro do bloco. Proibido: o comentario
+# tem de se bastar -- endereco envelhece, e ponteiro quebrado em comentario
+# nao quebra nada, entao ninguem descobre.
+CAMINHO = re.compile(r'\b((?:dev|docs|src|examples|site|extensions|\.github)'
+                     r'/[\w./*-]+)')
 
 
 def ingles(linha):
@@ -319,6 +329,13 @@ def conferir(caminho):
         for b in bloco:
             if ingles(b):
                 falha('linha com cara de prosa inglesa: ' + b.strip()[:56])
+                break
+
+        for b in bloco:
+            m2 = CAMINHO.search(b)
+            if m2:
+                falha(f'aponta para "{m2.group(1).rstrip(".,")}" — o bloco não '
+                      f'remete a documento, ele diz a coisa')
                 break
 
         if tipo == 'function' and '@return' not in achadas:

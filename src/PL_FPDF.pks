@@ -103,7 +103,8 @@ type tTTFFonts is table of recTTFFont index by varchar2(100);
  * SetFont, pelo nome dado aqui. As tabelas do arquivo são lidas de verdade --
  * head, hhea, hmtx, cmap, OS/2 e post --, e a fonte vai embutida no PDF como
  * /FontFile2. O arquivo cresce: o programa da fonte sai em hexadecimal, então
- * ocupa o DOBRO do tamanho dela, e ainda não há subset (ver docs/ROADMAP.md).
+ * ocupa o DOBRO do tamanho dela, e ainda não há subset — a fonte inteira vai
+ * embutida, mesmo que o documento use dez glifos.
  * Para texto em português com acento não é preciso embutir nada: as fontes
  * padrão escrevem acentuado desde a 3.4.0.
  *
@@ -1112,8 +1113,8 @@ procedure ClosePDF;
  *       (AddPage('L')) não sente nada; quem chama por nome
  *       (AddPage(orientation => 'L')) precisa acertar o nome. Não há como
  *       aceitar os dois: sobrecargas que diferem só pelo nome do parâmetro
- *       deixam a chamada ambígua, e o Oracle recusa com PLS-00307. Ver a seção
- *       de migração em docs/DOCUMENTATION.md.
+ *       deixam a chamada ambígua, e o Oracle recusa com PLS-00307. Quem chama
+ *       por posição não é afetado.
  * @example
  *   PL_FPDF.AddPage;
  *   PL_FPDF.AddPage('L');

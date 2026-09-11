@@ -249,9 +249,26 @@ documentados: eles não aparecem em spec nenhuma. Um comentário acima de cada u
 é obrigatório; do público, não — está na spec, e repetir aqui cria duas versões
 que divergem.
 
-O body segue a estrutura da Guideline: seções marcadas com `-- ===`,
-`gc_nome_pacote` declarado no topo, e as declarações antecipadas só para
-subprograma **privado** chamado antes de ser definido.
+O body segue a estrutura da Guideline: seções marcadas com `-- ===` e
+declarações antecipadas só para subprograma **privado** chamado antes de ser
+definido.
+
+**3. O comentário vive sozinho — não aponta para documento do repositório.**
+Quem lê está dentro do código, muitas vezes no PL/SQL Developer, sem o
+repositório à mão: mandá-lo abrir `docs/ROADMAP.md` troca a explicação por um
+endereço que ele não pode seguir. E endereço envelhece — foi o que aconteceu
+quando `scripts/` virou `dev/scripts/` e doze comentários ficaram apontando
+para o nada, sem que nada quebrasse. Consertar o caminho trata o sintoma; a
+regra trata a causa.
+
+Vale também para **mensagem de erro**, e ali pesa mais: quem recebe um
+`ORA-20601` em produção não tem o repositório. Três mensagens de link interno
+e uma de `Output` mandavam consultar `docs/ROADMAP.md` e `docs/DOCUMENTATION.md`;
+o texto que restou já explicava tudo sozinho.
+
+O que se cita é o que **não** está no repositório e não se pode embutir: a
+RFC 1951, o FIPS-197, a ISO/IEC 18004, o decodificador contra o qual se
+validou. Esses não mudam de lugar.
 
 > **O que a primeira rodada do verificador achou.** 27 privados sem uma linha
 > de comentário — `ttf_u32`, `pdf_pad_password`, `gmul`, `xtime`,

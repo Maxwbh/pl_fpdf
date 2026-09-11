@@ -32,14 +32,19 @@ O que se confere
 3. **não há código comentado**. O histórico é do Git; uma declaração comentada
    fica para trás sem ninguém reparar, e foi assim que um ``-- type tv1 is
    table of ...`` sobreviveu a três refatorações;
-4. **caminho citado em comentário existe**. Quando `scripts/` e `tests/`
-   viraram `dev/scripts/` e `dev/tests/`, **doze** comentários ficaram
-   apontando para o nada — e comentário não quebra em lugar nenhum, então
-   ninguém soube.
+4. **nenhum comentário aponta para arquivo do repositório**. O comentário vive
+   sozinho: quem o lê está dentro do código, e mandá-lo abrir outro arquivo
+   troca a explicação por um endereço. Endereço envelhece — quando `scripts/`
+   e `tests/` viraram `dev/scripts/` e `dev/tests/`, **doze** comentários
+   ficaram apontando para o nada, e ponteiro quebrado em comentário não quebra
+   nada, então ninguém soube. Consertar o caminho trata o sintoma; a regra
+   trata a causa. O que se cita é o que não está no repositório e não se pode
+   embutir: a RFC 1951, o FIPS-197, a ISO/IEC 18004, o decodificador contra o
+   qual se validou.
 
 O que NÃO se confere, de propósito: se o texto está certo, e se o comentário
 diz por quê em vez de o quê. Isso é revisão humana; aqui só se garante que
-existe, que é português, e que o que ele cita existe.
+existe, que é português, e que se basta.
 
 O ``gc_nome_pacote`` da Guideline **não** entra, e a ausência é deliberada.
 Ele existe para compor a mensagem de erro junto do ``lc_nome_unidade`` de cada
@@ -89,7 +94,9 @@ COD_COMENTADO = re.compile(
     r'raw|date)\s*(\([^)]*\))?\s*(:=[^;]*)?;\s*$|'
     r'^\s*(if|for|while|begin|end|select|insert|update|delete)\b[^.]*;\s*$',
     re.I)
-CAMINHO = re.compile(r'\b((?:dev/)?(?:scripts|tests|docs|examples|src|site)'
+# Caminho de arquivo do repositorio dentro de um comentario. Proibido: o
+# comentario tem de se bastar.
+CAMINHO = re.compile(r'\b((?:dev|docs|src|examples|site|extensions|\.github)'
                      r'/[\w./*-]+)')
 
 
@@ -194,11 +201,9 @@ def conferir(pks, pkb):
             falhas.append((n, 'código comentado (o histórico é do Git): '
                               + texto[:52]))
         for c in CAMINHO.findall(texto):
-            alvo = c.rstrip('.,;:')
-            if '*' in alvo:
-                alvo = os.path.dirname(alvo)
-            if not os.path.exists(do_repo(alvo)):
-                falhas.append((n, f'aponta para "{alvo}", que não existe'))
+            falhas.append((n, f'aponta para "{c.rstrip(chr(46) + chr(44))}" — '
+                              f'comentário não remete a documento, ele diz a '
+                              f'coisa'))
     return falhas
 
 
@@ -216,7 +221,7 @@ def main():
               f'em docs/MANUTENCAO.md, seção "Comentário de API".')
         return 1
     print('OK — todo subprograma privado tem comentário, em PT-BR, sem código '
-          'comentado e sem caminho quebrado')
+          'comentado e sem apontar para arquivo do repositório')
     return 0
 
 
