@@ -106,6 +106,14 @@ jobs:
       - name: Nenhum byte virando caractere com CHR
         run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
+      # Um gerador emitia "l_hex := '...'" em toda linha, sem terminador em
+      # nenhuma menos a ultima. Nao e PL/SQL, e o Oracle recusa o BLOCO INTEIRO
+      # com ORA-06550 apontando a linha de baixo -- 60 casos que passavam
+      # deixaram de rodar por causa de uma linha. Nenhuma outra verificacao
+      # daqui analisa sintaxe, entao so a rodada contra o banco pegava.
+      - name: Nenhuma atribuicao comecando antes de a anterior terminar
+        run: python dev/scripts/plsql_lint/check_atribuicao.py
+
       # Metade da API publica da spec nao tinha bloco de documentacao — e a
       # metade sem bloco era a mais usada: Cell, SetFont, Text, Line, Output.
       # O que tinha vinha em tres dialetos. A spec e a documentacao que se le

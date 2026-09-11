@@ -101,13 +101,18 @@ def em_pedacos(hexa, por_linha=64):
 
 
 def bloco_plsql(hexa):
-    """O hexadecimal como concatenacao de literais, para caber no teste."""
+    """O hexadecimal como UMA atribuicao, com as continuacoes concatenadas.
+
+    A primeira versao disto emitia `l_hex := '...'` em TODA linha, sem
+    terminador em nenhuma menos a ultima -- nao era PL/SQL, e so apareceu na
+    primeira execucao contra o banco, com ORA-06550. Nenhum verificador daqui
+    analisa sintaxe de PL/SQL, entao a rodada no banco e o que pega isto.
+    """
     linhas = em_pedacos(hexa)
-    saida = []
-    for i, l in enumerate(linhas):
-        fim = ';' if i == len(linhas) - 1 else ''
-        lig = '    l_hex := l_hex || ' if i else '    l_hex := '
-        saida.append(f"{lig}'{l}'{fim}")
+    saida = ["    l_hex := '" + linhas[0] + "'"]
+    for l in linhas[1:]:
+        saida.append("           || '" + l + "'")
+    saida[-1] = saida[-1] + ';'
     return '\n'.join(saida)
 
 
@@ -142,7 +147,19 @@ def main():
         except Exception as e:                                  # noqa: BLE001
             print(f'a fonte embutida no teste nao e valida: {e}')
             return 1
-        print(f'OK — o teste tem uma TTF valida de {len(atual) // 2} bytes')
+
+        # A FORMA tambem, e nao so o conteudo: foi uma forma errada -- uma
+        # atribuicao por linha, sem terminador -- que derrubou a compilacao do
+        # bloco inteiro na primeira rodada contra o banco.
+        esperado = bloco_plsql(atual.upper())
+        t = io.open(TESTE, encoding='utf-8').read()
+        if esperado not in t:
+            print('o bloco embutido nao tem a forma que este gerador produz. '
+                  'Rode sem --check e substitua o trecho entre TTF-INICIO e '
+                  'TTF-FIM.')
+            return 1
+        print(f'OK — o teste tem uma TTF valida de {len(atual) // 2} bytes, '
+              f'na forma que o gerador produz')
         return 0
 
     print(f'-- fonte gerada por dev/scripts/ttf_reference/gerar.py')
