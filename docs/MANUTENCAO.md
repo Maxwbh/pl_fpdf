@@ -270,6 +270,21 @@ O que se cita é o que **não** está no repositório e não se pode embutir: a
 RFC 1951, o FIPS-197, a ISO/IEC 18004, o decodificador contra o qual se
 validou. Esses não mudam de lugar.
 
+**4. Cabeçalho que nomeia um subprograma fica acima dele.** Um `-- xpto : ...`
+seguido de outro subprograma é órfão, e mente em silêncio: o leitor lê a
+descrição de `xpto` e o corpo de outra coisa. É o rastro que a separação dos
+packages deixou — `AddQRCode`, `AddBarcode`, `ovl_num`, `rc4_crypt` e
+`rc4_key_xor` foram para o `PL_FPDF` e os cabeçalhos ficaram no `PL_FPDF_UTIL`,
+enquanto o do `crypto_autoteste` fez o caminho inverso. Seis blocos, cada um
+descrevendo algo diferente do que vinha abaixo.
+
+> **O `@raises` também mente sozinho.** Cruzando o que a spec documenta com o
+> que o corpo realmente levanta, **15 subprogramas** levantavam código que o
+> bloco não listava — `AddWatermark`, `RemovePage` e `RotatePage` não
+> documentavam nenhum. Quem lê `@raises` para saber o que capturar recebia
+> lista incompleta, e nada acusava. O cruzamento é barato e vale a cada
+> revisão.
+
 > **O que a primeira rodada do verificador achou.** 27 privados sem uma linha
 > de comentário — `ttf_u32`, `pdf_pad_password`, `gmul`, `xtime`,
 > `qr_bch_version`. 71 comentários em inglês e francês, herdados do porte

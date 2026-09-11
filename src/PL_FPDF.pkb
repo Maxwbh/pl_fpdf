@@ -18,7 +18,6 @@ CREATE OR REPLACE PACKAGE BODY PL_FPDF AS
 subtype flag is boolean;
 subtype car is varchar2(1);
 subtype phrase is varchar2(255);
---@youcef
 subtype txt is varchar2(32767); -- valor antigo: 2000, causava ORA-20100
 subtype bigtext is varchar2(32767);
 subtype margin is number;
@@ -954,13 +953,8 @@ begin
   end if;
 end log_message;
 
-/*******************************************************************************
-* Procedure: SetLogLevel
-* Description: Sets the logging level for debugging
-*******************************************************************************/
 procedure SetLogLevel(p_level pls_integer) is
 begin
-  -- TASK 3.1: Using log level constants
   if p_level < c_LOG_OFF or p_level > c_LOG_DEBUG then
     raise_application_error(-20100,
       'Invalid log level: ' || p_level || '. Must be ' || c_LOG_OFF || '-' || c_LOG_DEBUG ||
@@ -979,10 +973,6 @@ begin
     end || ')');
 end SetLogLevel;
 
-/*******************************************************************************
-* Function: GetLogLevel
-* Description: Returns the current logging level
-*******************************************************************************/
 function GetLogLevel return pls_integer is
 begin
   return g_log_level;
@@ -1060,7 +1050,7 @@ begin
   if g_page_formats.exists(l_format_upper) then
     l_format := g_page_formats(l_format_upper);
   else
-    -- Unknown format, raise error (Task 1.2 requirement)
+    -- formato desconhecido: recusa, em vez de inventar uma medida
     raise_application_error(-20103,
       'Unknown page format: ' || p_format_name || '. Use A3, A4, A5, Letter, Legal, Ledger, Executive, Folio, B5, or custom format like "100,200"');
   end if;
@@ -1691,7 +1681,7 @@ end p_escapa_pdf;
 function p_textstring(pstr in varchar2) return varchar2 is
 begin
 	-- Format a text string
-  -- Task 2.1: Use UTF8ToPDFString for proper encoding
+  -- passa pelo UTF8ToPDFString: e ele que escapa parentese e barra invertida
 	return '(' || UTF8ToPDFString(pstr, true) || ')';
 end p_textstring;
 
@@ -2621,7 +2611,7 @@ exception
 end p_dounderline;
 
 --------------------------------------------------------------------------------
--- Parse an image (Updated for Task 1.6: Native BLOB support)
+-- Le o cabecalho de uma imagem direto do BLOB, sem ORDSYS
 --------------------------------------------------------------------------------
 function p_parseImage(pFile in varchar2,
                       p_blob in blob default null) return recImage is
@@ -2837,7 +2827,7 @@ procedure Error(pmsg in varchar2) is
 begin
     if gb_mode_debug then
 	  print('<pre>');
-	  -- Task 1.7: Print CLOB content for debug (up to 32KB)
+	  -- despeja o CLOB para diagnostico, ate 32 KB
 	  -- flush protegido: aqui ja estamos tratando um erro, nao pode mascara-lo
 	  begin
 	    p_flush_doc_buf;
@@ -3104,8 +3094,9 @@ begin
 end SetAliasNbPages;
 
 ----------------------------------------------------------------------------------------
--- buildPlsqlStatment : building the pl/lsq stmt for header or Footer hooked custom proc
---                      Binding parameters and values.
+-- p_assert_callback_name: confere que o nome da rotina de cabecalho ou de
+-- rodape e um identificador SQL valido antes de entrar no bloco dinamico.
+-- E o unico ponto onde um nome vindo de fora e concatenado em codigo.
 ----------------------------------------------------------------------------------------
 ----------------------------------------------------------------------------------------
 -- p_assert_callback_name : valida o nome de uma rotina de callback.
@@ -3217,8 +3208,6 @@ end PageNo;
 procedure SetDrawColor(r in number, g in number default -1, b in number default -1) is
 begin
 	--------------------------------------------------------------------------------
-	-- TASK 2.3: Input Validation
-	-- TASK 3.1: Using constants for RGB range
 	--------------------------------------------------------------------------------
 	-- Validate RGB values (0-255 range)
 	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
@@ -3248,8 +3237,6 @@ end SetDrawColor;
 procedure SetFillColor (r in number, g in number default -1, b in number default -1) is
 begin
 	--------------------------------------------------------------------------------
-	-- TASK 2.3: Input Validation
-	-- TASK 3.1: Using constants for RGB range
 	--------------------------------------------------------------------------------
 	-- Validate RGB values (0-255 range)
 	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
@@ -3284,8 +3271,6 @@ end SetFillColor;
 procedure SetTextColor (r in number, g in number default -1, b in number default -1) is
 begin
 	--------------------------------------------------------------------------------
-	-- TASK 2.3: Input Validation
-	-- TASK 3.1: Using constants for RGB range
 	--------------------------------------------------------------------------------
 	-- Validate RGB values (0-255 range)
 	if r < c_MIN_COLOR_VALUE or r > c_MAX_COLOR_VALUE then
@@ -3317,7 +3302,6 @@ end SetTextColor;
 procedure SetLineWidth(width in number) is
 begin
 	--------------------------------------------------------------------------------
-	-- TASK 2.3: Input Validation
 	--------------------------------------------------------------------------------
 	-- a espessura tem de ser positiva
 	if width <= 0 then
@@ -3711,7 +3695,7 @@ begin
   end if;
 
   -- ========================================================================
-  -- 3. SET DEFAULT ORIENTATION AND FORMAT (Task 1.2)
+  -- 3. orientacao e formato padrao
   -- ========================================================================
 
   g_default_orientation := l_orientation;
@@ -3764,17 +3748,13 @@ exception
     raise;
 end Init;
 
-/*******************************************************************************
-* Procedure: Reset
-* Description: Resets the PDF engine, freeing resources
-*******************************************************************************/
 procedure Reset is
 begin
   log_message(3, 'Resetting PL_FPDF engine...');
 
   -- Clear arrays and CLOB (using existing structures)
   begin
-    -- Task 1.7: Free CLOB buffer
+    -- libera o CLOB do documento
     if dbms_lob.istemporary(pdfDoc) = 1 then
       dbms_lob.freetemporary(pdfDoc);
     end if;
@@ -3862,10 +3842,6 @@ exception
     raise;
 end Reset;
 
-/*******************************************************************************
-* Function: IsInitialized
-* Description: Checks initialization state
-*******************************************************************************/
 function IsInitialized return boolean is
 begin
   return g_initialized;
@@ -3881,19 +3857,11 @@ end IsInitialized;
 -- depois de log_message) porque o Init() as chama: chamada a subprograma
 -- definido mais abaixo da PLS-00313.
 
-/*******************************************************************************
-* Function: GetCurrentPage
-* Description: Returns the current page number
-*******************************************************************************/
 function GetCurrentPage return pls_integer is
 begin
   return g_current_page;
 end GetCurrentPage;
 
-/*******************************************************************************
-* Procedure: SetPage
-* Description: Sets the current active page for content manipulation
-*******************************************************************************/
 procedure SetPage(p_page_number pls_integer) is
 begin
   -- Validate initialization
@@ -4568,10 +4536,6 @@ end ClearTTFFontCache;
 -- Date: 2025-12-17
 --------------------------------------------------------------------------------
 
-/*******************************************************************************
-* Function: UTF8ToPDFString
-* Description: Converts UTF-8 text to PDF-compatible string format
-*******************************************************************************/
 function UTF8ToPDFString(p_text varchar2, p_escape boolean default true) return varchar2 is
   l_result varchar2(32767);
 begin
@@ -4608,7 +4572,6 @@ end UTF8ToPDFString;
 
 
 --------------------------------------------------------------------------------
--- End of TASK 2.1 implementations
 --------------------------------------------------------------------------------
 
 ----------------------------------------------------------------------------------------
@@ -4626,7 +4589,8 @@ begin
 	page:=0;
 	n:=2;
 	-- Open the final structure for the PDF document.
-  -- Task 1.7: Initialize CLOB buffer instead of VARCHAR2 array
+  -- o buffer do documento e um CLOB temporario; era uma tabela de VARCHAR2,
+  -- que tinha teto de 32 KB por elemento
   if dbms_lob.istemporary(pdfDoc) = 1 then
     dbms_lob.freetemporary(pdfDoc);
   end if;
@@ -4828,8 +4792,8 @@ l_clean_style varchar2(10);  -- For validation
 -- tabnull tv4000;
 begin
 	--------------------------------------------------------------------------------
-	-- TASK 2.3: Input Validation - BEFORE any variable assignments
-	-- TASK 3.1: Using constants instead of magic numbers
+	-- Valida ANTES de atribuir qualquer variavel: uma atribuicao que estoure
+	-- deixaria o estado pela metade
 	--------------------------------------------------------------------------------
 	-- Validate font family (before assignment to avoid buffer overflow)
 	if pfamily is not null and length(pfamily) > c_MAX_FONT_NAME_LENGTH then
@@ -5147,7 +5111,7 @@ end Cell;
     
 ----------------------------------------------------------------------------------------
 -- MultiCell: escreve texto quebrando linha sozinho, ou onde o texto mandar
--- param phMax : give the max height for the multicell. (0 if non applicable)
+-- phMax: altura maxima da MultiCell; 0 quando nao se aplica
 -- if ph is null : the minimum height is the value of the property LineSpacing
 ----------------------------------------------------------------------------------------
 function MultiCell
@@ -5333,7 +5297,7 @@ end MultiCell;
 
 ----------------------------------------------------------------------------------------
 -- MultiCell: escreve texto quebrando linha sozinho, ou onde o texto mandar
--- param phMax : give the max height for the multicell. (0 if non applicable)
+-- phMax: altura maxima da MultiCell; 0 quando nao se aplica
 -- if ph is null : the minimum height is the value of the property LineSpacing
 ----------------------------------------------------------------------------------------
 procedure MultiCell
@@ -5598,11 +5562,6 @@ end write;
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-/*******************************************************************************
-* Function: OutputBlob
-* Description: Returns PDF document as BLOB (no OWA dependencies)
-* Returns: BLOB containing complete PDF
-*******************************************************************************/
 function OutputBlob return blob is
   v_doc blob;
   -- usadas em dbms_lob.convertToBlob logo abaixo; os avisos de "declarada e
@@ -5657,13 +5616,6 @@ exception
     return null;
 end OutputBlob;
 
-/*******************************************************************************
-* Procedure: OutputFile
-* Description: Saves PDF to filesystem using UTL_FILE (no OWA dependencies)
-* Parameters:
-*   p_filename - nome do arquivo PDF a criar
-*   p_directory - Oracle directory object (default: 'PDF_DIR')
-*******************************************************************************/
 procedure OutputFile(p_filename varchar2, p_directory varchar2 default 'PDF_DIR') is
   v_pdf_blob blob;
   v_file utl_file.file_type;
@@ -5732,15 +5684,6 @@ end OutputFile;
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
 
-/*******************************************************************************
-* Procedure: Output (Legacy - OWA dependencies removed)
-* Description: Legacy output procedure - now delegates to modern methods
-* Parameters:
-*   pname - Filename (required for 'F' mode)
-*   pdest - Destination: 'F' = File (only supported mode)
-* Note: 'I', 'D', 'S' modes removed (used OWA/HTP)
-*       Use OutputBlob() or OutputFile() directly for new code
-*******************************************************************************/
 procedure Output(pname varchar2 default null, pdest varchar2 default null) is
   myName word := pname;
   myDest word := pdest;
@@ -5828,8 +5771,8 @@ myDest := 'D';
 end if;
 end if;
 
-  -- Task 1.7: Removed dead code (pdfDoc array loop was never used)
-  -- Simply delegate to OutputBlob (Task 1.5 - OWA removed)
+  -- Delega ao OutputBlob. O laco sobre a antiga tabela pdfDoc nunca chegou a
+  -- ser usado, e o caminho de entrega ao navegador saiu com o OWA.
   return OutputBlob();
 exception
   when others then
@@ -5843,10 +5786,6 @@ end ReturnBlob;
 -- Date: 2025-12-16
 --------------------------------------------------------------------------------
 
-/*******************************************************************************
-* Procedure: CellRotated
-* Description: Modern Cell with text rotation support
-*******************************************************************************/
 procedure CellRotated(
   p_width number,
   p_height number default 0,
@@ -5951,10 +5890,6 @@ end WriteRotated;
 -- Date: 2025-12-18
 --------------------------------------------------------------------------------
 
-/*******************************************************************************
-* Procedure: SetDocumentConfig
-* Description: Configure PDF document using JSON_OBJECT_T
-*******************************************************************************/
 procedure SetDocumentConfig(p_config JSON_OBJECT_T) is
   l_keys JSON_KEY_LIST;
   l_key VARCHAR2(100);
@@ -6088,10 +6023,6 @@ exception
     raise;
 end SetDocumentConfig;
 
-/*******************************************************************************
-* Function: GetDocumentMetadata
-* Description: Returns document metadata and statistics as JSON
-*******************************************************************************/
 function GetDocumentMetadata return JSON_OBJECT_T is
   l_metadata JSON_OBJECT_T;
   l_unit VARCHAR2(10);
@@ -6472,10 +6403,6 @@ BEGIN
 
   log_message(3, 'Extracted page ' || p_page_number || ' info: MediaBox=' || l_media_box);
 END extract_page_info;
-/*******************************************************************************
-* Function: GetPageInfo
-* Description: Returns information about a specific page as JSON
-*******************************************************************************/
 function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_T is
   l_page_info JSON_OBJECT_T;
   l_page_num pls_integer;
@@ -10896,8 +10823,13 @@ FUNCTION rc4_crypt(p_data RAW, p_key RAW) RETURN RAW IS
 BEGIN
   RETURN PL_FPDF_UTIL.crypto_rc4(p_data, p_key);
 END rc4_crypt;
--- pdf_pad_password: a senha nos 32 bytes que a especificacao exige, cortando o
--- que passa e completando o que falta com a cadeia de enchimento fixa.
+-- pdf_pad_password: a senha nos 32 bytes que a especificacao exige.
+--
+-- A regra dos algoritmos 2 e 3 e: os bytes da senha, ate 32, seguidos do
+-- INICIO da cadeia de enchimento padrao. O codigo anterior usava
+-- RPAD(senha, 32, CHR(0)) e so depois concatenava o enchimento, cortando em
+-- 32 -- ou seja, completava com ZEROS e nunca chegava a usar a cadeia do
+-- padrao. O /O gerado assim nao e aceito por leitor conforme.
 FUNCTION pdf_pad_password(p_pwd VARCHAR2) RETURN RAW IS
   l_raw RAW(32);
   l_len PLS_INTEGER;
@@ -10913,14 +10845,13 @@ BEGIN
 END pdf_pad_password;
 
 /*******************************************************************************
-* PL_FPDF_UTIL.crypto_autoteste: confere MD5 e RC4 contra vetores publicos conhecidos
+* rc4_key_xor: chave RC4 com XOR byte a byte pelo numero da rodada
 *
-* Barato (roda uma vez por sessao) e evita a pior falha possivel aqui: gerar um
-* PDF marcado como protegido cuja cifragem nao cifra nada. Com um RC4 que fosse
-* identidade, o /O sairia em texto claro e QUALQUER senha seria aceita, sem erro
-* nenhum.
-*
-* Vetores: MD5('abc') e o RC4 de 'Plaintext' com a chave 'Key'.
+* Usado pelas 19 rodadas extras dos algoritmos 3 (cifrar /O) e 7 (decifrar /O)
+* quando a revisao e 3 ou maior. Cuidados que ja custaram dois bugs:
+*   - CAST_FROM_BINARY_INTEGER devolve 4 bytes, e BIT_XOR de 1 com 4 devolve 4:
+*     e preciso pegar so o byte menos significativo;
+*   - UTL_RAW.SUBSTR(x, 1, 0) e invalido, entao a chave e montada acumulando.
 *******************************************************************************/
 FUNCTION rc4_key_xor(p_key RAW, p_i PLS_INTEGER) RETURN RAW IS
   l_out RAW(32);
@@ -11035,9 +10966,6 @@ BEGIN
   RETURN l_result;
 END compute_owner_value;
 
-/*******************************************************************************
-* compute_encryption_key: Compute document encryption key (Algorithm 2)
-*******************************************************************************/
 --------------------------------------------------------------------------------
 -- compute_encryption_key_raw: algoritmo 2 a partir da senha JA preenchida (RAW)
 --
@@ -11088,6 +11016,8 @@ END compute_encryption_key_raw;
 * compute_encryption_key: Compute document encryption key (Algorithm 2)
 *   Recebe a senha como texto, preenche ate 32 bytes e delega.
 *******************************************************************************/
+-- compute_encryption_key: a chave do documento (algoritmo 2) a partir da senha
+-- como TEXTO. Preenche e delega ao _raw, que faz a conta.
 FUNCTION compute_encryption_key(
   p_user_pwd VARCHAR2,
   p_o_value RAW,

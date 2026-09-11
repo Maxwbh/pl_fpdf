@@ -228,9 +228,6 @@ procedure aes_init;
 -- As rotinas de PIX (ValidatePixKey, CalculateCRC16, GetPixPayload) moraram
 -- aqui e foram para o package PL_FPDF_PIX; chame-as por PL_FPDF_PIX.*.
 --------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
---------------------------------------------------------------------------------
 -- PL/SQL nao tem operador XOR: a + b - 2*bitand(a,b) equivale a a XOR b.
 -- Precisa vir antes de qr_init_gf, que a usa na reducao do polinomio do GF(256).
 function qr_xor(a pls_integer, b pls_integer) return pls_integer is
@@ -258,13 +255,8 @@ begin
 end qr_init_gf;
 
 --------------------------------------------------------------------------------
--- qr_xor : PL/SQL nao tem operador XOR bit a bit; para inteiros nao negativos
---          a XOR b = a + b - 2 * (a AND b)
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- qr_xor : PL/SQL nao tem operador XOR bit a bit; para inteiros nao negativos
---          a XOR b = a + b - 2 * (a AND b)
+-- qr_gf_mul : multiplica no corpo de Galois GF(256) pela soma dos
+--             logaritmos, que e o que as tabelas exp/log permitem.
 --------------------------------------------------------------------------------
 function qr_gf_mul(a pls_integer, b pls_integer) return pls_integer is
 begin
@@ -825,13 +817,9 @@ begin
 end qr_penalty;
 
 --------------------------------------------------------------------------------
--- AddQRCode : gera um QR Code real, legivel por qualquer leitor.
---------------------------------------------------------------------------------
-
---------------------------------------------------------------------------------
--- Task 3.8: Generic Barcode Rendering
--- Note: PIX QR Code rendering: Use PL_FPDF_PIX.AddQRCodePIX()
---       Boleto barcode rendering: Use PL_FPDF_BOLETO.AddBarcodeBoleto()
+-- O QR Code de PIX sai por PL_FPDF_PIX.AddQRCodePIX, e o codigo de barras de
+-- boleto por PL_FPDF_BOLETO.AddBarcodeBoleto: sao extensoes, e a regra de
+-- cobranca nao entra nesta biblioteca.
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -1023,10 +1011,6 @@ begin
 end bc_ean;
 
 --------------------------------------------------------------------------------
--- bc_itf14 : Interleaved 2 of 5 com 14 digitos (13 + verificador).
---            Cada par de digitos ocupa 5 barras (1o digito) intercaladas com
---            5 espacos (2o digito).
---------------------------------------------------------------------------------
 -- bc_itf : Interleaved 2 of 5 puro — qualquer quantidade PAR de digitos, sem
 --          verificador de simbologia.
 --
@@ -1039,10 +1023,6 @@ end bc_ean;
 -- AddBarcodeBoleto passava os 44 digitos como 'ITF14' e sempre levantava
 -- ORA-20887.
 
---------------------------------------------------------------------------------
--- bc_itf14 : Interleaved 2 of 5 com 14 digitos (13 + verificador).
---            Cada par de digitos ocupa 5 barras (1o digito) intercaladas com
---            5 espacos (2o digito).
 --------------------------------------------------------------------------------
 -- bc_itf : Interleaved 2 of 5 puro — qualquer quantidade PAR de digitos, sem
 --          verificador de simbologia.
@@ -1095,14 +1075,6 @@ begin
   end if;
   return bc_itf(l_d, p_ratio);
 end bc_itf14;
-
---------------------------------------------------------------------------------
--- AddBarcode : desenha um codigo de barras real na pagina corrente.
---
--- A largura do modulo e derivada de p_width e do total de modulos da simbologia,
--- de modo que o codigo ocupe exatamente a largura pedida. Modulos escuros
--- consecutivos viram um unico retangulo.
---------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- INFLATE (RFC 1951)
@@ -1545,8 +1517,7 @@ END inflate;
 -- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
 --
 -- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
--- limite de
--- corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
+-- limite de corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
 -- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
 -- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
 -- erro de escrita que o proprio inflate da casa tolera passaria despercebido.
@@ -1566,8 +1537,7 @@ END inflate;
 -- original) e contra o MuPDF, que abre um PDF com o fluxo comprimido aqui.
 --
 -- Decisao por decisao igual a referencia em Python -- mesma dispersao, mesmo
--- limite de
--- corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
+-- limite de corrente, mesmo desempate. Nao e capricho: e o que permite ao teste comparar
 -- BYTE A BYTE o que o banco produz com o que a referencia produz. Um deflate
 -- "equivalente mas diferente" so poderia ser conferido descomprimindo, e ai um
 -- erro de escrita que o proprio inflate da casa tolera passaria despercebido.
@@ -1898,7 +1868,6 @@ END deflate;
 -- em cinza, ignorando o parametro. Como OutputModifiedPDF recusava com
 -- ORA-20845, isso nunca chegou a ser gravado num arquivo.
 --------------------------------------------------------------------------------
--- ovl_num: numero no formato do PDF (ponto decimal, sem notacao cientifica)
 FUNCTION crypto_md5(p_src IN RAW) RETURN RAW IS
   l_hash RAW(16);
 BEGIN
@@ -2042,10 +2011,6 @@ BEGIN
     l_pos := l_pos + l_n;
   END LOOP;
 END crypto_rc4_blob;
-
-/*******************************************************************************
-* rc4_crypt: RC4 encryption/decryption (symmetric)
-*******************************************************************************/
 
 --------------------------------------------------------------------------------
 -- AES (FIPS-197)
@@ -2901,13 +2866,14 @@ BEGIN
 END aes_verificar_r6;
 
 /*******************************************************************************
-* pdf_pad_password: senha preenchida ate 32 bytes conforme a especificacao
+* crypto_autoteste: confere MD5 e RC4 contra vetores publicos conhecidos
 *
-* A regra do PDF (algoritmos 2 e 3) e: os bytes da senha, ate 32, seguidos do
-* INICIO da string de preenchimento padrao. O codigo anterior usava
-* RPAD(senha, 32, CHR(0)) e so depois concatenava o preenchimento, cortando em
-* 32 — ou seja, completava com ZEROS e nunca chegava a usar a string do padrao.
-* O /O gerado assim nao e aceito por leitores conformes.
+* Barato (roda uma vez por sessao) e evita a pior falha possivel aqui: gerar um
+* PDF marcado como protegido cuja cifragem nao cifra nada. Com um RC4 que fosse
+* identidade, o /O sairia em texto claro e QUALQUER senha seria aceita, sem erro
+* nenhum.
+*
+* Vetores: MD5('abc') e o RC4 de 'Plaintext' com a chave 'Key'.
 *******************************************************************************/
 PROCEDURE crypto_autoteste IS
   co_md5_abc CONSTANT RAW(16) := HEXTORAW('900150983CD24FB0D6963F7D28E17F72');
@@ -2934,15 +2900,6 @@ BEGIN
   g_crypto_ok := TRUE;
 END crypto_autoteste;
 
-/*******************************************************************************
-* rc4_key_xor: chave RC4 com XOR byte a byte pelo numero da rodada
-*
-* Usado pelas 19 rodadas extras dos algoritmos 3 (cifrar /O) e 7 (decifrar /O)
-* quando a revisao e 3 ou maior. Cuidados que ja custaram dois bugs:
-*   - CAST_FROM_BINARY_INTEGER devolve 4 bytes, e BIT_XOR de 1 com 4 devolve 4:
-*     e preciso pegar so o byte menos significativo;
-*   - UTL_RAW.SUBSTR(x, 1, 0) e invalido, entao a chave e montada acumulando.
-*******************************************************************************/
 
 --------------------------------------------------------------------------------
 -- qr_matriz: a matriz do QR pronta, com a mascara ja escolhida

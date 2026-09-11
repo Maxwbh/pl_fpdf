@@ -40,7 +40,13 @@ O que se confere
    nada, então ninguém soube. Consertar o caminho trata o sintoma; a regra
    trata a causa. O que se cita é o que não está no repositório e não se pode
    embutir: a RFC 1951, o FIPS-197, a ISO/IEC 18004, o decodificador contra o
-   qual se validou.
+   qual se validou;
+5. **cabeçalho que nomeia um subprograma fica acima dele**. Um `-- xpto : ...`
+   seguido de outro subprograma é comentário órfão, e ele mente em silêncio: o
+   leitor lê a descrição de `xpto` e o corpo de outra coisa. Foi o que a
+   separação dos packages deixou para trás — `AddQRCode`, `AddBarcode` e
+   `ovl_num` foram para o `PL_FPDF` e os cabeçalhos ficaram no
+   `PL_FPDF_UTIL`, acima de `bc_ean_check`, de `inf_init` e de `crypto_md5`.
 
 O que NÃO se confere, de propósito: se o texto está certo, e se o comentário
 diz por quê em vez de o quê. Isso é revisão humana; aqui só se garante que
@@ -166,6 +172,33 @@ def corpos(linhas):
     return out
 
 
+CABECALHO = re.compile(r'^\s*(?:--+|\*)\s*(\w+)\s*:')
+
+
+def cabecalhos_orfaos(linhas, nomes):
+    """Cabeçalho `-- xpto :` que não tem `xpto` logo abaixo.
+
+    Só conta quando `xpto` É um subprograma de um dos dois packages: assim uma
+    continuação de prosa (`-- Nota:`, `-- phMax:`) não vira falso positivo.
+    """
+    out = []
+    for n, l in enumerate(linhas):
+        m = CABECALHO.match(l)
+        if not m or m.group(1).lower() not in nomes:
+            continue
+        k = n + 1
+        while k < len(linhas) and (not linhas[k].strip()
+                                   or linhas[k].strip().startswith(('--', '*'))
+                                   or linhas[k].strip().endswith('*/')):
+            k += 1
+        if k >= len(linhas):
+            continue
+        d = DEF.match(linhas[k])
+        if d and d.group(2).lower() != m.group(1).lower():
+            out.append((n + 1, m.group(1), d.group(2)))
+    return out
+
+
 def conferir(pks, pkb):
     publicos = {m.group(2).lower() for m in
                 re.finditer(r'^\s{0,2}(procedure|function)\s+(\w+)',
@@ -173,6 +206,18 @@ def conferir(pks, pkb):
                             re.I | re.M)}
     linhas = io.open(do_repo(pkb), encoding='utf-8').read().split('\n')
     falhas = []
+
+    # nomes dos dois packages: um cabecalho pode ter ficado para tras na
+    # separacao e nomear subprograma que hoje mora no outro arquivo
+    nomes = set()
+    for _, outro in PARES:
+        nomes |= {m.group(2).lower() for m in
+                  re.finditer(r'^\s{0,2}(procedure|function)\s+(\w+)',
+                              io.open(do_repo(outro), encoding='utf-8').read(),
+                              re.I | re.M)}
+    for n, diz, e in cabecalhos_orfaos(linhas, nomes):
+        falhas.append((n, f'cabeçalho diz "{diz}" e o subprograma abaixo é '
+                          f'"{e}" — comentário órfão'))
 
     for n, nome in corpos(linhas):
         if nome.lower() in publicos:

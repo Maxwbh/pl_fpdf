@@ -948,6 +948,7 @@ procedure CellRotated(
  * @param p_link URL ou link interno
  * @param p_rotation giro em graus (0, 90, 180, 270)
  * @raises -20110 giro inválido
+ * @raises -20111 só o giro de 0 grau é suportado; use CellRotated
  * @example
  *   PL_FPDF.WriteRotated(5, 'CONFIDENCIAL', NULL, 90);
  */
@@ -1022,7 +1023,7 @@ procedure ImageFromBlob( p_blob  in blob,
  * os bytes, use OutputBlob.
  *
  * @param pname nome do arquivo (NULL grava 'doc.pdf')
- * @param pdest destination: 'F' (File, arquivo) é o único suportado
+ * @param pdest destino: 'F' (File, arquivo) é o único suportado
  * @raises -20100 destino desconhecido, ou falha na gravação
  * @raises -20306 modo de entrega ao navegador não é mais suportado; a mensagem
  *         aponta OutputBlob e o cabeçalho Content-Type
@@ -1225,6 +1226,7 @@ function getImageFromUrl(p_Url in varchar2) return recImageBlob;
  *
  * @param p_level 0 desligado (OFF), 1 erro (ERROR), 2 aviso (WARN), 3
  *        informação (INFO), 4 depuração (DEBUG)
+ * @raises -20100 nível fora da faixa 0..4
  * @example
  *   PL_FPDF.SetLogLevel(3);
  */
@@ -1252,6 +1254,8 @@ function GetLogLevel return pls_integer
  *     página)
  *   - fontFamily, fontSize, fontStyle (fonte padrão)
  *   - leftMargin, topMargin, rightMargin (margens, na unidade corrente)
+ * @raises -20001 orientação inválida; só P ou L
+ * @raises -20002 unidade inválida; só mm, cm, in ou pt
  * @example
  *   DECLARE
  *     l_config JSON_OBJECT_T := JSON_OBJECT_T();
@@ -1307,6 +1311,8 @@ function GetDocumentMetadata return JSON_OBJECT_T;
  *     "height": <number>,
  *     "unit": "<string>"
  *   }
+ * @raises -20106 a página não existe
+ * @raises -20812 número de página fora da faixa
  * @example
  *   DECLARE
  *     l_page_info JSON_OBJECT_T;
@@ -1331,6 +1337,7 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
  *        'Q' (25%), 'H' (30%)
  * @raises -20870 conteúdo vazio
  * @raises -20872 nível de correção inválido
+ * @raises -20871 tamanho não positivo
  * @example
  *   PL_FPDF.AddQRCode(50, 50, 40, 'https://example.com', 'URL', 'M');
  */
@@ -1358,6 +1365,7 @@ procedure AddQRCode(
  * @param p_show_text escrever o código embaixo, legível
  * @raises -20880 código vazio
  * @raises -20882 simbologia não suportada
+ * @raises -20881 largura ou altura não positiva
  * @example
  *   PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
  */
@@ -1431,6 +1439,8 @@ FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
  * @param p_rotation Ângulo de rotação (0, 90, 180, 270)
  * @note Mudanças armazenadas em memória. Use OutputModifiedPDF() para gerar
  *       PDF
+ * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @raises -20813 giro inválido; só 0, 90, 180 ou 270
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   PL_FPDF.RotatePage(1, 90);    -- Rotacionar página 1
@@ -1444,6 +1454,9 @@ PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER);
  * @param p_page_number Número da página para remover
  * @note Página marcada para remoção. Use OutputModifiedPDF() para gerar PDF
  *       modificado
+ * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @raises -20812 número de página fora da faixa
+ * @raises -20814 a página já estava marcada para remoção
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   PL_FPDF.RemovePage(2);  -- Remover página 2
@@ -1456,6 +1469,7 @@ PROCEDURE RemovePage(p_page_number PLS_INTEGER);
  *
  * @return Número de páginas ativas
  * @note Difere de GetPageCount() que retorna a contagem original
+ * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
  * @example
  *   l_total := PL_FPDF.GetPageCount();        -- Original: 10
  *   PL_FPDF.RemovePage(2);
@@ -1503,6 +1517,10 @@ FUNCTION IsPDFModified RETURN BOOLEAN;
  *       de modo que um /Resources compartilhado entre páginas nunca é
  *       contaminado. Centralizada e girada em torno do centro da página; a
  *       fonte é sempre Helvetica.
+ * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @raises -20816 texto da marca vazio
+ * @raises -20817 opacidade fora de 0..1
+ * @raises -20818 rotação fora de 0, 45, 90, 135, 180, 225, 270, 315
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   -- Todas as páginas
@@ -2006,6 +2024,8 @@ FUNCTION ExtractPages(
  * @note Origem em PDF 1.5+ (xref em stream, object streams) é achatada: os
  *       objetos de dentro dos object streams viram objetos de primeiro nível e
  *       a saída leva xref clássica.
+ * @raises -20859 o PDF já está cifrado; decifre antes
+ * @raises -20860 PDF inválido: /Root não encontrado no trailer
  * @example
  *   l_encrypted := PL_FPDF.EncryptPDF(
  *     p_pdf => l_pdf,
@@ -2034,6 +2054,7 @@ FUNCTION EncryptPDF(
  * @raises -20855 Falha na descriptografia
  * @note Origem em PDF 1.5+ é achatada, e os object streams são decifrados
  *       antes de descomprimidos.
+ * @raises -20861 dicionário /Encrypt não encontrado no PDF
  * @example
  *   l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
  */
@@ -2075,6 +2096,8 @@ FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T;
  * @param p_encryption Method: 'RC4-40','RC4-128','AES-128','AES-256'
  * @param p_user_password Senha para abrir
  * @param p_owner_password Senha acesso total
+ * @raises -20850 método de cifragem não suportado
+ * @raises -20851 senha inválida
  * @example
  *   PL_FPDF.Init;
  *   PL_FPDF.SetEncryption('AES-128', 'user123', 'owner456');
@@ -2101,6 +2124,8 @@ PROCEDURE SetEncryption(
  *   1.6: AES de 128 bits, fontes OpenType
  *   1.7: AES de 256 bits, formulários XFA
  *   2.0: só AES de 256 bits, sem RC4
+ * @raises -20857 versão de PDF inválida; só 1.4, 1.5, 1.6, 1.7 ou 2.0
+ * @raises -20858 AES-128 exige PDF 1.5 ou maior, e AES-256 exige 1.7
  * @example
  *   PL_FPDF.SetPDFVersion('1.5');
  */
@@ -2124,6 +2149,7 @@ FUNCTION GetPDFVersion RETURN VARCHAR2;
  * @param p_extract Permitir extração de conteúdo
  * @param p_assemble Permitir montagem de documento
  * @param p_print_high Permitir impressão alta qualidade
+ * @raises -20856 SetEncryption tem de ser chamada antes
  * @example
  *   PL_FPDF.SetEncryption('AES-128', 'user', 'owner');
  *   PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE, p_modify => FALSE);
