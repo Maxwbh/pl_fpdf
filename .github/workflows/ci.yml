@@ -151,6 +151,13 @@ jobs:
       - name: Instalar o MuPDF, o leitor e as fontes para as referências
         run: pip install "pymupdf>=1.24" zxing-cpp pillow matplotlib reportlab fonttools
 
+      # A fonte embutida so vale se o LEITOR a usar. O MuPDF confere os tres
+      # lados: o texto sai, a fonte esta embutida, e a largura que ele mede
+      # bate com a que o /Widths declara -- um /Widths errado desenha com o
+      # espacamento de outra fonte, e o arquivo abre perfeitamente.
+      - name: Referência da fonte embutida confere com o MuPDF
+        run: python dev/scripts/ttfembed_reference/validate.py
+
       - name: Referência da xref em stream confere com o MuPDF
         run: python dev/scripts/pdfxref_reference/validate.py
 

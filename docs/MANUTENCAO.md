@@ -303,6 +303,7 @@ python dev/scripts/pdfaes_reference/validate.py      # vetores do FIPS-197 + MuP
 python dev/scripts/pdfinflate_reference/validate.py  # zlib
 python dev/scripts/pdfdeflate_reference/validate.py  # zlib
 python dev/scripts/pdfxref_reference/validate.py     # MuPDF
+python dev/scripts/ttfembed_reference/validate.py    # MuPDF (fonte embutida)
 python dev/scripts/pdfobjstm_crypt_reference/validate.py  # MuPDF
 python dev/scripts/boleto_reference/validate.py           # métricas + zxing
 python dev/scripts/ticket_reference/validate.py           # cor + QR + Code 39
