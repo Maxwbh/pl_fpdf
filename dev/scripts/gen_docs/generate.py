@@ -81,7 +81,12 @@ def ler_api():
         sig.setdefault(a['name'].lower(), []).append(a)
     for a in doc:
         cands = sig.get(a['nome'].lower(), [])
-        nomes = [p['nome'].lower() for p in a['params']]
+        # casa pelos nomes da ASSINATURA, nao pelos do @param: a sobrecarga
+        # compartilha o bloco (e portanto os @param) mas tem nomes proprios --
+        # o MultiCell procedure e pwidth/ptext onde a function e pw/ptxt. Pelo
+        # @param as duas casavam com a mesma assinatura, e a pagina mostrava a
+        # primeira duas vezes.
+        nomes = [p.lower() for p in a['assinatura_params']]
         a['assinatura'] = next(
             (c for c in cands
              if [p['name'].lower() for p in c['params']] == nomes),
@@ -138,15 +143,27 @@ def tabela_params(a):
     return '\n'.join(out)
 
 
-def secao_md(a):
+def secao_md(a, sobrecargas=()):
     fora = []
     fora.append(f'### {a["nome"]}\n')
     fora.append(a['descricao'] + '\n')
     fora.append('#### Sintaxe\n')
     fora.append('```sql\n' + sintaxe(a) + '\n```\n')
+    for s in sobrecargas:
+        fora.append('```sql\n' + sintaxe(s) + '\n```\n')
     if a['params']:
         fora.append('#### Parâmetros\n')
         fora.append(tabela_params(a) + '\n')
+        for s in sobrecargas:
+            if sobrecarga_compativel(a, s):
+                fora.append('Na sobrecarga acima os parâmetros são os mesmos, '
+                            'na mesma ordem, com outros nomes: '
+                            + ', '.join(f'`{p["name"]}`'
+                                        for p in s['assinatura']['params'])
+                            + '.\n')
+            else:
+                fora.append('A sobrecarga acima tem assinatura própria; o '
+                            'bloco de documentação é o da primeira.\n')
     if a['retorno']:
         fora.append('#### Retorno\n')
         fora.append(a['retorno'] + '\n')
@@ -170,6 +187,29 @@ def secao_md(a):
         fora.append('**Veja também:** '
                     + ' · '.join(f'[{x}](#{x.lower()})' for x in vt) + '\n')
     return '\n'.join(fora)
+
+
+def agrupar(api):
+    """{nome: [entrada principal, sobrecargas...]} -- a sobrecarga compartilha
+    o texto do bloco, mas tem assinatura propria e precisa aparecer."""
+    d = {}
+    for a in api:
+        d.setdefault(a['nome'], []).append(a)
+    return d
+
+
+def sobrecarga_compativel(base, outra):
+    """A sobrecarga pode reusar o texto dos @param da principal?
+
+    So quando a aridade e os tipos batem posicao a posicao. O MultiCell tem
+    duas assinaturas com os MESMOS tipos e nomes diferentes (pw/pwidth,
+    ptxt/ptext), e ai o texto vale para as duas. Se um dia surgir sobrecarga
+    com aridade diferente, ela sai sem tabela em vez de sair com a tabela
+    errada.
+    """
+    a = [p['type'].lower() for p in base['assinatura']['params']]
+    b = [p['type'].lower() for p in outra['assinatura']['params']]
+    return a == b
 
 
 def gerar_md(api):
@@ -199,8 +239,10 @@ def gerar_md(api):
     t.append('\n---\n')
     for cat, apis in meta.CATEGORIAS:
         t.append(f'## {cat}\n')
+        grupos = agrupar(api)
         for n in apis:
-            t.append(secao_md(porNome[n]))
+            t.append(secao_md(porNome[n],
+                              [x for x in grupos[n] if x['sobrecarga']]))
             t.append('---\n')
     return '\n'.join(t).replace('\n\n\n', '\n\n') + '\n'
 
@@ -210,7 +252,8 @@ def main():
     n_api = len([a for a in api if not a['sobrecarga']])
     saidas = [(MD, gerar_md(api)),
               (HTML, gerar_html.pagina(api, meta.CATEGORIAS,
-                                       meta.VEJA_TAMBEM, sintaxe))]
+                                       meta.VEJA_TAMBEM, sintaxe,
+                                       sobrecarga_compativel))]
     if '--check' in sys.argv:
         fora = [os.path.relpath(c, RAIZ) for c, novo in saidas
                 if io.open(c, encoding='utf-8').read() != novo]

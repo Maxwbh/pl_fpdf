@@ -1158,6 +1158,17 @@ FUNCTION PL_FPDF.MultiCell(
     phMax   number DEFAULT 0) RETURN NUMBER;
 ```
 
+```sql
+PROCEDURE PL_FPDF.MultiCell(
+    pwidth     number,
+    pheight    number DEFAULT 0,
+    ptext      varchar2,
+    pbrdr      varchar2 DEFAULT '0',
+    palignment varchar2 DEFAULT 'J',
+    pfillin    number DEFAULT 0,
+    phMaximum  number DEFAULT 0);
+```
+
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
@@ -1169,6 +1180,8 @@ FUNCTION PL_FPDF.MultiCell(
 | `palign` | VARCHAR2 | `'J'` | 'J' justificado (Justified, padrão), 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) (default), 'L', 'C', 'R' |
 | `pfill` | NUMBER | `0` | 1 pinta o fundo, 0 não |
 | `phMax` | NUMBER | `0` | altura máxima do bloco; 0 sem limite |
+
+Na sobrecarga acima os parâmetros são os mesmos, na mesma ordem, com outros nomes: `pwidth`, `pheight`, `ptext`, `pbrdr`, `palignment`, `pfillin`, `phMaximum`.
 
 #### Retorno
 
@@ -2102,6 +2115,12 @@ PROCEDURE PL_FPDF.AddBarcode(
 | `ORA-20880` | código vazio |
 | `ORA-20882` | simbologia não suportada |
 | `ORA-20881` | largura ou altura não positiva |
+| `ORA-20883` | CODE39 não aceita o caractere informado |
+| `ORA-20884` | CODE128 aceita só ASCII de 32 a 126 |
+| `ORA-20885` | EAN com quantidade de dígitos errada |
+| `ORA-20886` | EAN com dígito verificador inválido |
+| `ORA-20887` | ITF14 exige 13 dígitos (verificador calculado) ou 14 |
+| `ORA-20888` | ITF sem nenhum dígito no conteúdo |
 
 #### Exemplo
 
@@ -2147,6 +2166,7 @@ PROCEDURE PL_FPDF.AddQRCode(
 | `ORA-20870` | conteúdo vazio |
 | `ORA-20872` | nível de correção inválido |
 | `ORA-20871` | tamanho não positivo |
+| `ORA-20873` | conteúdo além da capacidade do QR Code |
 
 #### Exemplo
 
@@ -3169,6 +3189,7 @@ Página marcada para remoção. Use OutputModifiedPDF() para gerar PDF modificad
 | `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
 | `ORA-20812` | número de página fora da faixa |
 | `ORA-20814` | a página já estava marcada para remoção |
+| `ORA-20810` | /Pages não encontrado no catálogo do PDF |
 
 #### Exemplo
 
@@ -3211,6 +3232,7 @@ Mudanças armazenadas em memória. Use OutputModifiedPDF() para gerar PDF
 |--------|--------|
 | `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
 | `ORA-20813` | giro inválido; só 0, 90, 180 ou 270 |
+| `ORA-20810` | /Pages não encontrado no catálogo do PDF |
 
 #### Exemplo
 
@@ -3581,6 +3603,8 @@ Máximo de 10 PDFs podem ser carregados simultaneamente
 | `ORA-20828` | ID do PDF já carregado |
 | `ORA-20829` | Máximo de PDFs excedido (10 max) |
 | `ORA-20830` | ID de PDF inválido (empty or too long) |
+| `ORA-20800` | PDF nulo ou pequeno demais para ser válido |
+| `ORA-20801` | cabeçalho %PDF-x.x ausente ou malformado |
 
 #### Exemplo
 
@@ -3780,6 +3804,7 @@ Origem em PDF 1.5+ é achatada, e os object streams são decifrados antes de des
 | `ORA-20854` | Senha inválida |
 | `ORA-20855` | Falha na descriptografia |
 | `ORA-20861` | dicionário /Encrypt não encontrado no PDF |
+| `ORA-20857` | versão de PDF inválida |
 
 #### Exemplo
 
@@ -3833,6 +3858,8 @@ Origem em PDF 1.5+ (xref em stream, object streams) é achatada: os objetos de d
 | `ORA-20852` | Falha na criptografia |
 | `ORA-20859` | o PDF já está cifrado; decifre antes |
 | `ORA-20860` | PDF inválido: /Root não encontrado no trailer |
+| `ORA-20863` | chave RC4 vazia |
+| `ORA-20864` | conteúdo acima do limite que o RC4 desta base trata |
 
 #### Exemplo
 

@@ -1338,6 +1338,7 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
  * @raises -20870 conteúdo vazio
  * @raises -20872 nível de correção inválido
  * @raises -20871 tamanho não positivo
+ * @raises -20873 conteúdo além da capacidade do QR Code
  * @example
  *   PL_FPDF.AddQRCode(50, 50, 40, 'https://example.com', 'URL', 'M');
  */
@@ -1366,6 +1367,12 @@ procedure AddQRCode(
  * @raises -20880 código vazio
  * @raises -20882 simbologia não suportada
  * @raises -20881 largura ou altura não positiva
+ * @raises -20883 CODE39 não aceita o caractere informado
+ * @raises -20884 CODE128 aceita só ASCII de 32 a 126
+ * @raises -20885 EAN com quantidade de dígitos errada
+ * @raises -20886 EAN com dígito verificador inválido
+ * @raises -20887 ITF14 exige 13 dígitos (verificador calculado) ou 14
+ * @raises -20888 ITF sem nenhum dígito no conteúdo
  * @example
  *   PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
  */
@@ -1441,6 +1448,7 @@ FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
  *       PDF
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
  * @raises -20813 giro inválido; só 0, 90, 180 ou 270
+ * @raises -20810 /Pages não encontrado no catálogo do PDF
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   PL_FPDF.RotatePage(1, 90);    -- Rotacionar página 1
@@ -1457,6 +1465,7 @@ PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER);
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
  * @raises -20812 número de página fora da faixa
  * @raises -20814 a página já estava marcada para remoção
+ * @raises -20810 /Pages não encontrado no catálogo do PDF
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   PL_FPDF.RemovePage(2);  -- Remover página 2
@@ -1854,6 +1863,8 @@ PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
  * @raises -20828 ID do PDF já carregado
  * @raises -20829 Máximo de PDFs excedido (10 max)
  * @raises -20830 ID de PDF inválido (empty or too long)
+ * @raises -20800 PDF nulo ou pequeno demais para ser válido
+ * @raises -20801 cabeçalho %PDF-x.x ausente ou malformado
  * @example
  *   BEGIN
  *     PL_FPDF.LoadPDFWithID('report_jan', l_jan_pdf);
@@ -2026,6 +2037,8 @@ FUNCTION ExtractPages(
  *       a saída leva xref clássica.
  * @raises -20859 o PDF já está cifrado; decifre antes
  * @raises -20860 PDF inválido: /Root não encontrado no trailer
+ * @raises -20863 chave RC4 vazia
+ * @raises -20864 conteúdo acima do limite que o RC4 desta base trata
  * @example
  *   l_encrypted := PL_FPDF.EncryptPDF(
  *     p_pdf => l_pdf,
@@ -2055,6 +2068,7 @@ FUNCTION EncryptPDF(
  * @note Origem em PDF 1.5+ é achatada, e os object streams são decifrados
  *       antes de descomprimidos.
  * @raises -20861 dicionário /Encrypt não encontrado no PDF
+ * @raises -20857 versão de PDF inválida
  * @example
  *   l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
  */

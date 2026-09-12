@@ -205,7 +205,11 @@ def ler(caminho):
         if bloco is None:
             # sobrecarga: compartilha o bloco da primeira, como na spec
             if anterior and anterior['nome'].lower() == nome.lower():
-                saida.append(dict(anterior, assinatura_params=
+                # herda o TEXTO do bloco, mas nao a assinatura: a sobrecarga
+                # pode ser procedure onde a primeira e function, e tem nomes
+                # de parametro proprios
+                saida.append(dict(anterior, tipo=tipo, nome=nome, linha=n + 1,
+                                  assinatura_params=
                                   parametros_da_assinatura(linhas, n),
                                   sobrecarga=True))
             continue

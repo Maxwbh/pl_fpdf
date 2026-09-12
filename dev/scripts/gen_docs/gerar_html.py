@@ -64,7 +64,7 @@ def realcar(codigo):
     return '\n'.join(saida)
 
 
-def artigo(a, sintaxe, veja_tambem):
+def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None):
     nome = a['nome']
     tipo = 'Function' if a['tipo'] == 'function' else 'Procedure'
     alvo = nome.lower()
@@ -74,6 +74,9 @@ def artigo(a, sintaxe, veja_tambem):
          f'<p class="d">{esc(a["descricao"])}</p>',
          '<h5>Sintaxe</h5>',
          '<div class="code"><pre>' + realcar(sintaxe(a)) + '</pre></div>']
+    for s in sobrecargas:
+        o.append('<div class="code"><pre>' + realcar(sintaxe(s))
+                 + '</pre></div>')
     if a['params']:
         tp = {p['name'].lower(): p for p in a['assinatura']['params']}
         o.append('<h5>Parâmetros</h5><div class="tbl"><table><thead><tr>'
@@ -91,6 +94,17 @@ def artigo(a, sintaxe, veja_tambem):
                      f'<td class="ptype">{ti}</td><td>{de}</td>'
                      f'<td>{desc}</td></tr>')
         o.append('</tbody></table></div>')
+        for s in sobrecargas:
+            if compativel and compativel(a, s):
+                o.append('<p class="d">Na sobrecarga acima os parâmetros são '
+                         'os mesmos, na mesma ordem, com outros nomes: '
+                         + ', '.join(f'<code>{esc(p["name"])}</code>'
+                                     for p in s['assinatura']['params'])
+                         + '.</p>')
+            else:
+                o.append('<p class="d">A sobrecarga acima tem assinatura '
+                         'própria; o bloco de documentação é o da '
+                         'primeira.</p>')
     if a['retorno']:
         o.append(f'<h5>Retorno</h5><p class="d">{esc(a["retorno"])}</p>')
     for n in a['notas']:
@@ -116,15 +130,20 @@ def artigo(a, sintaxe, veja_tambem):
     return '\n'.join(o)
 
 
-def pagina(api, categorias, veja_tambem, sintaxe):
+def pagina(api, categorias, veja_tambem, sintaxe, compativel=None):
     porNome = {a['nome']: a for a in api if not a['sobrecarga']}
+    extras = {}
+    for a in api:
+        if a['sobrecarga']:
+            extras.setdefault(a['nome'], []).append(a)
     lateral = []
     for cat, apis in categorias:
         lateral.append(f'<div class="side-group"><h4>{esc(cat)}</h4><ul>')
         for n in apis:
             lateral.append(f'<li><a href="#{n.lower()}">{esc(n)}</a></li>')
         lateral.append('</ul></div>')
-    artigos = [artigo(porNome[n], sintaxe, veja_tambem)
+    artigos = [artigo(porNome[n], sintaxe, veja_tambem,
+                      extras.get(n, []), compativel)
                for _, apis in categorias for n in apis]
     molde = io.open(MOLDE, encoding='utf-8').read()
     for marca in ('{{LATERAL}}', '{{ARTIGOS}}'):
