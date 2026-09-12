@@ -127,5 +127,35 @@ def pagina(api, categorias, veja_tambem, sintaxe):
     artigos = [artigo(porNome[n], sintaxe, veja_tambem)
                for _, apis in categorias for n in apis]
     molde = io.open(MOLDE, encoding='utf-8').read()
-    return (molde.replace('{{LATERAL}}', '\n'.join(lateral))
-                 .replace('{{ARTIGOS}}', '\n'.join(artigos)))
+    for marca in ('{{LATERAL}}', '{{ARTIGOS}}'):
+        if marca not in molde:
+            raise SystemExit(f'reference_molde.html perdeu o marcador {marca}')
+    pagina = (molde.replace('{{LATERAL}}', '\n'.join(lateral))
+                   .replace('{{ARTIGOS}}', '\n'.join(artigos)))
+    conferir_estrutura(pagina, len(artigos))
+    return pagina
+
+
+def conferir_estrutura(t, n_artigos):
+    """A pagina fecha o que abre, e todo link do indice tem destino.
+
+    Existe porque a primeira versao do molde foi extraida cortando do ultimo
+    grupo da lateral direto para o `<main>`, e com isso o `</div></aside>` que
+    fechava a barra ficou de fora. O HTML continuou "valido" para o navegador
+    -- ele fecha sozinho -- mas a navegacao saiu do lugar, e nada acusou.
+    """
+    saldo = {}
+    for m in re.finditer(r'<(/?)(aside|div|main|nav|article|ul|table|header|'
+                         r'footer|tbody|thead|tr|pre)\b', t):
+        saldo[m.group(2)] = saldo.get(m.group(2), 0) + (-1 if m.group(1) else 1)
+    abertas = {k: v for k, v in saldo.items() if v}
+    if abertas:
+        raise SystemExit(f'reference.html com tag desbalanceada: {abertas}')
+
+    ids = set(re.findall(r'<article class="api" id="([^"]+)"', t))
+    if len(ids) != n_artigos:
+        raise SystemExit(f'{n_artigos} artigos e {len(ids)} ids distintos')
+    destinos = set(re.findall(r'<a href="#([^"]+)"', t))
+    orfaos = sorted(d for d in destinos if d not in ids and d != '')
+    if orfaos:
+        raise SystemExit(f'link do indice sem artigo: {orfaos[:6]}')
