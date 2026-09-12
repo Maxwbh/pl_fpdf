@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """
-Gera a referência da API em PT a partir do Javadoc da spec.
+Gera as oito páginas: a referência da API (PT e EN), o índice de uso e a
+página inicial.
 
 DOCUMENTO DE MANUTENÇÃO.
 
@@ -27,17 +28,26 @@ Que o texto esteja **certo**. Um `@param` errado vira uma página errada, só qu
 consistente. O que protege disso é a revisão humana e o cruzamento entre o
 `@raises` e o `raise_application_error` do corpo — não este script.
 
-Duas diferenças em relação à página escrita à mão
--------------------------------------------------
-1. **A tabela tem 4 colunas, não 5.** A escrita à mão separava "Descrição" de
-   "Valores possíveis"; na spec as duas são uma frase só em 256 dos 287
-   parâmetros, e inventar o corte perderia texto. Os valores continuam ali,
-   dentro da descrição.
-2. **A EN não é gerada.** `docs/API_REFERENCE_EN.md` segue à mão, por decisão:
-   a spec é só PT-BR desde outubro de 2026 e não há de onde tirar o inglês.
+O que sai de onde
+-----------------
+| Página | Origem |
+|---|---|
+| `docs/API_REFERENCE.md`, `site/reference.html` | Javadoc de `src/*.pks` |
+| as duas em `_EN`/`site/en/` | idem, com a prosa de `textos_en.py` |
+| `site/api.html` e a gêmea em `en/` | `conteudo_api.py` |
+| `site/index.html` e a gêmea em `en/` | `conteudo_index.py` |
+
+A spec é só PT-BR, por decisão. O inglês da referência não tem de onde sair
+sozinho: vive em `textos_en.py` **pareado** com o português que traduz, e o
+gerador para quando o português muda e a tradução fica para trás.
+
+Uma diferença em relação à referência escrita à mão: a tabela de parâmetros tem
+**4 colunas, não 5**. A escrita à mão separava "Descrição" de "Valores
+possíveis"; na spec as duas são uma frase só em 256 dos 287 parâmetros, e
+inventar o corte perderia texto. Os valores continuam ali, dentro da descrição.
 
 Uso:
-  python dev/scripts/gen_docs/generate.py           # escreve as páginas
+  python dev/scripts/gen_docs/generate.py           # escreve as oito
   python dev/scripts/gen_docs/generate.py --check   # falha se estiverem fora
                                                     # de dia (é o do CI)
 """

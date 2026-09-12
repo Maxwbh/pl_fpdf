@@ -404,8 +404,8 @@ gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
 | `textos_en.py` | a prosa em inglês, **pareada** com o português que ela traduz: descrição, `@param`, `@return`, nota, código de erro e as linhas de `@example` que levam texto |
 | `conteudo_api.py`, `gerar_api.py` | o índice de utilização: 14 seções, cada texto num par PT/EN |
 | `conteudo_index.py`, `gerar_index.py` | a página inicial: chamada, números, cartões, exemplos e instalação, também aos pares |
-| `reference_molde.html`, `reference_molde_en.html` | o desenho do site — cabeçalho, SEO, CSS, navegação e script. 210 linhas de cada lado, que continuam à mão |
-| `generate.py` | junta tudo e escreve as quatro páginas |
+| os seis `*_molde*.html` | o desenho de cada página — cabeçalho, SEO, CSS, navegação, rodapé e os desenhos. Continuam editáveis à mão; o conteúdo entra nos marcadores `{{...}}` |
+| `generate.py` | junta tudo e escreve as **oito** páginas |
 
 > **Por que passou a ser gerada.** Escritas à mão, as duas páginas divergiram da
 > spec sem que nada quebrasse: **38 APIs** levantavam erro que a referência não

@@ -301,14 +301,36 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 
 ---
 
-## Documentação da API — mantida à mão
+## Documentação da API — gerada de novo, e por outro motivo
 
-A referência da API (`docs/API_REFERENCE.md`, `docs/API_REFERENCE_EN.md`,
-`site/reference.html` e `site/en/reference.html`) já foi gerada por um script que
-extraía as assinaturas do `.pks` e as combinava com um arquivo de metadados
-curados. O gerador saiu do repositório em agosto/2026: **a documentação é
-escrita, não é saída de ferramenta**, e passou a ser mantida à mão como as
-demais páginas do site.
+**Esta seção dizia o contrário até outubro/2026**, e vale contar por quê: um
+gerador antigo extraía as assinaturas do `.pks` e as combinava com metadados
+curados; ele saiu do repositório em agosto/2026, sob o argumento de que
+documentação se escreve, não sai de ferramenta.
+
+O argumento estava certo sobre o **texto** e errado sobre o **fato**. Escritas
+à mão, as páginas divergiram do package sem quebrar nada: **38 APIs** levantavam
+erro que a referência não listava (`Init` sem `-20001`, `SetFont` sem `-20005`,
+`Cell` sem `-20100`), as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma,
+e o comando de download da página inicial buscava a **v3.3.0** três parágrafos
+abaixo da vitrine que anunciava 3.4.0.
+
+A volta foi feita com a distinção que faltava:
+
+* **o que é fato sai da spec** — assinatura, tipo, valor padrão, retorno e todo
+  código de erro vêm do Javadoc de `src/*.pks`, que o `check_spec_comments.py`
+  já cobra;
+* **o que é editorial continua escrito**, só que **uma vez**: o grupo de cada
+  API e o "veja também" em `meta.py`, o texto em inglês em `textos_en.py`, o
+  índice de uso em `conteudo_api.py`, a página inicial em `conteudo_index.py`.
+  O desenho de cada página fica num molde HTML, editável à mão.
+
+São **oito** páginas geradas: `docs/API_REFERENCE.md` e `_EN.md`,
+`site/reference.html`, `site/api.html`, `site/index.html` e as três
+correspondentes em `site/en/`. O que o gerador cobra, além de estarem em dia:
+que o inglês não tenha sido escrito contra um português que mudou depois, e que
+o exemplo seja o mesmo código nas duas línguas — fora comentário, literal e nome
+de variável local, que mudam por direito.
 
 O que continua automático é a **conferência**, que é onde o CI ajuda de verdade:
 
@@ -325,17 +347,19 @@ O que continua automático é a **conferência**, que é onde o CI ajuda de verd
 | `check_atribuicao.py` | Atribuição que começa antes de a anterior terminar — falta o `;`. Um gerador emitia o hexadecimal de uma fonte com uma atribuição por linha e nenhum terminador: o Oracle recusa o **bloco anônimo inteiro** com `ORA-06550`, apontando a linha de baixo, e 60 casos que passavam deixaram de rodar. Nenhuma outra verificação daqui analisa sintaxe |
 | `check_spec_comments.py` | API pública sem bloco de documentação na spec, ou com o bloco fora do formato. Na revisão de setembro **metade da API não tinha bloco** — 56 documentados contra 64 sem nenhum —, e os 64 eram os mais chamados: `Cell`, `SetFont`, `Text`, `Line`, `Output`. O que tinha vinha em três dialetos, e o leitor trocava de idioma três vezes descendo o arquivo |
 | `check_body_comments.py` | Subprograma **privado** sem comentário — o body é o único lugar onde ele pode ser documentado, e 27 não tinham uma linha. Também pega comentário em inglês ou francês herdado do porte, código comentado (nove trechos, um deles o ramo do `/Dest` que nunca funcionou) e **comentário que aponta para arquivo do repositório**: o comentário vive sozinho, porque endereço envelhece — quando `scripts/` virou `dev/scripts/`, doze ficaram apontando para o nada. Pega também **cabeçalho órfão** — `-- xpto :` seguido de outro subprograma —, que é o rastro que a separação dos packages deixou: o código foi para o outro arquivo e a documentação ficou, então o leitor lê a descrição de `xpto` e o corpo de outra coisa |
-| `generate.py --check` | `docs/API_REFERENCE.md` e `site/reference.html` fora de dia com o Javadoc da spec. Enquanto foram escritos à mão divergiram sem quebrar nada: **38 APIs** levantavam erro que a página não listava — `Init` sem `-20001`, `SetFont` sem `-20005` — e as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma |
+| `generate.py --check` | Qualquer uma das **oito** páginas geradas fora de dia com a sua origem: as quatro da referência com o Javadoc da spec, as de uso e as iniciais com `conteudo_api.py` e `conteudo_index.py`. Enquanto foram escritas à mão divergiram sem quebrar nada: **38 APIs** levantavam erro que a página não listava — `Init` sem `-20001`, `SetFont` sem `-20005` —, as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma, e o link de download da página inicial pedia a versão anterior à que a mesma página anunciava. Pega também o inglês escrito contra um português que mudou depois, e exemplo cujo código deixou de ser o mesmo nas duas línguas |
 | `check_roadmap_ci.py` | Esta tabela prometendo mais, ou menos, do que o `ci.yml` roda. Na revisao de setembro eram 21 passos para 16 entradas — a deriva e silenciosa por construcao: acrescentar um passo no CI nao obriga a tabela a acompanhar |
 | `check_paridade.py` | As páginas inglesas acompanham as portuguesas, e nenhuma frase ficou por traduzir |
 
 Duas consequências que valem registro:
 
-- **`parse_spec.py` ficou.** Ele não era do gerador: lê as assinaturas do
-  `src/PL_FPDF.pks` e quem o consome é o `check_test_calls.py`. Removê-lo
-  derrubaria aquele lint.
-- **O `check_error_codes.py` perdeu meia regra.** A segunda regra dele conferia
-  os códigos citados no `meta.py`; sem o arquivo, ela simplesmente não roda.
+- **`parse_spec.py` sobreviveu aos dois movimentos.** Ele não era do gerador
+  antigo: lê as assinaturas de `src/*.pks`, e quem o consome também é o
+  `check_test_calls.py`. Removê-lo derrubaria aquele lint.
+- **O `check_error_codes.py` recuperou a meia regra, em outro lugar.** A segunda
+  regra dele conferia os códigos citados no `meta.py`; sem o arquivo ela parou
+  de rodar. Hoje ela confere contra o `@raises` da **spec**, que é fonte melhor:
+  o código documentado está ao lado do subprograma que o levanta.
 
 ### Divergências encontradas nas revisões
 
@@ -343,7 +367,7 @@ Duas consequências que valem registro:
 |------|----------|
 | `dev/tests/test_manipulacao_completa.sql` chamava `IsPDFLoaded`, `RemoveWatermark` e `ClearWatermarks`, que não existem no package | ✅ Resolvido: o teste passou a usar `GetPageCount` (que levanta `-20809` sem PDF carregado) e a documentar por que as outras duas não existem |
 | Verificação automática de referências (`dev/scripts/gen_docs/check_refs.py`) no CI | ✅ Concluído |
-| Paridade PT/EN das páginas escritas à mão (`check_paridade.py`) no CI | ✅ Concluído |
+| Paridade PT/EN das páginas (`check_paridade.py`) no CI | ✅ Concluído — e desde outubro/2026 as páginas saem do mesmo material, então a paridade passou a ser consequência, não vigilância |
 | Códigos `ORA-208xx` reutilizados entre QR/barcode e manipulação/segurança | Pendente — ver "Pendencias conhecidas" |
 
 ---

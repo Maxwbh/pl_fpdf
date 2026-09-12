@@ -220,7 +220,7 @@ Manipulating existing PDFs, merge/split, encryption, QR codes, watermarks and th
 rest of the API are covered in the documentation:
 
 - 📖 **[Full usage reference](docs/DOCUMENTATION.md)** (Portuguese) — every API with parameters and examples
-- 🌐 **[API usage index on the site](https://maxwbh.github.io/pl_fpdf/api.html)** — browsable version
+- 🌐 **[API usage index on the site](https://maxwbh.github.io/pl_fpdf/en/api.html)** — browsable version
 
 ---
 
@@ -304,7 +304,7 @@ if it falls behind:
 | [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | The same guide in Portuguese |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | Signature, parameters and errors of each API |
 | [API reference on the site](https://maxwbh.github.io/pl_fpdf/en/reference.html) | The same reference, browsable, in English |
-| [API index on the site](https://maxwbh.github.io/pl_fpdf/api.html) | Task-oriented index (PT) |
+| [API index on the site](https://maxwbh.github.io/pl_fpdf/en/api.html) | Task-oriented index, in English |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 **For people maintaining the code** — tests, CI and working method:
