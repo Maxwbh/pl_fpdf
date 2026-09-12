@@ -162,9 +162,11 @@ def ler_bloco(bloco):
             tag, buf = m.group(1), [m.group(2)]
             continue
         if tag == '@example':
-            # exemplo e CODIGO: sai literal, sem reenrolar
+            # exemplo e CODIGO: sai literal, sem reenrolar. A linha EM BRANCO
+            # fica: e ela que separa um caso do outro, e sem ela os tres casos
+            # de borda do Cell viravam um bloco so.
             mm = LINHA.match(l)
-            if mm and mm.group(1).strip():
+            if mm:
                 doc['exemplo'].append(mm.group(1).rstrip())
             continue
         if tag is None:
@@ -177,6 +179,10 @@ def ler_bloco(bloco):
             buf.append(mm.group(1))
     fechar()
     doc['descricao'] = re.sub(r'\s+', ' ', doc['descricao']).strip()
+    while doc['exemplo'] and not doc['exemplo'][0].strip():
+        doc['exemplo'].pop(0)
+    while doc['exemplo'] and not doc['exemplo'][-1].strip():
+        doc['exemplo'].pop()
     return doc
 
 

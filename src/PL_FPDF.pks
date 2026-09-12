@@ -841,8 +841,21 @@ procedure SetFontSize(psize in number);
  *         modo que a causa -- um ORA-20203 de caractere fora do WinAnsi, por
  *         exemplo -- continua visível no rastro.
  * @example
+ *   -- moldura inteira em volta da célula
  *   PL_FPDF.Cell(40, 8, 'Total', '1', 0, 'L');
  *   PL_FPDF.Cell(30, 8, '1.234,56', '1', 1, 'R');
+ *
+ *   -- só a base, para sublinhar o título de uma coluna
+ *   PL_FPDF.Cell(100, 8, 'Produto', 'B', 1, 'L');
+ *
+ *   -- corpo de tabela: cada célula desenha só as laterais ('LR'), e uma
+ *   -- célula vazia com o topo ('T') fecha a tabela embaixo. Sem isso, usar
+ *   -- '1' em todas daria traço duplo entre as linhas.
+ *   PL_FPDF.Cell(60, 8, 'Licença anual', 'LR', 0, 'L');
+ *   PL_FPDF.Cell(40, 8, '28.400,00',     'LR', 1, 'R');
+ *   PL_FPDF.Cell(60, 8, 'Suporte 8x5',   'LR', 0, 'L');
+ *   PL_FPDF.Cell(40, 8, '15.750,50',     'LR', 1, 'R');
+ *   PL_FPDF.Cell(100, 0, '', 'T', 1);
  */
 procedure Cell
   (pw in number,
@@ -875,7 +888,14 @@ procedure Cell
  * @return NUMBER - quantas linhas foram escritas
  * @raises -20100 qualquer falha na escrita, com a pilha original preservada
  * @example
+ *   -- parágrafo justificado, com moldura inteira
  *   l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '1', 'J');
+ *
+ *   -- sem borda nenhuma, que é o caso comum em corpo de texto
+ *   l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '0', 'J');
+ *
+ *   -- só as laterais, para um bloco dentro de uma tabela
+ *   l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, 'LR', 'L');
  */
 function MultiCell
   ( pw in number,

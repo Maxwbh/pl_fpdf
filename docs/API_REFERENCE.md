@@ -951,8 +951,21 @@ PROCEDURE PL_FPDF.Cell(
 #### Exemplo
 
 ```sql
+-- moldura inteira em volta da célula
 PL_FPDF.Cell(40, 8, 'Total', '1', 0, 'L');
 PL_FPDF.Cell(30, 8, '1.234,56', '1', 1, 'R');
+
+-- só a base, para sublinhar o título de uma coluna
+PL_FPDF.Cell(100, 8, 'Produto', 'B', 1, 'L');
+
+-- corpo de tabela: cada célula desenha só as laterais ('LR'), e uma
+-- célula vazia com o topo ('T') fecha a tabela embaixo. Sem isso, usar
+-- '1' em todas daria traço duplo entre as linhas.
+PL_FPDF.Cell(60, 8, 'Licença anual', 'LR', 0, 'L');
+PL_FPDF.Cell(40, 8, '28.400,00',     'LR', 1, 'R');
+PL_FPDF.Cell(60, 8, 'Suporte 8x5',   'LR', 0, 'L');
+PL_FPDF.Cell(40, 8, '15.750,50',     'LR', 1, 'R');
+PL_FPDF.Cell(100, 0, '', 'T', 1);
 ```
 
 **Veja também:** [MultiCell](#multicell) · [Write](#write) · [CellRotated](#cellrotated) · [SetFillColor](#setfillcolor)
@@ -1196,7 +1209,14 @@ NUMBER - quantas linhas foram escritas
 #### Exemplo
 
 ```sql
+-- parágrafo justificado, com moldura inteira
 l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '1', 'J');
+
+-- sem borda nenhuma, que é o caso comum em corpo de texto
+l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '0', 'J');
+
+-- só as laterais, para um bloco dentro de uma tabela
+l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, 'LR', 'L');
 ```
 
 **Veja também:** [Cell](#cell) · [Write](#write)
@@ -4252,19 +4272,25 @@ Codifica o conteúdo e devolve a matriz de módulos com a máscara de menor pena
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.qr_matriz;
+PROCEDURE PL_FPDF_UTIL.qr_matriz(
+    p_dados   VARCHAR2,
+    p_ec      VARCHAR2 DEFAULT 'M',
+    o_mat     OUT NOCOPY tqr,
+    o_lado    OUT PLS_INTEGER,
+    o_versao  OUT PLS_INTEGER,
+    o_mascara OUT PLS_INTEGER);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_dados` | — | — | o conteúdo a codificar |
-| `p_ec` | — | — | quanto do símbolo pode ser perdido e ainda assim ler: 'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou 'H' (High, 30%) |
-| `o_mat` | — | — | a matriz |
-| `o_lado` | — | — | o lado em módulos |
-| `o_versao` | — | — | a versão do símbolo (1..20) |
-| `o_mascara` | — | — | a máscara escolhida (0..7) |
+| `p_dados` | VARCHAR2 | — | o conteúdo a codificar |
+| `p_ec` | VARCHAR2 | `'M'` | quanto do símbolo pode ser perdido e ainda assim ler: 'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou 'H' (High, 30%) |
+| `o_mat` | TQR | — | a matriz |
+| `o_lado` | PLS_INTEGER | — | o lado em módulos |
+| `o_versao` | PLS_INTEGER | — | a versão do símbolo (1..20) |
+| `o_mascara` | PLS_INTEGER | — | a máscara escolhida (0..7) |
 
 #### Erros
 
@@ -4289,16 +4315,19 @@ Devolve o padrão de barras como texto de '0' e '1', um caractere por módulo. N
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.bc_padrao;
+FUNCTION PL_FPDF_UTIL.bc_padrao(
+    p_codigo VARCHAR2,
+    p_tipo   VARCHAR2 DEFAULT 'CODE128',
+    p_ratio  NUMBER DEFAULT 3) RETURN VARCHAR2;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_codigo` | — | — | o conteúdo a codificar |
-| `p_tipo` | — | — | simbologia: 'CODE128', 'CODE39', 'EAN13', 'EAN8', 'ITF', 'ITF14' |
-| `p_ratio` | — | — | razão entre barra larga e estreita, onde a simbologia usa |
+| `p_codigo` | VARCHAR2 | — | o conteúdo a codificar |
+| `p_tipo` | VARCHAR2 | `'CODE128'` | simbologia: 'CODE128', 'CODE39', 'EAN13', 'EAN8', 'ITF', 'ITF14' |
+| `p_ratio` | NUMBER | `3` | razão entre barra larga e estreita, onde a simbologia usa |
 
 #### Retorno
 
@@ -4326,16 +4355,19 @@ Descomprime um fluxo zlib. O teto existe porque stream de terceiro é entrada N�
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.inflate;
+PROCEDURE PL_FPDF_UTIL.inflate(
+    p_src BLOB,
+    o_dst IN OUT NOCOPY BLOB,
+    p_max PLS_INTEGER DEFAULT 8388608);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_src` | — | — | o fluxo comprimido |
-| `o_dst` | — | — | o conteúdo descomprimido |
-| `p_max` | — | — | teto da saída, em bytes |
+| `p_src` | BLOB | — | o fluxo comprimido |
+| `o_dst` | BLOB | — | o conteúdo descomprimido |
+| `p_max` | PLS_INTEGER | `8388608` | teto da saída, em bytes |
 
 #### Erros
 
@@ -4362,15 +4394,17 @@ Comprime num fluxo zlib: um bloco com Huffman FIXA e LZ77 guloso, com escape par
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.deflate;
+PROCEDURE PL_FPDF_UTIL.deflate(
+    p_src BLOB,
+    o_dst IN OUT NOCOPY BLOB);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_src` | — | — | o conteúdo a comprimir |
-| `o_dst` | — | — | o fluxo zlib |
+| `p_src` | BLOB | — | o conteúdo a comprimir |
+| `o_dst` | BLOB | — | o fluxo zlib |
 
 #### Exemplo
 
@@ -4387,14 +4421,15 @@ Os dois dígitos hexadecimais de um byte. Existe para remontar RAW sem passar po
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.hex_do_byte;
+FUNCTION PL_FPDF_UTIL.hex_do_byte(
+    p_b PLS_INTEGER) RETURN VARCHAR2;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_b` | — | — | o byte (0..255) |
+| `p_b` | PLS_INTEGER | — | o byte (0..255) |
 
 #### Retorno
 
@@ -4415,14 +4450,15 @@ MD5 de um RAW. O PDF exige MD5 no algoritmo de chave até o revisionamento 4; n�
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.crypto_md5;
+FUNCTION PL_FPDF_UTIL.crypto_md5(
+    p_src RAW) RETURN RAW;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_src` | — | — | a entrada |
+| `p_src` | RAW | — | a entrada |
 
 #### Retorno
 
@@ -4443,15 +4479,17 @@ Cifra ou decifra um RAW com RC4 — a mesma operação nos dois sentidos, por se
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.crypto_rc4;
+FUNCTION PL_FPDF_UTIL.crypto_rc4(
+    p_src RAW,
+    p_key RAW) RETURN RAW;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_src` | — | — | os dados |
-| `p_key` | — | — | a chave |
+| `p_src` | RAW | — | os dados |
+| `p_key` | RAW | — | a chave |
 
 #### Retorno
 
@@ -4472,16 +4510,19 @@ O mesmo que crypto_rc4, para conteúdo que não cabe num RAW.
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.crypto_rc4_blob;
+PROCEDURE PL_FPDF_UTIL.crypto_rc4_blob(
+    p_src BLOB,
+    p_key RAW,
+    o_dst IN OUT NOCOPY BLOB);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_src` | — | — | os dados |
-| `p_key` | — | — | a chave |
-| `o_dst` | — | — | o resultado |
+| `p_src` | BLOB | — | os dados |
+| `p_key` | RAW | — | a chave |
+| `o_dst` | BLOB | — | o resultado |
 
 #### Exemplo
 
@@ -4516,17 +4557,21 @@ Cifra um BLOB em AES-CBC com preenchimento PKCS#5, como o PDF pede. O tamanho da
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.aes_cbc_cifrar;
+PROCEDURE PL_FPDF_UTIL.aes_cbc_cifrar(
+    p_chave RAW,
+    p_dados BLOB,
+    o_saida IN OUT NOCOPY BLOB,
+    p_iv    RAW DEFAULT NULL);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_chave` | — | — | a chave (16 ou 32 bytes) |
-| `p_dados` | — | — | o conteúdo |
-| `o_saida` | — | — | o resultado, com o IV na frente |
-| `p_iv` | — | — | o IV; em branco, um aleatório; empty means random |
+| `p_chave` | RAW | — | a chave (16 ou 32 bytes) |
+| `p_dados` | BLOB | — | o conteúdo |
+| `o_saida` | BLOB | — | o resultado, com o IV na frente |
+| `p_iv` | RAW | `NULL` | o IV; em branco, um aleatório; empty means random |
 
 #### Exemplo
 
@@ -4543,15 +4588,17 @@ O mesmo que aes_cbc_cifrar, para conteúdo que cabe num RAW.
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.aes_cbc_cifrar_raw;
+FUNCTION PL_FPDF_UTIL.aes_cbc_cifrar_raw(
+    p_chave RAW,
+    p_dados RAW) RETURN RAW;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_chave` | — | — | a chave |
-| `p_dados` | — | — | o conteúdo |
+| `p_chave` | RAW | — | a chave |
+| `p_dados` | RAW | — | o conteúdo |
 
 #### Retorno
 
@@ -4572,16 +4619,19 @@ Decifra um BLOB cifrado em AES-CBC, tomando os primeiros 16 bytes como IV e remo
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.aes_cbc_decifrar;
+PROCEDURE PL_FPDF_UTIL.aes_cbc_decifrar(
+    p_chave RAW,
+    p_dados BLOB,
+    o_saida IN OUT NOCOPY BLOB);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_chave` | — | — | a chave |
-| `p_dados` | — | — | o conteúdo cifrado |
-| `o_saida` | — | — | o conteúdo claro |
+| `p_chave` | RAW | — | a chave |
+| `p_dados` | BLOB | — | o conteúdo cifrado |
+| `o_saida` | BLOB | — | o conteúdo claro |
 
 #### Exemplo
 
@@ -4598,15 +4648,17 @@ O mesmo que aes_cbc_decifrar, para conteúdo que cabe num RAW.
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.aes_cbc_decifrar_raw;
+FUNCTION PL_FPDF_UTIL.aes_cbc_decifrar_raw(
+    p_chave RAW,
+    p_dados RAW) RETURN RAW;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_chave` | — | — | a chave |
-| `p_dados` | — | — | o conteúdo cifrado |
+| `p_chave` | RAW | — | a chave |
+| `p_dados` | RAW | — | o conteúdo cifrado |
 
 #### Retorno
 
@@ -4627,16 +4679,19 @@ Deriva a chave de um objeto a partir da chave do documento e da numeração dele
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.aes_chave_objeto;
+FUNCTION PL_FPDF_UTIL.aes_chave_objeto(
+    p_chave   RAW,
+    p_obj_num PLS_INTEGER,
+    p_gen_num PLS_INTEGER DEFAULT 0) RETURN RAW;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_chave` | — | — | a chave do documento |
-| `p_obj_num` | — | — | o número do objeto |
-| `p_gen_num` | — | — | o número de geração |
+| `p_chave` | RAW | — | a chave do documento |
+| `p_obj_num` | PLS_INTEGER | — | o número do objeto |
+| `p_gen_num` | PLS_INTEGER | `0` | o número de geração |
 
 #### Retorno
 
@@ -4657,7 +4712,7 @@ Devolve 16 bytes aleatórios para servir de IV.
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.aes_iv;
+FUNCTION PL_FPDF_UTIL.aes_iv RETURN RAW;
 ```
 
 #### Retorno
@@ -4679,22 +4734,31 @@ Monta as entradas /U, /UE, /O, /OE e /Perms do dicionário de criptografia do re
 #### Sintaxe
 
 ```sql
-PROCEDURE PL_FPDF_UTIL.aes_valores_r6;
+PROCEDURE PL_FPDF_UTIL.aes_valores_r6(
+    p_senha_usr  VARCHAR2,
+    p_senha_dono VARCHAR2,
+    p_chave      RAW,
+    p_perms      NUMBER,
+    o_u          OUT RAW,
+    o_ue         OUT RAW,
+    o_o          OUT RAW,
+    o_oe         OUT RAW,
+    o_perms      OUT RAW);
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_senha_usr` | — | — | senha de usuário |
-| `p_senha_dono` | — | — | senha de dono |
-| `p_chave` | — | — | a chave do documento |
-| `p_perms` | — | — | as permissões, como número |
-| `o_u` | — | — | entradas /U e /UE |
-| `o_ue` | — | — | entradas /U e /UE |
-| `o_o` | — | — | entradas /O e /OE |
-| `o_oe` | — | — | entradas /O e /OE |
-| `o_perms` | — | — | a entrada /Perms |
+| `p_senha_usr` | VARCHAR2 | — | senha de usuário |
+| `p_senha_dono` | VARCHAR2 | — | senha de dono |
+| `p_chave` | RAW | — | a chave do documento |
+| `p_perms` | NUMBER | — | as permissões, como número |
+| `o_u` | RAW | — | entradas /U e /UE |
+| `o_ue` | RAW | — | entradas /U e /UE |
+| `o_o` | RAW | — | entradas /O e /OE |
+| `o_oe` | RAW | — | entradas /O e /OE |
+| `o_perms` | RAW | — | a entrada /Perms |
 
 #### Exemplo
 
@@ -4712,20 +4776,27 @@ Confere a senha contra as entradas do dicionário e, acertando, devolve a chave 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF_UTIL.aes_verificar_r6;
+FUNCTION PL_FPDF_UTIL.aes_verificar_r6(
+    p_senha VARCHAR2,
+    p_u     RAW,
+    p_ue    RAW,
+    p_o     RAW,
+    p_oe    RAW,
+    o_chave OUT RAW,
+    o_dono  OUT BOOLEAN) RETURN BOOLEAN;
 ```
 
 #### Parâmetros
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_senha` | — | — | a senha a conferir |
-| `p_u` | — | — | as entradas do dicionário |
-| `p_ue` | — | — | as entradas do dicionário |
-| `p_o` | — | — | as entradas do dicionário |
-| `p_oe` | — | — | as entradas do dicionário |
-| `o_chave` | — | — | a chave do documento, quando confere |
-| `o_dono` | — | — | TRUE se era a senha de dono |
+| `p_senha` | VARCHAR2 | — | a senha a conferir |
+| `p_u` | RAW | — | as entradas do dicionário |
+| `p_ue` | RAW | — | as entradas do dicionário |
+| `p_o` | RAW | — | as entradas do dicionário |
+| `p_oe` | RAW | — | as entradas do dicionário |
+| `o_chave` | RAW | — | a chave do documento, quando confere |
+| `o_dono` | BOOLEAN | — | TRUE se era a senha de dono |
 
 #### Retorno
 

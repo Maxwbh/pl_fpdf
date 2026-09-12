@@ -179,7 +179,8 @@ def secao_md(a, sobrecargas=()):
         fora.append('')
     if a['exemplo']:
         fora.append('#### Exemplo\n')
-        rec = min(len(x) - len(x.lstrip()) for x in a['exemplo'])
+        rec = min(len(x) - len(x.lstrip())
+                  for x in a['exemplo'] if x.strip())
         fora.append('```sql\n' + '\n'.join(x[rec:] for x in a['exemplo'])
                     + '\n```\n')
     vt = meta.VEJA_TAMBEM.get(a['nome'])

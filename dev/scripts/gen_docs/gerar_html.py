@@ -118,7 +118,8 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None):
                      f'<td>{esc(e["texto"])}</td></tr>')
         o.append('</tbody></table></div>')
     if a['exemplo']:
-        rec = min(len(x) - len(x.lstrip()) for x in a['exemplo'])
+        rec = min(len(x) - len(x.lstrip())
+                  for x in a['exemplo'] if x.strip())
         o.append('<h5>Exemplo</h5><div class="code"><pre>'
                  + realcar('\n'.join(x[rec:] for x in a['exemplo']))
                  + '</pre></div>')
