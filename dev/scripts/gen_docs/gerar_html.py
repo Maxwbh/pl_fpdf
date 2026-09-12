@@ -215,6 +215,17 @@ def pagina(api, categorias, veja_tambem, sintaxe, compativel=None,
     return pagina
 
 
+def conferir_tags(t, onde='a página'):
+    """Fecha o que abre. Vale para qualquer página gerada aqui."""
+    saldo = {}
+    for m in re.finditer(r'<(/?)(aside|div|main|nav|article|section|ul|table|'
+                         r'header|footer|tbody|thead|tr|pre)\b', t):
+        saldo[m.group(2)] = saldo.get(m.group(2), 0) + (-1 if m.group(1) else 1)
+    abertas = {k: v for k, v in saldo.items() if v}
+    if abertas:
+        raise SystemExit(f'{onde} com tag desbalanceada: {abertas}')
+
+
 def conferir_estrutura(t, n_artigos, n_grupos=None):
     """A pagina fecha o que abre, e todo link do indice tem destino.
 
@@ -223,13 +234,7 @@ def conferir_estrutura(t, n_artigos, n_grupos=None):
     fechava a barra ficou de fora. O HTML continuou "valido" para o navegador
     -- ele fecha sozinho -- mas a navegacao saiu do lugar, e nada acusou.
     """
-    saldo = {}
-    for m in re.finditer(r'<(/?)(aside|div|main|nav|article|ul|table|header|'
-                         r'footer|tbody|thead|tr|pre)\b', t):
-        saldo[m.group(2)] = saldo.get(m.group(2), 0) + (-1 if m.group(1) else 1)
-    abertas = {k: v for k, v in saldo.items() if v}
-    if abertas:
-        raise SystemExit(f'reference.html com tag desbalanceada: {abertas}')
+    conferir_tags(t)
 
     ids = set(re.findall(r'<article class="api" id="([^"]+)"', t))
     if len(ids) != n_artigos:

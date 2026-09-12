@@ -52,6 +52,10 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+import conteudo_api  # noqa: E402
+import conteudo_index  # noqa: E402
+import gerar_api  # noqa: E402
+import gerar_index  # noqa: E402
 import gerar_html  # noqa: E402
 import meta  # noqa: E402
 import parse_javadoc  # noqa: E402
@@ -64,6 +68,10 @@ def do_repo(*partes):
 
 MD = do_repo('docs', 'API_REFERENCE.md')
 HTML = do_repo('site', 'reference.html')
+API_HTML = do_repo('site', 'api.html')
+INDEX = do_repo('site', 'index.html')
+INDEX_EN = do_repo('site', 'en', 'index.html')
+API_HTML_EN = do_repo('site', 'en', 'api.html')
 MD_EN = do_repo('docs', 'API_REFERENCE_EN.md')
 HTML_EN = do_repo('site', 'en', 'reference.html')
 MOLDE_EN = do_repo('dev', 'scripts', 'gen_docs', 'reference_molde_en.html')
@@ -323,7 +331,13 @@ def main():
                                           meta.VEJA_TAMBEM, sintaxe,
                                           sobrecarga_compativel,
                                           gerar_html.ROTULOS_EN, MOLDE_EN,
-                                          meta.SLUG_GRUPO, em_ingles))]
+                                          meta.SLUG_GRUPO, em_ingles)),
+              (API_HTML, gerar_api.pagina(conteudo_api.SECOES,
+                                          conteudo_api.NOTA_TOPO, 0)),
+              (API_HTML_EN, gerar_api.pagina(conteudo_api.SECOES,
+                                             conteudo_api.NOTA_TOPO, 1)),
+              (INDEX, gerar_index.pagina(conteudo_index, 0, versao())),
+              (INDEX_EN, gerar_index.pagina(conteudo_index, 1, versao()))]
     if '--check' in sys.argv:
         fora = [os.path.relpath(c, RAIZ) for c, novo in saidas
                 if io.open(c, encoding='utf-8').read() != novo]

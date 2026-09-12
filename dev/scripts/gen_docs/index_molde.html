@@ -1,34 +1,34 @@
 <!doctype html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="google-site-verification" content="XS9wvfG-V6V1tGDI7BT0zbeqiQyE3-tkc5LhfL0tvbc" />
 
-<title>PL_FPDF — PL/SQL library to generate and edit PDF in Oracle Database</title>
-<meta name="description" content="PL_FPDF is a 100% PL/SQL library, with no external dependencies, to generate and edit PDF files right inside Oracle Database (19c+): creation, merging, splitting, watermarks, AES-256/AES-128/RC4 encryption and an extension for the Brazilian PIX and Boleto payment standards.">
-<meta name="keywords" content="PL/SQL PDF, Oracle PDF, generate PDF Oracle, PL_FPDF, FPDF PL/SQL, PDF Oracle Database, PIX QR Code Oracle, Boleto PL/SQL, PDF encryption Oracle, PDF report PL/SQL">
+<title>PL_FPDF — Biblioteca PL/SQL para gerar e manipular PDF no Oracle Database</title>
+<meta name="description" content="PL_FPDF é uma biblioteca 100% PL/SQL, sem dependências externas, para gerar e manipular arquivos PDF diretamente dentro do Oracle Database (19c+): criação, mesclagem, divisão, marca d'água, criptografia AES-256/AES-128/RC4 e extensão para PIX e Boleto Bancário.">
+<meta name="keywords" content="PL/SQL PDF, Oracle PDF, gerar PDF Oracle, PL_FPDF, FPDF PL/SQL, PDF Oracle Database, PIX QR Code Oracle, Boleto Bancário PL/SQL, criptografia PDF Oracle, relatório PDF PL/SQL">
 <meta name="author" content="Maxwell da Silva Oliveira">
-<link rel="canonical" href="https://maxwbh.github.io/pl_fpdf/en/">
+<link rel="canonical" href="https://maxwbh.github.io/pl_fpdf/">
 <link rel="alternate" hreflang="pt-BR" href="https://maxwbh.github.io/pl_fpdf/">
 <link rel="alternate" hreflang="en" href="https://maxwbh.github.io/pl_fpdf/en/">
 <link rel="alternate" hreflang="x-default" href="https://maxwbh.github.io/pl_fpdf/">
 
 <meta property="og:type" content="website">
-<meta property="og:title" content="PL_FPDF — PDF in pure PL/SQL, right inside Oracle Database">
-<meta property="og:description" content="Generate, edit, merge and encrypt PDFs without leaving Oracle Database. No Java, no middleware, no external dependencies.">
-<meta property="og:url" content="https://maxwbh.github.io/pl_fpdf/en/">
+<meta property="og:title" content="PL_FPDF — PDF em PL/SQL puro, direto no Oracle Database">
+<meta property="og:description" content="Gere, modifique, mescle e criptografe PDFs sem sair do Oracle Database. Sem Java, sem middleware, sem dependências externas.">
+<meta property="og:url" content="https://maxwbh.github.io/pl_fpdf/">
 <meta property="og:image" content="https://maxwbh.github.io/pl_fpdf/assets/social-preview.png">
-<meta property="og:locale" content="en_US">
+<meta property="og:locale" content="pt_BR">
 
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="PL_FPDF — PDF in pure PL/SQL, right inside Oracle Database">
-<meta name="twitter:description" content="Open source (MIT) library to generate and edit PDFs 100% in PL/SQL: creation, merge, split, watermarks, AES-256 encryption and PIX/Boleto.">
+<meta name="twitter:title" content="PL_FPDF — PDF em PL/SQL puro, direto no Oracle Database">
+<meta name="twitter:description" content="Biblioteca open source (MIT) para gerar e manipular PDFs 100% em PL/SQL: criação, merge, split, marca d'água, criptografia AES-256 e PIX/Boleto.">
 <meta name="twitter:image" content="https://maxwbh.github.io/pl_fpdf/assets/social-preview.png">
 
-<link rel="icon" type="image/png" sizes="32x32" href="../assets/favicon-32.png">
-<link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +39,7 @@
   "@context": "https://schema.org",
   "@type": "SoftwareSourceCode",
   "name": "PL_FPDF",
-  "description": "A 100% PL/SQL library to generate and edit PDF right inside Oracle Database, with no external dependencies.",
+  "description": "Biblioteca 100% PL/SQL para geração e manipulação de PDF diretamente no Oracle Database, sem dependências externas.",
   "codeRepository": "https://github.com/Maxwbh/pl_fpdf",
   "programmingLanguage": "PL/SQL",
   "runtimePlatform": "Oracle Database 19c+",
@@ -51,8 +51,8 @@
   },
   "isBasedOn": "https://github.com/Pilooz/pl_fpdf",
   "softwareVersion": "3.4.0",
-  "inLanguage": "en",
-  "url": "https://maxwbh.github.io/pl_fpdf/en/"
+  "inLanguage": "pt-BR",
+  "url": "https://maxwbh.github.io/pl_fpdf/"
 }
 </script>
 
@@ -371,12 +371,12 @@
       PL_<span class="f">FPDF</span>
     </a>
     <div class="nav-links">
-      <a class="hide-m" href="#recursos">Features</a>
-      <a class="hide-m" href="#exemplos">Examples</a>
-      <a class="hide-m" href="#instalacao">Install</a>
+      <a class="hide-m" href="#recursos">Recursos</a>
+      <a class="hide-m" href="#exemplos">Exemplos</a>
+      <a class="hide-m" href="#instalacao">Instalação</a>
       <a href="api.html">API</a>
-      <a href="reference.html">Reference</a>
-      <a href="../index.html" hreflang="pt-BR" title="Versão em português">PT</a>
+      <a href="reference.html">Referência</a>
+      <a href="en/index.html" hreflang="en" title="English version">EN</a>
       <a class="gh-btn" href="https://github.com/Maxwbh/pl_fpdf">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
         GitHub
@@ -390,26 +390,18 @@
   <!-- HERO -->
   <div class="hero">
     <div>
-      <h1 class="fade">PDF <span class="grad">100% in PL/SQL</span>, right inside Oracle Database</h1>
-      <p class="sub fade d1">Generate, edit, merge and encrypt PDFs <b>without leaving the database</b> —
-no Java, no middleware, no external dependencies. Two files, one deploy.</p>
+      <h1 class="fade">{{HERO_H1}}</h1>
+      <p class="sub fade d1">{{HERO_SUB}}</p>
       <div class="chips fade d1">
-        <span class="chip"><span class="dot"></span>v3.4.0</span>
-        <span class="chip">Oracle 19c+</span>
-        <span class="chip">MIT licence</span>
-        <span class="chip">Automated CI</span>
-        <span class="chip">PIX &amp; Boleto</span>
+        {{CHIPS}}
       </div>
       <div class="cta fade d2">
-        <a class="btn primary" href="https://github.com/Maxwbh/pl_fpdf">
-          <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-          View on GitHub</a>
-        <a class="btn ghost" href="#instalacao">How to install</a>
+        {{HERO_BOTOES}}
       </div>
     </div>
 
     <div class="stage fade d2">
-      <!-- floating PDF page (decorative) -->
+      <!-- página PDF flutuante (decorativa) -->
       <svg class="pdf-sheet" viewBox="0 0 160 208" aria-hidden="true">
         <path d="M8 8h104l40 40v152a8 8 0 0 1-8 8H8a8 8 0 0 1-8-8V16a8 8 0 0 1 8-8z" style="fill:var(--sheet);stroke:var(--sheetbd)" stroke-width="2"/>
         <path d="M112 8v40h40" style="fill:var(--sheetfold);stroke:var(--sheetbd)" stroke-width="2"/>
@@ -434,282 +426,55 @@ no Java, no middleware, no external dependencies. Two files, one deploy.</p>
         <path d="M30 162v12M38 162v12M44 162v12M56 162v12M62 162v12M74 162v12M84 162v12M92 162v12M100 162v12M112 162v12M122 162v12" stroke="#e8503a" stroke-width="3"/>
       </svg>
 
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">report.sql — SQL*Plus</span></div>
-        <pre><span class="k">DECLARE</span>
-  l_pdf <span class="k">BLOB</span>;
-<span class="k">BEGIN</span>
-  <span class="c">-- create the document inside the database</span>
-  PL_FPDF.Init(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;mm&#x27;</span>, <span class="s">&#x27;A4&#x27;</span>);
-  PL_FPDF.AddPage();
-  PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">16</span>);
-  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">&#x27;Hello, World!&#x27;</span>, <span class="s">&#x27;0&#x27;</span>, <span class="n">1</span>, <span class="s">&#x27;C&#x27;</span>);
-
-  <span class="c">-- password protection and permissions</span>
-  l_pdf := PL_FPDF.EncryptPDF(
-    p_pdf        => PL_FPDF.OutputBlob(),
-    p_encryption => <span class="s">&#x27;AES-256&#x27;</span>);
-<span class="k">END</span>;</pre>
-      </div>
+      {{HERO_JANELA}}
     </div>
   </div>
 
-  <!-- LINEAGE NOTE -->
+  <!-- FORK NOTE -->
   <div class="fork">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2.6"/><circle cx="18" cy="6" r="2.6"/><circle cx="12" cy="19" r="2.6"/><path d="M6 8.6v1.4a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.6M12 13v3.4"/></svg>
-    <span><b>Lineage.</b> The generation core descends from the PL/SQL port by
-<a href="https://github.com/Pilooz/pl_fpdf">Pierre-Gilles Levallois</a>, who brought Olivier
-Plathey's <a href="http://www.fpdf.org/">FPDF</a> to Oracle — that is where the API you may
-already know comes from. On top of it, <a href="https://github.com/Maxwbh">@Maxwbh</a> has
-maintained a project of its own since 2019: PDF manipulation, PDF 1.5+ reading, AES-256
-encryption, DEFLATE and INFLATE written in PL/SQL, and the PIX/Boleto extension.</span>
+    <span>{{FORK}}</span>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><b><em>3.4.0</em></b><span>current version</span></div>
-    <div class="stat"><b>170</b><span>automated checks</span></div>
-    <div class="stat"><b>2</b><span>files to deploy</span></div>
-    <div class="stat"><b>0</b><span>external dependencies</span></div>
+    {{STATS}}
   </div>
 
   <!-- RECURSOS -->
   <section id="recursos">
-    <p class="kicker">Features</p>
-    <h2>Everything your report needs, inside the database</h2>
-    <p class="lead">From generating the document to protecting it — every step runs as pure
-PL/SQL, ready for triggers, jobs, APEX and APIs.</p>
-
-    <div class="grid">
-      <div class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="8" ry="3"/><path d="M4 5.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6M4 11.5v6c0 1.66 3.58 3 8 3s8-1.34 8-3v-6"/></svg></div>
-        <h3>Runs inside the database</h3>
-        <p>No application server, no Java Stored Procedures — build the PDF in the trigger, job or PL/SQL API itself.</p>
-      </div>
-      <div class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6z"/><path d="M15 3v4h4M9 12h6M9 16h4"/></svg></div>
-        <h3>Edits existing PDFs</h3>
-        <p>Load, rotate, watermark, merge and split finished PDF files — including PDF 1.5+, from any producer. All in code.</p>
-      </div>
-      <div class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
-        <h3>AES-256 security</h3>
-        <p>AES-256, AES-128 or RC4 encryption, with user/owner passwords and permission control: print, copy, edit.</p>
-      </div>
-      <div class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM19 19h2v2h-2zM14 21h2"/></svg></div>
-        <h3>PIX and Boleto</h3>
-        <p>Optional extension for PIX QR Codes (EMV) and FEBRABAN Boleto slips — the two Brazilian payment standards.</p>
-      </div>
-      <div class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 7 12 3 4 7m16 0v10l-8 4m8-14-8 4M4 7v10l8 4m0-10v10"/></svg></div>
-        <h3>Zero dependencies</h3>
-        <p>No OWA, no OrdImage, no third-party libraries. Just two files: <code>.pks</code> + <code>.pkb</code>.</p>
-      </div>
-      <div class="card">
-        <div class="icon"><svg viewBox="0 0 24 24"><path d="m8 9-4 3 4 3m8-6 4 3-4 3M13 6l-2 12"/></svg></div>
-        <h3>Open source (MIT)</h3>
-        <p>Open code, with automated CI, versioned releases and a documented history.</p>
-      </div>
-    </div>
+{{RECURSOS}}
   </section>
 
   <!-- EXEMPLOS -->
   <section id="exemplos">
-    <p class="kicker">Examples</p>
-    <h2>From nothing to a PDF in half a dozen lines</h2>
-    <p class="lead">The same API covers creating new documents and editing existing files.</p>
-    <div class="ex-grid">
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">create_pdf.sql</span></div>
-        <pre><span class="k">DECLARE</span>
-  l_pdf <span class="k">BLOB</span>;
-<span class="k">BEGIN</span>
-  PL_FPDF.Init(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;mm&#x27;</span>, <span class="s">&#x27;A4&#x27;</span>);
-  PL_FPDF.AddPage();
-  PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">16</span>);
-  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">&#x27;Hello, World!&#x27;</span>,
-               <span class="s">&#x27;0&#x27;</span>, <span class="n">1</span>, <span class="s">&#x27;C&#x27;</span>);
-
-  l_pdf := PL_FPDF.OutputBlob();
-  <span class="c">-- and it is yours: store it, send it, return it</span>
-  INSERT <span class="k">INTO</span> documents (pdf) VALUES (l_pdf);
-<span class="k">END</span>;</pre>
-      </div>
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">edit_pdf.sql</span></div>
-        <pre><span class="k">DECLARE</span>
-  l_pdf <span class="k">BLOB</span>;
-<span class="k">BEGIN</span>
-  <span class="k">SELECT</span> pdf_blob <span class="k">INTO</span> l_pdf
-    <span class="k">FROM</span> documents <span class="k">WHERE</span> id = <span class="n">1</span>;
-
-  PL_FPDF.LoadPDF(l_pdf);
-  PL_FPDF.RotatePage(<span class="n">1</span>, <span class="n">90</span>);
-  PL_FPDF.AddWatermark(<span class="s">&#x27;CONFIDENTIAL&#x27;</span>, <span class="n">0.3</span>);
-  l_pdf := PL_FPDF.OutputModifiedPDF();
-<span class="k">END</span>;</pre>
-      </div>
-    </div>
-    <h3 style="margin-top:36px">And when the document is hard: the layout of a Boleto</h3>
-    <p class="lead">An A4 page, three Helvetica variants in four sizes, 50 boxes positioned to
-the millimetre across two copies, the money column right-aligned, and the 44-digit ITF
-barcode a bank scanner actually reads. <b>Not a single image</b> — logo, rules and bars
-are vector drawing, the way a real Boleto is made. (A Boleto is the Brazilian bank
-payment slip.)</p>
-    <p style="text-align:center;margin:24px 0 8px">
-      <img src="../assets/exemplo-boleto.png" width="560"
-style="max-width:100%;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)"
-alt="Bank Boleto generated by PL_FPDF: two copies, a grid of fields and an ITF barcode">
-    </p>
-    <p class="lead" style="text-align:center;font-size:.9em;opacity:.75">
-      Real output of <code>examples/boleto.sql</code>, produced inside Oracle.
-The 44 barcode digits arrive ready-made — PL_FPDF draws;
-computing the charge is somebody else's job.
-    </p>
-    <div class="ex-grid">
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">boleto.sql</span></div>
-        <pre><span class="c">-- tiny label on top, value underneath</span>
-PL_FPDF.Rect(px, py, pw, ph, <span class="s">&#x27;D&#x27;</span>);
-PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;&#x27;</span>, <span class="n">6</span>);
-PL_FPDF.SetXY(px, py + <span class="n">0.7</span>);
-PL_FPDF.Cell(pw, <span class="n">2.4</span>, protulo, <span class="s">&#x27;0&#x27;</span>, <span class="n">0</span>, <span class="s">&#x27;L&#x27;</span>);
-
-PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">9</span>);
-PL_FPDF.SetXY(px, py + <span class="n">3.2</span>);
-PL_FPDF.Cell(pw, <span class="n">3.4</span>, pvalor, <span class="s">&#x27;0&#x27;</span>, <span class="n">0</span>, <span class="s">&#x27;R&#x27;</span>);</pre>
-      </div>
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">barcode.sql</span></div>
-        <pre><span class="c">-- 103 x 13 mm, as FEBRABAN requires</span>
-PL_FPDF.AddBarcode(
-  <span class="n">16.5</span>, <span class="n">233</span>, <span class="n">103</span>, <span class="n">13</span>,
-  <span class="s">&#x27;34197167700000150001&#x27;</span> ||
-  <span class="s">&#x27;090000012323073123451000&#x27;</span>,
-  <span class="s">&#x27;ITF&#x27;</span>, <span class="k">FALSE</span>);
-
-<span class="c">-- and the PDF comes out here, from the database</span>
-l_pdf := PL_FPDF.OutputBlob();</pre>
-      </div>
-    </div>
-    <p class="lead" style="margin-top:18px">
-      <a class="btn ghost" href="https://github.com/Maxwbh/pl_fpdf/blob/master/examples/boleto.sql">
-See the full example</a>
-    </p>
-    <h3 style="margin-top:44px">And its colourful sibling: an event ticket</h3>
-    <p class="lead">The Boleto proves the grid. The ticket proves the rest: <b>colour</b> —
-a filled band with white text over it, grey panels —, <b>a QR Code and a Code 39 on the
-same page</b> saying the same code, <b>one page per ticket</b>, and a shape that is not a
-rectangle: the little tail of the speech bubble. Again, not a single image.</p>
-    <p style="text-align:center;margin:24px 0 8px">
-      <img src="../assets/exemplo-ticket.png" width="470"
-style="max-width:100%;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)"
-alt="Event ticket generated by PL_FPDF: colourful header, QR Code and barcode">
-    </p>
-    <p class="lead" style="text-align:center;font-size:.9em;opacity:.75">
-      Real output of <code>examples/ticket.sql</code>, produced inside Oracle.
-    </p>
-    <div class="ex-grid">
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">colours.sql</span></div>
-        <pre><span class="c">-- colourful panel, and the title in white</span>
-PL_FPDF.SetFillColor(<span class="n">13</span>, <span class="n">25</span>, <span class="n">44</span>);
-PL_FPDF.Rect(<span class="n">12</span>, <span class="n">13.5</span>, <span class="n">186</span>, <span class="n">36</span>, <span class="s">&#x27;F&#x27;</span>);
-
-PL_FPDF.SetTextColor(<span class="n">255</span>, <span class="n">255</span>, <span class="n">255</span>);
-PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">17</span>);
-PL_FPDF.SetXY(<span class="n">16</span>, <span class="n">18</span>);
-PL_FPDF.Cell(<span class="n">178</span>, <span class="n">9</span>, l_title, <span class="s">&#x27;0&#x27;</span>, <span class="n">0</span>, <span class="s">&#x27;L&#x27;</span>);</pre>
-      </div>
-      <div class="window">
-        <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
-          <span class="win-title">symbols.sql</span></div>
-        <pre><span class="c">-- the same code in two symbologies,</span>
-<span class="c">-- to be scanned at the gate</span>
-PL_FPDF.AddQRCode(
-  p_x => <span class="n">156</span>, p_y => <span class="n">58</span>,
-  p_size => <span class="n">32</span>, p_data => l_code);
-
-PL_FPDF.AddBarcode(
-  <span class="n">45</span>, <span class="n">117</span>, <span class="n">120</span>, <span class="n">10</span>,
-  l_code, <span class="s">&#x27;CODE39&#x27;</span>, <span class="k">FALSE</span>);</pre>
-      </div>
-    </div>
-    <p class="lead" style="margin-top:18px">
-      <a class="btn ghost" href="https://github.com/Maxwbh/pl_fpdf/blob/master/examples/ticket.sql">
-See the ticket example</a>
-    </p>
+{{EXEMPLOS}}
   </section>
 
   <!-- INSTALACAO -->
   <section id="instalacao">
-    <p class="kicker">Install</p>
-    <h2>Three steps and it is running</h2>
-    <p class="lead">Works on Oracle 19c or later. No object other than the packages is created.</p>
-
-    <div class="steps">
-      <div class="step">
-        <h3>Download one file</h3>
-        <p>No clone: the whole installer in a single <code>.sql</code>, with its SHA-256 beside it.</p>
-        <code class="block"><a href="https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql">pl_fpdf_install.sql</a></code>
-        <p style="margin-top:.5rem;font-size:.85em;opacity:.75">Always the latest published version.</p>
-      </div>
-      <div class="step">
-        <h3>Run it</h3>
-        <p>Open it in a SQL Window (F8) or run it in SQL*Plus. Plain SQL — no tool-specific command.</p>
-        <code class="block">@pl_fpdf_install.sql</code>
-      </div>
-      <div class="step">
-        <h3>Check the version</h3>
-        <p>Ready to produce the first PDF.</p>
-        <code class="block">SELECT PL_FPDF.co_version FROM DUAL;
--- 3.4.0</code>
-      </div>
-    </div>
-
-    <p class="note" style="margin-top:26px"><b>Pin the version for production.</b>
-The link above always serves the newest one — fine to try it out, wrong for a
-change ticket. Every version has its own immutable URL on the
-<a href="https://github.com/Maxwbh/pl_fpdf/releases">releases page</a>, with a
-<code>SHA256.txt</code> beside it to verify what you downloaded:</p>
-
-    <code class="block">curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/pl_fpdf_install.sql
-curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/SHA256.txt
-sha256sum -c &lt;(echo &quot;$(cat SHA256.txt)  pl_fpdf_install.sql&quot;)</code>
+{{INSTALACAO}}
   </section>
 
   <!-- FINAL CTA -->
   <div class="final">
-    <h2>Found it useful? Leave a star ⭐</h2>
-    <p>Stars make the project easier to find for other Oracle developers —
-and they are the best way to support the work.</p>
-    <div class="cta" style="justify-content:center">
-      <a class="btn primary" href="https://github.com/Maxwbh/pl_fpdf/stargazers">Star it on GitHub</a>
-      <a class="btn ghost" href="https://github.com/Maxwbh/pl_fpdf/discussions">Ask a question in Discussions</a>
-    </div>
+{{FINAL}}
   </div>
 
   <footer>
     <p>
-      <a href="api.html">API index</a><span class="sep">·</span>
-      <a href="reference.html">Reference</a><span class="sep">·</span>
-      <a href="../index.html" hreflang="pt-BR">Versão em português</a><span class="sep">·</span>
-      <a href="https://github.com/Maxwbh/pl_fpdf">Repository</a><span class="sep">·</span>
+      <a href="api.html">Índice da API</a><span class="sep">·</span>
+      <a href="reference.html">Referência</a><span class="sep">·</span>
+      <a href="en/index.html" hreflang="en">English version</a><span class="sep">·</span>
+      <a href="https://github.com/Maxwbh/pl_fpdf">Repositório</a><span class="sep">·</span>
       <a href="https://github.com/Maxwbh/pl_fpdf/discussions">Discussions</a><span class="sep">·</span>
       <a href="https://github.com/Maxwbh/pl_fpdf/issues">Issues</a><span class="sep">·</span>
-      <a href="mailto:contato@msbrasil.inf.br">Contact</a>
+      <a href="mailto:contato@msbrasil.inf.br">Contato</a>
     </p>
-    <p>Maintained with the support of <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
-    · Developer: Maxwell da Silva Oliveira (<a href="https://github.com/Maxwbh">@Maxwbh</a>)</p>
-    <p>MIT License · Thanks to Olivier Plathey (<a href="http://www.fpdf.org/">FPDF</a>)
-    and Pierre-Gilles Levallois (<a href="https://github.com/Pilooz/pl_fpdf">the original PL/SQL port</a>)</p>
+    <p>Mantido com o apoio de <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
+    · Desenvolvedor: Maxwell da Silva Oliveira (<a href="https://github.com/Maxwbh">@Maxwbh</a>)</p>
+    <p>MIT License · Agradecimentos a Olivier Plathey (<a href="http://www.fpdf.org/">FPDF</a>)
+    e Pierre-Gilles Levallois (<a href="https://github.com/Pilooz/pl_fpdf">porte PL/SQL original</a>)</p>
   </footer>
 
 </div>
