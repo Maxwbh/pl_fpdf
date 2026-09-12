@@ -692,6 +692,17 @@ end qr_place_version;
 --------------------------------------------------------------------------------
 -- qr_penalty : as quatro regras de penalidade da norma, usadas para escolher a
 -- mascara que produz o simbolo mais legivel.
+--
+-- As oito mascaras sao aplicadas, cada uma pontuada aqui, e a de MENOR pontos
+-- ganha. Nao e estetica: cada regra pune um arranjo que atrapalha o leitor
+-- optico -- faixa longa de uma cor so (regra 1), bloco macico (regra 2), a
+-- sequencia 1011101 seguida de quatro claros (regra 3), que imita o padrao de
+-- localizacao e faz o leitor procurar um canto onde nao ha, e desequilibrio
+-- entre claro e escuro (regra 4), que estraga o limiar de binarizacao.
+--
+-- Os pesos -- 3, 40 e 10 -- e o degrau de 5% da regra 4 estao na ISO/IEC 18004
+-- e nao se ajustam: dois simbolos so sao comparaveis na mesma escala, e um
+-- leitor real e o unico juiz de que a escala funciona.
 --------------------------------------------------------------------------------
 function qr_penalty(p_m tqr, p_n pls_integer) return pls_integer is
   s     pls_integer := 0;
@@ -1117,6 +1128,15 @@ BEGIN
     END IF;
   END LOOP;
 
+  -- A TABELA E DUAS LISTAS, e nao uma arvore: `l_cont(c)` diz quantos codigos
+  -- tem c bits, e `l_sim` traz os simbolos ordenados por (comprimento,
+  -- simbolo). E o que "canonico" quer dizer no DEFLATE (RFC 1951, secao 3.2.2):
+  -- o valor de cada codigo se deduz dessa ordem, e nao precisa ser guardado.
+  -- Decodificar vira somar bit a bit e comparar com a contagem, que e o que o
+  -- `inf_sim` faz -- sem no de arvore, sem ponteiro, sem alocacao por simbolo.
+  --
+  -- `l_offs` e so o cursor de escrita de cada faixa de comprimento: onde
+  -- comeca o bloco dos codigos de c bits dentro de `l_sim`.
   l_offs(1) := 0;
   FOR c IN 1 .. co_inf_max_bits - 1 LOOP
     l_offs(c + 1) := l_offs(c) + l_cont(c);
@@ -2010,6 +2030,9 @@ BEGIN
       END LOOP;
     END LOOP;
 
+    -- A ULTIMA RODADA NAO TEM MixColumns (FIPS-197, secao 5.1). Nao e
+    -- economia: a simetria com a decifragem depende disso, e incluir o passo
+    -- na ultima rodada produz saida que so o proprio codigo consegue desfazer.
     IF r != p_nr THEN                              -- MixColumns
       FOR c IN 0 .. 3 LOOP
         DECLARE
@@ -2017,6 +2040,12 @@ BEGIN
           a1 PLS_INTEGER := l_t(c * 4 + 1);
           a2 PLS_INTEGER := l_t(c * 4 + 2);
           a3 PLS_INTEGER := l_t(c * 4 + 3);
+          -- x4: XOR de quatro valores. O PL/SQL nao tem operador de
+          -- ou-exclusivo, e a identidade `a + b - 2*BITAND(a,b)` o substitui.
+          -- A soma da coluna do MixColumns e XOR, nao adicao: trocar por `+`
+          -- da uma cifra que parece funcionar -- tem o tamanho certo e
+          -- decifra com a mesma implementacao errada -- e diverge do vetor do
+          -- FIPS-197, que e o que o `pdfaes_reference` confere.
           FUNCTION x4(p1 PLS_INTEGER, p2 PLS_INTEGER,
                       p3 PLS_INTEGER, p4 PLS_INTEGER) RETURN PLS_INTEGER IS
             l PLS_INTEGER;
@@ -2084,6 +2113,11 @@ BEGIN
     END LOOP;
     add_round_key(r);
 
+    -- A decifragem percorre as rodadas ao CONTRARIO, e a ordem dos passos
+    -- tambem inverte: aqui o AddRoundKey vem antes do InvMixColumns, e a
+    -- rodada 0 nao o tem -- e o espelho da ultima rodada da cifragem, que nao
+    -- tem MixColumns. As tabelas m9/m11/m13/m14 sao a matriz inversa do
+    -- MixColumns no corpo de Galois, pre-calculadas por isso.
     IF r != 0 THEN                                 -- InvMixColumns
       FOR c IN 0 .. 3 LOOP
         DECLARE
@@ -2091,6 +2125,12 @@ BEGIN
           a1 PLS_INTEGER := l_s(c * 4 + 1);
           a2 PLS_INTEGER := l_s(c * 4 + 2);
           a3 PLS_INTEGER := l_s(c * 4 + 3);
+          -- x4: XOR de quatro valores. O PL/SQL nao tem operador de
+          -- ou-exclusivo, e a identidade `a + b - 2*BITAND(a,b)` o substitui.
+          -- A soma da coluna do MixColumns e XOR, nao adicao: trocar por `+`
+          -- da uma cifra que parece funcionar -- tem o tamanho certo e
+          -- decifra com a mesma implementacao errada -- e diverge do vetor do
+          -- FIPS-197, que e o que o `pdfaes_reference` confere.
           FUNCTION x4(p1 PLS_INTEGER, p2 PLS_INTEGER,
                       p3 PLS_INTEGER, p4 PLS_INTEGER) RETURN PLS_INTEGER IS
             l PLS_INTEGER;
