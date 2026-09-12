@@ -379,12 +379,17 @@ deixa a letra sem sentido. O padrão é mostrar a origem e a tradução ao lado:
 
 ## A referência da API é gerada
 
-`docs/API_REFERENCE.md`, `site/reference.html` e as duas correspondentes em
-inglês — `docs/API_REFERENCE_EN.md` e `site/en/reference.html` — **não se editam
-à mão**: saem do Javadoc de `src/PL_FPDF.pks` e de `src/PL_FPDF_UTIL.pks`.
+Nenhuma das oito páginas do site e da documentação de API se edita à mão:
+
+| Página | De onde sai |
+|---|---|
+| `docs/API_REFERENCE.md`, `site/reference.html` | Javadoc de `src/*.pks` |
+| `docs/API_REFERENCE_EN.md`, `site/en/reference.html` | idem, com a prosa de `textos_en.py` |
+| `site/api.html`, `site/en/api.html` | `conteudo_api.py` |
+| `site/index.html`, `site/en/index.html` | `conteudo_index.py` |
 
 ```bash
-python dev/scripts/gen_docs/generate.py            # escreve as quatro
+python dev/scripts/gen_docs/generate.py            # escreve as oito
 python dev/scripts/gen_docs/generate.py --check    # o do CI
 ```
 
@@ -397,6 +402,8 @@ gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
 | `parse_spec.py` | lê a assinatura: tipo, modo e valor padrão de cada parâmetro |
 | `meta.py` | o que é editorial e não cabe num bloco: o **grupo** de cada API, o **veja também**, e a lista `FORA_DA_REFERENCIA` |
 | `textos_en.py` | a prosa em inglês, **pareada** com o português que ela traduz: descrição, `@param`, `@return`, nota, código de erro e as linhas de `@example` que levam texto |
+| `conteudo_api.py`, `gerar_api.py` | o índice de utilização: 14 seções, cada texto num par PT/EN |
+| `conteudo_index.py`, `gerar_index.py` | a página inicial: chamada, números, cartões, exemplos e instalação, também aos pares |
 | `reference_molde.html`, `reference_molde_en.html` | o desenho do site — cabeçalho, SEO, CSS, navegação e script. 210 linhas de cada lado, que continuam à mão |
 | `generate.py` | junta tudo e escreve as quatro páginas |
 
@@ -446,6 +453,27 @@ código do exemplo. O que se traduz: descrição, parâmetro, retorno, nota, tex
 do erro e as linhas de exemplo que carregam comentário ou literal de texto —
 essas ficam em `EXEMPLOS`, e uma linha sem entrada que ainda tenha marca de
 português é recusada.
+
+### O índice de utilização e a página inicial
+
+Estas duas não saem da spec, e não deveriam: são material **editorial**, com
+assinatura informal (`Cell(w,h,txt,borda,ln,...)`) e exemplo montado à mão para
+ensinar. O que elas ganham ao serem geradas é a outra metade do problema — o
+lado PT e o lado EN eram dois arquivos gêmeos de 455 e 730 linhas, e a cópia
+divergia calada: o comando de download da página inicial buscava a **v3.3.0**
+três parágrafos abaixo da vitrine que anunciava 3.4.0.
+
+Agora o conteúdo é um só, aos pares, e o gerador cobra o que não pode divergir:
+
+* **a versão não está escrita** em lugar nenhum das duas páginas — entra por
+  `{versao}`, lida do `co_version` do package, na vitrine, no exemplo e no link
+  do release;
+* **o exemplo é o mesmo código nas duas línguas.** Comentário, literal e nome
+  de variável local mudam por direito; qualquer outra diferença é recusada. O
+  que muda além disso entra **declarado**, no `traduz` da janela — foi assim que
+  a tabela `documentos`/`documents` passou;
+* **as duas línguas têm a mesma estrutura**: mesma quantidade de blocos, de
+  linhas de tabela e de linhas de código.
 
 ---
 

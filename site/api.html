@@ -169,21 +169,21 @@
   <h2><span class="n">01</span> Ciclo de vida</h2>
   <p class="desc">Todo documento começa com <code>Init</code>; o estado vive na sessão (package-only).</p>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>Init(orient, unit, format, encoding)</td><td>Inicia documento: 'P'/'L' · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
+    <tr><td>Init(orient, unit, format, encoding)</td><td>Inicia documento: &#x27;P&#x27;/&#x27;L&#x27; · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
     <tr><td>Reset</td><td>Zera o estado e libera CLOBs temporários</td></tr>
     <tr><td>IsInitialized</td><td>TRUE se há documento em andamento</td></tr>
     <tr><td>co_version</td><td>Constante com a versão instalada</td></tr>
   </tbody></table></div>
-  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">hello.sql</span></div>
-<pre><span class="k">DECLARE</span> l_pdf BLOB;
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">hello.sql</span></div>
+<pre><span class="k">DECLARE</span> l_pdf <span class="k">BLOB</span>;
 <span class="k">BEGIN</span>
   PL_FPDF.Init(
-    p_orientation =&gt; <span class="s">'P'</span>,     <span class="c">-- 'P' retrato | 'L' paisagem</span>
-    p_unit        =&gt; <span class="s">'mm'</span>,    <span class="c">-- 'mm' | 'cm' | 'pt' | 'in'</span>
-    p_format      =&gt; <span class="s">'A4'</span>);   <span class="c">-- 'A4' | 'A3' | 'A5' | 'Letter' | 'Legal'</span>
+    p_orientation => <span class="s">&#x27;P&#x27;</span>,     <span class="c">-- &#x27;P&#x27; retrato | &#x27;L&#x27; paisagem</span>
+    p_unit        => <span class="s">&#x27;mm&#x27;</span>,    <span class="c">-- &#x27;mm&#x27; | &#x27;cm&#x27; | &#x27;pt&#x27; | &#x27;in&#x27;</span>
+    p_format      => <span class="s">&#x27;A4&#x27;</span>);   <span class="c">-- &#x27;A4&#x27; | &#x27;A3&#x27; | &#x27;A5&#x27; | &#x27;Letter&#x27; | &#x27;Legal&#x27;</span>
   PL_FPDF.AddPage();
-  PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">16</span>);  <span class="c">-- família, estilo ''/B/I/BI/U, tamanho pt</span>
-  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">'Olá, Mundo!'</span>, <span class="s">'0'</span>, <span class="n">1</span>, <span class="s">'C'</span>);
+  PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">16</span>);  <span class="c">-- família, estilo &#x27;&#x27;/B/I/BI/U, tamanho pt</span>
+  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">&#x27;Olá, Mundo!&#x27;</span>, <span class="s">&#x27;0&#x27;</span>, <span class="n">1</span>, <span class="s">&#x27;C&#x27;</span>);
   l_pdf := PL_FPDF.OutputBlob();
 <span class="k">END</span>;</pre></div>
 </section>
@@ -198,16 +198,16 @@
     <tr><td>Ln(h) · GetX/SetX · GetY/SetY · SetXY</td><td>Controle do cursor de escrita</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">paginas.sql</span></div>
-<pre>PL_FPDF.SetMargins(left =&gt; <span class="n">20</span>, top =&gt; <span class="n">15</span>, right =&gt; <span class="n">20</span>);  <span class="c">-- right omitido = igual à esquerda</span>
-PL_FPDF.SetAutoPageBreak(pauto =&gt; TRUE, pMargin =&gt; <span class="n">15</span>);    <span class="c">-- quebra a 15mm do fim</span>
-PL_FPDF.AddPage(p_orientation =&gt; <span class="s">'L'</span>);                     <span class="c">-- só o que muda; resto herda do Init</span>
-PL_FPDF.SetXY(x =&gt; <span class="n">20</span>, y =&gt; <span class="n">40</span>);                           <span class="c">-- cursor na unidade do documento</span></pre></div>
+<pre>PL_FPDF.SetMargins(left => <span class="n">20</span>, top => <span class="n">15</span>, right => <span class="n">20</span>);  <span class="c">-- right omitido = igual à esquerda</span>
+PL_FPDF.SetAutoPageBreak(pauto => <span class="k">TRUE</span>, pMargin => <span class="n">15</span>);    <span class="c">-- quebra a 15mm do fim</span>
+PL_FPDF.AddPage(p_orientation => <span class="s">&#x27;L&#x27;</span>);                     <span class="c">-- só o que muda; resto herda do Init</span>
+PL_FPDF.SetXY(x => <span class="n">20</span>, y => <span class="n">40</span>);                           <span class="c">-- cursor na unidade do documento</span></pre></div>
 </section>
 
 <section id="fontes">
   <h2><span class="n">03</span> Fontes e UTF-8</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>SetFont(família, estilo, tamanho)</td><td>Core: Arial/Helvetica, Times, Courier · estilos '', B, I, BI, U</td></tr>
+    <tr><td>SetFont(família, estilo, tamanho)</td><td>Core: Arial/Helvetica, Times, Courier · estilos &#x27;&#x27;, B, I, BI, U</td></tr>
     <tr><td>SetFontSize(pt)</td><td>Muda apenas o tamanho</td></tr>
     <tr><td>AddTTFFont(nome, blob, enc, embed)</td><td>TrueType a partir de BLOB, com embedding</td></tr>
     <tr><td>LoadTTFFromFile(nome, arquivo, directory)</td><td>TrueType de um DIRECTORY Oracle</td></tr>
@@ -227,17 +227,17 @@ PL_FPDF.SetXY(x =&gt; <span class="n">20</span>, y =&gt; <span class="n">40</spa
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">cell_parametros.sql</span></div>
 <pre>PL_FPDF.Cell(
-  pw      =&gt; <span class="n">0</span>,        <span class="c">-- largura; 0 = até a margem direita</span>
-  ph      =&gt; <span class="n">10</span>,       <span class="c">-- altura da célula</span>
-  ptxt    =&gt; <span class="s">'Total: R$ 1.234,56'</span>,
-  pborder =&gt; <span class="s">'LTB'</span>,    <span class="c">-- '0' | '1' | combinação de L,T,R,B</span>
-  pln     =&gt; <span class="n">1</span>,        <span class="c">-- 0 cursor à direita | 1 próxima linha | 2 abaixo</span>
-  palign  =&gt; <span class="s">'R'</span>,      <span class="c">-- 'L' | 'C' | 'R'</span>
-  pfill   =&gt; <span class="n">1</span>,        <span class="c">-- 1 = fundo com a cor de SetFillColor</span>
-  plink   =&gt; <span class="s">''</span>);      <span class="c">-- URL ou link interno (AddLink)</span>
+  pw      => <span class="n">0</span>,        <span class="c">-- largura; 0 = até a margem direita</span>
+  ph      => <span class="n">10</span>,       <span class="c">-- altura da célula</span>
+  ptxt    => <span class="s">&#x27;Total: R$ 1.234,56&#x27;</span>,
+  pborder => <span class="s">&#x27;LTB&#x27;</span>,    <span class="c">-- &#x27;0&#x27; | &#x27;1&#x27; | combinação de L,T,R,B</span>
+  pln     => <span class="n">1</span>,        <span class="c">-- 0 cursor à direita | 1 próxima linha | 2 abaixo</span>
+  palign  => <span class="s">&#x27;R&#x27;</span>,      <span class="c">-- &#x27;L&#x27; | &#x27;C&#x27; | &#x27;R&#x27;</span>
+  pfill   => <span class="n">1</span>,        <span class="c">-- 1 = fundo com a cor de SetFillColor</span>
+  plink   => <span class="s">&#x27;&#x27;</span>);      <span class="c">-- URL ou link interno (AddLink)</span>
 
-l_linhas := PL_FPDF.MultiCell(<span class="n">0</span>, <span class="n">6</span>, l_paragrafo, <span class="s">'1'</span>, <span class="s">'J'</span>);  <span class="c">-- 'J' justificado; retorna nº de linhas</span>
-PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span class="s">'VERTICAL'</span>, p_rotation =&gt; <span class="n">90</span>);   <span class="c">-- 0/90/180/270</span></pre></div>
+l_linhas := PL_FPDF.MultiCell(<span class="n">0</span>, <span class="n">6</span>, l_paragrafo, <span class="s">&#x27;1&#x27;</span>, <span class="s">&#x27;J&#x27;</span>);  <span class="c">-- &#x27;J&#x27; justificado; retorna nº de linhas</span>
+PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span class="s">&#x27;VERTICAL&#x27;</span>, p_rotation => <span class="n">90</span>);   <span class="c">-- 0/90/180/270</span></pre></div>
 </section>
 
 <section id="desenho">
@@ -245,15 +245,15 @@ PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span 
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
     <tr><td>SetDrawColor / SetFillColor / SetTextColor (r,g,b)</td><td>Cores RGB 0–255 de contorno, preenchimento e texto</td></tr>
     <tr><td>SetLineWidth · SetDash · SetLineDashPattern</td><td>Espessura e tracejado</td></tr>
-    <tr><td>Line(x1,y1,x2,y2) · Rect(x,y,w,h,estilo)</td><td>Linha · retângulo ('' contorno, 'F' cheio, 'DF' ambos)</td></tr>
+    <tr><td>Line(x1,y1,x2,y2) · Rect(x,y,w,h,estilo)</td><td>Linha · retângulo (&#x27;&#x27; contorno, &#x27;F&#x27; cheio, &#x27;DF&#x27; ambos)</td></tr>
     <tr><td>Poly(pontos, fechar, estilo) · Triangle(...)</td><td>Polígonos e triângulos</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">desenho.sql</span></div>
-<pre>PL_FPDF.SetDrawColor(r =&gt; <span class="n">200</span>, g =&gt; <span class="n">0</span>, b =&gt; <span class="n">0</span>);   <span class="c">-- RGB 0-255; só r = tom de cinza</span>
+<pre>PL_FPDF.SetDrawColor(r => <span class="n">200</span>, g => <span class="n">0</span>, b => <span class="n">0</span>);   <span class="c">-- RGB 0-255; só r = tom de cinza</span>
 PL_FPDF.SetFillColor(<span class="n">240</span>, <span class="n">240</span>, <span class="n">240</span>);
 PL_FPDF.SetLineWidth(<span class="n">0.5</span>);                          <span class="c">-- na unidade do documento</span>
-PL_FPDF.Rect(px =&gt; <span class="n">10</span>, py =&gt; <span class="n">40</span>, pw =&gt; <span class="n">60</span>, ph =&gt; <span class="n">25</span>, pstyle =&gt; <span class="s">'DF'</span>);  <span class="c">-- '' contorno | 'F' cheio | 'DF' ambos</span>
-PL_FPDF.SetLineDashPattern(<span class="s">'[3 2] 0'</span>);              <span class="c">-- 3 on, 2 off (pontos PDF)</span></pre></div>
+PL_FPDF.Rect(px => <span class="n">10</span>, py => <span class="n">40</span>, pw => <span class="n">60</span>, ph => <span class="n">25</span>, pstyle => <span class="s">&#x27;DF&#x27;</span>);  <span class="c">-- &#x27;&#x27; contorno | &#x27;F&#x27; cheio | &#x27;DF&#x27; ambos</span>
+PL_FPDF.SetLineDashPattern(<span class="s">&#x27;[3 2] 0&#x27;</span>);              <span class="c">-- 3 on, 2 off (pontos PDF)</span></pre></div>
 </section>
 
 <section id="imagens">
@@ -266,12 +266,12 @@ PL_FPDF.SetLineDashPattern(<span class="s">'[3 2] 0'</span>);              <span
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">imagem.sql</span></div>
 <pre>PL_FPDF.Image(
-  pFile   =&gt; <span class="s">'logo.png'</span>,  <span class="c">-- arquivo no DIRECTORY</span>
-  pX      =&gt; <span class="n">10</span>, pY =&gt; <span class="n">10</span>,
-  pWidth  =&gt; <span class="n">40</span>,          <span class="c">-- largura fixa…</span>
-  pHeight =&gt; <span class="n">0</span>,           <span class="c">-- …0 = altura proporcional</span>
-  pType   =&gt; NULL,        <span class="c">-- NULL autodetecta PNG/JPEG</span>
-  pLink   =&gt; <span class="s">'https://msbrasil.inf.br'</span>);  <span class="c">-- imagem clicável (opcional)</span></pre></div>
+  pFile   => <span class="s">&#x27;logo.png&#x27;</span>,  <span class="c">-- arquivo no DIRECTORY</span>
+  pX      => <span class="n">10</span>, pY => <span class="n">10</span>,
+  pWidth  => <span class="n">40</span>,          <span class="c">-- largura fixa…</span>
+  pHeight => <span class="n">0</span>,           <span class="c">-- …0 = altura proporcional</span>
+  pType   => <span class="k">NULL</span>,        <span class="c">-- NULL autodetecta PNG/JPEG</span>
+  pLink   => <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>);  <span class="c">-- imagem clicável (opcional)</span></pre></div>
 </section>
 
 <section id="headers">
@@ -280,19 +280,19 @@ PL_FPDF.SetLineDashPattern(<span class="s">'[3 2] 0'</span>);              <span
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
     <tr><td>SetHeaderProc(proc, params)</td><td>Procedure chamada no topo de cada página</td></tr>
     <tr><td>SetFooterProc(proc, params)</td><td>Procedure chamada no rodapé</td></tr>
-    <tr><td>SetAliasNbPages('{nb}')</td><td>Placeholder do total de páginas ("Página 2/{nb}")</td></tr>
+    <tr><td>SetAliasNbPages(&#x27;{nb}&#x27;)</td><td>Placeholder do total de páginas (&quot;Página 2/{nb}&quot;)</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">rodape.sql</span></div>
 <pre><span class="c">-- procedure sua, chamada a cada página:</span>
-PL_FPDF.SetFooterProc(footerprocname =&gt; <span class="s">'meu_pkg.meu_footer'</span>);
+PL_FPDF.SetFooterProc(footerprocname => <span class="s">&#x27;meu_pkg.meu_footer&#x27;</span>);
 <span class="c">-- com parâmetros: tv4000a é associative array indexado pelo NOME do parâmetro</span>
 <span class="c">--   l_p PL_FPDF.tv4000a;  (não existe construtor tv4000a(...))</span>
-l_p(<span class="s">'p_titulo'</span>)  := <span class="s">'Relatório Mensal'</span>;
-l_p(<span class="s">'p_periodo'</span>) := <span class="s">'Ago/2026'</span>;
+l_p(<span class="s">&#x27;p_titulo&#x27;</span>)  := <span class="s">&#x27;Relatório Mensal&#x27;</span>;
+l_p(<span class="s">&#x27;p_periodo&#x27;</span>) := <span class="s">&#x27;Ago/2026&#x27;</span>;
 PL_FPDF.SetHeaderProc(
-  headerprocname =&gt; <span class="s">'meu_pkg.meu_header'</span>,
-  paramTable     =&gt; l_p);
-PL_FPDF.SetAliasNbPages(<span class="s">'{nb}'</span>);  <span class="c">-- use '{nb}' no texto = total de páginas</span></pre></div>
+  headerprocname => <span class="s">&#x27;meu_pkg.meu_header&#x27;</span>,
+  paramTable     => l_p);
+PL_FPDF.SetAliasNbPages(<span class="s">&#x27;{nb}&#x27;</span>);  <span class="c">-- use &#x27;{nb}&#x27; no texto = total de páginas</span></pre></div>
 </section>
 
 <section id="codigos">
@@ -305,16 +305,16 @@ PL_FPDF.SetAliasNbPages(<span class="s">'{nb}'</span>);  <span class="c">-- use 
   <a href="https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments">extensão brazilian-payments</a>.</p>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">qr_barras.sql</span></div>
 <pre>PL_FPDF.AddQRCode(
-  p_x =&gt; <span class="n">150</span>, p_y =&gt; <span class="n">20</span>, p_size =&gt; <span class="n">40</span>,   <span class="c">-- posição e lado (unidade do doc)</span>
-  p_data             =&gt; <span class="s">'https://msbrasil.inf.br'</span>,
-  p_format           =&gt; <span class="s">'URL'</span>,          <span class="c">-- TEXT | URL | PIX | VCARD | WIFI | EMAIL</span>
-  p_error_correction =&gt; <span class="s">'M'</span>);           <span class="c">-- L 7% | M 15% | Q 25% | H 30%</span>
+  p_x => <span class="n">150</span>, p_y => <span class="n">20</span>, p_size => <span class="n">40</span>,   <span class="c">-- posição e lado (unidade do doc)</span>
+  p_data             => <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>,
+  p_format           => <span class="s">&#x27;URL&#x27;</span>,          <span class="c">-- TEXT | URL | PIX | VCARD | WIFI | EMAIL</span>
+  p_error_correction => <span class="s">&#x27;M&#x27;</span>);           <span class="c">-- L 7% | M 15% | Q 25% | H 30%</span>
 
 PL_FPDF.AddBarcode(
-  p_x =&gt; <span class="n">30</span>, p_y =&gt; <span class="n">70</span>, p_width =&gt; <span class="n">150</span>, p_height =&gt; <span class="n">20</span>,
-  p_code      =&gt; <span class="s">'7891234567895'</span>,
-  p_type      =&gt; <span class="s">'EAN13'</span>,               <span class="c">-- CODE128 | CODE39 | EAN13 | EAN8 | ITF14</span>
-  p_show_text =&gt; TRUE);                 <span class="c">-- número legível abaixo das barras</span></pre></div>
+  p_x => <span class="n">30</span>, p_y => <span class="n">70</span>, p_width => <span class="n">150</span>, p_height => <span class="n">20</span>,
+  p_code      => <span class="s">&#x27;7891234567895&#x27;</span>,
+  p_type      => <span class="s">&#x27;EAN13&#x27;</span>,               <span class="c">-- CODE128 | CODE39 | EAN13 | EAN8 | ITF14</span>
+  p_show_text => <span class="k">TRUE</span>);                 <span class="c">-- número legível abaixo das barras</span></pre></div>
 </section>
 
 <section id="meta">
@@ -327,12 +327,12 @@ PL_FPDF.AddBarcode(
     <tr><td>GetPageInfo(n)</td><td>Dimensões e rotação de uma página (JSON)</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">metadados.sql</span></div>
-<pre>PL_FPDF.SetTitle(<span class="s">'Relatório Mensal'</span>);
-PL_FPDF.SetAuthor(<span class="s">'M&amp;S do Brasil'</span>);
-PL_FPDF.SetDisplayMode(zoom =&gt; <span class="s">'fullpage'</span>, layout =&gt; <span class="s">'single'</span>);  <span class="c">-- como o leitor abre</span>
-PL_FPDF.SetCompression(TRUE);
+<pre>PL_FPDF.SetTitle(<span class="s">&#x27;Relatório Mensal&#x27;</span>);
+PL_FPDF.SetAuthor(<span class="s">&#x27;M&amp;S do Brasil&#x27;</span>);
+PL_FPDF.SetDisplayMode(zoom => <span class="s">&#x27;fullpage&#x27;</span>, layout => <span class="s">&#x27;single&#x27;</span>);  <span class="c">-- como o leitor abre</span>
+PL_FPDF.SetCompression(<span class="k">TRUE</span>);
 <span class="c">-- ou tudo de uma vez:</span>
-PL_FPDF.SetDocumentConfig(JSON_OBJECT_T(<span class="s">'{"title":"Relatório","author":"M&amp;S"}'</span>));</pre></div>
+PL_FPDF.SetDocumentConfig(JSON_OBJECT_T(<span class="s">&#x27;{&quot;title&quot;:&quot;Relatório&quot;,&quot;author&quot;:&quot;M&amp;S&quot;}&#x27;</span>));</pre></div>
 </section>
 
 <section id="saida">
@@ -345,8 +345,8 @@ PL_FPDF.SetDocumentConfig(JSON_OBJECT_T(<span class="s">'{"title":"Relatório","
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">saida.sql</span></div>
 <pre>l_pdf := PL_FPDF.OutputBlob();                        <span class="c">-- BLOB para tabela/e-mail/APEX</span>
 PL_FPDF.OutputFile(
-  p_filename  =&gt; <span class="s">'relatorio.pdf'</span>,
-  p_directory =&gt; <span class="s">'PDF_DIR'</span>);                           <span class="c">-- DIRECTORY Oracle com permissão de escrita</span></pre></div>
+  p_filename  => <span class="s">&#x27;relatorio.pdf&#x27;</span>,
+  p_directory => <span class="s">&#x27;PDF_DIR&#x27;</span>);                           <span class="c">-- DIRECTORY Oracle com permissão de escrita</span></pre></div>
 </section>
 
 <section id="manip">
@@ -356,20 +356,20 @@ PL_FPDF.OutputFile(
     <tr><td>LoadPDF(blob)</td><td>Carrega e interpreta um PDF existente</td></tr>
     <tr><td>GetPageCount · GetPDFInfo</td><td>Total de páginas · metadados/versão (JSON)</td></tr>
     <tr><td>RotatePage(n, graus) · RemovePage(n)</td><td>Rotação 0/90/180/270 · remoção de página</td></tr>
-    <tr><td>AddWatermark(texto, opacidade, rotação, páginas, fonte, tam, cor)</td><td>Marca d'água em 'ALL' ou '1,3-5'</td></tr>
+    <tr><td>AddWatermark(texto, opacidade, rotação, páginas, fonte, tam, cor)</td><td>Marca d&#x27;água em &#x27;ALL&#x27; ou &#x27;1,3-5&#x27;</td></tr>
     <tr><td>GetWatermarks · GetActivePageCount · IsPageRemoved · IsPDFModified</td><td>Consultas de estado (JSON)</td></tr>
     <tr><td>OutputModifiedPDF → BLOB · ClearPDFCache</td><td>Gera o PDF final · libera memória</td></tr>
   </tbody></table></div>
-  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">editar.sql</span></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">editar.sql</span></div>
 <pre>PL_FPDF.LoadPDF(l_pdf);
-PL_FPDF.RotatePage(p_page_number =&gt; <span class="n">1</span>, p_rotation =&gt; <span class="n">90</span>);  <span class="c">-- 0/90/180/270</span>
+PL_FPDF.RotatePage(p_page_number => <span class="n">1</span>, p_rotation => <span class="n">90</span>);  <span class="c">-- 0/90/180/270</span>
 PL_FPDF.AddWatermark(
-  p_text     =&gt; <span class="s">'CONFIDENCIAL'</span>,
-  p_opacity  =&gt; <span class="n">0.3</span>,      <span class="c">-- 0.0 transparente … 1.0 opaco</span>
-  p_rotation =&gt; <span class="n">45</span>,       <span class="c">-- diagonal clássica</span>
-  p_pages    =&gt; <span class="s">'ALL'</span>,    <span class="c">-- ou '1,3-5'</span>
-  p_size     =&gt; <span class="n">48</span>,       <span class="c">-- pontos</span>
-  p_color    =&gt; <span class="s">'gray'</span>);
+  p_text     => <span class="s">&#x27;CONFIDENCIAL&#x27;</span>,
+  p_opacity  => <span class="n">0.3</span>,      <span class="c">-- 0.0 transparente … 1.0 opaco</span>
+  p_rotation => <span class="n">45</span>,       <span class="c">-- diagonal clássica</span>
+  p_pages    => <span class="s">&#x27;ALL&#x27;</span>,    <span class="c">-- ou &#x27;1,3-5&#x27;</span>
+  p_size     => <span class="n">48</span>,       <span class="c">-- pontos</span>
+  p_color    => <span class="s">&#x27;gray&#x27;</span>);
 PL_FPDF.RemovePage(<span class="n">3</span>);
 l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
 </section>
@@ -384,18 +384,18 @@ l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">overlay.sql</span></div>
 <pre>PL_FPDF.OverlayText(
-  p_page_number =&gt; <span class="n">1</span>,
-  p_text        =&gt; <span class="s">'APROVADO'</span>,
-  p_x =&gt; <span class="n">400</span>, p_y =&gt; <span class="n">700</span>,               <span class="c">-- pontos PDF; Y conta de baixo para cima</span>
-  p_options     =&gt; JSON_OBJECT_T(<span class="s">'{
-    "fontSize":24, "color":"FF0000", "opacity":0.8,
-    "rotation":0, "align":"left", "bold":true }'</span>));
+  p_page_number => <span class="n">1</span>,
+  p_text        => <span class="s">&#x27;APROVADO&#x27;</span>,
+  p_x => <span class="n">400</span>, p_y => <span class="n">700</span>,               <span class="c">-- pontos PDF; Y conta de baixo para cima</span>
+  p_options     => JSON_OBJECT_T('{
+    "fontSize":<span class="n">24</span>, "color":"FF0000", "opacity":<span class="n">0.8</span>,
+    "rotation":<span class="n">0</span>, "align":"left", "bold":<span class="k">true</span> }'));
 
 PL_FPDF.OverlayImage(
-  p_page_number =&gt; <span class="n">1</span>, p_image_blob =&gt; l_logo,
-  p_x =&gt; <span class="n">450</span>, p_y =&gt; <span class="n">750</span>,
-  p_width =&gt; <span class="n">100</span>, p_height =&gt; NULL,      <span class="c">-- NULL = proporcional / original</span>
-  p_options =&gt; JSON_OBJECT_T(<span class="s">'{"opacity":0.9,"maintainAspect":true}'</span>));</pre></div>
+  p_page_number => <span class="n">1</span>, p_image_blob => l_logo,
+  p_x => <span class="n">450</span>, p_y => <span class="n">750</span>,
+  p_width => <span class="n">100</span>, p_height => <span class="k">NULL</span>,      <span class="c">-- NULL = proporcional / original</span>
+  p_options => JSON_OBJECT_T(<span class="s">&#x27;{&quot;opacity&quot;:0.9,&quot;maintainAspect&quot;:true}&#x27;</span>));</pre></div>
 </section>
 
 <section id="multi">
@@ -403,39 +403,40 @@ PL_FPDF.OverlayImage(
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
     <tr><td>LoadPDFWithID(blob, id) · UnloadPDF(id) · GetLoadedPDFs</td><td>Vários PDFs em memória, cada um com ID</td></tr>
     <tr><td>MergePDFs(ids JSON) → BLOB</td><td>Mescla na ordem do array</td></tr>
-    <tr><td>SplitPDF(id, ranges JSON) → JSON</td><td>Divide por intervalos ("1-10", "11-20", "21-")</td></tr>
-    <tr><td>ExtractPages(id, '1,5-10,15') → BLOB</td><td>Novo PDF só com as páginas indicadas</td></tr>
+    <tr><td>SplitPDF(id, ranges JSON) → JSON</td><td>Divide por intervalos (&quot;1-10&quot;, &quot;11-20&quot;, &quot;21-&quot;)</td></tr>
+    <tr><td>ExtractPages(id, &#x27;1,5-10,15&#x27;) → BLOB</td><td>Novo PDF só com as páginas indicadas</td></tr>
   </tbody></table></div>
-  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">merge.sql</span></div>
-<pre>PL_FPDF.LoadPDFWithID(l_capa, <span class="s">'capa'</span>);
-PL_FPDF.LoadPDFWithID(l_corpo, <span class="s">'corpo'</span>);
-l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T(<span class="s">'["capa","corpo"]'</span>));</pre></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">merge.sql</span></div>
+<pre>PL_FPDF.LoadPDFWithID(l_capa, <span class="s">&#x27;capa&#x27;</span>);
+PL_FPDF.LoadPDFWithID(l_corpo, <span class="s">&#x27;corpo&#x27;</span>);
+l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T(<span class="s">&#x27;[&quot;capa&quot;,&quot;corpo&quot;]&#x27;</span>));</pre></div>
 </section>
 
 <section id="seguranca">
   <h2><span class="n">14</span> Segurança e criptografia (v3.2)</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>EncryptPDF(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — 'AES-256', 'AES-128', 'RC4-128' ou 'RC4-40'</td></tr>
+    <tr><td>EncryptPDF(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — &#x27;AES-256&#x27;, &#x27;AES-128&#x27;, &#x27;RC4-128&#x27; ou &#x27;RC4-40&#x27;</td></tr>
     <tr><td>DecryptPDF(pdf, senha)</td><td>Remove a proteção</td></tr>
     <tr><td>IsEncrypted(pdf) · GetSecurityInfo(pdf)</td><td>Verifica e inspeciona (algoritmo, chave, permissões)</td></tr>
-    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento <b>novo</b>, antes do OutputBlob</td></tr>
-    <tr><td>SetPDFVersion('1.7') · GetPDFVersion</td><td>Versão do arquivo gerado</td></tr>
+    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento novo, antes do OutputBlob</td></tr>
+    <tr><td>SetPDFVersion(&#x27;1.7&#x27;) · GetPDFVersion</td><td>Versão do arquivo gerado</td></tr>
   </tbody></table></div>
-  <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">proteger.sql</span></div>
+<div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">proteger.sql</span></div>
 <pre>l_perms := JSON_OBJECT_T();
-l_perms.put(<span class="s">'print'</span>, TRUE);          <span class="c">-- também: modify, copy, annotate,</span>
-l_perms.put(<span class="s">'copy'</span>,  FALSE);         <span class="c">--   fill_forms, extract, assemble, print_high</span>
+l_perms.put(<span class="s">&#x27;print&#x27;</span>, <span class="k">TRUE</span>);          <span class="c">-- também: modify, copy, annotate,</span>
+l_perms.put(<span class="s">&#x27;copy&#x27;</span>,  <span class="k">FALSE</span>);         <span class="c">--   fill_forms, extract, assemble, print_high</span>
 
 l_seguro := PL_FPDF.EncryptPDF(
-  p_pdf            =&gt; l_pdf,
-  p_user_password  =&gt; <span class="s">'senhaLeitura'</span>,   <span class="c">-- pedida ao abrir</span>
-  p_owner_password =&gt; <span class="s">'senhaAdmin'</span>,     <span class="c">-- NULL = igual à de usuário</span>
-  p_permissions    =&gt; l_perms,
-  p_encryption     =&gt; <span class="s">'AES-256'</span>);      <span class="c">-- ou 'AES-128', 'RC4-128', 'RC4-40'</span></pre></div>
+  p_pdf            => l_pdf,
+  p_user_password  => <span class="s">&#x27;senhaLeitura&#x27;</span>,   <span class="c">-- pedida ao abrir</span>
+  p_owner_password => <span class="s">&#x27;senhaAdmin&#x27;</span>,     <span class="c">-- NULL = igual à de usuário</span>
+  p_permissions    => l_perms,
+  p_encryption     => <span class="s">&#x27;AES-256&#x27;</span>);      <span class="c">-- ou &#x27;AES-128&#x27;, &#x27;RC4-128&#x27;, &#x27;RC4-40&#x27;</span></pre></div>
   <p class="note"><b>Senha não é assinatura.</b> A criptografia acima protege o arquivo
   (quem abre, quem imprime, quem copia) — ela não atesta autoria nem detecta adulteração.
   <b>Assinatura digital</b> (PAdES, certificado ICP-Brasil) ainda não existe na biblioteca.</p>
 </section>
+
 
 <footer>
   <p>
