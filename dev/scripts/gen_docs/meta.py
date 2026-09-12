@@ -56,12 +56,40 @@ CATEGORIAS = [
      ['DecryptPDF', 'EncryptPDF', 'GetPDFVersion', 'GetSecurityInfo', 'IsEncrypted', 'SetEncryption', 'SetPDFVersion', 'SetPermissions']),
     ('Diagnóstico e utilidades',
      ['DebugDisabled', 'DebugEnabled', 'Error', 'GetLogLevel', 'GetScaleFactor', 'SetLogLevel']),
-    ('PL_FPDF_UTIL — QR, código de barras, compressão e criptografia',
-     ['qr_matriz', 'bc_padrao', 'inflate', 'deflate', 'hex_do_byte',
-      'crypto_md5', 'crypto_rc4', 'crypto_rc4_blob', 'crypto_autoteste',
-      'aes_cbc_cifrar', 'aes_cbc_cifrar_raw', 'aes_cbc_decifrar',
-      'aes_cbc_decifrar_raw', 'aes_chave_objeto',
-      'aes_iv', 'aes_valores_r6', 'aes_verificar_r6', 'aes_autoteste']),
+]
+
+# APIs que existem na spec e NÃO entram na referência de uso.
+#
+# A regra do projeto é "duas documentações, dois públicos": o que vai para quem
+# **usa** a biblioteca fala só de PDF. O `PL_FPDF_UTIL` é a metade que não é
+# PDF -- QR Code, código de barras, DEFLATE e criptografia --, e quem gera um
+# documento nunca o chama: nos `examples/` e em `dev/tests/` ele aparece ZERO
+# vezes. As 69 chamadas estão dentro do `src/`, do `PL_FPDF` para ele. No
+# README ele só aparece na ordem de instalação, que é outra coisa.
+#
+# A lista existe para a omissão ser DECLARADA. O gerador recusa API que não
+# esteja nem num grupo nem aqui: assim uma API nova não some da página em
+# silêncio, alguém tem de decidir.
+FORA_DA_REFERENCIA = [
+    # PL_FPDF_UTIL: chamado pelo PL_FPDF, não por quem gera PDF
+    'qr_matriz',
+    'bc_padrao',
+    'inflate',
+    'deflate',
+    'hex_do_byte',
+    'crypto_md5',
+    'crypto_rc4',
+    'crypto_rc4_blob',
+    'crypto_autoteste',
+    'aes_cbc_cifrar',
+    'aes_cbc_cifrar_raw',
+    'aes_cbc_decifrar',
+    'aes_cbc_decifrar_raw',
+    'aes_chave_objeto',
+    'aes_iv',
+    'aes_valores_r6',
+    'aes_verificar_r6',
+    'aes_autoteste',
 ]
 
 # API -> APIs que se usam junto

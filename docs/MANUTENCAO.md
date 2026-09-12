@@ -393,7 +393,7 @@ gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
 |---|---|
 | `parse_javadoc.py` | lê os blocos: descrição, `@param`, `@return`, `@raises`, `@example`, notas. `--verificar` prova a leitura dos 137 |
 | `parse_spec.py` | lê a assinatura: tipo, modo e valor padrão de cada parâmetro |
-| `meta.py` | o que é editorial e não cabe num bloco: o **grupo** de cada API e o **veja também** |
+| `meta.py` | o que é editorial e não cabe num bloco: o **grupo** de cada API, o **veja também**, e a lista `FORA_DA_REFERENCIA` |
 | `reference_molde.html` | o desenho do site — cabeçalho, SEO, CSS, navegação e script. 210 linhas que continuam à mão |
 | `generate.py` | junta tudo e escreve as duas páginas |
 
@@ -407,6 +407,18 @@ gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
 > **O que gerar não garante** é que o texto esteja *certo* — só que a página
 > concorda com a spec. Contra texto errado valem a revisão humana e o cruzamento
 > entre o `@raises` e o `raise_application_error` do corpo.
+>
+> **O `PL_FPDF_UTIL` não entra.** A página é de quem **usa** a biblioteca, e a
+> regra do projeto é que esse lado fale só de PDF. QR Code, código de barras,
+> DEFLATE e criptografia são a metade que não é PDF, e quem gera um documento
+> nunca os chama: nos `examples/` e em `dev/tests/` o utilitário aparece **zero
+> vezes** — as 69 chamadas estão dentro do `src/`, do `PL_FPDF` para ele. Os 18
+> blocos Javadoc continuam na spec, que é onde quem mantém os lê.
+>
+> A omissão é **declarada**, não silenciosa: o gerador recusa API que não esteja
+> nem num grupo nem em `FORA_DA_REFERENCIA`. Assim uma API nova não some da
+> página sem alguém decidir — foi exatamente assim que as 18 do utilitário
+> entraram, sem ninguém perguntar para quem a página era.
 >
 > Duas diferenças em relação ao que era escrito à mão: a tabela de parâmetros
 > tem **4 colunas** em vez de 5, porque na spec a descrição e os valores

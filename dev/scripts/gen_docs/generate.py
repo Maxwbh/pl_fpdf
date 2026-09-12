@@ -215,21 +215,27 @@ def sobrecarga_compativel(base, outra):
 
 def gerar_md(api):
     porNome = {a['nome']: a for a in api if not a['sobrecarga']}
-    faltam = [n for _, v in meta.CATEGORIAS for n in v if n not in porNome]
-    sobram = [n for n in porNome
-              if n not in {x for _, v in meta.CATEGORIAS for x in v}]
-    if faltam or sobram:
+    nos_grupos = {x for _, v in meta.CATEGORIAS for x in v}
+    fora = set(meta.FORA_DA_REFERENCIA)
+    faltam = [n for n in nos_grupos if n not in porNome]
+    # API que nao esta em grupo nenhum E nao foi declarada fora: alguem tem de
+    # decidir. Sem isto ela sumiria da pagina em silencio, que foi como as 18
+    # do PL_FPDF_UTIL entraram sem ninguem perguntar para quem a pagina e.
+    sobram = [n for n in porNome if n not in nos_grupos and n not in fora]
+    ambos = sorted(nos_grupos & fora)
+    if faltam or sobram or ambos:
         raise SystemExit(
             'meta.py e a spec não batem.\n'
-            f'  em meta.py e não na spec: {faltam}\n'
-            f'  na spec e em nenhum grupo: {sobram}')
+            f'  em meta.py e não na spec: {sorted(faltam)}\n'
+            f'  na spec e em nenhum grupo nem em FORA_DA_REFERENCIA: '
+            f'{sorted(sobram)}\n'
+            f'  em um grupo E em FORA_DA_REFERENCIA: {ambos}')
 
     t = [f'# PL_FPDF — Referência da API\n',
          f'**Versão:** {versao()} | **Oracle:** 19c+ | **Licença:** MIT\n',
          'Documentação de cada função e procedure pública: sintaxe, '
          'parâmetros, retorno,\nerros levantados e exemplo.\n',
-         '> **Página gerada** do Javadoc de `src/PL_FPDF.pks` e '
-         '`src/PL_FPDF_UTIL.pks`.\n'
+         '> **Página gerada** do Javadoc de `src/PL_FPDF.pks`.\n'
          '> Não edite aqui: corrija o bloco na spec e rode o gerador.\n',
          '> Guia de uso por tarefa: [DOCUMENTATION.md](DOCUMENTATION.md) · '
          'API Reference (English): [API_REFERENCE_EN.md](API_REFERENCE_EN.md)\n',
@@ -250,7 +256,9 @@ def gerar_md(api):
 
 def main():
     api = ler_api()
-    n_api = len([a for a in api if not a['sobrecarga']])
+    # o que a PAGINA tem, nao o que a spec tem: as APIs declaradas em
+    # FORA_DA_REFERENCIA sao lidas e nao entram
+    n_api = len({x for _, v in meta.CATEGORIAS for x in v})
     saidas = [(MD, gerar_md(api)),
               (HTML, gerar_html.pagina(api, meta.CATEGORIAS,
                                        meta.VEJA_TAMBEM, sintaxe,
