@@ -54,6 +54,8 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 import gerar_html  # noqa: E402
 import meta  # noqa: E402
+import parse_javadoc  # noqa: E402
+import textos_en  # noqa: E402
 
 
 def do_repo(*partes):
@@ -62,6 +64,9 @@ def do_repo(*partes):
 
 MD = do_repo('docs', 'API_REFERENCE.md')
 HTML = do_repo('site', 'reference.html')
+MD_EN = do_repo('docs', 'API_REFERENCE_EN.md')
+HTML_EN = do_repo('site', 'en', 'reference.html')
+MOLDE_EN = do_repo('dev', 'scripts', 'gen_docs', 'reference_molde_en.html')
 
 
 def ler_api():
@@ -126,11 +131,12 @@ def sintaxe(a):
     return '\n'.join(linhas)
 
 
-def tabela_params(a):
+def tabela_params(a, rot):
     if not a['params']:
         return ''
     tipo = {p['name'].lower(): p for p in a['assinatura']['params']}
-    out = ['| Parâmetro | Tipo | Padrão | Descrição |',
+    out = [f'| {rot["col_param"]} | {rot["col_tipo"]} | {rot["col_padrao"]} '
+           f'| {rot["col_desc"]} |',
            '|-----------|------|--------|-----------|']
     for p in a['params']:
         s = tipo.get(p['nome'].lower(), {})
@@ -143,49 +149,48 @@ def tabela_params(a):
     return '\n'.join(out)
 
 
-def secao_md(a, sobrecargas=()):
+def secao_md(a, sobrecargas=(), rot=gerar_html.ROTULOS_PT):
     fora = []
     fora.append(f'### {a["nome"]}\n')
     fora.append(a['descricao'] + '\n')
-    fora.append('#### Sintaxe\n')
+    fora.append(f'#### {rot["sintaxe"]}\n')
     fora.append('```sql\n' + sintaxe(a) + '\n```\n')
     for s in sobrecargas:
         fora.append('```sql\n' + sintaxe(s) + '\n```\n')
     if a['params']:
-        fora.append('#### Parâmetros\n')
-        fora.append(tabela_params(a) + '\n')
+        fora.append(f'#### {rot["parametros"]}\n')
+        fora.append(tabela_params(a, rot) + '\n')
         for s in sobrecargas:
             if sobrecarga_compativel(a, s):
-                fora.append('Na sobrecarga acima os parâmetros são os mesmos, '
-                            'na mesma ordem, com outros nomes: '
+                fora.append(rot['sobrecarga_mesma']
                             + ', '.join(f'`{p["name"]}`'
                                         for p in s['assinatura']['params'])
                             + '.\n')
             else:
-                fora.append('A sobrecarga acima tem assinatura própria; o '
-                            'bloco de documentação é o da primeira.\n')
+                fora.append(rot['sobrecarga_outra'] + '\n')
     if a['retorno']:
-        fora.append('#### Retorno\n')
+        fora.append(f'#### {rot["retorno"]}\n')
         fora.append(a['retorno'] + '\n')
     for n in a['notas']:
-        fora.append('#### Nota\n' if n['tipo'] == 'note'
-                    else f'#### {n["tipo"].capitalize()}\n')
+        fora.append('#### ' + rot['nota'].get(n['tipo'],
+                                              n['tipo'].capitalize()) + '\n')
         fora.append(n['texto'] + '\n')
     if a['erros']:
-        fora.append('#### Erros\n')
-        fora.append('| Código | Quando |\n|--------|--------|')
+        fora.append(f'#### {rot["erros"]}\n')
+        fora.append(f'| {rot["col_codigo"]} | {rot["col_quando"]} |'
+                    '\n|--------|--------|')
         for e in a['erros']:
             fora.append(f'| `ORA{e["codigo"]}` | {e["texto"]} |')
         fora.append('')
     if a['exemplo']:
-        fora.append('#### Exemplo\n')
+        fora.append(f'#### {rot["exemplo"]}\n')
         rec = min(len(x) - len(x.lstrip())
                   for x in a['exemplo'] if x.strip())
         fora.append('```sql\n' + '\n'.join(x[rec:] for x in a['exemplo'])
                     + '\n```\n')
     vt = meta.VEJA_TAMBEM.get(a['nome'])
     if vt:
-        fora.append('**Veja também:** '
+        fora.append(f'**{rot["veja"]}:** '
                     + ' · '.join(f'[{x}](#{x.lower()})' for x in vt) + '\n')
     return '\n'.join(fora)
 
@@ -213,7 +218,8 @@ def sobrecarga_compativel(base, outra):
     return a == b
 
 
-def gerar_md(api):
+def conferir_meta(api):
+    """meta.py e a spec dizem a mesma coisa sobre o que entra na página."""
     porNome = {a['nome']: a for a in api if not a['sobrecarga']}
     nos_grupos = {x for _, v in meta.CATEGORIAS for x in v}
     fora = set(meta.FORA_DA_REFERENCIA)
@@ -231,38 +237,93 @@ def gerar_md(api):
             f'{sorted(sobram)}\n'
             f'  em um grupo E em FORA_DA_REFERENCIA: {ambos}')
 
-    t = [f'# PL_FPDF — Referência da API\n',
-         f'**Versão:** {versao()} | **Oracle:** 19c+ | **Licença:** MIT\n',
-         'Documentação de cada função e procedure pública: sintaxe, '
-         'parâmetros, retorno,\nerros levantados e exemplo.\n',
-         '> **Página gerada** do Javadoc de `src/PL_FPDF.pks`.\n'
-         '> Não edite aqui: corrija o bloco na spec e rode o gerador.\n',
-         '> Guia de uso por tarefa: [DOCUMENTATION.md](DOCUMENTATION.md) · '
-         'API Reference (English): [API_REFERENCE_EN.md](API_REFERENCE_EN.md)\n',
-         '## Índice\n']
+
+CABECA_PT = """# PL_FPDF — Referência da API
+
+**Versão:** {v} | **Oracle:** 19c+ | **Licença:** MIT
+
+Documentação de cada função e procedure pública: sintaxe, parâmetros, retorno,
+erros levantados e exemplo.
+
+> **Página gerada** do Javadoc de `src/PL_FPDF.pks`.
+> Não edite aqui: corrija o bloco na spec e rode o gerador.
+
+> Guia de uso por tarefa: [DOCUMENTATION.md](DOCUMENTATION.md) · \
+API Reference (English): [API_REFERENCE_EN.md](API_REFERENCE_EN.md)
+
+## Índice
+"""
+
+CABECA_EN = """# PL_FPDF — API Reference
+
+**Version:** {v} | **Oracle:** 19c+ | **License:** MIT
+
+Documentation of every public function and procedure: syntax, parameters,
+return, errors raised and an example.
+
+> **Generated page**, from the Javadoc in `src/PL_FPDF.pks` and the English
+> text in `dev/scripts/gen_docs/textos_en.py`. Do not edit it here.
+
+> Task-oriented guide: [DOCUMENTATION_EN.md](DOCUMENTATION_EN.md) · \
+Referência da API (português): [API_REFERENCE.md](API_REFERENCE.md)
+
+## Index
+"""
+
+
+def gerar_md(api, rot=gerar_html.ROTULOS_PT, cabeca=CABECA_PT,
+             titulo_grupo=None):
+    porNome = {a['nome']: a for a in api if not a['sobrecarga']}
+
+    def grupo(cat):
+        return titulo_grupo(cat) if titulo_grupo else cat
+
+    t = [cabeca.format(v=versao())]
     for cat, apis in meta.CATEGORIAS:
-        t.append(f'**{cat}** — ' + ' · '.join(
+        t.append(f'**{grupo(cat)}** — ' + ' · '.join(
             f'[{n}](#{n.lower()})' for n in apis) + '  ')
     t.append('\n---\n')
+    grupos = agrupar(api)
     for cat, apis in meta.CATEGORIAS:
-        t.append(f'## {cat}\n')
-        grupos = agrupar(api)
+        t.append(f'## {grupo(cat)}\n')
         for n in apis:
             t.append(secao_md(porNome[n],
-                              [x for x in grupos[n] if x['sobrecarga']]))
+                              [x for x in grupos[n] if x['sobrecarga']], rot))
             t.append('---\n')
     return '\n'.join(t).replace('\n\n\n', '\n\n') + '\n'
 
 
 def main():
     api = ler_api()
+    conferir_meta(api)
     # o que a PAGINA tem, nao o que a spec tem: as APIs declaradas em
     # FORA_DA_REFERENCIA sao lidas e nao entram
-    n_api = len({x for _, v in meta.CATEGORIAS for x in v})
+    na_pagina = {x for _, v in meta.CATEGORIAS for x in v}
+    n_api = len(na_pagina)
+    # a traducao so ve o que sai na pagina: pedir ingles para o que nao e
+    # publicado seria trabalho por nada, e o gerador recusa texto sem par
+    api_en = textos_en.traduzir([a for a in api if a['nome'] in na_pagina],
+                                parse_javadoc.repartir_subitens)
+
+    def em_ingles(cat):
+        en = textos_en.CATEGORIAS_EN.get(cat)
+        if not en:
+            raise SystemExit(f'grupo sem nome em inglês em textos_en.py: '
+                             f'{cat}')
+        return en
+
     saidas = [(MD, gerar_md(api)),
               (HTML, gerar_html.pagina(api, meta.CATEGORIAS,
                                        meta.VEJA_TAMBEM, sintaxe,
-                                       sobrecarga_compativel))]
+                                       sobrecarga_compativel,
+                                       slug=meta.SLUG_GRUPO)),
+              (MD_EN, gerar_md(api_en, gerar_html.ROTULOS_EN, CABECA_EN,
+                               em_ingles)),
+              (HTML_EN, gerar_html.pagina(api_en, meta.CATEGORIAS,
+                                          meta.VEJA_TAMBEM, sintaxe,
+                                          sobrecarga_compativel,
+                                          gerar_html.ROTULOS_EN, MOLDE_EN,
+                                          meta.SLUG_GRUPO, em_ingles))]
     if '--check' in sys.argv:
         fora = [os.path.relpath(c, RAIZ) for c, novo in saidas
                 if io.open(c, encoding='utf-8').read() != novo]

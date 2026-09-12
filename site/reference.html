@@ -372,6 +372,7 @@
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Reset;</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#init">Init</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
 </article>
+<h2 class="grp" id="grp-pages">Páginas e posicionamento</h2>
 <article class="api" id="acceptpagebreak">
 <h3>AcceptPageBreak <span class="kind">Function</span><a class="anchor" href="#acceptpagebreak" aria-label="link">#</a></h3>
 <p class="d">Diz se a quebra automática está ligada. É consultada pelo Cell antes de decidir abrir página nova.</p>
@@ -576,6 +577,7 @@ PL_FPDF.Ln;</pre></div>
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetY(-20);   <span class="c">-- 20 acima do pé</span></pre></div>
 <p class="see"><b>Veja também:</b> <a href="#gety">GetY</a>, <a href="#setxy">SetXY</a></p>
 </article>
+<h2 class="grp" id="grp-fonts">Fontes e UTF-8</h2>
 <article class="api" id="addfont">
 <h3>AddFont <span class="kind">Procedure</span><a class="anchor" href="#addfont" aria-label="link">#</a></h3>
 <p class="d">Registra uma fonte para uso pelo SetFont. Para as 14 fontes padrão do PDF não é preciso chamar isto -- elas já estão disponíveis, e escrevem acentuado desde a 3.4.0.</p>
@@ -723,6 +725,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <h5>Retorno</h5><p class="d">VARCHAR2 - o texto pronto para ir entre parênteses num objeto PDF</p>
 <h5>Exemplo</h5><div class="code"><pre>l_txt := PL_FPDF.UTF8ToPDFString(<span class="s">&#x27;Total (liquido)&#x27;</span>);</pre></div>
 </article>
+<h2 class="grp" id="grp-text">Escrita de texto</h2>
 <article class="api" id="cell">
 <h3>Cell <span class="kind">Procedure</span><a class="anchor" href="#cell" aria-label="link">#</a></h3>
 <p class="d">Escreve uma célula retangular: opcionalmente com borda, com fundo e com texto dentro, e move o cursor conforme pln. É a rotina mais usada da biblioteca. Se a célula não couber no que resta da página e a quebra automática estiver ligada, a página é trocada antes de escrever.</p>
@@ -968,6 +971,7 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.WriteRotated(5, <span class="s">&#x27;CONFIDENCIAL&#x27;</span>, <span class="k">NULL</span>, 90);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a></p>
 </article>
+<h2 class="grp" id="grp-draw">Cores e desenho</h2>
 <article class="api" id="line">
 <h3>Line <span class="kind">Procedure</span><a class="anchor" href="#line" aria-label="link">#</a></h3>
 <p class="d">Desenha um segmento de reta entre dois pontos, com a cor e a espessura correntes.</p>
@@ -1150,6 +1154,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabecalho&#x27;</span>, <span class="s
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.Triangle(20, 20, 5, <span class="s">&#x27;right&#x27;</span>, <span class="s">&#x27;F&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#poly">Poly</a>, <a href="#rect">Rect</a></p>
 </article>
+<h2 class="grp" id="grp-images">Imagens</h2>
 <article class="api" id="getimagefromurl">
 <h3>getImageFromUrl <span class="kind">Function</span><a class="anchor" href="#getimagefromurl" aria-label="link">#</a></h3>
 <p class="d">Busca uma imagem pela rede e devolve os bytes com o cabeçalho já interpretado. Exige ACL de rede concedida ao schema. Substitui a implementação sobre OrdImage, que saiu de linha.</p>
@@ -1225,6 +1230,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabecalho&#x27;</span>, <span class="s
 PL_FPDF.ImageFromBlob(l_logo, <span class="s">&#x27;LOGO&#x27;</span>, 10, 10, 40);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#image">image</a>, <a href="#overlayimage">OverlayImage</a></p>
 </article>
+<h2 class="grp" id="grp-links">Links</h2>
 <article class="api" id="addlink">
 <h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="link">#</a></h3>
 <p class="d">RECUSA com -20601. Criaria um link interno, e link interno não está implementado: o /Dest nunca chegou a ser escrito no arquivo, então o identificador que esta função devolveria não levaria a lugar nenhum -- e o Link o recusa. Até setembro/2026 a chamada levantava ORA-06531, &quot;reference to uninitialized collection&quot;, porque a coleção interna nunca foi inicializada: nunca funcionou, em nenhuma versão. Passa a recusar com mensagem que diz o que usar no lugar.</p>
@@ -1255,7 +1261,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>—</td><td>altura</td></tr>
 <tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>—</td><td>a URL</td></tr>
 </tbody></table></div>
-<h5>Limitation</h5><p class="d">1. Uma área por página. Uma segunda chamada na mesma página substitui a primeira, em silêncio -- a estrutura guarda um registro por página. Documentado por ser assim, não por ser o desejável. 2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que escreveria o /Dest saiu comentado no porte original e nunca voltou; emiti-lo assim produzia um /Annot com o dicionário aberto, isto é, arquivo malformado. Desde setembro/2026 a chamada levanta erro em vez de gravar o arquivo quebrado. Use URL.</p>
+<h5>Limitação</h5><p class="d">1. Uma área por página. Uma segunda chamada na mesma página substitui a primeira, em silêncio -- a estrutura guarda um registro por página. Documentado por ser assim, não por ser o desejável. 2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que escreveria o /Dest saiu comentado no porte original e nunca voltou; emiti-lo assim produzia um /Annot com o dicionário aberto, isto é, arquivo malformado. Desde setembro/2026 a chamada levanta erro em vez de gravar o arquivo quebrado. Use URL.</p>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20601</td><td>destino não é URL -- link interno ou NULL</td></tr>
 </tbody></table></div>
@@ -1282,6 +1288,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 PL_FPDF.Link(20, 40, 60, 10, <span class="s">&#x27;https://example.com&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#addlink">AddLink</a></p>
 </article>
+<h2 class="grp" id="grp-headfoot">Cabeçalho e rodapé</h2>
 <article class="api" id="footer">
 <h3>Footer <span class="kind">Procedure</span><a class="anchor" href="#footer" aria-label="link">#</a></h3>
 <p class="d">Executa a rotina registrada em SetFooterProc. É chamada sozinha ao fechar cada página; não se chama à mão.</p>
@@ -1339,6 +1346,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Pagina &#x27;</span> || PL_FPDF.PageNo
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetHeaderProc(<span class="s">&#x27;MEU_PKG.CABECALHO&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#setfooterproc">SetFooterProc</a>, <a href="#header">Header</a></p>
 </article>
+<h2 class="grp" id="grp-codes">QR Code e código de barras</h2>
 <article class="api" id="addbarcode">
 <h3>AddBarcode <span class="kind">Procedure</span><a class="anchor" href="#addbarcode" aria-label="link">#</a></h3>
 <p class="d">Desenha um código de barras linear na página corrente. O codificador é o do PL_FPDF_UTIL, validado contra o zxing-cpp.</p>
@@ -1402,6 +1410,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Pagina &#x27;</span> || PL_FPDF.PageNo
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.AddQRCode(50, 50, 40, <span class="s">&#x27;https://example.com&#x27;</span>, <span class="s">&#x27;URL&#x27;</span>, <span class="s">&#x27;M&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#addbarcode">AddBarcode</a></p>
 </article>
+<h2 class="grp" id="grp-meta">Metadados e configuração</h2>
 <article class="api" id="getdocumentmetadata">
 <h3>GetDocumentMetadata <span class="kind">Function</span><a class="anchor" href="#getdocumentmetadata" aria-label="link">#</a></h3>
 <p class="d">Devolve, em JSON, o que está configurado no documento em andamento e quantas páginas ele já tem.</p>
@@ -1553,6 +1562,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Pagina &#x27;</span> || PL_FPDF.PageNo
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.SetTitle(<span class="s">&#x27;Relatório de Produção&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
 </article>
+<h2 class="grp" id="grp-output">Saída do documento</h2>
 <article class="api" id="closepdf">
 <h3>ClosePDF <span class="kind">Procedure</span><a class="anchor" href="#closepdf" aria-label="link">#</a></h3>
 <p class="d">Fecha o documento: escreve o rodapé da última página, monta a estrutura do arquivo e troca o marcador do total de páginas. Sem nenhuma página, uma é criada em branco. As rotinas de saída chamam isto sozinhas.</p>
@@ -1637,6 +1647,7 @@ INSERT <span class="k">INTO</span> documentos (id, arquivo) VALUES (1, l_pdf);</
 <h5>Exemplo</h5><div class="code"><pre>l_pdf := PL_FPDF.OutputBlob;    <span class="c">-- prefira esta</span></pre></div>
 <p class="see"><b>Veja também:</b> <a href="#outputblob">OutputBlob</a></p>
 </article>
+<h2 class="grp" id="grp-manip">Manipulação de PDF existente</h2>
 <article class="api" id="addwatermark">
 <h3>AddWatermark <span class="kind">Procedure</span><a class="anchor" href="#addwatermark" aria-label="link">#</a></h3>
 <p class="d">Acrescenta marca d&#x27;água de texto às páginas indicadas</p>
@@ -1705,8 +1716,7 @@ PL_FPDF.ClearPDFCache();</pre></div>
 <tr><td class="pname">ORA-20892</td><td>Cabeçalho zlib inválido</td></tr>
 <tr><td class="pname">ORA-20893</td><td>Saída passou de p_max_bytes</td></tr>
 </tbody></table></div>
-<h5>Exemplo</h5><div class="code"><pre>  l_claro := PL_FPDF.FlateDecode(l_comprimido);
-Author: Maxwell da Silva Oliveira <maxwbh@gmail.com></pre></div>
+<h5>Exemplo</h5><div class="code"><pre>l_claro := PL_FPDF.FlateDecode(l_comprimido);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a></p>
 </article>
 <article class="api" id="flateencode">
@@ -1719,8 +1729,7 @@ Author: Maxwell da Silva Oliveira <maxwbh@gmail.com></pre></div>
 <tr><td class="pname">p_data</td><td class="ptype">BLOB</td><td>—</td><td>conteúdo a comprimir (BLOB)</td></tr>
 </tbody></table></div>
 <h5>Retorno</h5><p class="d">BLOB - stream zlib: cabeçalho, DEFLATE e Adler-32</p>
-<h5>Exemplo</h5><div class="code"><pre>  l_comprimido := PL_FPDF.FlateEncode(l_claro);
-Author: Maxwell da Silva Oliveira <maxwbh@gmail.com></pre></div>
+<h5>Exemplo</h5><div class="code"><pre>l_comprimido := PL_FPDF.FlateEncode(l_claro);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#flatedecode">FlateDecode</a>, <a href="#setcompression">SetCompression</a></p>
 </article>
 <article class="api" id="getactivepagecount">
@@ -1851,8 +1860,8 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total de páginas:&#x27;</span> || l_
 <h5>Sintaxe</h5>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputModifiedPDF <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
 <h5>Retorno</h5><p class="d">Documento PDF modificado</p>
-<h5>Process</h5><p class="d">1. Valida se PDF está carregado e modificado 2. Indexa a origem (cadeia de xref + árvore de páginas achatada) 3. Seleciona as páginas não marcadas por RemovePage, na ordem original 4. Copia todo objeto alcançável a partir dessas páginas, renumerando as referências indiretas; o payload dos streams é copiado byte a byte 5. Emite um novo Catalog, um novo nó /Pages, xref e trailer</p>
-<h5>Limitation</h5><p class="d">Marcas d&#x27;água e overlays de texto e de imagem são todos desenhados. xref em stream e object streams (PDF 1.5+) são lidos, inclusive com o predictor PNG; um malformado levanta -20843/-20847/-20848.</p>
+<h5>Processo</h5><p class="d">1. Valida se PDF está carregado e modificado 2. Indexa a origem (cadeia de xref + árvore de páginas achatada) 3. Seleciona as páginas não marcadas por RemovePage, na ordem original 4. Copia todo objeto alcançável a partir dessas páginas, renumerando as referências indiretas; o payload dos streams é copiado byte a byte 5. Emite um novo Catalog, um novo nó /Pages, xref e trailer</p>
+<h5>Limitação</h5><p class="d">Marcas d&#x27;água e overlays de texto e de imagem são todos desenhados. xref em stream e object streams (PDF 1.5+) são lidos, inclusive com o predictor PNG; um malformado levanta -20843/-20847/-20848.</p>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20809</td><td>nenhum PDF carregado -- chame LoadPDF antes</td></tr>
 <tr><td class="pname">ORA-20819</td><td>o PDF não foi modificado (sem alterações para aplicar)</td></tr>
@@ -1925,6 +1934,7 @@ PL_FPDF.RotatePage(1, 90);    <span class="c">-- Rotacionar página 1</span>
 PL_FPDF.RotatePage(2, 180);   <span class="c">-- Rotacionar página 2</span></pre></div>
 <p class="see"><b>Veja também:</b> <a href="#loadpdf">LoadPDF</a>, <a href="#removepage">RemovePage</a>, <a href="#outputmodifiedpdf">OutputModifiedPDF</a></p>
 </article>
+<h2 class="grp" id="grp-overlay">Overlays</h2>
 <article class="api" id="clearoverlays">
 <h3>ClearOverlays <span class="kind">Procedure</span><a class="anchor" href="#clearoverlays" aria-label="link">#</a></h3>
 <p class="d">Limpar todas as sobreposições de todas ou de página específica</p>
@@ -2065,6 +2075,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.RemoveOverlay(<span class="s">&#x27;OVL_001&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#getoverlays">GetOverlays</a>, <a href="#clearoverlays">ClearOverlays</a></p>
 </article>
+<h2 class="grp" id="grp-multi">Multi-PDF (merge, split, extract)</h2>
 <article class="api" id="extractpages">
 <h3>ExtractPages <span class="kind">Function</span><a class="anchor" href="#extractpages" aria-label="link">#</a></h3>
 <p class="d">Extrair as páginas indicadas de um PDF carregado para um novo documento. A ordem pedida é respeitada (&#x27;5,1&#x27; devolve a página 5 e depois a 1) e uma página pode repetir. Só os objetos alcançáveis a partir das páginas escolhidas são copiados, então o resultado fica menor que a origem.</p>
@@ -2229,6 +2240,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <h5>Exemplo</h5><div class="code"><pre>PL_FPDF.UnloadPDF(<span class="s">&#x27;report_jan&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#loadpdfwithid">LoadPDFWithID</a>, <a href="#clearpdfcache">ClearPDFCache</a></p>
 </article>
+<h2 class="grp" id="grp-security">Segurança e criptografia</h2>
 <article class="api" id="decryptpdf">
 <h3>DecryptPDF <span class="kind">Function</span><a class="anchor" href="#decryptpdf" aria-label="link">#</a></h3>
 <p class="d">Remover criptografia do PDF usando senha</p>
@@ -2395,6 +2407,7 @@ l_pdf := PL_FPDF.OutputBlob;</pre></div>
 PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span class="k">FALSE</span>, p_modify => <span class="k">FALSE</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#setencryption">SetEncryption</a>, <a href="#encryptpdf">EncryptPDF</a></p>
 </article>
+<h2 class="grp" id="grp-diag">Diagnóstico e utilidades</h2>
 <article class="api" id="debugdisabled">
 <h3>DebugDisabled <span class="kind">Procedure</span><a class="anchor" href="#debugdisabled" aria-label="link">#</a></h3>
 <p class="d">Desliga a saída de diagnóstico. É o estado padrão.</p>
