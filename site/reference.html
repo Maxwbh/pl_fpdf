@@ -760,7 +760,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>—</td><td>largura; 0 vai até a margem direita</td></tr>
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>altura</td></tr>
 <tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>o texto</td></tr>
-<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td><code>&#x27;0&#x27;</code></td><td>&#x27;0&#x27; sem borda, &#x27;1&#x27; moldura inteira, ou a combinação de &#x27;L&#x27; (Left, esquerda), &#x27;T&#x27; (Top, topo), &#x27;R&#x27; (Right, direita) e &#x27;B&#x27; (Bottom, base)</td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td><code>&#x27;0&#x27;</code></td><td>&#x27;0&#x27; sem borda, &#x27;1&#x27; moldura inteira, ou as letras dos lados que se quer, combinadas: &#x27;L&#x27; (Left, esquerda), &#x27;T&#x27; (Top, topo), &#x27;R&#x27; (Right, direita) e &#x27;B&#x27; (Bottom, base). &#x27;LR&#x27; desenha só as duas laterais; &#x27;TB&#x27;, só topo e base</td></tr>
 <tr><td class="pname">pln</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>para onde vai o cursor:<br>0 = à direita da célula<br>1 = próxima linha, na margem esquerda<br>2 = abaixo, mantendo o x</td></tr>
 <tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>&#x27;L&#x27; (Left, esquerda), &#x27;C&#x27; (Center, centro), &#x27;R&#x27; (Right, direita)</td></tr>
 <tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>1 pinta o fundo com a cor de SetFillColor, 0 não</td></tr>
@@ -791,7 +791,7 @@ PL_FPDF.Cell(30, 8, <span class="s">&#x27;1.234,56&#x27;</span>, <span class="s"
 <tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td>—</td><td>largura; 0 vai até a margem direita</td></tr>
 <tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>altura</td></tr>
 <tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>o texto</td></tr>
-<tr><td class="pname">p_border</td><td class="ptype">VARCHAR2</td><td><code>&#x27;0&#x27;</code></td><td>&#x27;0&#x27; sem borda, &#x27;1&#x27; moldura, ou &#x27;L&#x27;,&#x27;T&#x27;,&#x27;R&#x27;,&#x27;B&#x27;</td></tr>
+<tr><td class="pname">p_border</td><td class="ptype">VARCHAR2</td><td><code>&#x27;0&#x27;</code></td><td>&#x27;0&#x27; sem borda, &#x27;1&#x27; moldura inteira, ou as letras dos lados que se quer, combinadas: &#x27;L&#x27; (Left, esquerda), &#x27;T&#x27; (Top, topo), &#x27;R&#x27; (Right, direita) e &#x27;B&#x27; (Bottom, base). &#x27;LR&#x27; desenha só as duas laterais; &#x27;TB&#x27;, só topo e base</td></tr>
 <tr><td class="pname">p_ln</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>0 à direita, 1 próxima linha na margem esquerda, 2 abaixo mantendo o x</td></tr>
 <tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>&#x27;L&#x27; (Left, esquerda), &#x27;C&#x27; (Center, centro), &#x27;R&#x27; (Right, direita)</td></tr>
 <tr><td class="pname">p_fill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>1 pinta o fundo, 0 não</td></tr>
@@ -880,8 +880,8 @@ PL_FPDF.Cell(30, 8, <span class="s">&#x27;1.234,56&#x27;</span>, <span class="s"
 <tr><td class="pname">pw</td><td class="ptype">NUMBER</td><td>—</td><td>largura do bloco; 0 vai até a margem direita</td></tr>
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>altura de cada linha; em branco usa a entrelinha de SetLineSpacing</td></tr>
 <tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>—</td><td>o texto</td></tr>
-<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td><code>&#x27;0&#x27;</code></td><td>&#x27;0&#x27; sem borda, &#x27;1&#x27; moldura, ou &#x27;L&#x27;,&#x27;T&#x27;,&#x27;R&#x27;,&#x27;B&#x27;</td></tr>
-<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td><code>&#x27;J&#x27;</code></td><td>&#x27;J&#x27; justificado (Justified, padrão), &#x27;L&#x27; (Left, esquerda), &#x27;C&#x27; (Center, centro), &#x27;R&#x27; (Right, direita) (default), &#x27;L&#x27;, &#x27;C&#x27;, &#x27;R&#x27;</td></tr>
+<tr><td class="pname">pborder</td><td class="ptype">VARCHAR2</td><td><code>&#x27;0&#x27;</code></td><td>&#x27;0&#x27; sem borda, &#x27;1&#x27; moldura inteira, ou as letras dos lados que se quer, combinadas: &#x27;L&#x27; (Left, esquerda), &#x27;T&#x27; (Top, topo), &#x27;R&#x27; (Right, direita) e &#x27;B&#x27; (Bottom, base). &#x27;LR&#x27; desenha só as duas laterais; &#x27;TB&#x27;, só topo e base</td></tr>
+<tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td><code>&#x27;J&#x27;</code></td><td>&#x27;J&#x27; justificado (Justified, o padrão), &#x27;L&#x27; (Left, esquerda), &#x27;C&#x27; (Center, centro) ou &#x27;R&#x27; (Right, direita)</td></tr>
 <tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>1 pinta o fundo, 0 não</td></tr>
 <tr><td class="pname">phMax</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>altura máxima do bloco; 0 sem limite</td></tr>
 </tbody></table></div>
@@ -1391,7 +1391,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Pagina &#x27;</span> || PL_FPDF.PageNo
 <tr><td class="pname">p_size</td><td class="ptype">NUMBER</td><td>—</td><td>o lado do símbolo</td></tr>
 <tr><td class="pname">p_data</td><td class="ptype">VARCHAR2</td><td>—</td><td>o conteúdo a codificar</td></tr>
 <tr><td class="pname">p_format</td><td class="ptype">VARCHAR2</td><td><code>&#x27;TEXT&#x27;</code></td><td>&#x27;TEXT&#x27;, &#x27;URL&#x27;, &#x27;PIX&#x27;, &#x27;VCARD&#x27;, &#x27;WIFI&#x27;, &#x27;EMAIL&#x27;</td></tr>
-<tr><td class="pname">p_error_correction</td><td class="ptype">VARCHAR2</td><td><code>&#x27;M&#x27;</code></td><td>nível de correção de erro: &#x27;L&#x27; (7%), &#x27;M&#x27; (15%), &#x27;Q&#x27; (25%), &#x27;H&#x27; (30%)</td></tr>
+<tr><td class="pname">p_error_correction</td><td class="ptype">VARCHAR2</td><td><code>&#x27;M&#x27;</code></td><td>quanto do símbolo pode ser perdido e ainda assim ler: &#x27;L&#x27; (Low, 7%), &#x27;M&#x27; (Medium, 15%), &#x27;Q&#x27; (Quartile, 25%) ou &#x27;H&#x27; (High, 30%). Quanto maior, mais módulos o símbolo ocupa</td></tr>
 </tbody></table></div>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20870</td><td>conteúdo vazio</td></tr>
@@ -1830,7 +1830,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total de páginas:&#x27;</span> || l_
 <tr><td class="pname">p_pdf_blob</td><td class="ptype">BLOB</td><td>—</td><td>Documento PDF como BLOB</td></tr>
 </tbody></table></div>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
-<tr><td class="pname">ORA-20800</td><td>PDF inválido (NULL ou pequeno) (NULL or too small)</td></tr>
+<tr><td class="pname">ORA-20800</td><td>PDF nulo, ou pequeno demais para ter cabeçalho e trailer</td></tr>
 <tr><td class="pname">ORA-20801</td><td>Cabeçalho PDF inválido</td></tr>
 <tr><td class="pname">ORA-20802</td><td>startxref não encontrado</td></tr>
 <tr><td class="pname">ORA-20803</td><td>Tabela xref inválida</td></tr>
@@ -1979,7 +1979,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
     p_options     JSON_OBJECT_T <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
 <tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>—</td><td>Número da página (base 1)</td></tr>
-<tr><td class="pname">p_image_blob</td><td class="ptype">BLOB</td><td>—</td><td>Dados da imagem (JPEG ou PNG) (JPEG or PNG)</td></tr>
+<tr><td class="pname">p_image_blob</td><td class="ptype">BLOB</td><td>—</td><td>os bytes da imagem, em JPEG ou PNG</td></tr>
 <tr><td class="pname">p_x</td><td class="ptype">NUMBER</td><td>—</td><td>Posição X em pontos PDF</td></tr>
 <tr><td class="pname">p_y</td><td class="ptype">NUMBER</td><td>—</td><td>Posição Y (de baixo) (from bottom)</td></tr>
 <tr><td class="pname">p_width</td><td class="ptype">NUMBER</td><td><code>NULL</code></td><td>Largura em pontos (<br>NULL = original)</td></tr>
@@ -2131,7 +2131,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <h5>Erros</h5><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20828</td><td>ID do PDF já carregado</td></tr>
 <tr><td class="pname">ORA-20829</td><td>Máximo de PDFs excedido (10 max)</td></tr>
-<tr><td class="pname">ORA-20830</td><td>ID de PDF inválido (empty or too long)</td></tr>
+<tr><td class="pname">ORA-20830</td><td>identificador vazio ou longo demais</td></tr>
 <tr><td class="pname">ORA-20800</td><td>PDF nulo ou pequeno demais para ser válido</td></tr>
 <tr><td class="pname">ORA-20801</td><td>cabeçalho %PDF-x.x ausente ou malformado</td></tr>
 </tbody></table></div>
@@ -2465,7 +2465,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF_UTIL.qr_matriz;</pre></div>
 <h5>Parâmetros</h5><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
 <tr><td class="pname">p_dados</td><td class="ptype">—</td><td>—</td><td>o conteúdo a codificar</td></tr>
-<tr><td class="pname">p_ec</td><td class="ptype">—</td><td>—</td><td>nível de correção de erro: &#x27;L&#x27; (7%), &#x27;M&#x27; (15%), &#x27;Q&#x27; (25%), &#x27;H&#x27; (30%)</td></tr>
+<tr><td class="pname">p_ec</td><td class="ptype">—</td><td>—</td><td>quanto do símbolo pode ser perdido e ainda assim ler: &#x27;L&#x27; (Low, 7%), &#x27;M&#x27; (Medium, 15%), &#x27;Q&#x27; (Quartile, 25%) ou &#x27;H&#x27; (High, 30%)</td></tr>
 <tr><td class="pname">o_mat</td><td class="ptype">—</td><td>—</td><td>a matriz</td></tr>
 <tr><td class="pname">o_lado</td><td class="ptype">—</td><td>—</td><td>o lado em módulos</td></tr>
 <tr><td class="pname">o_versao</td><td class="ptype">—</td><td>—</td><td>a versão do símbolo (1..20)</td></tr>

@@ -936,7 +936,7 @@ PROCEDURE PL_FPDF.Cell(
 | `pw` | NUMBER | — | largura; 0 vai até a margem direita |
 | `ph` | NUMBER | `0` | altura |
 | `ptxt` | VARCHAR2 | `''` | o texto |
-| `pborder` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou a combinação de 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base) |
+| `pborder` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou as letras dos lados que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas laterais; 'TB', só topo e base |
 | `pln` | NUMBER | `0` | para onde vai o cursor: 0 = à direita da célula; 1 = próxima linha, na margem esquerda; 2 = abaixo, mantendo o x |
 | `palign` | VARCHAR2 | `''` | 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) |
 | `pfill` | NUMBER | `0` | 1 pinta o fundo com a cor de SetFillColor, 0 não |
@@ -985,7 +985,7 @@ PROCEDURE PL_FPDF.CellRotated(
 | `p_width` | NUMBER | — | largura; 0 vai até a margem direita |
 | `p_height` | NUMBER | `0` | altura |
 | `p_text` | VARCHAR2 | `''` | o texto |
-| `p_border` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura, ou 'L','T','R','B' |
+| `p_border` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou as letras dos lados que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas laterais; 'TB', só topo e base |
 | `p_ln` | NUMBER | `0` | 0 à direita, 1 próxima linha na margem esquerda, 2 abaixo mantendo o x |
 | `p_align` | VARCHAR2 | `''` | 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) |
 | `p_fill` | NUMBER | `0` | 1 pinta o fundo, 0 não |
@@ -1176,8 +1176,8 @@ PROCEDURE PL_FPDF.MultiCell(
 | `pw` | NUMBER | — | largura do bloco; 0 vai até a margem direita |
 | `ph` | NUMBER | `0` | altura de cada linha; em branco usa a entrelinha de SetLineSpacing |
 | `ptxt` | VARCHAR2 | — | o texto |
-| `pborder` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura, ou 'L','T','R','B' |
-| `palign` | VARCHAR2 | `'J'` | 'J' justificado (Justified, padrão), 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) (default), 'L', 'C', 'R' |
+| `pborder` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou as letras dos lados que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas laterais; 'TB', só topo e base |
+| `palign` | VARCHAR2 | `'J'` | 'J' justificado (Justified, o padrão), 'L' (Left, esquerda), 'C' (Center, centro) ou 'R' (Right, direita) |
 | `pfill` | NUMBER | `0` | 1 pinta o fundo, 0 não |
 | `phMax` | NUMBER | `0` | altura máxima do bloco; 0 sem limite |
 
@@ -2157,7 +2157,7 @@ PROCEDURE PL_FPDF.AddQRCode(
 | `p_size` | NUMBER | — | o lado do símbolo |
 | `p_data` | VARCHAR2 | — | o conteúdo a codificar |
 | `p_format` | VARCHAR2 | `'TEXT'` | 'TEXT', 'URL', 'PIX', 'VCARD', 'WIFI', 'EMAIL' |
-| `p_error_correction` | VARCHAR2 | `'M'` | nível de correção de erro: 'L' (7%), 'M' (15%), 'Q' (25%), 'H' (30%) |
+| `p_error_correction` | VARCHAR2 | `'M'` | quanto do símbolo pode ser perdido e ainda assim ler: 'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou 'H' (High, 30%). Quanto maior, mais módulos o símbolo ocupa |
 
 #### Erros
 
@@ -3078,7 +3078,7 @@ PROCEDURE PL_FPDF.LoadPDF(
 
 | Código | Quando |
 |--------|--------|
-| `ORA-20800` | PDF inválido (NULL ou pequeno) (NULL or too small) |
+| `ORA-20800` | PDF nulo, ou pequeno demais para ter cabeçalho e trailer |
 | `ORA-20801` | Cabeçalho PDF inválido |
 | `ORA-20802` | startxref não encontrado |
 | `ORA-20803` | Tabela xref inválida |
@@ -3346,7 +3346,7 @@ PROCEDURE PL_FPDF.OverlayImage(
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
 | `p_page_number` | PLS_INTEGER | — | Número da página (base 1) |
-| `p_image_blob` | BLOB | — | Dados da imagem (JPEG ou PNG) (JPEG or PNG) |
+| `p_image_blob` | BLOB | — | os bytes da imagem, em JPEG ou PNG |
 | `p_x` | NUMBER | — | Posição X em pontos PDF |
 | `p_y` | NUMBER | — | Posição Y (de baixo) (from bottom) |
 | `p_width` | NUMBER | `NULL` | Largura em pontos ( NULL = original) |
@@ -3602,7 +3602,7 @@ Máximo de 10 PDFs podem ser carregados simultaneamente
 |--------|--------|
 | `ORA-20828` | ID do PDF já carregado |
 | `ORA-20829` | Máximo de PDFs excedido (10 max) |
-| `ORA-20830` | ID de PDF inválido (empty or too long) |
+| `ORA-20830` | identificador vazio ou longo demais |
 | `ORA-20800` | PDF nulo ou pequeno demais para ser válido |
 | `ORA-20801` | cabeçalho %PDF-x.x ausente ou malformado |
 
@@ -4260,7 +4260,7 @@ PROCEDURE PL_FPDF_UTIL.qr_matriz;
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
 | `p_dados` | — | — | o conteúdo a codificar |
-| `p_ec` | — | — | nível de correção de erro: 'L' (7%), 'M' (15%), 'Q' (25%), 'H' (30%) |
+| `p_ec` | — | — | quanto do símbolo pode ser perdido e ainda assim ler: 'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou 'H' (High, 30%) |
 | `o_mat` | — | — | a matriz |
 | `o_lado` | — | — | o lado em módulos |
 | `o_versao` | — | — | a versão do símbolo (1..20) |

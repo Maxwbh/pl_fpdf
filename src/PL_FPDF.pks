@@ -824,9 +824,10 @@ procedure SetFontSize(psize in number);
  * @param pw largura; 0 vai até a margem direita
  * @param ph altura
  * @param ptxt o texto
- * @param pborder '0' sem borda, '1' moldura inteira, ou a combinação de 'L'
- *        (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B'
- *        (Bottom, base)
+ * @param pborder '0' sem borda, '1' moldura inteira, ou as letras dos lados
+ *        que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo),
+ *        'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas
+ *        laterais; 'TB', só topo e base
  * @param pln para onde vai o cursor:
  *        0 = à direita da célula
  *        1 = próxima linha, na margem esquerda
@@ -863,9 +864,12 @@ procedure Cell
  * @param pw largura do bloco; 0 vai até a margem direita
  * @param ph altura de cada linha; em branco usa a entrelinha de SetLineSpacing
  * @param ptxt o texto
- * @param pborder '0' sem borda, '1' moldura, ou 'L','T','R','B'
- * @param palign 'J' justificado (Justified, padrão), 'L' (Left, esquerda), 'C'
- *        (Center, centro), 'R' (Right, direita) (default), 'L', 'C', 'R'
+ * @param pborder '0' sem borda, '1' moldura inteira, ou as letras dos lados
+ *        que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo),
+ *        'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas
+ *        laterais; 'TB', só topo e base
+ * @param palign 'J' justificado (Justified, o padrão), 'L' (Left, esquerda),
+ *        'C' (Center, centro) ou 'R' (Right, direita)
  * @param pfill 1 pinta o fundo, 0 não
  * @param phMax altura máxima do bloco; 0 sem limite
  * @return NUMBER - quantas linhas foram escritas
@@ -916,7 +920,10 @@ procedure Write(pH in varchar2, ptxt in varchar2, plink in varchar2 default null
  * @param p_width largura; 0 vai até a margem direita
  * @param p_height altura
  * @param p_text o texto
- * @param p_border '0' sem borda, '1' moldura, ou 'L','T','R','B'
+ * @param p_border '0' sem borda, '1' moldura inteira, ou as letras dos lados
+ *        que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo),
+ *        'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas
+ *        laterais; 'TB', só topo e base
  * @param p_ln 0 à direita, 1 próxima linha na margem esquerda, 2 abaixo
  *        mantendo o x
  * @param p_align 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right,
@@ -1333,8 +1340,9 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
  * @param p_size o lado do símbolo
  * @param p_data o conteúdo a codificar
  * @param p_format 'TEXT', 'URL', 'PIX', 'VCARD', 'WIFI', 'EMAIL'
- * @param p_error_correction nível de correção de erro: 'L' (7%), 'M' (15%),
- *        'Q' (25%), 'H' (30%)
+ * @param p_error_correction quanto do símbolo pode ser perdido e ainda assim
+ *        ler: 'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou
+ *        'H' (High, 30%). Quanto maior, mais módulos o símbolo ocupa
  * @raises -20870 conteúdo vazio
  * @raises -20872 nível de correção inválido
  * @raises -20871 tamanho não positivo
@@ -1390,7 +1398,7 @@ procedure AddBarcode(
  * Carregar documento PDF existente na memória para leitura e modificação
  *
  * @param p_pdf_blob Documento PDF como BLOB
- * @raises -20800 PDF inválido (NULL ou pequeno) (NULL or too small)
+ * @raises -20800 PDF nulo, ou pequeno demais para ter cabeçalho e trailer
  * @raises -20801 Cabeçalho PDF inválido
  * @raises -20802 startxref não encontrado
  * @raises -20803 Tabela xref inválida
@@ -1754,7 +1762,7 @@ PROCEDURE OverlayText(
  * caminho que reprocessa.
  *
  * @param p_page_number Número da página (base 1)
- * @param p_image_blob Dados da imagem (JPEG ou PNG) (JPEG or PNG)
+ * @param p_image_blob os bytes da imagem, em JPEG ou PNG
  * @param p_x Posição X em pontos PDF
  * @param p_y Posição Y (de baixo) (from bottom)
  * @param p_width Largura em pontos (NULL = original)
@@ -1862,7 +1870,7 @@ PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
  * @note Máximo de 10 PDFs podem ser carregados simultaneamente
  * @raises -20828 ID do PDF já carregado
  * @raises -20829 Máximo de PDFs excedido (10 max)
- * @raises -20830 ID de PDF inválido (empty or too long)
+ * @raises -20830 identificador vazio ou longo demais
  * @raises -20800 PDF nulo ou pequeno demais para ser válido
  * @raises -20801 cabeçalho %PDF-x.x ausente ou malformado
  * @example

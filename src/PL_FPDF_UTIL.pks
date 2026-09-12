@@ -9,8 +9,9 @@ TYPE tqr IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
  * decodifica".
  *
  * @param p_dados o conteúdo a codificar
- * @param p_ec nível de correção de erro: 'L' (7%), 'M' (15%), 'Q' (25%), 'H'
- *        (30%)
+ * @param p_ec quanto do símbolo pode ser perdido e ainda assim ler:
+ *        'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou
+ *        'H' (High, 30%)
  * @param o_mat a matriz
  * @param o_lado o lado em módulos
  * @param o_versao a versão do símbolo (1..20)
