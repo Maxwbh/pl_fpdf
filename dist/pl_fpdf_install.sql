@@ -995,6 +995,17 @@ end qr_place_version;
 --------------------------------------------------------------------------------
 -- qr_penalty : as quatro regras de penalidade da norma, usadas para escolher a
 -- mascara que produz o simbolo mais legivel.
+--
+-- As oito mascaras sao aplicadas, cada uma pontuada aqui, e a de MENOR pontos
+-- ganha. Nao e estetica: cada regra pune um arranjo que atrapalha o leitor
+-- optico -- faixa longa de uma cor so (regra 1), bloco macico (regra 2), a
+-- sequencia 1011101 seguida de quatro claros (regra 3), que imita o padrao de
+-- localizacao e faz o leitor procurar um canto onde nao ha, e desequilibrio
+-- entre claro e escuro (regra 4), que estraga o limiar de binarizacao.
+--
+-- Os pesos -- 3, 40 e 10 -- e o degrau de 5% da regra 4 estao na ISO/IEC 18004
+-- e nao se ajustam: dois simbolos so sao comparaveis na mesma escala, e um
+-- leitor real e o unico juiz de que a escala funciona.
 --------------------------------------------------------------------------------
 function qr_penalty(p_m tqr, p_n pls_integer) return pls_integer is
   s     pls_integer := 0;
@@ -1420,6 +1431,15 @@ BEGIN
     END IF;
   END LOOP;
 
+  -- A TABELA E DUAS LISTAS, e nao uma arvore: `l_cont(c)` diz quantos codigos
+  -- tem c bits, e `l_sim` traz os simbolos ordenados por (comprimento,
+  -- simbolo). E o que "canonico" quer dizer no DEFLATE (RFC 1951, secao 3.2.2):
+  -- o valor de cada codigo se deduz dessa ordem, e nao precisa ser guardado.
+  -- Decodificar vira somar bit a bit e comparar com a contagem, que e o que o
+  -- `inf_sim` faz -- sem no de arvore, sem ponteiro, sem alocacao por simbolo.
+  --
+  -- `l_offs` e so o cursor de escrita de cada faixa de comprimento: onde
+  -- comeca o bloco dos codigos de c bits dentro de `l_sim`.
   l_offs(1) := 0;
   FOR c IN 1 .. co_inf_max_bits - 1 LOOP
     l_offs(c + 1) := l_offs(c) + l_cont(c);
@@ -2313,6 +2333,9 @@ BEGIN
       END LOOP;
     END LOOP;
 
+    -- A ULTIMA RODADA NAO TEM MixColumns (FIPS-197, secao 5.1). Nao e
+    -- economia: a simetria com a decifragem depende disso, e incluir o passo
+    -- na ultima rodada produz saida que so o proprio codigo consegue desfazer.
     IF r != p_nr THEN                              -- MixColumns
       FOR c IN 0 .. 3 LOOP
         DECLARE
@@ -2320,6 +2343,12 @@ BEGIN
           a1 PLS_INTEGER := l_t(c * 4 + 1);
           a2 PLS_INTEGER := l_t(c * 4 + 2);
           a3 PLS_INTEGER := l_t(c * 4 + 3);
+          -- x4: XOR de quatro valores. O PL/SQL nao tem operador de
+          -- ou-exclusivo, e a identidade `a + b - 2*BITAND(a,b)` o substitui.
+          -- A soma da coluna do MixColumns e XOR, nao adicao: trocar por `+`
+          -- da uma cifra que parece funcionar -- tem o tamanho certo e
+          -- decifra com a mesma implementacao errada -- e diverge do vetor do
+          -- FIPS-197, que e o que o `pdfaes_reference` confere.
           FUNCTION x4(p1 PLS_INTEGER, p2 PLS_INTEGER,
                       p3 PLS_INTEGER, p4 PLS_INTEGER) RETURN PLS_INTEGER IS
             l PLS_INTEGER;
@@ -2387,6 +2416,11 @@ BEGIN
     END LOOP;
     add_round_key(r);
 
+    -- A decifragem percorre as rodadas ao CONTRARIO, e a ordem dos passos
+    -- tambem inverte: aqui o AddRoundKey vem antes do InvMixColumns, e a
+    -- rodada 0 nao o tem -- e o espelho da ultima rodada da cifragem, que nao
+    -- tem MixColumns. As tabelas m9/m11/m13/m14 sao a matriz inversa do
+    -- MixColumns no corpo de Galois, pre-calculadas por isso.
     IF r != 0 THEN                                 -- InvMixColumns
       FOR c IN 0 .. 3 LOOP
         DECLARE
@@ -2394,6 +2428,12 @@ BEGIN
           a1 PLS_INTEGER := l_s(c * 4 + 1);
           a2 PLS_INTEGER := l_s(c * 4 + 2);
           a3 PLS_INTEGER := l_s(c * 4 + 3);
+          -- x4: XOR de quatro valores. O PL/SQL nao tem operador de
+          -- ou-exclusivo, e a identidade `a + b - 2*BITAND(a,b)` o substitui.
+          -- A soma da coluna do MixColumns e XOR, nao adicao: trocar por `+`
+          -- da uma cifra que parece funcionar -- tem o tamanho certo e
+          -- decifra com a mesma implementacao errada -- e diverge do vetor do
+          -- FIPS-197, que e o que o `pdfaes_reference` confere.
           FUNCTION x4(p1 PLS_INTEGER, p2 PLS_INTEGER,
                       p3 PLS_INTEGER, p4 PLS_INTEGER) RETURN PLS_INTEGER IS
             l PLS_INTEGER;
@@ -10102,38 +10142,68 @@ procedure Cell
  myTXT2 txt;
 begin
   null;
-	-- Output a cell 
+	-- DUAS CONVENCOES GOVERNAM TODO O CALCULO ABAIXO, e sem elas nada aqui
+	-- faz sentido:
+	--
+	-- 1. O PDF tem origem no canto INFERIOR esquerdo e esta biblioteca, como
+	--    a FPDF, no superior. Por isso toda coordenada vertical sai como
+	--    `h - y`: `h` e a altura da pagina. Uma conta que esqueca a inversao
+	--    desenha espelhado no eixo vertical, e o erro nao aparece em pagina
+	--    simetrica.
+	-- 2. `myK` e o fator de escala da unidade do documento para PONTO, que e
+	--    a unidade do PDF. Em mm ele vale 72/25,4; em pt, 1. Coordenada que
+	--    va para o fluxo sem multiplicar por ele sai na escala errada.
+	--
+	-- `myX`, `myY`, `myWS` sao copias do estado no momento da entrada: a
+	-- quebra de pagina abaixo mexe em `x` e `y`, e o desenho tem de usar o
+	-- valor de antes.
+
 	if( ( y + ph > pageBreakTrigger) and  not InFooter and AcceptPageBreak()) then
 		-- quebra de pagina automatica
+		--
+		-- O espacamento entre palavras (`Tw`) e ZERADO antes de virar a pagina
+		-- e restaurado depois. O valor corrente foi calculado pela MultiCell
+		-- para justificar UMA linha; deixa-lo ligado faria o cabecalho e o
+		-- rodape da pagina nova sairem com as palavras afastadas -- o estado
+		-- do `Tw` e do documento, nao da celula.
 		if(myWS > 0) then
 			ws:=0;
 			p_out('0 Tw');
-		end if; 
+		end if;
 		AddPage(CurOrientation);
 		x:=myX;
 		if(myWS > 0) then
 			ws := myWS;
 			p_out(tochar(myWS * myK,3) ||' Tw');
-		end if; 
-	end if; 
+		end if;
+	end if;
 
 	if(myPW = 0) then
 		myPW := w - rMargin - x;
 	end if; 
 	myS := '';
+	-- O retangulo da celula sai num operador so, e qual deles depende do que
+	-- se pediu: `f` pinta o fundo, `S` contorna, `B` faz os dois. E por isso
+	-- que fundo COM moldura inteira nao vira dois comandos -- seriam duas
+	-- passagens sobre a mesma geometria, e a segunda cobriria metade da
+	-- espessura da primeira.
 	if(pfill = 1 or pborder = '1') then
-		if(pfill = 1) then 
-		  if (pborder = '1') then 
+		if(pfill = 1) then
+		  if (pborder = '1') then
 		    myOP :=  'B';
 		  else
 		    myOP := 'f';
-		  end if; 
+		  end if;
 		else
 			myOP := 'S';
-		end if; 
+		end if;
 		myS := tochar(x*myK,2)||' '||tochar((h-y)*myK,2)||' '||tochar(myPW*myK,2)||' '||tochar(-ph*myK,2)||' re '||myOP||' ';
 	end if; 
 	
+	-- Borda por LADO. O `pborder` so chega aqui com letra ('L', 'TB', 'LRB'):
+	-- '0' e '1' sao numero e ja foram tratados acima -- o '1' pelo retangulo
+	-- inteiro. Cada lado vira um segmento `m ... l S` proprio, porque o que se
+	-- quer e traco em tres lados, nao um retangulo com um lado apagado.
 	if(nao_e_numero(pborder)) then
 		myX := x;
 		myY := y;
@@ -10151,18 +10221,33 @@ begin
 		end if; 
 	end if; 
 	if ptxt is not null then
+		-- Alinhamento: o deslocamento horizontal e sempre em relacao a
+		-- ESQUERDA da celula, porque o PDF nao tem alinhamento -- ele tem
+		-- posicao. 'R' e 'C' descontam a largura do texto, que sai das
+		-- metricas da fonte corrente (GetStringWidth); `cMargin` e a margem
+		-- interna, para o texto nao encostar na borda.
 		if(palign='R') then
 			myDX := myPW - cMargin - GetStringWidth(ptxt);
 		elsif(palign='C') then
 			myDX := (myPW - GetStringWidth(ptxt))/2;
 		else
 			myDX := cMargin;
-		end if; 
+		end if;
+		-- `q`/`Q` salvam e restauram o estado grafico em volta do texto: a cor
+		-- de texto vale so para esta celula, e sem o par ela vazaria para todo
+		-- o resto da pagina.
 		if(ColorFlag) then
 			myS := myS || 'q ' || TextColor || ' ';
-	    end if; 
-		
+	    end if;
+
         myTXT2 := p_texto_pdf(ptxt);
+	-- A LINHA DE BASE, que e o ponto que o PDF posiciona -- nao o topo nem o
+	-- centro do texto. `y + 0,5*ph` desce ao meio da celula, e `+ 0,3*fontsize`
+	-- compensa que o desenho da letra cresce PARA CIMA da linha de base: sem
+	-- essa parcela o texto sai visivelmente alto dentro da caixa. O 0,3 e a
+	-- aproximacao da FPDF para a metade da altura de x da fonte -- nao sai de
+	-- metrica lida do arquivo, e por isso a regua de geometria dos testes afere
+	-- a linha de base campo a campo em vez de confiar na formula.
     myS := myS || 'BT '||tochar((x+myDX)*myK,2)||' '||tochar((h-(y+.5*ph+.3*fontsize))*myK,2)||' Td ('||myTXT2||') Tj ET';
 		if(underline) then
 			myS := myS || ' ' || p_dounderline(x+myDX,y+.5*ph+.3*fontsize,ptxt);
@@ -10170,24 +10255,32 @@ begin
 		if(ColorFlag) then
 			myS := myS || ' Q';
 		end if; 
+		-- A area clicavel e a do TEXTO, nao a da celula: altura de um corpo de
+		-- fonte, centrada na mesma linha de base calculada acima. Uma celula
+		-- larga com uma palavra curta nao vira um retangulo clicavel inteiro.
 		if(plink is not null) then
 			Link(x + myDX,y + .5*ph - .5*fontsize, GetStringWidth(ptxt), fontsize, plink);
-	    end if; 
-	end if; 
+	    end if;
+	end if;
 	if(myS is not null) then
 		p_out(myS);
 	end if; 
 
+	-- Onde o cursor fica, que e o que encadeia uma celula na outra: `pln` = 0
+	-- segue a direita (mesma linha), 1 volta a margem esquerda da linha de
+	-- baixo, 2 desce sem voltar -- e e esse 2 que a MultiCell usa para empilhar
+	-- as linhas de um paragrafo na mesma coluna. `lasth` guarda a altura desta
+	-- celula para o `Ln` sem argumento saber quanto descer.
 	lasth := ph;
 	if( pln>0 ) then
 		-- passa para a proxima linha
 		y := y + ph;
 		if(pln=1) then
 			x := lMargin;
-		end if; 
+		end if;
 	else
 		x := x + myPW;
-	end if; 
+	end if;
 exception 
   when others then
    error('Cell : '||sqlerrm);
@@ -10236,7 +10329,12 @@ begin
 	charSetWidth := CurrentFont.cw;
 	if(myPW = 0) then
 		myPW:=w - rMargin - x;
-	end if; 
+	end if;
+	-- `wmax` NAO esta na unidade do documento: esta em MILESIMOS DE EM, que e
+	-- a unidade da tabela de larguras da fonte (`CurrentFont.cw`). Converter a
+	-- largura util uma vez, aqui, permite somar caractere a caractere dentro do
+	-- laco sem multiplicacao nenhuma -- e e por isso que a comparacao la
+	-- embaixo e `l > wmax` com `l` cru, sem escala.
 	wmax := (myPW - 2 * cMargin) * 1000 / fontsize;
 	myS := replace(ptxt, CHR(13), '');
 	myNB := length(myS);
@@ -10245,6 +10343,11 @@ begin
 	end if; 
 	myB := 0;
 
+	-- DUAS BORDAS, e nao uma: `myB` vale para a PRIMEIRA linha e `myB2` para as
+	-- demais. O topo so pode ser desenhado uma vez, na primeira; se todas as
+	-- linhas levassem 'T', o paragrafo sairia com um traco entre cada par de
+	-- linhas. A base entra so na ultima, mais abaixo, pelo mesmo motivo. O
+	-- laco troca `myB` por `myB2` quando `nl` chega a 2.
 	if (myBorder is not null) then
 		if(myBorder = '1') then
 			myBorder :='LTRB';
@@ -10266,6 +10369,18 @@ begin
 		end if; 
 	end if; 
 
+	-- O LACO E UMA VARREDURA DE UMA PASSAGEM, e o estado que ele carrega e o
+	-- que resolve a quebra de linha:
+	--   `j`   inicio da linha corrente dentro do texto
+	--   `i`   caractere sob exame
+	--   `l`   largura acumulada de `j` ate aqui, em milesimos de em
+	--   `sep` posicao do ULTIMO espaco visto (-1 se nenhum) -- e ali que a
+	--         linha quebra quando `l` passa de `wmax`
+	--   `ls`  largura acumulada ATE aquele espaco, que e o que sobra para
+	--         distribuir na justificacao
+	--   `ns`  quantos espacos ha na linha
+	-- Sem `sep`/`ls` a quebra cairia no meio da palavra; e sem `ns` nao ha como
+	-- justificar, porque a sobra se reparte entre os espacos.
 	while(i <= myNB)
 	loop
 	    lb_skip := false;
@@ -10302,25 +10417,40 @@ begin
 			l := l + charSetWidth (carac);
 			if( l > wmax) then
 				-- quebra de linha automatica
+				-- Sem espaco na linha (`sep = -1`): palavra unica mais larga que
+				-- a coluna. Quebra-se no caractere, que e feio mas termina; o
+				-- `i := i + 1` do caso `i = j` existe para o laco ANDAR quando
+				-- o primeiro caractere ja estoura a largura -- sem ele a linha
+				-- sairia vazia e a varredura nao sairia do lugar.
 				if(sep=-1) then
 					if(i=j) then
 						i := i + 1;
-					end if; 
+					end if;
 					if(ws > 0) then
 						ws := 0;
 						p_out('0 Tw');
-					end if; 
+					end if;
 
                     Cell(myPW,myH,substr(myS,j,i-j),myB,2,palign,pfill);
 				else
+					-- JUSTIFICACAO. O PDF nao estica texto: ele aumenta o
+					-- espaco ENTRE PALAVRAS, pelo operador `Tw`. A sobra da
+					-- linha -- `wmax - ls`, em milesimos de em -- volta para a
+					-- unidade do documento (`/1000*fontsize`) e se reparte
+					-- entre os `ns-1` intervalos, que sao os espacos internos:
+					-- o espaco depois da ultima palavra nao conta, senao a
+					-- linha terminaria antes da margem.
+					--
+					-- Com uma palavra so (`ns <= 1`) nao ha intervalo para
+					-- esticar, e dividir por `ns-1` seria divisao por zero.
 					if(palign = 'J') then
-					    if (ns > 1) then 
+					    if (ns > 1) then
 						  ws := (wmax - ls)/1000*fontsize/(ns-1);
 						else
 						  ws := 0;
-						end if; 
+						end if;
 						p_out(''|| tochar(ws*k,3) ||' Tw');
-					end if; 
+					end if;
                     
                     Cell(myPW,myH,substr(myS,j,sep-j),myB,2,palign,pfill);
 					i := sep + 1;
@@ -13238,7 +13368,14 @@ FUNCTION pdf_scan_refs(
   l_d2e  PLS_INTEGER;
   l_id   PLS_INTEGER;
 BEGIN
+  -- A forma procurada e `N G R` -- id, geracao e a letra R, separados por
+  -- branco. Renumerar de menos e copiar objeto que aponta para o vazio;
+  -- renumerar de MAIS e pior, porque estraga dado que nao era referencia:
+  -- `/Width 12` num dicionario, um numero dentro de um nome (`/F12`), a
+  -- geracao de uma entrada da xref. Dai as duas guardas seguintes.
   WHILE l_i <= l_n LOOP
+    -- o digito so abre uma referencia se NAO vier colado em letra ou digito
+    -- anterior: sem isto, o `12` de `/F12 0 R` viraria um id proprio
     IF SUBSTRB(p_text, l_i, 1) BETWEEN '0' AND '9'
        AND (l_i = 1 OR NOT pdf_is_alnum(SUBSTRB(p_text, l_i - 1, 1))) THEN
 
@@ -13254,6 +13391,9 @@ BEGIN
       WHILE l_d2s <= l_n AND pdf_is_ws(SUBSTRB(p_text, l_d2s, 1)) LOOP
         l_d2s := l_d2s + 1;
       END LOOP;
+      -- o teto de 9 digitos no id nao e do PDF, e do PLS_INTEGER: `TO_NUMBER`
+      -- de dez digitos ja pode passar de 2147483647, e o ORA-01426 chegaria
+      -- sem dizer de onde. Numero maior que isso nao e id de objeto: e dado.
       IF l_d2s > l_j AND l_d1e - l_i + 1 <= 9 THEN
         l_j := l_d2s;
         WHILE l_j <= l_n AND SUBSTRB(p_text, l_j, 1) BETWEEN '0' AND '9' LOOP
