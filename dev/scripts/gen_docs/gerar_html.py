@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 """
-A página `site/reference.html` a partir do Javadoc da spec.
+As páginas de referência, PT e EN, a partir do Javadoc da spec.
 
 DOCUMENTO DE MANUTENÇÃO.
 
 O **desenho** da página — cabeçalho, SEO, CSS, navegação, rodapé e o script do
-índice lateral — fica em `reference_molde.html` e continua editável à mão: são
-210 linhas que não têm nada a ver com a API e que ninguém quer gerar. Daqui
-saem as 2.013 que são projeção da spec: a barra lateral e um `<article>` por
-subprograma.
+índice lateral — fica em `reference_molde.html` (e no `_en`) e continua editável
+à mão: são 210 linhas que não têm nada a ver com a API e que ninguém quer gerar.
+Daqui sai o resto da página, que é projeção da spec: a barra lateral, o título
+de cada grupo e um `<article>` por subprograma.
 
 O molde tem dois marcadores, `{{LATERAL}}` e `{{ARTIGOS}}`. Mexer no desenho é
 editar o molde; mexer no conteúdo é editar o Javadoc.
@@ -64,13 +64,10 @@ def realcar(codigo):
     return '\n'.join(saida)
 
 
-"""Rótulos fixos da página, por idioma.
-
-O texto das APIs vem do Javadoc (PT) ou de `textos_en.py` (EN); o que está aqui
-é só a moldura -- cabeçalho de seção e de coluna. Ficam juntos para que a
-página em inglês não seja um segundo gerador, e sim o mesmo com outro pacote de
-rótulos.
-"""
+# Rótulos fixos da página, por idioma. O texto das APIs vem do Javadoc (PT) ou
+# de `textos_en.py` (EN); o que está aqui é só a moldura -- cabeçalho de seção e
+# de coluna. Ficam juntos para que a página em inglês não seja um segundo
+# gerador, e sim o mesmo com outro pacote de rótulos.
 ROTULOS_PT = {
     'sintaxe': 'Sintaxe', 'parametros': 'Parâmetros', 'retorno': 'Retorno',
     'erros': 'Erros', 'exemplo': 'Exemplo', 'veja': 'Veja também',
