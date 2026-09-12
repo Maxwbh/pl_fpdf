@@ -131,10 +131,13 @@ jobs:
       - name: Comentários do body (privado documentado, PT-BR, sem código morto)
         run: python dev/scripts/plsql_lint/check_body_comments.py
 
-      # A referencia da API e GERADA do Javadoc da spec. Enquanto foi
-      # escrita a mao, divergiu em silencio: 38 APIs levantavam erro que
-      # a pagina nao listava, e o PL_FPDF_UTIL inteiro nao tinha secao.
-      - name: Referencia da API em dia com o Javadoc da spec
+      # A referencia da API e GERADA do Javadoc da spec, em PT e em EN.
+      # Enquanto foi escrita a mao, divergiu em silencio: 38 APIs levantavam
+      # erro que a pagina nao listava, o PL_FPDF_UTIL inteiro nao tinha secao,
+      # e a versao em ingles descrevia o pborder da forma que ja tinha sido
+      # reescrita em portugues por ser incompreensivel. O passo tambem recusa
+      # texto em ingles escrito contra um portugues que mudou depois.
+      - name: Referencia da API (PT e EN) em dia com o Javadoc da spec
         run: python dev/scripts/gen_docs/generate.py --check
 
       # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na

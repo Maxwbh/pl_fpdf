@@ -58,6 +58,30 @@ CATEGORIAS = [
      ['DebugDisabled', 'DebugEnabled', 'Error', 'GetLogLevel', 'GetScaleFactor', 'SetLogLevel']),
 ]
 
+# grupo -> âncora do título dentro da página.
+#
+# Existe porque o `id` é endereço público: quem linkou `reference.html#grp-meta`
+# de fora continua caindo no mesmo lugar. Gerar o slug do nome quebraria todos
+# eles na primeira vez que um grupo fosse renomeado.
+SLUG_GRUPO = {
+    'Ciclo de vida': 'grp-lifecycle',
+    'Páginas e posicionamento': 'grp-pages',
+    'Fontes e UTF-8': 'grp-fonts',
+    'Escrita de texto': 'grp-text',
+    'Cores e desenho': 'grp-draw',
+    'Imagens': 'grp-images',
+    'Links': 'grp-links',
+    'Cabeçalho e rodapé': 'grp-headfoot',
+    'QR Code e código de barras': 'grp-codes',
+    'Metadados e configuração': 'grp-meta',
+    'Saída do documento': 'grp-output',
+    'Manipulação de PDF existente': 'grp-manip',
+    'Overlays': 'grp-overlay',
+    'Multi-PDF (merge, split, extract)': 'grp-multi',
+    'Segurança e criptografia': 'grp-security',
+    'Diagnóstico e utilidades': 'grp-diag',
+}
+
 # APIs que existem na spec e NÃO entram na referência de uso.
 #
 # A regra do projeto é "duas documentações, dois públicos": o que vai para quem

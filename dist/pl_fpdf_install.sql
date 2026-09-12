@@ -4716,7 +4716,6 @@ PROCEDURE ClearPDFCache;
  * @raises -20893 Saída passou de p_max_bytes
  * @example
  *     l_claro := PL_FPDF.FlateDecode(l_comprimido);
- *   Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
  */
 FUNCTION FlateDecode(
   p_stream    IN BLOB,
@@ -4733,7 +4732,6 @@ FUNCTION FlateDecode(
  * @return BLOB - stream zlib: cabeçalho, DEFLATE e Adler-32
  * @example
  *     l_comprimido := PL_FPDF.FlateEncode(l_claro);
- *   Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
  */
 FUNCTION FlateEncode(
   p_data IN BLOB

@@ -119,6 +119,29 @@ def parametros_da_assinatura(linhas, n):
     return [p.split()[0] for p in nomes if p.split()]
 
 
+def repartir_subitens(texto):
+    """(cabeça, itens) de um texto de `@param` que enumera opções.
+
+    O sub-item (`0 = ...`, `1 = ...`) sai em item próprio: na spec ele está em
+    linha própria, e colado num parágrafo só ninguém lê onde acaba uma opção e
+    começa a outra.
+
+    Também serve à página em inglês, que reparte pela mesma regra para as duas
+    tabelas saírem com o mesmo desenho.
+    """
+    texto = (texto or '').strip()
+    corte = SUBITEM.search(texto)
+    if not corte:
+        return texto, []
+    # a vírgula que separava as opções na frase corrida some: repartida, cada
+    # item vira uma linha, e o `(default),` ficava com a pontuação do meio da
+    # frase pendurada no fim
+    itens = [x.strip().rstrip(',;') for x in
+             re.split(r'(?=\b\w{1,8}\s*=\s)', texto[corte.start():])
+             if x.strip()]
+    return texto[:corte.start()].strip().rstrip(',;'), itens
+
+
 def ler_bloco(bloco):
     """O bloco Javadoc (lista de linhas) como estrutura."""
     doc = {'descricao': '', 'params': [], 'retorno': '', 'erros': [],
@@ -133,17 +156,7 @@ def ler_bloco(bloco):
         if tag == '@param':
             m = re.match(r'^(\S+)\s*(.*)$', texto)
             if m:
-                # o sub-item (`0 = ...`, `1 = ...`) sai em item proprio: na
-                # spec ele esta em linha propria, e colado num paragrafo so
-                # ninguem le onde acaba uma opcao e comeca a outra
-                resto, itens = m.group(2).strip(), []
-                corte = SUBITEM.search(resto)
-                if corte:
-                    cabeca = resto[:corte.start()].strip()
-                    itens = [x.strip() for x in
-                             re.split(r'(?=\b\w{1,8}\s*=\s)', resto[corte.start():])
-                             if x.strip()]
-                    resto = cabeca
+                resto, itens = repartir_subitens(m.group(2))
                 doc['params'].append({'nome': m.group(1), 'texto': resto,
                                       'itens': itens})
         elif tag == '@return':

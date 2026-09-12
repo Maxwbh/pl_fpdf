@@ -1910,7 +1910,7 @@ PROCEDURE PL_FPDF.Link(
 | `ph` | NUMBER | — | altura |
 | `plink` | VARCHAR2 | — | a URL |
 
-#### Limitation
+#### Limitação
 
 1. Uma área por página. Uma segunda chamada na mesma página substitui a primeira, em silêncio -- a estrutura guarda um registro por página. Documentado por ser assim, não por ser o desejável. 2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que escreveria o /Dest saiu comentado no porte original e nunca voltou; emiti-lo assim produzia um /Annot com o dicionário aberto, isto é, arquivo malformado. Desde setembro/2026 a chamada levanta erro em vez de gravar o arquivo quebrado. Use URL.
 
@@ -2828,8 +2828,7 @@ Conteúdo descomprimido
 #### Exemplo
 
 ```sql
-  l_claro := PL_FPDF.FlateDecode(l_comprimido);
-Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+l_claro := PL_FPDF.FlateDecode(l_comprimido);
 ```
 
 **Veja também:** [LoadPDF](#loadpdf)
@@ -2860,8 +2859,7 @@ BLOB - stream zlib: cabeçalho, DEFLATE e Adler-32
 #### Exemplo
 
 ```sql
-  l_comprimido := PL_FPDF.FlateEncode(l_claro);
-Author: Maxwell da Silva Oliveira <maxwbh@gmail.com>
+l_comprimido := PL_FPDF.FlateEncode(l_claro);
 ```
 
 **Veja também:** [FlateDecode](#flatedecode) · [SetCompression](#setcompression)
@@ -3133,11 +3131,11 @@ FUNCTION PL_FPDF.OutputModifiedPDF RETURN BLOB;
 
 Documento PDF modificado
 
-#### Process
+#### Processo
 
 1. Valida se PDF está carregado e modificado 2. Indexa a origem (cadeia de xref + árvore de páginas achatada) 3. Seleciona as páginas não marcadas por RemovePage, na ordem original 4. Copia todo objeto alcançável a partir dessas páginas, renumerando as referências indiretas; o payload dos streams é copiado byte a byte 5. Emite um novo Catalog, um novo nó /Pages, xref e trailer
 
-#### Limitation
+#### Limitação
 
 Marcas d'água e overlays de texto e de imagem são todos desenhados. xref em stream e object streams (PDF 1.5+) são lidos, inclusive com o predictor PNG; um malformado levanta -20843/-20847/-20848.
 

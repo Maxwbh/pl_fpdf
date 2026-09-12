@@ -350,8 +350,9 @@ como prosa deixa de ser lista.
 > palavra na conversão, que não perdeu nem inventou nenhuma outra.
 >
 > **E o bilíngue saiu.** A descrição vinha em PT e EN; agora é só PT. A
-> referência pública em inglês não depende disto — `gen_docs/parse_spec.py`
-> tira os comentários e lê só as assinaturas.
+> referência pública em inglês não depende disto: ela sai da mesma estrutura,
+> com a prosa vinda de `gen_docs/textos_en.py`, onde cada texto guarda o par
+> com o português que traduz.
 >
 > A remoção não foi um corte no ` / `: em 176 dos 432 trechos os valores
 > (`('A4', 'Letter')`, `(0..255)`, `: 'P' (Portrait, retrato)`) estavam
@@ -378,11 +379,12 @@ deixa a letra sem sentido. O padrão é mostrar a origem e a tradução ao lado:
 
 ## A referência da API é gerada
 
-`docs/API_REFERENCE.md` e `site/reference.html` **não se editam à mão**: saem do
-Javadoc de `src/PL_FPDF.pks` e de `src/PL_FPDF_UTIL.pks`.
+`docs/API_REFERENCE.md`, `site/reference.html` e as duas correspondentes em
+inglês — `docs/API_REFERENCE_EN.md` e `site/en/reference.html` — **não se editam
+à mão**: saem do Javadoc de `src/PL_FPDF.pks` e de `src/PL_FPDF_UTIL.pks`.
 
 ```bash
-python dev/scripts/gen_docs/generate.py            # escreve as duas
+python dev/scripts/gen_docs/generate.py            # escreve as quatro
 python dev/scripts/gen_docs/generate.py --check    # o do CI
 ```
 
@@ -394,8 +396,9 @@ gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
 | `parse_javadoc.py` | lê os blocos: descrição, `@param`, `@return`, `@raises`, `@example`, notas. `--verificar` prova a leitura dos 137 |
 | `parse_spec.py` | lê a assinatura: tipo, modo e valor padrão de cada parâmetro |
 | `meta.py` | o que é editorial e não cabe num bloco: o **grupo** de cada API, o **veja também**, e a lista `FORA_DA_REFERENCIA` |
-| `reference_molde.html` | o desenho do site — cabeçalho, SEO, CSS, navegação e script. 210 linhas que continuam à mão |
-| `generate.py` | junta tudo e escreve as duas páginas |
+| `textos_en.py` | a prosa em inglês, **pareada** com o português que ela traduz: descrição, `@param`, `@return`, nota, código de erro e as linhas de `@example` que levam texto |
+| `reference_molde.html`, `reference_molde_en.html` | o desenho do site — cabeçalho, SEO, CSS, navegação e script. 210 linhas de cada lado, que continuam à mão |
+| `generate.py` | junta tudo e escreve as quatro páginas |
 
 > **Por que passou a ser gerada.** Escritas à mão, as duas páginas divergiram da
 > spec sem que nada quebrasse: **38 APIs** levantavam erro que a referência não
@@ -420,11 +423,29 @@ gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
 > página sem alguém decidir — foi exatamente assim que as 18 do utilitário
 > entraram, sem ninguém perguntar para quem a página era.
 >
-> Duas diferenças em relação ao que era escrito à mão: a tabela de parâmetros
-> tem **4 colunas** em vez de 5, porque na spec a descrição e os valores
-> possíveis são uma frase só em 256 dos 287 parâmetros e inventar o corte
-> perderia texto; e a **versão em inglês não é gerada** — `API_REFERENCE_EN.md`
-> segue à mão, por decisão, já que a spec é só PT-BR.
+> Uma diferença em relação ao que era escrito à mão: a tabela de parâmetros tem
+> **4 colunas** em vez de 5, porque na spec a descrição e os valores possíveis
+> são uma frase só em 256 dos 287 parâmetros e inventar o corte perderia texto.
+
+### A versão em inglês
+
+A spec é só PT-BR — o comentário vive junto do código, e quem o mantém escreve
+em português. O inglês, então, não tem de onde sair sozinho: ele mora em
+`dev/scripts/gen_docs/textos_en.py`, e **cada entrada guarda o par** — o
+português de quando a tradução foi escrita, e o inglês.
+
+O gerador compara o par com o que está na spec **hoje**. Mudou o português, ele
+**para** e diz qual texto ficou para trás; API nova sem tradução, idem. É o que
+impede a página em inglês de envelhecer em silêncio — que foi como ela
+envelheceu: não listava os códigos de erro que a spec levanta, e descrevia o
+`pborder` como *"'0', '1' ou uma combinação de 'L','T','R','B'"* muito depois de
+o texto em português ter sido reescrito por ser incompreensível.
+
+O que sai igual nas duas: assinatura, tipo, valor padrão, grupo, âncora e o
+código do exemplo. O que se traduz: descrição, parâmetro, retorno, nota, texto
+do erro e as linhas de exemplo que carregam comentário ou literal de texto —
+essas ficam em `EXEMPLOS`, e uma linha sem entrada que ainda tenha marca de
+português é recusada.
 
 ---
 
