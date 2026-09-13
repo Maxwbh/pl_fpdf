@@ -1,6 +1,6 @@
 # PL_FPDF — Referência Completa de Uso
 
-**Versão:** 3.3.0 | **Oracle:** 19c+ | **Licença:** MIT
+**Versão:** 3.4.0 | **Oracle:** 19c+ | **Licença:** MIT
 
 > Guia oficial de todas as funcionalidades do PL_FPDF: o que cada API faz e como usá-la.
 > Versão navegável no site: [maxwbh.github.io/pl_fpdf/api.html](https://maxwbh.github.io/pl_fpdf/api.html) ·
@@ -73,7 +73,7 @@ Developer e no SQL\*Plus.
 
 ```sql
 -- Verificar
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.3.0
+SELECT PL_FPDF.co_version FROM DUAL;  -- 3.4.0
 
 -- Os dois objetos precisam sair VALID
 SELECT object_name, object_type, status FROM user_objects
@@ -84,7 +84,7 @@ SELECT object_name, object_type, status FROM user_objects
 
 ```sql
 PL_FPDF.Init(
-  p_orientation => 'P',      -- 'P' retrato | 'L' paisagem
+  p_orientation => 'P',      -- 'P' portrait, retrato | 'L' landscape, paisagem
   p_unit        => 'mm',     -- 'mm', 'cm', 'pt', 'in'
   p_format      => 'A4',     -- 'A4', 'A3', 'A5', 'Letter', 'Legal'
   p_encoding    => 'UTF-8'
@@ -174,12 +174,21 @@ PL_FPDF.SetFont('Roboto', '', 12);
 
 Auxiliares: `IsTTFFontLoaded(nome)`, `GetTTFFontInfo(nome)`, `ClearTTFFontCache`.
 
-### UTF-8
+### Acentuação
+
+Nas fontes padrão do PDF — Helvetica, Times, Courier — o texto acentuado sai
+correto sem nenhuma chamada: a conversão para a codificação que o documento
+declara é feita na saída.
 
 ```sql
-PL_FPDF.SetUTF8Enabled(TRUE);        -- padrão; acentos funcionam nativamente
-IF PL_FPDF.IsUTF8Enabled THEN ... END IF;
+PL_FPDF.SetFont('Helvetica', '', 12);
+PL_FPDF.Cell(0, 10, 'Endereço de cobrança - São Paulo');
 ```
+
+O alcance é o do WinAnsi: as escritas latinas ocidentais, mais euro, travessão,
+aspas curvas e afins. Caractere fora dessa faixa — um ideograma, um emoji — é
+**recusado** com `ORA-20203` e a posição, em vez de virar `?` em silêncio. Para
+essas escritas, embuta uma fonte TrueType com [AddTTFFont](API_REFERENCE.md#addttffont).
 
 ---
 
@@ -296,12 +305,22 @@ Seguem recusados: entrelaçado com menos de 8 bits por componente, e indexado
 ## 7. Links
 
 ```sql
-l_link := PL_FPDF.AddLink;                 -- cria link interno
-PL_FPDF.SetLink(l_link, 0, 3);             -- destino: topo da página 3
-PL_FPDF.Cell(60, 8, 'Ir ao capítulo 3', plink => l_link);
 PL_FPDF.Cell(60, 8, 'Site', plink => 'https://maxwbh.github.io/pl_fpdf/');
 PL_FPDF.Link(10, 10, 50, 12, 'https://...');   -- área clicável arbitrária
 ```
+
+**Só link por URL.** O link interno — que levaria a outra página do mesmo
+documento — **não é suportado**: `AddLink`, `SetLink` e um `plink` numérico
+levantam `ORA-20601`. O destino interno (`/Dest`) nunca chegou a ser escrito no
+arquivo: o trecho que o escreveria saiu comentado no porte original e nunca
+voltou, e emiti-lo como estava produzia um PDF malformado, que o leitor recusa.
+O `AddLink`, por sua vez, falhava com `ORA-06531` desde a primeira versão,
+porque a coleção interna nunca foi inicializada — ou seja, a função nunca
+chegou a funcionar. Desde a 3.4.0 os três recusam com mensagem que diz o que
+usar no lugar, em vez de gravar arquivo quebrado ou falhar sem explicação.
+
+Uma observação sobre a área clicável: é **uma por página**. Uma segunda chamada
+de `Link` na mesma página substitui a primeira.
 
 ---
 
@@ -643,6 +662,68 @@ PL_FPDF.Output('F', caminho);        PL_FPDF.OutputFile(nome, directory);
 | `Output('S')` | `OutputBlob` |
 | UTF-8 limitado | UTF-8 completo + TrueType |
 | Sem criptografia | AES-256, AES-128 e RC4 |
+
+### O que de fato quebra
+
+Levantamos a superfície pública das três versões e comparamos nome a nome e
+assinatura a assinatura. O resultado, em número:
+
+| | 0.9.4 | 2.0.0 | 3.4.0 |
+|---|---|---|---|
+| Subprogramas públicos | 70 | 94 | 119 |
+
+**Da 0.9.4 para a 3.4.0 sumiram sete nomes**, e os sete são rotinas de
+demonstração que o próprio package trazia — `helloworld`, `test`, `testImg`,
+`testheader`, `myRepetitiveHeader`, `myRepetitiveFooter` e `lpc_footer`.
+Nenhuma é API: quem chamava `helloworld` num sistema estava rodando o
+exemplo que veio junto, não a biblioteca.
+
+**Da 2.0.0 para a 3.4.0 sumiram duas**, `SetUTF8Enabled` e `IsUTF8Enabled` —
+que não faziam nada. A variável era escrita pelo *setter* e lida pelo *getter*,
+e nenhum outro ponto do package a consultava. Hoje a acentuação sai correta
+sempre, sem chave.
+
+**Das 133 assinaturas em comum, uma mudou**, e não foi na 3.x: o parâmetro do
+`AddPage` passou de `orientation` para `p_orientation` na 2.0.0.
+
+```sql
+PL_FPDF.AddPage('L');                    -- posicional: continua valendo
+PL_FPDF.AddPage(orientation   => 'L');   -- 0.9.4: não compila mais
+PL_FPDF.AddPage(p_orientation => 'L');   -- hoje
+```
+
+A forma **posicional** — que é a dos exemplos de 2017 — atravessa sem mudança.
+Só a **nomeada** exige trocar uma palavra.
+
+> **Por que não manter os dois nomes?** Sobrecarga em PL/SQL resolve por tipo e
+> posição, nunca por nome de parâmetro, e um parâmetro só pode ter um nome.
+> Duas `AddPage` cujo primeiro parâmetro é `VARCHAR2` são indistinguíveis:
+> `AddPage('L')` casaria com as duas e o Oracle recusa com `PLS-00307`.
+
+### As entradas legadas continuam de pé
+
+O construtor e o fluxo do porte de 2017 seguem valendo, e há teste que executa
+a sequência do `helloworld` original chamada a chamada:
+
+```sql
+PL_FPDF.FPDF('P', 'cm', 'A4');   -- o construtor legado deixa o package pronto
+PL_FPDF.openpdf;                 -- aceito; hoje o AddPage o chama sozinho
+PL_FPDF.AddPage();
+PL_FPDF.SetFont('Arial', 'B', 16);
+PL_FPDF.Cell(0, 1.2, 'Hello World', 0, 1, 'C');
+l_pdf := PL_FPDF.ReturnBlob;     -- da 0.9.4, continua
+```
+
+`SetHeaderProc` e `SetFooterProc`, o mecanismo de cabeçalho e rodapé por nome
+de procedure, também continuam.
+
+### O que mudou de comportamento, não de assinatura
+
+Caractere fora do WinAnsi — um ideograma, um emoji — passou a ser **recusado**
+com `ORA-20203` e a posição, em vez de sair desenhado errado. Nas fontes padrão
+do PDF isso nunca funcionou: o glifo saía trocado e o arquivo abria como se
+estivesse certo. Para essas escritas, embuta uma fonte TrueType com
+[AddTTFFont](API_REFERENCE.md#addttffont).
 
 ---
 

@@ -335,33 +335,237 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 7. SetUTF8Enabled nao tem efeito (DEFEITO CONHECIDO, ainda aberto)
+  -- O caso que existia aqui conferia que SetUTF8Enabled e IsUTF8Enabled eram
+  -- coerentes entre si -- o unico contrato que aquela API cumpria, porque a
+  -- flag nao era consultada em lugar nenhum. As duas sairam da spec quando a
+  -- conversao WinAnsi passou a ser sempre feita, e o caso saiu com elas.
   --
-  -- g_utf8_enabled e escrita pelo setter e lida pelo getter, e mais ninguem
-  -- a consulta: nao existe conversao WinAnsi no package. Este caso NAO cobra
-  -- a conversao — cobra que o par setter/getter seja coerente, que e o unico
-  -- contrato que a API hoje cumpre, e deixa o defeito registrado em texto.
+  -- O que ele registrava em texto agora e aferido de verdade, em
+  -- test_winansi.sql: o acentuado convertido, o alinhamento que antes
+  -- levantava ORA-06502, e a recusa do que nao existe em WinAnsi.
   --------------------------------------------------------------------------
-  caso('SetUTF8Enabled/IsUTF8Enabled sao coerentes entre si');
+
+  --------------------------------------------------------------------------
+  caso('Documento em paisagem nao contamina o seguinte');
+  --------------------------------------------------------------------------
+  -- O Reset limpava fontes, imagens, links e metadados, mas NAO o
+  -- OrientationChanges -- a tabela que diz quais paginas tem orientacao
+  -- diferente do padrao, e que faz cada uma delas ganhar MediaBox proprio.
+  --
+  -- Como ela e indexada pelo NUMERO da pagina, o indice 1 de um documento
+  -- virava o indice 1 do proximo: quem gerasse um documento com a pagina 1 em
+  -- paisagem deixava TODO documento posterior da mesma sessao com a pagina 1
+  -- em paisagem. MediaBox trocado, conteudo desenhado fora do papel, arquivo
+  -- que abre EM BRANCO -- sem erro nenhum.
+  --
+  -- O sintoma nao acusa a causa: a pagina 1 sai errada e as demais certas,
+  -- porque so o indice reaproveitado colide. Foi assim que apareceu: doze
+  -- amostras com o texto nao extraido, e o codigo de barras sem decodificar.
+  DECLARE
+    l_paisagem BLOB;
+    l_retrato  BLOB;
   BEGIN
-    PL_FPDF.SetUTF8Enabled(FALSE);
-    IF PL_FPDF.IsUTF8Enabled THEN
-      falhou('IsUTF8Enabled devolveu TRUE depois de SetUTF8Enabled(FALSE)');
+    -- primeiro documento: pagina 1 em PAISAGEM
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage('L');
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'paisagem');
+    l_paisagem := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- segundo documento: tudo RETRATO, sem tocar em orientacao
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Arial', '', 12);
+    PL_FPDF.Cell(0, 10, 'retrato');
+    l_retrato := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- A4 retrato: 595.28 x 841.89. Paisagem inverte os dois. O segundo
+    -- documento nao pode ter MediaBox proprio em pagina nenhuma.
+    IF acha(l_retrato, '/MediaBox [0 0 841.89 595.28]') = 0 THEN
+      passou('o documento retrato nao herdou a paisagem do anterior');
     ELSE
-      PL_FPDF.SetUTF8Enabled(TRUE);
-      IF NOT NVL(PL_FPDF.IsUTF8Enabled, FALSE) THEN
-        falhou('IsUTF8Enabled devolveu FALSE depois de SetUTF8Enabled(TRUE)');
-      ELSE
-        passou('o par setter/getter e coerente');
-        DBMS_OUTPUT.PUT_LINE('  [NOTA] a flag nao muda a saida: nao ha ' ||
-                             'conversao WinAnsi no package. Acento em fonte');
-        DBMS_OUTPUT.PUT_LINE('         core sai errado em AL32UTF8, no Cell ' ||
-                             'e no MultiCell, nao so no overlay.');
-      END IF;
+      falhou('a pagina 1 saiu em paisagem: o OrientationChanges do documento '
+             || 'anterior sobreviveu ao Reset');
+    END IF;
+
+    IF acha(l_paisagem, '/MediaBox [0 0 841.89 595.28]') > 0 THEN
+      passou('o documento paisagem tem a pagina em paisagem, como pedido');
+    ELSE
+      falhou('a paisagem pedida nao saiu');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
       falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
+  caso('Link so aceita URL, e recusa o link interno em vez de gravar quebrado');
+  --------------------------------------------------------------------------
+  -- O ramo que escreveria o /Dest do link INTERNO saiu comentado no porte
+  -- original e nunca voltou. Com plink numerico o dicionario do /Annot ficava
+  -- ABERTO -- sai "<</Type /Annot ... /Border [0 0 0] ]", sem o >> que fecha.
+  -- Nao e link que nao navega: e PDF que o leitor recusa.
+  --
+  -- Ninguem reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
+  -- escrever este caso que apareceu o terceiro lado do mesmo defeito: o
+  -- AddLink levantava ORA-06531, "reference to uninitialized collection", na
+  -- linha da propria declaracao. A colecao "links" e nested table e ninguem a
+  -- inicializa, entao o AddLink NUNCA funcionou -- nem uma vez, em nenhuma
+  -- versao. Os tres passam a recusar com ORA-20601 e mensagem que diz o que
+  -- usar no lugar.
+  DECLARE
+    l_pdf   BLOB;
+    l_erro  VARCHAR2(400);
+
+    PROCEDURE recusa(p_que VARCHAR2, p_erro VARCHAR2) IS
+    BEGIN
+      IF INSTR(p_erro, 'ORA-20601') > 0 THEN
+        passou(p_que || ' recusado com ORA-20601');
+      ELSIF INSTR(p_erro, 'ORA-06531') > 0 THEN
+        falhou(p_que || ' ainda levanta ORA-06531, que nao diz o que fazer');
+      ELSE
+        falhou(p_que || ' recusou com outro erro: ' || p_erro);
+      END IF;
+    END recusa;
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+
+    BEGIN
+      l_erro := TO_CHAR(PL_FPDF.AddLink);
+      falhou('AddLink devolveu um identificador que nao leva a lugar nenhum');
+    EXCEPTION
+      WHEN OTHERS THEN recusa('AddLink', SQLERRM);
+    END;
+
+    BEGIN
+      PL_FPDF.SetLink(1, 0, 1);
+      falhou('SetLink aceitou guardar um destino que nao chega ao arquivo');
+    EXCEPTION
+      WHEN OTHERS THEN recusa('SetLink', SQLERRM);
+    END;
+
+    BEGIN
+      PL_FPDF.Link(20, 40, 60, 10, '1');
+      falhou('Link aceitou destino numerico - o arquivo sairia malformado');
+    EXCEPTION
+      WHEN OTHERS THEN recusa('Link com destino numerico', SQLERRM);
+    END;
+
+    -- URL continua funcionando, e e o caminho que sempre esteve correto
+    PL_FPDF.Link(20, 60, 60, 10, 'https://example.com');
+    l_pdf := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    IF acha(l_pdf, '/Subtype /Link') > 0 AND acha(l_pdf, '/URI') > 0 THEN
+      passou('o link por URL saiu no arquivo');
+    ELSE
+      falhou('o link por URL sumiu');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
+  caso('Link na pagina 3 nao estraga as paginas 1 e 2');
+  --------------------------------------------------------------------------
+  -- O Link estende a colecao ate a pagina corrente, e as paginas anteriores
+  -- ficavam com entrada VAZIA. O emissor so testava .exists(i), entao essas
+  -- paginas ganhavam um /Annots com /Rect vazio e o dicionario aberto -- sem
+  -- que ninguem tivesse pedido link nenhum nelas.
+  DECLARE
+    l_pdf BLOB;
+    l_n   PLS_INTEGER;
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;  PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Cell(50, 10, 'Pagina 1');
+    PL_FPDF.AddPage;  PL_FPDF.Cell(50, 10, 'Pagina 2');
+    PL_FPDF.AddPage;  PL_FPDF.Cell(50, 10, 'Pagina 3');
+    PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
+    l_pdf := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- tres paginas, UM /Annots so
+    l_n := 0;
+    FOR i IN 1 .. 3 LOOP
+      IF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW('/Annots ['), 1, i) > 0 THEN
+        l_n := i;
+      END IF;
+    END LOOP;
+    IF l_n = 1 THEN
+      passou('so a pagina com link tem /Annots');
+    ELSE
+      falhou('ha ' || l_n || ' /Annots no arquivo, e so uma pagina tem link');
+    END IF;
+
+    -- e nenhum dicionario de anotacao ficou aberto
+    IF acha(l_pdf, '/Border [0 0 0] ]') = 0 THEN
+      passou('nenhum /Annot com o dicionario aberto');
+    ELSE
+      falhou('ha /Annot fechado com ] em vez de >> - dicionario aberto');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('excecao: ' || SQLERRM);
+  END;
+
+  --------------------------------------------------------------------------
+  caso('Link funciona no SEGUNDO documento da sessao');
+  --------------------------------------------------------------------------
+  -- O Link media o quanto estender pelo .last, e .last de colecao VAZIA e
+  -- NULL. Depois de um Reset a colecao fica exatamente assim: o delete zera a
+  -- contagem e nao anula a colecao. Entao "page - NULL" dava NULL, o IF nao
+  -- disparava e o PageLinks(page) estourava com ORA-06533 -- no primeiro Link
+  -- do segundo documento, e o erro nao fala de link nenhum.
+  --
+  -- Atinge o caminho COMUM, com URL, e quem gera documento em lote passa por
+  -- ele em toda emissao a partir da segunda.
+  DECLARE
+    l_um    BLOB;
+    l_dois  BLOB;
+  BEGIN
+    PL_FPDF.Reset;
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Link(20, 40, 60, 10, 'https://example.com/um');
+    l_um := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    -- segundo documento na MESMA sessao: e aqui que estourava
+    PL_FPDF.Init('P', 'mm', 'A4');
+    PL_FPDF.AddPage;
+    PL_FPDF.SetFont('Helvetica', '', 12);
+    PL_FPDF.Link(20, 40, 60, 10, 'https://example.com/dois');
+    l_dois := PL_FPDF.OutputBlob;
+    PL_FPDF.Reset;
+
+    IF acha(l_dois, 'https://example.com/dois') > 0 THEN
+      passou('o link do segundo documento saiu no arquivo');
+    ELSE
+      falhou('o link do segundo documento sumiu');
+    END IF;
+
+    IF acha(l_dois, 'https://example.com/um') = 0 THEN
+      passou('o link do primeiro documento nao vazou para o segundo');
+    ELSE
+      falhou('o link do documento anterior sobreviveu ao Reset');
+    END IF;
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF INSTR(SQLERRM, 'ORA-06533') > 0 THEN
+        falhou('ORA-06533: o Link ainda depende do .last de colecao vazia');
+      ELSE
+        falhou('excecao: ' || SQLERRM);
+      END IF;
   END;
 
   --------------------------------------------------------------------------

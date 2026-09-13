@@ -24,6 +24,7 @@ de quem usa a biblioteca.
 | `dev/tests/` | Suíte, validações e diagnósticos | Não |
 | `dev/scripts/` | Runner, verificadores do CI, referências em Python, geradores | Não |
 | `docs/ROADMAP.md`, este arquivo | Planejamento e método | Não |
+| `docs/HISTORIAS.md` | Uma história por lacuna priorizada: lógica, caso de uso e critério de aceite. O **como** do que o roadmap lista | Não |
 
 | `dist/pl_fpdf_install.sql` | Os quatro fontes num arquivo só, **gerado** de `src/`. É o que se baixa por link direto, sem clone | **Sim** |
 | `site/` | A página publicada pelo GitHub Pages (workflow `pages.yml`) | Não |
@@ -203,10 +204,14 @@ python dev/scripts/plsql_lint/check_call_order.py   src/PL_FPDF_UTIL.pks src/PL_
 python dev/scripts/plsql_lint/check_clob_bytes.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb src/PL_FPDF.pks dev/tests/*.sql
 python dev/scripts/plsql_lint/check_error_codes.py  src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_byte_chars.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
+python dev/scripts/plsql_lint/check_block_declarations.py dev/tests/*.sql
 python dev/scripts/plsql_lint/check_assoc_nvl.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_pls_overflow.py   src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF.pks src/PL_FPDF.pkb
 python dev/scripts/plsql_lint/check_dead_code.py    src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
+python dev/scripts/plsql_lint/check_atribuicao.py
+python dev/scripts/plsql_lint/check_suite.py
+python dev/scripts/plsql_lint/check_spec_comments.py
 python dev/scripts/plsql_lint/check_tables.py
 python dev/scripts/plsql_lint/check_test_calls.py
 python dev/scripts/plsql_lint/check_examples_sync.py
@@ -219,6 +224,256 @@ python dev/scripts/gen_docs/check_paridade.py
 Cada um existe porque um erro específico custou uma rodada de compilação ou uma
 ida ao banco. A tabela com o que cada um pega está no
 [roadmap](ROADMAP.md#verificações-automáticas-no-ci).
+
+---
+
+## Comentário de API — o formato da spec
+
+A spec é a documentação que se lê **sem sair do banco**: quem abre o package no
+PL/SQL Developer vê o bloco antes da assinatura, e é dali que decide como
+chamar. Duas decisões, e o `check_spec_comments.py` guarda as duas.
+
+**1. O texto é em PT-BR.** O que fica em inglês é **nome próprio e jargão** —
+Portrait, Landscape, WinAnsi, stream, xref, deflate, BLOB, FlateDecode —, que
+não têm substituto: traduzir por conta faria o leitor procurar no PDF um termo
+que não existe. Eles se repetem no texto em português, como já se faz com as
+siglas (`'P' (Portrait, retrato)`).
+
+**2. Comentário no body é outra coisa, e tem verificador próprio
+(`check_body_comments.py`).** Ali o leitor é sempre quem mantém, e o que
+importa é dizer *por que* o código está assim — o sintoma, a causa e o
+conserto —, não repetir o que a linha já diz.
+
+O body também é o **único** lugar onde os 206 subprogramas privados podem ser
+documentados: eles não aparecem em spec nenhuma. Um comentário acima de cada um
+é obrigatório; do público, não — está na spec, e repetir aqui cria duas versões
+que divergem.
+
+O body segue a estrutura da Guideline: seções marcadas com `-- ===` e
+declarações antecipadas só para subprograma **privado** chamado antes de ser
+definido.
+
+**3. O comentário vive sozinho — não aponta para documento do repositório.**
+Quem lê está dentro do código, muitas vezes no PL/SQL Developer, sem o
+repositório à mão: mandá-lo abrir `docs/ROADMAP.md` troca a explicação por um
+endereço que ele não pode seguir. E endereço envelhece — foi o que aconteceu
+quando `scripts/` virou `dev/scripts/` e doze comentários ficaram apontando
+para o nada, sem que nada quebrasse. Consertar o caminho trata o sintoma; a
+regra trata a causa.
+
+Vale também para **mensagem de erro**, e ali pesa mais: quem recebe um
+`ORA-20601` em produção não tem o repositório. Três mensagens de link interno
+e uma de `Output` mandavam consultar `docs/ROADMAP.md` e `docs/DOCUMENTATION.md`;
+o texto que restou já explicava tudo sozinho.
+
+O que se cita é o que **não** está no repositório e não se pode embutir: a
+RFC 1951, o FIPS-197, a ISO/IEC 18004, o decodificador contra o qual se
+validou. Esses não mudam de lugar.
+
+**4. Cabeçalho que nomeia um subprograma fica acima dele.** Um `-- xpto : ...`
+seguido de outro subprograma é órfão, e mente em silêncio: o leitor lê a
+descrição de `xpto` e o corpo de outra coisa. É o rastro que a separação dos
+packages deixou — `AddQRCode`, `AddBarcode`, `ovl_num`, `rc4_crypt` e
+`rc4_key_xor` foram para o `PL_FPDF` e os cabeçalhos ficaram no `PL_FPDF_UTIL`,
+enquanto o do `crypto_autoteste` fez o caminho inverso. Seis blocos, cada um
+descrevendo algo diferente do que vinha abaixo.
+
+**5. O comentário do body não repete a descrição da spec.** Duas versões da
+mesma frase divergem, e a do body é a que ninguém revisa. Um comentário
+**curto** sobre subprograma público que repita a descrição é recusado; um longo
+que compartilhe vocabulário, não — o do `ImageFromBlob` conta a ACL de rede, o
+formato lido pela assinatura do arquivo e a chave do cache, e nada disso está
+na spec.
+
+> **Como detectar texto fora do português.** Não se enumera o inglês: a lista é
+> infinita, e foi por isso que `Enables debug infos` e `Parse PNG header to
+> extract metadata` passaram por três varreduras. O critério é o inverso — um
+> comentário em português de três palavras ou mais **sempre** tem marca de
+> português (artigo, preposição ou acento), e a ausência dela é o sinal. E
+> acento **não** basta como prova: o francês também tem, e foi assim que
+> `SetDash Ecrire en pointillés` sobreviveu.
+
+> **O `@raises` também mente sozinho.** Cruzando o que a spec documenta com o
+> que o corpo realmente levanta, **15 subprogramas** levantavam código que o
+> bloco não listava — `AddWatermark`, `RemovePage` e `RotatePage` não
+> documentavam nenhum. Quem lê `@raises` para saber o que capturar recebia
+> lista incompleta, e nada acusava. O cruzamento é barato e vale a cada
+> revisão.
+
+> **O que a primeira rodada do verificador achou.** 27 privados sem uma linha
+> de comentário — `ttf_u32`, `pdf_pad_password`, `gmul`, `xtime`,
+> `qr_bch_version`. 71 comentários em inglês e francês, herdados do porte
+> original, misturados aos escritos em português. Nove trechos de código
+> comentado, um deles o ramo do `/Dest` que nunca funcionou e fazia link
+> interno parecer meio implementado. E **doze comentários apontando para
+> `scripts/` e `tests/`**, pastas que viraram `dev/scripts/` e `dev/tests/` —
+> referência quebrada não quebra nada, então ninguém soube.
+
+O formato do bloco é o **Javadoc** da Trivadis PL/SQL Guidelines 4.4, seção
+*Comentários*:
+
+```
+/**
+ * Escreve uma célula retangular: opcionalmente com borda, com fundo e com
+ * texto dentro.
+ *
+ * @param pw largura; 0 vai até a margem direita
+ * @return NUMBER - ...                 (quando é function)
+ * @raises -20100 ...                   (quando levanta)
+ * @example
+ *   PL_FPDF.Cell(40, 10, 'Total', '1', 1, 'R');
+ */
+```
+
+Tags opcionais: `@note`, `@limitation`, `@process`. **Tag é palavra-chave, e
+palavra-chave fica em inglês** — a mesma regra de `BEGIN` e `DBMS_LOB`.
+
+`@example` e as tags que carregam JSON ou tabela saem **literais**, sem
+reenrolar: o que está ali se copia e cola, e uma lista de campos reenrolada
+como prosa deixa de ser lista.
+
+> **Por que Javadoc, e não mais o banner.** Até outubro de 2026 o formato era um
+> banner de asteriscos com rótulos bilíngues (`Descrição / Description:`,
+> `Parâmetros / Parameters:`). O conteúdo era o certo; a notação é que estava
+> fora do padrão da casa. A troca não foi só de aparência: o banner escrevia o
+> parâmetro como texto solto (`pw     - largura; 0 vai até...`), e por isso
+> **nenhum verificador conseguia dizer se a documentação batia com a
+> assinatura** — acrescentar, renomear ou remover um parâmetro passava sem
+> ninguém reparar. O `@param` nomeia, e o verificador confere nos dois sentidos
+> e na ordem. É a deriva que acontece de verdade, porque mexer na assinatura é
+> comum e voltar no comentário é o que se esquece.
+>
+> A linha de título (`* Procedure: Cell / Célula`) caiu junto: o nome repete a
+> assinatura logo abaixo, e *comentário que repete o código* é antipattern
+> nomeado na própria Guideline. O apelido em português que ela carregava já
+> estava na primeira frase da descrição nos 137 blocos — conferido palavra a
+> palavra na conversão, que não perdeu nem inventou nenhuma outra.
+>
+> **E o bilíngue saiu.** A descrição vinha em PT e EN; agora é só PT. A
+> referência pública em inglês não depende disto: ela sai da mesma estrutura,
+> com a prosa vinda de `gen_docs/textos_en.py`, onde cada texto guarda o par
+> com o português que traduz.
+>
+> A remoção não foi um corte no ` / `: em 176 dos 432 trechos os valores
+> (`('A4', 'Letter')`, `(0..255)`, `: 'P' (Portrait, retrato)`) estavam
+> grudados no lado inglês, e cortar ali jogaria fora o que o leitor precisa.
+> O `check_spec_comments.py` guarda o resultado: recusa marcador `PT:`/`EN:`,
+> par `<português> / <english>` e linha com cara de prosa inglesa.
+
+> **Por que virou verificação.** Na revisão de setembro de 2026 **metade da API
+> pública não tinha bloco nenhum** — 56 documentados, 64 sem uma linha —, e os
+> 64 eram justamente os mais chamados: `Cell`, `SetFont`, `Text`, `Line`,
+> `Rect`, `Output`, `MultiCell`. O que tinha bloco vinha em três dialetos: a
+> parte antiga só em inglês, a Fase 4 bilíngue com o `EN:` na frente, e o
+> `ImageFromBlob` com rótulo em inglês e texto em português. A deriva é
+> silenciosa por construção: acrescentar um subprograma sem bloco compila
+> igual, e nenhum teste repara.
+
+**Uma sigla sempre diz de onde vem.** `'P'`/`'L'` de orientação são iniciais do
+**inglês** — Portrait e Landscape —, e traduzir só a explicação ("P de padrão")
+deixa a letra sem sentido. O padrão é mostrar a origem e a tradução ao lado:
+`'P' (Portrait, retrato)`. Vale para `'F'` (Fill), `'B'` (Bold), `'L'`, `'T'`,
+`'R'`, `'B'` de borda, e para as siglas de nível de log.
+
+---
+
+## A referência da API é gerada
+
+Nenhuma das oito páginas do site e da documentação de API se edita à mão:
+
+| Página | De onde sai |
+|---|---|
+| `docs/API_REFERENCE.md`, `site/reference.html` | Javadoc de `src/*.pks` |
+| `docs/API_REFERENCE_EN.md`, `site/en/reference.html` | idem, com a prosa de `textos_en.py` |
+| `site/api.html`, `site/en/api.html` | `conteudo_api.py` |
+| `site/index.html`, `site/en/index.html` | `conteudo_index.py` |
+
+```bash
+python dev/scripts/gen_docs/generate.py            # escreve as oito
+python dev/scripts/gen_docs/generate.py --check    # o do CI
+```
+
+Para corrigir um texto da referência, corrija o **bloco na spec** e rode o
+gerador. Editar a página é trabalho perdido: o `--check` do CI recusa.
+
+| Peça | Papel |
+|---|---|
+| `parse_javadoc.py` | lê os blocos: descrição, `@param`, `@return`, `@raises`, `@example`, notas. `--verificar` prova a leitura dos 137 |
+| `parse_spec.py` | lê a assinatura: tipo, modo e valor padrão de cada parâmetro |
+| `meta.py` | o que é editorial e não cabe num bloco: o **grupo** de cada API, o **veja também**, e a lista `FORA_DA_REFERENCIA` |
+| `textos_en.py` | a prosa em inglês, **pareada** com o português que ela traduz: descrição, `@param`, `@return`, nota, código de erro e as linhas de `@example` que levam texto |
+| `conteudo_api.py`, `gerar_api.py` | o índice de utilização: 14 seções, cada texto num par PT/EN |
+| `conteudo_index.py`, `gerar_index.py` | a página inicial: chamada, números, cartões, exemplos e instalação, também aos pares |
+| os seis `*_molde*.html` | o desenho de cada página — cabeçalho, SEO, CSS, navegação, rodapé e os desenhos. Continuam editáveis à mão; o conteúdo entra nos marcadores `{{...}}` |
+| `generate.py` | junta tudo e escreve as **oito** páginas |
+
+> **Por que passou a ser gerada.** Escritas à mão, as duas páginas divergiram da
+> spec sem que nada quebrasse: **38 APIs** levantavam erro que a referência não
+> listava (`Init` sem `-20001`, `SetFont` sem `-20005` e `-20201`, `Cell` sem
+> `-20100`), e as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma. Quem
+> lesse a página para saber o que capturar recebia lista incompleta. Gerada, ela
+> herda o que o `check_spec_comments.py` já cobra da spec.
+>
+> **O que gerar não garante** é que o texto esteja *certo* — só que a página
+> concorda com a spec. Contra texto errado valem a revisão humana e o cruzamento
+> entre o `@raises` e o `raise_application_error` do corpo.
+>
+> **O `PL_FPDF_UTIL` não entra.** A página é de quem **usa** a biblioteca, e a
+> regra do projeto é que esse lado fale só de PDF. QR Code, código de barras,
+> DEFLATE e criptografia são a metade que não é PDF, e quem gera um documento
+> nunca os chama: nos `examples/` e em `dev/tests/` o utilitário aparece **zero
+> vezes** — as 69 chamadas estão dentro do `src/`, do `PL_FPDF` para ele. Os 18
+> blocos Javadoc continuam na spec, que é onde quem mantém os lê.
+>
+> A omissão é **declarada**, não silenciosa: o gerador recusa API que não esteja
+> nem num grupo nem em `FORA_DA_REFERENCIA`. Assim uma API nova não some da
+> página sem alguém decidir — foi exatamente assim que as 18 do utilitário
+> entraram, sem ninguém perguntar para quem a página era.
+>
+> Uma diferença em relação ao que era escrito à mão: a tabela de parâmetros tem
+> **4 colunas** em vez de 5, porque na spec a descrição e os valores possíveis
+> são uma frase só em 256 dos 287 parâmetros e inventar o corte perderia texto.
+
+### A versão em inglês
+
+A spec é só PT-BR — o comentário vive junto do código, e quem o mantém escreve
+em português. O inglês, então, não tem de onde sair sozinho: ele mora em
+`dev/scripts/gen_docs/textos_en.py`, e **cada entrada guarda o par** — o
+português de quando a tradução foi escrita, e o inglês.
+
+O gerador compara o par com o que está na spec **hoje**. Mudou o português, ele
+**para** e diz qual texto ficou para trás; API nova sem tradução, idem. É o que
+impede a página em inglês de envelhecer em silêncio — que foi como ela
+envelheceu: não listava os códigos de erro que a spec levanta, e descrevia o
+`pborder` como *"'0', '1' ou uma combinação de 'L','T','R','B'"* muito depois de
+o texto em português ter sido reescrito por ser incompreensível.
+
+O que sai igual nas duas: assinatura, tipo, valor padrão, grupo, âncora e o
+código do exemplo. O que se traduz: descrição, parâmetro, retorno, nota, texto
+do erro e as linhas de exemplo que carregam comentário ou literal de texto —
+essas ficam em `EXEMPLOS`, e uma linha sem entrada que ainda tenha marca de
+português é recusada.
+
+### O índice de utilização e a página inicial
+
+Estas duas não saem da spec, e não deveriam: são material **editorial**, com
+assinatura informal (`Cell(w,h,txt,borda,ln,...)`) e exemplo montado à mão para
+ensinar. O que elas ganham ao serem geradas é a outra metade do problema — o
+lado PT e o lado EN eram dois arquivos gêmeos de 455 e 730 linhas, e a cópia
+divergia calada: o comando de download da página inicial buscava a **v3.3.0**
+três parágrafos abaixo da vitrine que anunciava 3.4.0.
+
+Agora o conteúdo é um só, aos pares, e o gerador cobra o que não pode divergir:
+
+* **a versão não está escrita** em lugar nenhum das duas páginas — entra por
+  `{versao}`, lida do `co_version` do package, na vitrine, no exemplo e no link
+  do release;
+* **o exemplo é o mesmo código nas duas línguas.** Comentário, literal e nome
+  de variável local mudam por direito; qualquer outra diferença é recusada. O
+  que muda além disso entra **declarado**, no `traduz` da janela — foi assim que
+  a tabela `documentos`/`documents` passou;
+* **as duas línguas têm a mesma estrutura**: mesma quantidade de blocos, de
+  linhas de tabela e de linhas de código.
 
 ---
 
@@ -240,6 +495,7 @@ python dev/scripts/pdfaes_reference/validate.py      # vetores do FIPS-197 + MuP
 python dev/scripts/pdfinflate_reference/validate.py  # zlib
 python dev/scripts/pdfdeflate_reference/validate.py  # zlib
 python dev/scripts/pdfxref_reference/validate.py     # MuPDF
+python dev/scripts/ttfembed_reference/validate.py    # MuPDF (fonte embutida)
 python dev/scripts/pdfobjstm_crypt_reference/validate.py  # MuPDF
 python dev/scripts/boleto_reference/validate.py           # métricas + zxing
 python dev/scripts/ticket_reference/validate.py           # cor + QR + Code 39
@@ -290,6 +546,11 @@ O CI falha se algum deles estiver desatualizado.
   resultado mais longo e diferente. Use `UTL_RAW.CAST_TO_VARCHAR2`, que não
   converte charset — a mesma função que o `pdf_read` usa.
   (`check_byte_chars.py`)
+- **O mesmo erro na forma literal, e o sintoma culpa o arquivo:** uma assinatura
+  binária montada como `chr(137) || 'PNG' || ...` nunca casa com os bytes que
+  abrem um PNG, e o parser recusa **todo** arquivo com `Not a PNG file`. Medido
+  no banco: **não há `ORA-29275`** — a comparação só falha em silêncio. Use
+  `HEXTORAW`. (`check_byte_chars.py`)
 - **A mesma confusão pelo outro lado:** `SUBSTRB(x, k, 1)` extrai um byte, e um
   byte do meio de um caractere multibyte **não volta como ele**. Remontar dado
   binário byte a byte num VARCHAR2 e devolvê-lo a `UTL_RAW.CAST_TO_RAW` não

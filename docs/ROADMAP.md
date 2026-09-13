@@ -1,11 +1,24 @@
 # PL_FPDF Roadmap
 
-**Versao Atual:** 3.3.0 | **Atualizado:** 2026-08-28
+**Versao Atual:** 3.4.0 | **Atualizado:** 2026-09-11
 
-Revisado em 28/08/2026 conferindo cada afirmacao contra o codigo. As correcoes
-estao marcadas ao longo do documento; a mais importante e que **v3.0.0 dava
-marcas d'agua e overlays como prontos desde fevereiro, e eles nao desenhavam
-nada** — so passaram a desenhar agora.
+Revisado em 10/09/2026, e antes em 28/08/2026, conferindo cada afirmacao contra
+o codigo. As correcoes estao marcadas ao longo do documento; a mais importante
+da primeira revisao e que **v3.0.0 dava marcas d'agua e overlays como prontos
+desde fevereiro, e eles nao desenhavam nada** — so passaram a desenhar depois.
+
+A revisao de setembro achou tres inconsistencias no proprio documento, e as
+tres estao corrigidas abaixo: as versoes planejadas 3.3.0 e 3.4.0 descreviam
+funcionalidades que **nao sao** as que sairam com esses numeros; cinco
+verificacoes rodavam no CI sem constar da tabela que diz registra-las; e as
+quatro correcoes de setembro nao estavam nas pendencias.
+
+A revisao trouxe tambem a secao **"Lacunas priorizadas por uso medido"** e o
+**"Fora de escopo"**, que estavam num ramo a parte, com os numeros datados de
+8/09/2026 para que ninguem os tome por medicao corrente. O **como** de cada
+lacuna — logica, caso de uso e criterio de aceite — esta em
+`docs/HISTORIAS.md`, uma historia por item, e as duas primeiras ja saem de la
+concluidas.
 
 ---
 
@@ -85,6 +98,8 @@ passaram a ser conferidos por decodificadores reais.
 
 | Item | Situacao |
 |------|----------|
+| ~~**Fonte TrueType registrada nao chega ao documento**~~ | **Resolvido em setembro/2026.** O cache `g_ttf_fonts` nao tinha consumidor: o `SetFont` nunca o consultava e nada emitia os bytes no PDF. E o `parse_ttf_header` nao interpretava o arquivo — `units_per_em := 1000`, `ascent := 800`, `descent := -200` eram literais no codigo, entao um BLOB de 28 bytes devolvia as mesmas metricas de uma fonte real. Agora o parser le `head`, `hhea`, `hmtx`, `cmap` (formato 4), `OS/2` e `post`; o `SetFont` registra a fonte do cache; o `GetStringWidth` mede pela tabela dela; e o `p_putfonts` emite `/Subtype /TrueType`, o `/FontDescriptor` e o `/FontFile2`. Fonte sem tabela obrigatoria e recusada com **-20202**, em vez de inventada. Referencia em `dev/scripts/ttfembed_reference/`, validada no MuPDF nos tres lados que importam: o texto sai, a fonte esta embutida, e a largura que o leitor MEDE bate com a que o `/Widths` declara. O teste usa uma TTF de 716 bytes gerada por `dev/scripts/ttf_reference/gerar.py`, com **2048 unidades por em** de proposito — com upm 1000 nao se distinguiria "leu do arquivo" de "chutou a constante de sempre". **Falta o subset (HU-02):** a fonte inteira entra, em hexadecimal, e ocupa o dobro do tamanho dela. |
+| ~~**Link interno produz PDF malformado**~~ | **Resolvido por recusa, em setembro/2026; achado na revisao dos comentarios.** `Link` com `plink` numerico caia num ramo que **nao existe**: o `else` que escreveria o `/Dest` saiu comentado no porte original e nunca voltou, e o dicionario do `/Annot` ficava **aberto** — `<</Type /Annot ... /Border [0 0 0] ]`, sem o `>>`. Nao era "link que nao navega": era arquivo estruturalmente invalido. E havia um segundo lado, que atingia o caso COMUM: o `Link` estende a colecao ate a pagina corrente, e as paginas anteriores ficavam com entrada vazia; o emissor so testava `.exists(i)`, entao um `Link` na pagina 3 punha `/Annots` quebrado nas paginas 1 e 2, que nao pediram link nenhum. Agora `Link` recusa destino que nao seja URL com **-20601**, e o emissor exige entrada COM destino. Recusar vale mais que gravar o arquivo que o leitor nao abre. Ficou escondido porque **nenhum teste chamava `AddLink` ou `SetLink`** — a HU-05 em forma concreta; ha caso de regressao para os dois lados em `dev/tests/test_regressoes_revisao.sql`. E ha um TERCEIRO lado, achado ao escrever o teste: o `AddLink` levantava `ORA-06531` — *reference to uninitialized collection* — na linha da propria declaracao, porque a colecao `links` e nested table e ninguem a inicializa. **Nunca funcionou, em nenhuma versao.** Os tres — `AddLink`, `SetLink` e `Link` com destino numerico — passam a recusar com **-20601** e mensagem que diz o que usar. E um QUARTO, no caminho comum: o `Link` media o quanto estender pelo `.last`, e `.last` de colecao vazia e NULL. Depois de um `Reset` a colecao fica vazia — o `delete` zera a contagem e nao anula a colecao —, entao `page - NULL` dava NULL, o `IF` nao disparava e o `PageLinks(page)` estourava com `ORA-06533` **no primeiro `Link` do segundo documento da sessao**, com URL e tudo. Passa a medir pelo `.count`, que conta zero em colecao vazia. Quem emite em lote passava por isso em toda emissao a partir da segunda. **Continua faltando** escrever o `/Dest` para que o link interno funcione de verdade. |
 | ~~**`EncryptPDF` nao cifra os fluxos de conteudo**~~ | **Resolvido.** `sec_cifrar_objetos` aplica RC4 com a chave de cada objeto aos streams e as strings; `DecryptPDF` desfaz. Referencia em `dev/scripts/pdfcrypt_reference/`, validada no MuPDF. |
 | ~~**Marcas d'agua e overlays de texto nao sao rasterizados**~~ | **Resolvido.** Cada pagina afetada ganha um objeto de conteudo proprio e um `/Resources` proprio — no PDF do PL_FPDF o `/Resources` e compartilhado por todas as paginas, e mescla-lo espalharia a fonte da marca por todo o documento. Referencia em `dev/scripts/pdfoverlay_reference/`. |
 | ~~**Overlay de imagem nao e rasterizado**~~ | **Resolvido.** JPEG entra inteiro como `/DCTDecode`; os IDAT do PNG ja sao zlib, que e o `/FlateDecode` do PDF, entao sao concatenados e declarados com `/Predictor 15`. Referencia em `dev/scripts/pdfimage_reference/`, validada pelos pixels desenhados. |
@@ -108,6 +123,10 @@ passaram a ser conferidos por decodificadores reais.
 | ~~**Antecipacao de subprograma publico**~~ | **Resolvido, e virou lint.** `PLS-00305`: tres declaracoes antecipadas vieram junto com o codigo para o `PL_FPDF_UTIL` e passaram a apontar para subprogramas que a spec nova declara. A spec ja declara; repetir no body e redeclarar no mesmo escopo. Antecipacao so serve para subprograma PRIVADO chamado antes de ser definido. (`check_spec_body.py`) |
 | ~~**Tipo que ficou no outro package**~~ | **Resolvido, e virou lint.** `PLS-00201`: o `PL_FPDF_UTIL` usava `tpi` e `tv4000`, que ficaram no `PL_FPDF` — um package nao herda tipo do outro. Como o `PLS-00371`, este erro **aborta a analise da unidade inteira**, entao ele escondeu o proprio: foram duas rodadas para dois erros que estavam no arquivo ao mesmo tempo. A regra entrou no `check_spec_body.py`: todo tipo usado no body tem de estar declarado no body, na spec, ou ser nativo. |
 | ~~**Tipo declarado na spec e no body**~~ | **Resolvido, e virou lint.** O body herda o que a spec declara; redeclarar da `PLS-00371` e **aborta a analise da unidade inteira**, com a mensagem apontando a linha de um vizinho qualquer. Custou uma rodada na separacao do `PL_FPDF_UTIL`: o tipo `tqr` veio junto na mudanca e ja estava na spec nova. A regra entrou no `check_spec_body.py`, que ja lia o par spec/body — sem etapa nova no CI. |
+| ~~**Texto acentuado saia com dois glifos**~~ | **Resolvido.** O dicionario da fonte declarava `/Encoding /WinAnsiEncoding` e o texto entrava cru, em AL32UTF8: cada acentuado chegava ao leitor como DOIS bytes e ele desenhava dois glifos — sem erro, num arquivo que abre. A medicao derrubou as duas suposicoes do relato: a tabela de larguras estava **integra** (256 chaves distintas), e o sintoma nao era medida errada e sim `ORA-06502`, porque `subtype car is varchar2(1)` e UM byte e o `a` com til tem dois. Como `Cell` so mede para `align` C e R, alinhado a esquerda desenhava errado calado e centralizado LEVANTAVA. A tabela cp1252 saiu do codec do Python e foi conferida no MuPDF (217 de 217 posicoes desenhaveis); o byte sai como escape OCTAL, que e ASCII e atravessa o CLOB — a mesma licao do stream de imagem. `SetUTF8Enabled`/`IsUTF8Enabled` sairam da spec: nao faziam nada. (`check_byte_chars.py`, regra 4) |
+| ~~**`Image()` recusava todo PNG em AL32UTF8**~~ | **Resolvido.** Nao era `ORA-29275`, como o relato supunha: o `UTL_RAW.CAST_TO_VARCHAR2` nao levanta sobre binario. A assinatura era montada com `chr(137) \|\| 'PNG'`, que em AL32UTF8 nunca casa com os oito bytes do arquivo — e o parser recusava com `Not a PNG file`, uma mensagem que manda procurar defeito **no arquivo**. Todo o percurso binario do `p_parseImage` passou a RAW, com a assinatura vindo de `HEXTORAW`. |
+| ~~**Stream de imagem em hexadecimal nao declarado**~~ | **Resolvido.** O `p_putstream` lia o BLOB para buffer `VARCHAR2`: a sobrecarga de BLOB entrega RAW, e a conversao implicita devolve hexadecimal — 2000 bytes viravam 4000 caracteres. O hexadecimal era a codificacao CERTA (o documento e montado num CLOB, e byte acima de 0x7F nao sobrevive: medido, 256 entram e 422 saem), mas era acidental e sem `/ASCIIHexDecode`. Mais dois defeitos nas mesmas seis linhas: o laco parava um byte antes do fim, e o tamanho do pedaco era `IN OUT` e ficava preso na primeira leitura curta. (`check_byte_chars.py`, regra 3) |
+| ~~**Documento em paisagem contaminava o seguinte**~~ | **Resolvido.** O `Reset` limpava fontes, imagens, links e metadados — e deixava de fora o `OrientationChanges`, que diz quais paginas ganham `/MediaBox` proprio. Como e indexado pelo NUMERO da pagina, o indice 1 de um documento virava o indice 1 do proximo: quem gerasse um documento com a pagina 1 em paisagem deixava **todo documento posterior da mesma sessao** com a pagina 1 em paisagem. Conteudo desenhado fora do papel, arquivo que abre EM BRANCO, sem erro nenhum. Doze amostras cairam juntas e o sintoma nao acusava a causa — a pagina 1 saia errada e as demais certas, porque so o indice reaproveitado colide. O que fechou foi ler o arquivo gerado: `-30 bytes` por documento depois do conserto, exatamente o `/MediaBox` que sobrava. |
 
 ---
 
@@ -192,7 +211,15 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 
 ---
 
-### v3.3.0 - Bookmarks & Links (Q3 2026)
+### Bookmarks & Links — sem versao definida
+
+> **Corrigido na revisao de setembro.** Esta secao dizia "v3.3.0 (Q3 2026)", e
+> a 3.3.0 **ja saiu** — com instalacao em um arquivo, separacao do
+> `PL_FPDF_UTIL` e documentacao em ingles, nada disto aqui. Numero de versao
+> planejado que o lancamento nao cumpre e pior que nao ter numero: quem le
+> acredita que os bookmarks vieram na 3.3.0.
+>
+> O item continua valendo, sem numero, ate ser agendado de novo.
 
 **Prioridade:** Media
 
@@ -214,7 +241,12 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 
 ---
 
-### v3.4.0 - PDF 1.5/1.6 (Q4 2026)
+### PDF 1.5/1.6 — leitura pronta, escrita sem versao definida
+
+> **Corrigido na revisao de setembro.** Dizia "v3.4.0 (Q4 2026)", e a 3.4.0
+> **ja saiu** — com a conversao WinAnsi, o `ImageFromBlob` e o conserto do
+> caminho de imagem. A parte de LEITURA desta secao, marcada abaixo, entrou na
+> 3.2.1 de agosto; o que falta e a ESCRITA, e ela segue sem numero.
 
 **Prioridade:** Media
 
@@ -269,14 +301,36 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 
 ---
 
-## Documentação da API — mantida à mão
+## Documentação da API — gerada de novo, e por outro motivo
 
-A referência da API (`docs/API_REFERENCE.md`, `docs/API_REFERENCE_EN.md`,
-`site/reference.html` e `site/en/reference.html`) já foi gerada por um script que
-extraía as assinaturas do `.pks` e as combinava com um arquivo de metadados
-curados. O gerador saiu do repositório em agosto/2026: **a documentação é
-escrita, não é saída de ferramenta**, e passou a ser mantida à mão como as
-demais páginas do site.
+**Esta seção dizia o contrário até outubro/2026**, e vale contar por quê: um
+gerador antigo extraía as assinaturas do `.pks` e as combinava com metadados
+curados; ele saiu do repositório em agosto/2026, sob o argumento de que
+documentação se escreve, não sai de ferramenta.
+
+O argumento estava certo sobre o **texto** e errado sobre o **fato**. Escritas
+à mão, as páginas divergiram do package sem quebrar nada: **38 APIs** levantavam
+erro que a referência não listava (`Init` sem `-20001`, `SetFont` sem `-20005`,
+`Cell` sem `-20100`), as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma,
+e o comando de download da página inicial buscava a **v3.3.0** três parágrafos
+abaixo da vitrine que anunciava 3.4.0.
+
+A volta foi feita com a distinção que faltava:
+
+* **o que é fato sai da spec** — assinatura, tipo, valor padrão, retorno e todo
+  código de erro vêm do Javadoc de `src/*.pks`, que o `check_spec_comments.py`
+  já cobra;
+* **o que é editorial continua escrito**, só que **uma vez**: o grupo de cada
+  API e o "veja também" em `meta.py`, o texto em inglês em `textos_en.py`, o
+  índice de uso em `conteudo_api.py`, a página inicial em `conteudo_index.py`.
+  O desenho de cada página fica num molde HTML, editável à mão.
+
+São **oito** páginas geradas: `docs/API_REFERENCE.md` e `_EN.md`,
+`site/reference.html`, `site/api.html`, `site/index.html` e as três
+correspondentes em `site/en/`. O que o gerador cobra, além de estarem em dia:
+que o inglês não tenha sido escrito contra um português que mudou depois, e que
+o exemplo seja o mesmo código nas duas línguas — fora comentário, literal e nome
+de variável local, que mudam por direito.
 
 O que continua automático é a **conferência**, que é onde o CI ajuda de verdade:
 
@@ -284,23 +338,36 @@ O que continua automático é a **conferência**, que é onde o CI ajuda de verd
 |-------------|-------------|
 | `check_refs.py` | Toda referência `PL_FPDF.*` citada na documentação existe no package |
 | `check_links.py` | Todo link e imagem relativa aponta para arquivo que existe |
+| `check_escape_pdf.py` | Mais de uma rotina escapando string literal de PDF. Existiam cinco, e TRES estavam erradas — procuravam `'\\\\'` e trocavam por `'\\\\\\\\'`, ou seja, duas barras por quatro, e a barra sozinha, que e o caso comum, passava intacta |
+| `check_heranca.py` | Mede quanto do fonte de 2017 ainda vive em `src/` e **trava o numero**: a heranca so pode diminuir |
+| `check_lob_temp.py` | LOB temporario devolvido por funcao e nao liberado por quem chama — vazamento que so aparece sob carga |
+| `check_undeclared.py` | Chamada a subprograma que nao existe (`PLS-00201`), que aborta a analise da unidade inteira e esconde o erro seguinte |
+| `check_v_estatico.py` | `V$`/`GV$`/`DBA_` em SQL estatico dentro de PL/SQL: compila no ambiente de quem tem o grant e falha no do usuario |
+| `check_suite.py` | Arquivo de teste fora da lista do `build_run_all.py` — existe, compila, afere e **nunca roda** —, e dialeto fora do vocabulário canônico (`caso`, `passou`, `falhou`, `pulou`, `confere`). Achou dois arquivos que imprimiam `✓ Test 1: nome - PASS` em vez de `[PASS]`: o runner contava **zero** verificação para eles, e 65 aferições eram invisíveis |
+| `check_atribuicao.py` | Atribuição que começa antes de a anterior terminar — falta o `;`. Um gerador emitia o hexadecimal de uma fonte com uma atribuição por linha e nenhum terminador: o Oracle recusa o **bloco anônimo inteiro** com `ORA-06550`, apontando a linha de baixo, e 60 casos que passavam deixaram de rodar. Nenhuma outra verificação daqui analisa sintaxe |
+| `check_spec_comments.py` | API pública sem bloco de documentação na spec, ou com o bloco fora do formato. Na revisão de setembro **metade da API não tinha bloco** — 56 documentados contra 64 sem nenhum —, e os 64 eram os mais chamados: `Cell`, `SetFont`, `Text`, `Line`, `Output`. O que tinha vinha em três dialetos, e o leitor trocava de idioma três vezes descendo o arquivo |
+| `check_body_comments.py` | Subprograma **privado** sem comentário — o body é o único lugar onde ele pode ser documentado, e 27 não tinham uma linha. Também pega comentário em inglês ou francês herdado do porte, código comentado (nove trechos, um deles o ramo do `/Dest` que nunca funcionou) e **comentário que aponta para arquivo do repositório**: o comentário vive sozinho, porque endereço envelhece — quando `scripts/` virou `dev/scripts/`, doze ficaram apontando para o nada. Pega também **cabeçalho órfão** — `-- xpto :` seguido de outro subprograma —, que é o rastro que a separação dos packages deixou: o código foi para o outro arquivo e a documentação ficou, então o leitor lê a descrição de `xpto` e o corpo de outra coisa |
+| `generate.py --check` | Qualquer uma das **oito** páginas geradas fora de dia com a sua origem: as quatro da referência com o Javadoc da spec, as de uso e as iniciais com `conteudo_api.py` e `conteudo_index.py`. Enquanto foram escritas à mão divergiram sem quebrar nada: **38 APIs** levantavam erro que a página não listava — `Init` sem `-20001`, `SetFont` sem `-20005` —, as **18 APIs** do `PL_FPDF_UTIL` não tinham seção nenhuma, e o link de download da página inicial pedia a versão anterior à que a mesma página anunciava. Pega também o inglês escrito contra um português que mudou depois, e exemplo cujo código deixou de ser o mesmo nas duas línguas |
+| `check_roadmap_ci.py` | Esta tabela prometendo mais, ou menos, do que o `ci.yml` roda. Na revisao de setembro eram 21 passos para 16 entradas — a deriva e silenciosa por construcao: acrescentar um passo no CI nao obriga a tabela a acompanhar |
 | `check_paridade.py` | As páginas inglesas acompanham as portuguesas, e nenhuma frase ficou por traduzir |
 
 Duas consequências que valem registro:
 
-- **`parse_spec.py` ficou.** Ele não era do gerador: lê as assinaturas do
-  `src/PL_FPDF.pks` e quem o consome é o `check_test_calls.py`. Removê-lo
-  derrubaria aquele lint.
-- **O `check_error_codes.py` perdeu meia regra.** A segunda regra dele conferia
-  os códigos citados no `meta.py`; sem o arquivo, ela simplesmente não roda.
+- **`parse_spec.py` sobreviveu aos dois movimentos.** Ele não era do gerador
+  antigo: lê as assinaturas de `src/*.pks`, e quem o consome também é o
+  `check_test_calls.py`. Removê-lo derrubaria aquele lint.
+- **O `check_error_codes.py` recuperou a meia regra, em outro lugar.** A segunda
+  regra dele conferia os códigos citados no `meta.py`; sem o arquivo ela parou
+  de rodar. Hoje ela confere contra o `@raises` da **spec**, que é fonte melhor:
+  o código documentado está ao lado do subprograma que o levanta.
 
 ### Divergências encontradas nas revisões
 
 | Item | Situação |
 |------|----------|
-| `dev/tests/validate_phase_4_complete.sql` chamava `IsPDFLoaded`, `RemoveWatermark` e `ClearWatermarks`, que não existem no package | ✅ Resolvido: o teste passou a usar `GetPageCount` (que levanta `-20809` sem PDF carregado) e a documentar por que as outras duas não existem |
+| `dev/tests/test_manipulacao_completa.sql` chamava `IsPDFLoaded`, `RemoveWatermark` e `ClearWatermarks`, que não existem no package | ✅ Resolvido: o teste passou a usar `GetPageCount` (que levanta `-20809` sem PDF carregado) e a documentar por que as outras duas não existem |
 | Verificação automática de referências (`dev/scripts/gen_docs/check_refs.py`) no CI | ✅ Concluído |
-| Paridade PT/EN das páginas escritas à mão (`check_paridade.py`) no CI | ✅ Concluído |
+| Paridade PT/EN das páginas (`check_paridade.py`) no CI | ✅ Concluído — e desde outubro/2026 as páginas saem do mesmo material, então a paridade passou a ser consequência, não vigilância |
 | Códigos `ORA-208xx` reutilizados entre QR/barcode e manipulação/segurança | Pendente — ver "Pendencias conhecidas" |
 
 ---
@@ -313,12 +380,13 @@ no banco, e existe para que ele não volte:
 | Verificação | O que pega |
 |-------------|------------|
 | `check_declarations.py` | Global declarada depois do primeiro subprograma (`PLS-00103`) |
+| `check_block_declarations.py` | A mesma regra do lado dos testes: item declarado depois do primeiro subprograma local de um bloco anônimo. O `ORA-06550` aponta a linha da declaração, não a do subprograma que a invalidou — e nenhum lint olhava para `dev/tests/*.sql`, então só quebrou depois de conectar ao banco |
 | `check_spec_body.py` | Subprograma da spec sem corpo (`PLS-00323`) — um `/*` órfão já engoliu `AddQRCode` e `AddBarcode` inteiros, 892 linhas de comentário acidental |
 | `check_call_order.py` | Chamada a subprograma definido mais abaixo (`PLS-00313`) |
 | `check_clob_bytes.py` | `SUBSTRB`/`LENGTHB`/`INSTRB` em CLOB (`ORA-22998` só em execução) e LOB passado a `STANDARD_HASH` (`ORA-00902`, sem dizer qual argumento). Roda em `src/` **e em `dev/tests/`**: o mesmo erro reapareceu num diagnóstico porque a verificação só olhava `src/` |
 | `check_error_codes.py` | Código `ORA-208xx` fora da faixa do seu assunto — `ORA-20843` já significava "QR vazio" **e** "xref em stream" |
 | `check_dead_code.py` | Declaração privada que ninguém usa — a limpeza de ago/2026 tirou **778 linhas**: 12 subprogramas, 18 constantes e quatro corpos comentados, entre eles o `p_parseImage` antigo (178 linhas) e o fonte **PHP** do `SetLineStyle`, que veio junto na porta do FPDF |
-| `check_byte_chars.py` | `CHR(n)` aplicado a um byte — não devolve um byte, devolve o caractere daquele ponto de código, e em AL32UTF8 os valores de 128 a 255 saem com **dois**. Uma string literal de 33 bytes ia para o arquivo com 53, e só o título saía embaralhado. Na mesma família, e mais difícil de ver: dado binário remontado byte a byte com `SUBSTRB(..., 1)` num VARCHAR2 e devolvido a `UTL_RAW.CAST_TO_RAW` |
+| `check_byte_chars.py` | `CHR(n)` aplicado a um byte — não devolve um byte, devolve o caractere daquele ponto de código, e em AL32UTF8 os valores de 128 a 255 saem com **dois**. Uma string literal de 33 bytes ia para o arquivo com 53, e só o título saía embaralhado. Na mesma família, e mais difícil de ver: dado binário remontado byte a byte com `SUBSTRB(..., 1)` num VARCHAR2 e devolvido a `UTL_RAW.CAST_TO_RAW`. E a terceira família da mesma confusão: buffer `VARCHAR2` alimentado por `DBMS_LOB.READ` sobre `BLOB` — a sobrecarga entrega `RAW` e a conversão implícita devolve hexadecimal —, mais assinatura binária montada com `CHR` de literal acima de 127, que fazia o parser recusar todo PNG com uma mensagem culpando o arquivo |
 | avisos do MuPDF (no `run_tests.py`) | Arquivo **malformado que abre assim mesmo**. O MuPDF é tolerante e só avisa; um `endobj` duplicado atravessou texto, pixels, contagem de páginas e estrutura, e só apareceu quando os avisos passaram a contar como falha |
 
 > Nenhum lint pega consumo de memória nem laço infinito: o inflate compilou, passou nos sete, e estourou a PGA três vezes. A causa final não era o inflate — era um `EXIT WHEN INSTR(...) = 0` que nunca dispara quando `INSTR` devolve NULL, num parser de tabela constante de doze linhas. Só a execução revela.
@@ -333,20 +401,246 @@ no banco, e existe para que ele não volte:
 
 ---
 
+## Lacunas priorizadas por uso medido
+
+DOCUMENTO DE MANUTENCAO.
+
+Esta secao existe para responder uma pergunta so: **entre o que falta, o que e
+de fato usado?** A ordem abaixo nao saiu de opiniao — saiu de tres medicoes
+independentes, e ela **contradisse** a ordem que este mesmo documento teria
+proposto por intuicao. O item que a intuicao punha em terceiro caiu para o
+backlog quando o numero apareceu.
+
+O **como** de cada item — logica, caso de uso, criterio de aceite e as
+armadilhas conhecidas — esta em `docs/HISTORIAS.md`, uma historia por lacuna.
+Esta secao fica com o **o que** e o **em que ordem**.
+
+> **Os numeros desta secao sao de 8 de setembro de 2026, e nao foram
+> remedidos.** Servem para ordenar a fila, nao como medicao corrente: quem
+> precisar deles para decidir alguma coisa hoje refaz a contagem antes. O que
+> mudou desde entao esta dito item a item — o item 1 saiu na 3.4.0.
+
+### Como foi medido
+
+**Fonte A — o que o mercado precisa ver demonstrado.** Levantamento de
+demanda sobre um catalogo comercial de referencia do mesmo nicho: 174 casos
+de exemplo, agrupados por tema. Quem vende suporte escreve exemplo para o que
+o cliente pergunta, entao a distribuicao dos exemplos e um retrato barato da
+demanda atendida. O levantamento e **quantitativo e de superficie** — conta
+casos por tema, nada alem disso.
+
+**Fonte B — o que esta base ja exercita.** APIs distintas chamadas em
+`examples/` e `dev/tests/`: **69 das 138 publicas**. Metade da superficie
+publica nao tem um so chamador no repositorio — achado proprio, tratado
+adiante.
+
+**Fonte C — impacto medido, quando da para medir.** Para o subset de fonte,
+`fontTools` sobre as fontes reais e o conjunto de caracteres que os exemplos
+desta base de fato usam (106 distintos).
+
+### O retrato da demanda (8/set/2026)
+
+| Tema | Casos (fonte A) | Temos? |
+|------|----------------:|--------|
+| Celula / linha / tabela      | 31 | Parcial — `Cell` e `MultiCell`; sem tabela com quebra automatica |
+| XHTML -> PDF                 | 14 | *Fora de escopo — outro produto* |
+| Codigo de barras             | 12 | **Sim** |
+| Grafico                      | 10 | *Fora de escopo — outro produto* |
+| Assinatura digital / carimbo |  9 | *Fora de escopo — outro produto* |
+| Sumario (TOC)                |  8 | Nao |
+| Desenho vetorial             |  7 | **Sim** |
+| Formulario AcroForm          |  6 | Nao |
+| Template / carimbo / marca   |  6 | **Sim** |
+| Fonte TTF                    |  5 | Parcial — sem subset |
+| Anotacao / anexo             |  5 | Nao |
+| Codificacao e acento         |  4 | **Sim, desde a 3.4.0** |
+| Marcadores (bookmarks)       |  1 | Nao |
+| PDF marcado (tagged/PDF-UA)  |  1 | Nao |
+
+> **Demanda alta nao e o mesmo que escopo.** Os tres itens marcados como fora
+> de escopo somam 33 casos e ocupam o 2o, o 4o e o 5o lugares da medicao —
+> mais que o primeiro colocado sozinho. Saem assim mesmo, e a decisao esta em
+> "Fora de escopo", adiante. Medir a demanda e uma coisa; decidir que produto
+> se esta construindo e outra.
+
+> **A correcao que o numero impos.** "PDF marcado" tinha sido proposto como o
+> terceiro item, pelo argumento de licitacao publica. Ele e o **penultimo** da
+> fonte A — 1 caso em 174, empatado com o ultimo. O argumento de licitacao nao
+> se sustentou contra texto legal: a Lei Brasileira de Inclusao e o eMAG
+> obrigam acessibilidade de **sitio web**; nao se achou norma que exija PDF/UA
+> em documento de licitacao. Sem essa norma, o item nao se sustenta como
+> prioridade. Foi para o backlog.
+
+> **O sinal mais alto nao esta entre os quatro.** Celula/linha/tabela tem 31
+> casos — mais que o dobro do segundo. Ja consta do backlog como "Table
+> auto-pagination / Media / Alto". A medicao diz que essa entrada esta
+> subestimada: e a superficie mais usada de qualquer biblioteca de PDF, e a
+> unica em que estamos parciais e nao ausentes.
+
+---
+
+### 1. Conversao WinAnsi — CONCLUIDA na 3.4.0
+
+**Era o peso mais alto da fila.** Nao era funcionalidade que faltava: era
+defeito na superficie que a fonte A mede em 31 casos e a fonte B em 104
+chamadas a `Cell`. O dicionario da fonte declarava `/Encoding
+/WinAnsiEncoding` e nada convertia o texto de AL32UTF8 antes de escrever, e o
+leitor desenhava **dois glifos errados** no lugar de cada acentuado. Estava
+mascarado porque os exemplos evitavam acento.
+
+Entregue em setembro/2026 com a tabela gerada de fonte primaria e validada
+contra o MuPDF, saida em escape octal (o CLOB de montagem recodifica qualquer
+byte acima de `0x7F`), recusa com `ORA-20203` para o que nao existe em cp1252,
+e `check_byte_chars.py` guardando a volta.
+
+**A hipotese que acompanhava o item nao se confirmou.** Suspeitava-se de que
+`p_larguras_de` montasse a tabela de larguras com chaves colididas, por causa
+do `CHR(i)` em AL32UTF8. Medido: as 256 chaves sao distintas e as larguras
+estao certas. O que quebrava `GetStringWidth` do acentuado era outra coisa, no
+mesmo tema — o `subtype car is varchar2(1)`, que guarda **um byte** e estoura
+com `ORA-06502` diante de um caractere de dois. Vale como registro do metodo:
+a medicao barata (HU-00) evitou consertar o que nao estava quebrado.
+
+**Relato completo:** `docs/HISTORIAS.md`, HU-00 e HU-01.
+
+---
+
+### 2. Subset de fonte TTF — 27x no tamanho do arquivo
+
+**Peso: alto, e o unico dos quatro com impacto medido em numero.** Com o item
+1 concluido, e agora o primeiro da fila.
+
+**A medida.** `fontTools`, com os 106 caracteres distintos que os exemplos
+desta base usam:
+
+| Fonte | Inteira | Subset | Reducao | Dentro do PDF (deflate) |
+|-------|--------:|-------:|--------:|------------------------:|
+| DejaVuSans          | 759.720 B | 20.700 B | **97,3%** | 381.835 -> **14.343 B** |
+| LiberationSans      | 410.820 B | 24.312 B | **94,1%** | 210.802 -> **15.421 B** |
+
+Um boleto desta base tem 14 KB e um ingresso 22 KB. Embutir DejaVuSans hoje
+soma **382 KB** — a fonte fica sendo 95% do arquivo. Com subset, 14 KB.
+
+**O argumento mudou com a 3.4.0, e para melhor.** Ate entao embutir uma TTF
+era a **unica forma de acertar acento**, e isso inflava o numero de quem
+embutia por necessidade. Consertado o item 1, quem so precisa de portugues
+fica nas fontes core e nem embute; quem embute, embute por tipografia — e
+deve embutir barato. O item perde urgencia e mantem o valor.
+
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-02.
+
+---
+
+### 3. Sumario e marcadores (`/Outlines`)
+
+**Peso: medio-alto. Barato, muito visivel.** 8 casos de TOC + 1 de marcadores
+na fonte A. E a unica estrutura desta lista que o PDF resolve com um
+dicionario simples, sem codificacao nem binario.
+
+Dependia do item 1 pelo acento do `/Title`, e a dependencia esta paga.
+
+**Logica, casos de uso e criterio de aceite:** `docs/HISTORIAS.md`, HU-03.
+
+---
+
+### 4. PDF marcado (tagged / PDF-UA) — rebaixado para backlog
+
+**Peso: o mais baixo dos quatro, pela medida.** 1 caso em 174 na fonte A. A
+justificativa era licitacao publica; a norma que se achou (LBI art. 63, eMAG,
+Decreto 5.296) obriga acessibilidade de **sitio web**, e nao se localizou
+exigencia de PDF/UA em documento de licitacao. Sem norma que obrigue, o item
+nao sustenta a prioridade que se imaginou.
+
+Fica registrado o que seria preciso, para quando houver demanda concreta:
+arvore de estrutura (`/StructTreeRoot`), marcacao do conteudo com `BDC`/`EMC`
+por bloco, `/Lang`, `/MarkInfo`, ordem de leitura explicita e texto
+alternativo de imagem. E trabalho grande, espalhado por todo o gerador de
+conteudo — nao e um modulo que se acrescenta ao lado.
+
+**Reavaliar se** aparecer exigencia contratual real, ou norma que se possa
+citar. Nesse caso ele sobe direto, porque nenhuma biblioteca PL/SQL livre faz
+isso. Analise completa em `docs/HISTORIAS.md`, HU-04.
+
+---
+
+### Achado proprio: metade da API publica nao tem chamador
+
+69 das 138 APIs publicas sao exercitadas por `examples/` e `dev/tests/`. As
+outras 69 compilam e ninguem as chama neste repositorio — nao ha como saber se
+funcionam. Nao e o mesmo que estarem quebradas, e e exatamente a situacao em
+que `AddWatermark` passou meses marcado como pronto sem desenhar nada.
+
+Antes de acrescentar superficie nova, vale medir a existente. Levantamento e
+criterio em `docs/HISTORIAS.md`, HU-05.
+
+**Atualizacao de 11/09/2026.** A primeira API sem chamador que ganhou teste --
+o `Link` -- devolveu **quatro defeitos**, um por rodada, todos achados ao
+escrever a chamada e nenhum visivel em revisao de codigo. Em seguida,
+`dev/tests/test_fontes_truetype.sql` escreveu a primeira chamada de tudo o que
+nao depende de recurso externo: **de 48 APIs sem chamador para 6**. As seis que
+restam precisam de DIRECTORY (`LoadTTFFromFile`, `OutputFile`, `Output`), de
+ACL de rede (`Image`, `getImageFromUrl`) ou de arquivo de metricas (`AddFont`).
+
+---
+
 ## Backlog (Sem Versao Definida)
 
-| Feature | Complexidade | Valor |
-|---------|--------------|-------|
-| HTML to PDF (subset) | Alta | Alto |
-| Table auto-pagination | Media | Alto |
-| Annotations (comments) | Media | Baixo |
-| JavaScript actions | Alta | Baixo |
-| Layers (OCG) | Media | Baixo |
+Valor revisado em set/2026 pela medicao da secao anterior; a coluna "casos"
+traz a contagem da fonte A, que e o que sustenta a nota de valor.
+
+| Feature | Complexidade | Valor | Casos |
+|---------|--------------|-------|------:|
+| Table auto-pagination | Media | **Alto** | 31 |
+| Formulario AcroForm | Media | Medio † | 6 |
+| Annotations (comments) | Media | Baixo † | 5 |
+| PDF marcado (tagged/PDF-UA) | Alta | Baixo *(reavaliar com norma)* | 1 |
+| JavaScript actions | Alta | Baixo | 0 |
+| Layers (OCG) | Media | Baixo | 0 |
+
+† **Itens separados, esforco conjunto.** Os dois sao a **mesma maquina**:
+anotacao e campo de formulario sao entradas do mesmo `/Annots`, e a base ja o
+monta — o array e aberto no `p_putpages` e a entrada de link ja sai como
+`<</Type /Annot /Subtype /Link /Rect [...`. Um campo de formulario e um
+`/Subtype /Widget` no mesmo lugar.
+
+Ficam separados na tabela porque sao entregas distintas, com casos de uso e
+criterios de aceite proprios — juntar as duas numa linha so esconderia que uma
+pode ser entregue sem a outra. Mas quem pegar uma **deve pegar as duas na mesma
+investida**: o caro aqui e entender e generalizar o `/Annots` (dicionario por
+subtipo, `/Rect` em coordenadas de pagina, *appearance stream*, e o que
+acontece com tudo isso no `MergePDFs` e no `RemovePage`). Feito esse trabalho,
+o segundo subtipo custa uma fracao do primeiro. Feitos em rodadas separadas,
+paga-se o entendimento duas vezes — e a segunda passagem tende a refatorar o
+que a primeira deixou rigido demais.
+
+Fronteira interna, para nao repetir a discussao: **criar** o campo, o `/Rect`,
+o `/AP` e o valor inicial e nosso; **ler** o valor de um PDF carregado e nosso.
+Acao JavaScript de validacao e calculo nao e — esta na linha propria do
+backlog, e e outro dominio. Fluxo de aprovacao e quem preenche o que, tambem
+nao.
 
 > **Correcao da revisao.** "Headers/Footers automaticos" saiu do backlog:
 > `SetHeaderProc` e `SetFooterProc` existem, sao chamados na quebra de pagina e
 > tem teste em `dev/tests/test_core.sql`, inclusive para nome de procedimento
 > invalido e para tentativa de injecao no callback.
+
+### Fora de escopo — decidido, nao esquecido
+
+Tres entradas com demanda **alta e medida** — 33 casos somados, mais que o
+primeiro colocado sozinho — sairam do backlog em set/2026 por decisao de
+escopo. Ficam registradas aqui de proposito: apagadas, alguem as re-deriva
+da mesma medicao daqui a seis meses e refaz a discussao.
+
+| Item | Casos | Por que sai |
+|------|------:|-------------|
+| XHTML -> PDF | 14 | E **outro produto**, e a funcionalidade ja existe pronta e facil fora daqui. Reimplementar um subconjunto de HTML e CSS dentro do PL/SQL entrega uma versao pior de algo que a pessoa resolve melhor por outro caminho. |
+| Grafico (barra, linha, pizza) | 10 | E **outro produto**. Grafico e visualizacao de dado — escala de eixo, legenda, posicionamento de rotulo, paleta —, um dominio inteiro que por acaso termina numa imagem. E o encaixe **ja existe**: quem gera o grafico onde for melhor coloca a imagem com `Image`, `ImageFromBlob` ou `OverlayImage`, que esta base ja faz e ja valida por pixel. Construir um motor de grafico aqui competiria com ferramenta madura para entregar menos. |
+| Assinatura digital | 9 | E **outro produto**. Assinatura e infraestrutura de certificado, cadeia, carimbo do tempo e politica de assinatura — nao e geracao de PDF. Quem faz isso serio nao quer que a biblioteca de desenho tambem assine. |
+
+O criterio e o mesmo que ja tirou o `PL_FPDF_BOLETO` daqui: **montar** os 44
+digitos e regra de cobranca, nao desenho de PDF; **desenhar** o codigo de
+barras e. A pergunta que separa os dois lados e sempre a mesma — *isto e
+desenhar um PDF, ou e outro dominio que por acaso termina num PDF?*
 
 ---
 
@@ -365,6 +659,15 @@ no banco, e existe para que ele não volte:
 6. **Recusar em vez de entregar errado** - Quando algo nao e suportado, levantar
    erro com mensagem clara. Um PDF marcado como protegido que nao esta, ou uma
    imagem que sai como ruido, custa mais caro que uma excecao.
+7. **Desenhar PDF, nao o dominio de quem chama** - A pergunta que decide o
+   escopo e sempre a mesma: *isto e desenhar um PDF, ou e outro dominio que
+   por acaso termina num PDF?* Montar os 44 digitos do boleto e regra de
+   cobranca; desenhar o codigo de barras e nosso. Assinatura digital e
+   infraestrutura de certificado; XHTML -> PDF e um motor de layout; grafico
+   e visualizacao de dado — os tres ja existem prontos fora daqui, e para os
+   dois ultimos o encaixe e uma imagem, que esta base ja coloca. Demanda
+   medida alta nao derruba este principio — derruba so a duvida sobre se
+   alguem pediria.
 
 ---
 

@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.0] - 2026-09-11
+
+### Corrigido
+- Texto acentuado saía com dois glifos nas fontes padrão: o documento declarava
+  WinAnsi e recebia UTF-8 cru. `Cell`, `MultiCell`, `Write`, `Text` e overlays
+- `GetStringWidth` levantava `ORA-06502` com acento — logo, centralizar ou
+  alinhar à direita quebrava
+- `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
+- Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
+  último byte
+- `Link` numa página emitia `/Annots` com dicionário aberto nas páginas
+  anteriores, que nunca pediram link, e estourava `ORA-06533` no segundo
+  documento da sessão
+
+### Adicionado
+- `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
+- Fonte TrueType embutida de verdade: o `SetFont` passa a usar a fonte
+  registrada, as métricas saem do arquivo e o `/FontFile2` vai para o PDF
+
+
+### Removido
+- **Incompatível:** `SetUTF8Enabled` e `IsUTF8Enabled`. Não faziam nada — a
+  variável era escrita e lida, e nenhum outro ponto a consultava. A acentuação
+  passa a ser sempre correta, sem chave
+
+### Alterado
+- **Incompatível:** caractere fora do WinAnsi levanta `ORA-20203` com a posição,
+  em vez de sair como `?`. Para outras escritas, embuta uma fonte TrueType
+- **Incompatível:** `Link` só aceita URL; `AddLink`, `SetLink` e `plink` numérico
+  recusam com `ORA-20601`. O link interno nunca teve o `/Dest` escrito
+
+---
+
 ## [3.3.0] - 2026-08-31
 
 ### Adicionado
