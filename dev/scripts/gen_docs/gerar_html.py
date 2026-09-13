@@ -38,30 +38,48 @@ def esc(s):
 def realcar(codigo):
     """Realce do SQL: palavra reservada, literal e comentário.
 
-    A ordem importa: o comentário sai primeiro, senão um `--` dentro dele
-    seria varrido de novo; e o literal antes da palavra reservada, senão um
-    `'end'` entre aspas viraria palavra-chave.
+    A varredura é de UMA passagem sobre o texto inteiro, com estado, e não
+    linha a linha. A diferença aparece no literal que atravessa a quebra de
+    linha -- o JSON de opções do `OverlayText` ocupa três --: linha a linha
+    ele não é reconhecido como literal, e o que está dentro dele volta a ser
+    varrido como se fosse código. O comentário, ao contrário, termina no fim
+    da linha, e é por isso que ele tem saída própria no laço.
+
+    A ordem importa: um `--` DENTRO de uma string não abre comentário, e uma
+    aspa dentro de um comentário não abre string.
     """
-    saida = []
-    for linha in codigo.split('\n'):
-        com = ''
-        m = re.search(r'--.*$', linha)
-        if m:
-            com = '<span class="c">' + esc(m.group(0)) + '</span>'
-            linha = linha[:m.start()]
-        pedacos = re.split(r"('(?:[^']|'')*')", linha)
-        fora = ''
-        for i, p in enumerate(pedacos):
-            if i % 2:
-                fora += '<span class="s">' + esc(p) + '</span>'
-            else:
-                fora += re.sub(
-                    r'\b([A-Za-z_]\w*)\b',
-                    lambda mm: ('<span class="k">' + esc(mm.group(1))
-                                + '</span>') if mm.group(1).lower() in CHAVE
-                    else esc(mm.group(1)), p)
-        saida.append(fora + com)
-    return '\n'.join(saida)
+    fora, i, n = [], 0, len(codigo)
+    while i < n:
+        c = codigo[i]
+        if c == "'":
+            # literal: `''` é aspa escapada e não fecha a string
+            j = i + 1
+            while j < n:
+                if codigo[j] == "'":
+                    if j + 1 < n and codigo[j + 1] == "'":
+                        j += 2
+                        continue
+                    j += 1
+                    break
+                j += 1
+            fora.append('<span class="s">' + esc(codigo[i:j]) + '</span>')
+            i = j
+        elif codigo.startswith('--', i):
+            j = codigo.find('\n', i)
+            j = n if j < 0 else j
+            fora.append('<span class="c">' + esc(codigo[i:j]) + '</span>')
+            i = j
+        else:
+            j = i
+            while j < n and codigo[j] != "'" and not codigo.startswith('--', j):
+                j += 1
+            fora.append(re.sub(
+                r'\b([A-Za-z_]\w*)\b',
+                lambda mm: ('<span class="k">' + esc(mm.group(1)) + '</span>')
+                if mm.group(1).lower() in CHAVE else esc(mm.group(1)),
+                codigo[i:j]))
+            i = j
+    return ''.join(fora)
 
 
 # Rótulos fixos da página, por idioma. O texto das APIs vem do Javadoc (PT) ou

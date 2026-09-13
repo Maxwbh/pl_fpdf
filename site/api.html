@@ -169,7 +169,7 @@
   <h2><span class="n">01</span> Ciclo de vida</h2>
   <p class="desc">Todo documento começa com <code>Init</code>; o estado vive na sessão (package-only).</p>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>Init(orient, unit, format, encoding)</td><td>Inicia documento: &#x27;P&#x27;/&#x27;L&#x27; · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
+    <tr><td>Init(orient, unit, format, encoding)</td><td>Inicia documento: 'P'/'L' · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
     <tr><td>Reset</td><td>Zera o estado e libera CLOBs temporários</td></tr>
     <tr><td>IsInitialized</td><td>TRUE se há documento em andamento</td></tr>
     <tr><td>co_version</td><td>Constante com a versão instalada</td></tr>
@@ -207,7 +207,7 @@ PL_FPDF.SetXY(x => <span class="n">20</span>, y => <span class="n">40</span>);  
 <section id="fontes">
   <h2><span class="n">03</span> Fontes e UTF-8</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>SetFont(família, estilo, tamanho)</td><td>Core: Arial/Helvetica, Times, Courier · estilos &#x27;&#x27;, B, I, BI, U</td></tr>
+    <tr><td>SetFont(família, estilo, tamanho)</td><td>Core: Arial/Helvetica, Times, Courier · estilos '', B, I, BI, U</td></tr>
     <tr><td>SetFontSize(pt)</td><td>Muda apenas o tamanho</td></tr>
     <tr><td>AddTTFFont(nome, blob, enc, embed)</td><td>TrueType a partir de BLOB, com embedding</td></tr>
     <tr><td>LoadTTFFromFile(nome, arquivo, directory)</td><td>TrueType de um DIRECTORY Oracle</td></tr>
@@ -245,7 +245,7 @@ PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span 
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
     <tr><td>SetDrawColor / SetFillColor / SetTextColor (r,g,b)</td><td>Cores RGB 0–255 de contorno, preenchimento e texto</td></tr>
     <tr><td>SetLineWidth · SetDash · SetLineDashPattern</td><td>Espessura e tracejado</td></tr>
-    <tr><td>Line(x1,y1,x2,y2) · Rect(x,y,w,h,estilo)</td><td>Linha · retângulo (&#x27;&#x27; contorno, &#x27;F&#x27; cheio, &#x27;DF&#x27; ambos)</td></tr>
+    <tr><td>Line(x1,y1,x2,y2) · Rect(x,y,w,h,estilo)</td><td>Linha · retângulo ('' contorno, 'F' cheio, 'DF' ambos)</td></tr>
     <tr><td>Poly(pontos, fechar, estilo) · Triangle(...)</td><td>Polígonos e triângulos</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">desenho.sql</span></div>
@@ -280,7 +280,7 @@ PL_FPDF.SetLineDashPattern(<span class="s">&#x27;[3 2] 0&#x27;</span>);         
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
     <tr><td>SetHeaderProc(proc, params)</td><td>Procedure chamada no topo de cada página</td></tr>
     <tr><td>SetFooterProc(proc, params)</td><td>Procedure chamada no rodapé</td></tr>
-    <tr><td>SetAliasNbPages(&#x27;{nb}&#x27;)</td><td>Placeholder do total de páginas (&quot;Página 2/{nb}&quot;)</td></tr>
+    <tr><td>SetAliasNbPages('{nb}')</td><td>Placeholder do total de páginas ("Página 2/{nb}")</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">rodape.sql</span></div>
 <pre><span class="c">-- procedure sua, chamada a cada página:</span>
@@ -356,7 +356,7 @@ PL_FPDF.OutputFile(
     <tr><td>LoadPDF(blob)</td><td>Carrega e interpreta um PDF existente</td></tr>
     <tr><td>GetPageCount · GetPDFInfo</td><td>Total de páginas · metadados/versão (JSON)</td></tr>
     <tr><td>RotatePage(n, graus) · RemovePage(n)</td><td>Rotação 0/90/180/270 · remoção de página</td></tr>
-    <tr><td>AddWatermark(texto, opacidade, rotação, páginas, fonte, tam, cor)</td><td>Marca d&#x27;água em &#x27;ALL&#x27; ou &#x27;1,3-5&#x27;</td></tr>
+    <tr><td>AddWatermark(texto, opacidade, rotação, páginas, fonte, tam, cor)</td><td>Marca d'água em 'ALL' ou '1,3-5'</td></tr>
     <tr><td>GetWatermarks · GetActivePageCount · IsPageRemoved · IsPDFModified</td><td>Consultas de estado (JSON)</td></tr>
     <tr><td>OutputModifiedPDF → BLOB · ClearPDFCache</td><td>Gera o PDF final · libera memória</td></tr>
   </tbody></table></div>
@@ -387,9 +387,9 @@ l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
   p_page_number => <span class="n">1</span>,
   p_text        => <span class="s">&#x27;APROVADO&#x27;</span>,
   p_x => <span class="n">400</span>, p_y => <span class="n">700</span>,               <span class="c">-- pontos PDF; Y conta de baixo para cima</span>
-  p_options     => JSON_OBJECT_T('{
-    "fontSize":<span class="n">24</span>, "color":"FF0000", "opacity":<span class="n">0.8</span>,
-    "rotation":<span class="n">0</span>, "align":"left", "bold":<span class="k">true</span> }'));
+  p_options     => JSON_OBJECT_T(<span class="s">&#x27;{
+    &quot;fontSize&quot;:24, &quot;color&quot;:&quot;FF0000&quot;, &quot;opacity&quot;:0.8,
+    &quot;rotation&quot;:0, &quot;align&quot;:&quot;left&quot;, &quot;bold&quot;:true }&#x27;</span>));
 
 PL_FPDF.OverlayImage(
   p_page_number => <span class="n">1</span>, p_image_blob => l_logo,
@@ -403,8 +403,8 @@ PL_FPDF.OverlayImage(
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
     <tr><td>LoadPDFWithID(blob, id) · UnloadPDF(id) · GetLoadedPDFs</td><td>Vários PDFs em memória, cada um com ID</td></tr>
     <tr><td>MergePDFs(ids JSON) → BLOB</td><td>Mescla na ordem do array</td></tr>
-    <tr><td>SplitPDF(id, ranges JSON) → JSON</td><td>Divide por intervalos (&quot;1-10&quot;, &quot;11-20&quot;, &quot;21-&quot;)</td></tr>
-    <tr><td>ExtractPages(id, &#x27;1,5-10,15&#x27;) → BLOB</td><td>Novo PDF só com as páginas indicadas</td></tr>
+    <tr><td>SplitPDF(id, ranges JSON) → JSON</td><td>Divide por intervalos ("1-10", "11-20", "21-")</td></tr>
+    <tr><td>ExtractPages(id, '1,5-10,15') → BLOB</td><td>Novo PDF só com as páginas indicadas</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">merge.sql</span></div>
 <pre>PL_FPDF.LoadPDFWithID(l_capa, <span class="s">&#x27;capa&#x27;</span>);
@@ -415,11 +415,11 @@ l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T(<span class="s">&#x27;[&quot;capa&quot
 <section id="seguranca">
   <h2><span class="n">14</span> Segurança e criptografia (v3.2)</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>EncryptPDF(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — &#x27;AES-256&#x27;, &#x27;AES-128&#x27;, &#x27;RC4-128&#x27; ou &#x27;RC4-40&#x27;</td></tr>
+    <tr><td>EncryptPDF(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — 'AES-256', 'AES-128', 'RC4-128' ou 'RC4-40'</td></tr>
     <tr><td>DecryptPDF(pdf, senha)</td><td>Remove a proteção</td></tr>
     <tr><td>IsEncrypted(pdf) · GetSecurityInfo(pdf)</td><td>Verifica e inspeciona (algoritmo, chave, permissões)</td></tr>
-    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento novo, antes do OutputBlob</td></tr>
-    <tr><td>SetPDFVersion(&#x27;1.7&#x27;) · GetPDFVersion</td><td>Versão do arquivo gerado</td></tr>
+    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento <b>novo</b>, antes do OutputBlob</td></tr>
+    <tr><td>SetPDFVersion('1.7') · GetPDFVersion</td><td>Versão do arquivo gerado</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">proteger.sql</span></div>
 <pre>l_perms := JSON_OBJECT_T();

@@ -30,14 +30,18 @@ NUMERO = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)(?![\w.])')
 
 
 def realcar(codigo):
-    """Realce da referência, mais o número."""
-    saida = []
-    for linha in gerar_html.realcar(codigo).split('\n'):
-        pedacos = re.split(r'(<span class="[ksc]">.*?</span>)', linha)
-        saida.append(''.join(
-            p if p.startswith('<span') else NUMERO.sub(
-                r'<span class="n">\1</span>', p) for p in pedacos))
-    return '\n'.join(saida)
+    """Realce da referência, mais o número.
+
+    A varredura e feita no texto INTEIRO, e nao linha a linha: um literal pode
+    ocupar varias linhas -- o JSON de opcoes do OverlayText ocupa tres --, e
+    linha a linha o `<span>` dele nao casa, entao os numeros de dentro da
+    string acabavam realcados como numero, dentro do span de string.
+    """
+    marcado = gerar_html.realcar(codigo)
+    pedacos = re.split(r'(<span class="[ksc]">.*?</span>)', marcado, flags=re.S)
+    return ''.join(p if p.startswith('<span') else
+                   NUMERO.sub(r'<span class="n">\1</span>', p)
+                   for p in pedacos)
 
 
 def _sem_prosa(linhas):
@@ -98,9 +102,12 @@ def secao(s, k):
         elif b[0] == 'tabela':
             o.append('  <div class="tbl"><table><thead><tr><th>API</th>'
                      f'<th>{esc(coluna[k])}</th></tr></thead><tbody>')
+            # a celula sai COMO ESTA, sem escapar: a coluna "o que faz" leva
+            # marcacao de vez em quando (`<b>novo</b>`), e escapar aqui a
+            # transformava em texto -- o sentido ficava, o destaque nao. Quem
+            # escreve o conteudo escreve HTML, como no `desc` e no `nota`.
             for api, faz in b[1]:
-                o.append(f'    <tr><td>{esc(api[k])}</td>'
-                         f'<td>{esc(faz[k])}</td></tr>')
+                o.append(f'    <tr><td>{api[k]}</td><td>{faz[k]}</td></tr>')
             o.append('  </tbody></table></div>')
         else:
             arquivo = b[1][k]
