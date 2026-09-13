@@ -15,7 +15,7 @@ DECLARE
   l_pdf_info JSON_OBJECT_T;
   
   -- Helper procedure
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE confere(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_test_count := l_test_count + 1;
     IF p_passed THEN
@@ -26,7 +26,7 @@ DECLARE
       DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name || 
         CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
     END IF;
-  END test_result;
+  END confere;
   
 
 
@@ -52,27 +52,27 @@ BEGIN
   -- Test 1: LoadPDF
   BEGIN
     PL_FPDF.LoadPDF(l_test_pdf);
-    test_result('LoadPDF() with minimal PDF', TRUE);
+    confere('LoadPDF() with minimal PDF', TRUE);
   EXCEPTION WHEN OTHERS THEN
-    test_result('LoadPDF() with minimal PDF', FALSE, SQLERRM);
+    confere('LoadPDF() with minimal PDF', FALSE, SQLERRM);
   END;
   
   -- Test 2: GetPageCount
   BEGIN
     l_page_count := PL_FPDF.GetPageCount();
-    test_result('GetPageCount() returns 1', l_page_count = 1);
+    confere('GetPageCount() returns 1', l_page_count = 1);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetPageCount()', FALSE, SQLERRM);
+    confere('GetPageCount()', FALSE, SQLERRM);
   END;
   
   -- Test 3: GetPDFInfo
   BEGIN
     l_pdf_info := PL_FPDF.GetPDFInfo();
-    test_result('GetPDFInfo() returns JSON', l_pdf_info IS NOT NULL);
-    test_result('GetPDFInfo().version = 1.4', l_pdf_info.get_string('version') = '1.4');
-    test_result('GetPDFInfo().pageCount = 1', l_pdf_info.get_number('pageCount') = 1);
+    confere('GetPDFInfo() returns JSON', l_pdf_info IS NOT NULL);
+    confere('GetPDFInfo().version = 1.4', l_pdf_info.get_string('version') = '1.4');
+    confere('GetPDFInfo().pageCount = 1', l_pdf_info.get_number('pageCount') = 1);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetPDFInfo()', FALSE, SQLERRM);
+    confere('GetPDFInfo()', FALSE, SQLERRM);
   END;
   
   DBMS_OUTPUT.PUT_LINE('');

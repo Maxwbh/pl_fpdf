@@ -1,11 +1,16 @@
 --------------------------------------------------------------------------------
 -- Diagnóstico: por que uma senha errada é aceita por DecryptPDF
 --
--- Reproduz o caso do teste 17 (test_phase_security.sql) com o log em nível
+-- Reproduz o caso do teste 17 (test_seguranca.sql) com o log em nível
 -- DEBUG, para ver qual das duas comparações de /U está retornando verdadeiro:
 -- a do caminho de usuário ou a do caminho de proprietário.
 --
 -- Execute na SQL Window do PL/SQL Developer (F8) e envie a saída.
+--
+-- EXPERIMENTO — não entra na suíte. Não afere nada: reproduz um caso e imprime
+-- o que mediu, para um humano ler. A pergunta que o originou já foi respondida
+-- e o defeito, corrigido (ver as pendências em docs/ROADMAP.md); fica aqui
+-- porque o caminho até a resposta vale mais que a resposta sozinha.
 --------------------------------------------------------------------------------
 
 DECLARE

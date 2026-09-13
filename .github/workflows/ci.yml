@@ -106,6 +106,55 @@ jobs:
       - name: Nenhum byte virando caractere com CHR
         run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
+      # Um teste fora da lista do build_run_all.py existe, compila, tem
+      # afericao -- e nunca roda. E a suite falava quatro dialetos para a mesma
+      # asercao. Dois deles nem emitiam [PASS]/[FAIL], entao o runner contava
+      # zero verificacao e uma falha ali era invisivel.
+      - name: A suite tem um vocabulario so, e ninguem fica de fora
+        run: python dev/scripts/plsql_lint/check_suite.py
+
+      # Um gerador emitia "l_hex := '...'" em toda linha, sem terminador em
+      # nenhuma menos a ultima. Nao e PL/SQL, e o Oracle recusa o BLOCO INTEIRO
+      # com ORA-06550 apontando a linha de baixo -- 60 casos que passavam
+      # deixaram de rodar por causa de uma linha. Nenhuma outra verificacao
+      # daqui analisa sintaxe, entao so a rodada contra o banco pegava.
+      - name: Nenhuma atribuicao comecando antes de a anterior terminar
+        run: python dev/scripts/plsql_lint/check_atribuicao.py
+
+      # Metade da API publica da spec nao tinha bloco de documentacao — e a
+      # metade sem bloco era a mais usada: Cell, SetFont, Text, Line, Output.
+      # O que tinha vinha em tres dialetos. A spec e a documentacao que se le
+      # sem sair do banco, e nao cumpria esse papel.
+      - name: Toda API publica documentada, no padrao Javadoc e em PT-BR
+        run: python dev/scripts/plsql_lint/check_spec_comments.py
+
+      - name: Comentários do body (privado documentado, PT-BR, sem código morto)
+        run: python dev/scripts/plsql_lint/check_body_comments.py
+
+      # A referencia da API e GERADA do Javadoc da spec, em PT e em EN.
+      # Enquanto foi escrita a mao, divergiu em silencio: 38 APIs levantavam
+      # erro que a pagina nao listava, o PL_FPDF_UTIL inteiro nao tinha secao,
+      # e a versao em ingles descrevia o pborder da forma que ja tinha sido
+      # reescrita em portugues por ser incompreensivel. O passo tambem recusa
+      # texto em ingles escrito contra um portugues que mudou depois.
+      - name: Referencia da API (PT e EN) em dia com o Javadoc da spec
+        run: python dev/scripts/gen_docs/generate.py --check
+
+      # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na
+      # revisao de setembro ela tinha 16 entradas para 21 passos: cinco
+      # verificacoes rodavam sem constar de lugar nenhum. Quem le a tabela para
+      # saber se um defeito ja tem rede acreditava que nao tinha.
+      - name: A tabela do ROADMAP corresponde ao que roda no CI
+        run: python dev/scripts/plsql_lint/check_roadmap_ci.py
+
+      # Num DECLARE, uma vez que aparece o corpo de um subprograma local, nao
+      # se declara mais nada. O ORA-06550 aponta a linha da declaracao, nao a
+      # do subprograma que a invalidou, entao se procura no lugar errado.
+      # Custou uma rodada contra o banco: o arquivo passou por todos os lints
+      # porque nenhum olhava para dev/tests/*.sql.
+      - name: Nenhuma declaracao depois de subprograma local nos testes
+        run: python dev/scripts/plsql_lint/check_block_declarations.py dev/tests/*.sql
+
       # NVL(tabela(i), x) NAO evita NO_DATA_FOUND: o indice e lido primeiro. A
       # linha parece defensiva e falha na primeira posicao nao visitada.
       - name: Nenhum NVL sobre elemento de tabela indexada
@@ -128,6 +177,13 @@ jobs:
       # por outro caminho, e a referencia so gera se os dois concordarem.
       - name: Instalar o MuPDF, o leitor e as fontes para as referências
         run: pip install "pymupdf>=1.24" zxing-cpp pillow matplotlib reportlab fonttools
+
+      # A fonte embutida so vale se o LEITOR a usar. O MuPDF confere os tres
+      # lados: o texto sai, a fonte esta embutida, e a largura que ele mede
+      # bate com a que o /Widths declara -- um /Widths errado desenha com o
+      # espacamento de outra fonte, e o arquivo abre perfeitamente.
+      - name: Referência da fonte embutida confere com o MuPDF
+        run: python dev/scripts/ttfembed_reference/validate.py
 
       - name: Referência da xref em stream confere com o MuPDF
         run: python dev/scripts/pdfxref_reference/validate.py

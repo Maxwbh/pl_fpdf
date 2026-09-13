@@ -15,7 +15,7 @@ DECLARE
   l_is_modified BOOLEAN;
 
   -- Test helper procedures
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
+  PROCEDURE caso(p_test_name VARCHAR2) IS
   BEGIN
     l_test_count := l_test_count + 1;
     DBMS_OUTPUT.PUT_LINE('');
@@ -23,13 +23,13 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
   END;
 
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_pass_count := l_pass_count + 1;
     DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
   END;
 
-  PROCEDURE test_fail(p_message VARCHAR2) IS
+  PROCEDURE falhou(p_message VARCHAR2) IS
   BEGIN
     l_fail_count := l_fail_count + 1;
     DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
@@ -59,7 +59,7 @@ BEGIN
   --------------------------------------------------------------------------------
   -- TEST 1: Load PDF and add watermark to all pages
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Apply to ALL pages');
+  caso('AddWatermark - Apply to ALL pages');
   BEGIN
     PL_FPDF.LoadPDF(l_pdf);
     PL_FPDF.AddWatermark('CONFIDENTIAL', 0.3, 45, 'ALL');
@@ -68,44 +68,44 @@ BEGIN
     l_is_modified := PL_FPDF.IsPDFModified();
 
     IF l_watermarks.get_size() = 1 THEN
-      test_pass('1 watermark added');
+      passou('1 watermark added');
     ELSE
-      test_fail('Expected 1 watermark, got ' || l_watermarks.get_size());
+      falhou('Expected 1 watermark, got ' || l_watermarks.get_size());
     END IF;
 
     l_watermark := TREAT(l_watermarks.get(0) AS JSON_OBJECT_T);
     IF l_watermark.get_string('text') = 'CONFIDENTIAL' THEN
-      test_pass('Watermark text correct: CONFIDENTIAL');
+      passou('Watermark text correct: CONFIDENTIAL');
     ELSE
-      test_fail('Watermark text incorrect: ' || l_watermark.get_string('text'));
+      falhou('Watermark text incorrect: ' || l_watermark.get_string('text'));
     END IF;
 
     IF l_watermark.get_number('opacity') = 0.3 THEN
-      test_pass('Opacity correct: 0.3');
+      passou('Opacity correct: 0.3');
     ELSE
-      test_fail('Opacity incorrect: ' || l_watermark.get_number('opacity'));
+      falhou('Opacity incorrect: ' || l_watermark.get_number('opacity'));
     END IF;
 
     IF l_watermark.get_number('rotation') = 45 THEN
-      test_pass('Rotation correct: 45 degrees');
+      passou('Rotation correct: 45 degrees');
     ELSE
-      test_fail('Rotation incorrect: ' || l_watermark.get_number('rotation'));
+      falhou('Rotation incorrect: ' || l_watermark.get_number('rotation'));
     END IF;
 
     IF l_is_modified THEN
-      test_pass('PDF marked as modified');
+      passou('PDF marked as modified');
     ELSE
-      test_fail('PDF should be marked as modified');
+      falhou('PDF should be marked as modified');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error adding watermark: ' || SQLERRM);
+      falhou('Error adding watermark: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 2: AddWatermark - Specific page range '1-3'
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Specific range: 1-3');
+  caso('AddWatermark - Specific range: 1-3');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
@@ -118,19 +118,19 @@ BEGIN
 
     -- Page range should be parsed to '1,2,3'
     IF l_watermark.get_string('pageRange') = '1,2,3' THEN
-      test_pass('Page range parsed correctly: 1,2,3');
+      passou('Page range parsed correctly: 1,2,3');
     ELSE
-      test_fail('Page range incorrect: ' || l_watermark.get_string('pageRange'));
+      falhou('Page range incorrect: ' || l_watermark.get_string('pageRange'));
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error with page range: ' || SQLERRM);
+      falhou('Error with page range: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 3: AddWatermark - Complex range '1,3,5-7,10'
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Complex range: 1,3,5-7,10');
+  caso('AddWatermark - Complex range: 1,3,5-7,10');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
@@ -143,19 +143,19 @@ BEGIN
 
     -- Page range should be parsed to '1,3,5,6,7,10'
     IF l_watermark.get_string('pageRange') = '1,3,5,6,7,10' THEN
-      test_pass('Complex range parsed correctly: 1,3,5,6,7,10');
+      passou('Complex range parsed correctly: 1,3,5,6,7,10');
     ELSE
-      test_fail('Page range incorrect: ' || l_watermark.get_string('pageRange'));
+      falhou('Page range incorrect: ' || l_watermark.get_string('pageRange'));
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error with complex range: ' || SQLERRM);
+      falhou('Error with complex range: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 4: AddWatermark - Multiple watermarks
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Multiple watermarks');
+  caso('AddWatermark - Multiple watermarks');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
@@ -167,9 +167,9 @@ BEGIN
     l_watermarks := PL_FPDF.GetWatermarks();
 
     IF l_watermarks.get_size() = 3 THEN
-      test_pass('3 watermarks added');
+      passou('3 watermarks added');
     ELSE
-      test_fail('Expected 3 watermarks, got ' || l_watermarks.get_size());
+      falhou('Expected 3 watermarks, got ' || l_watermarks.get_size());
     END IF;
 
     -- Verify each watermark
@@ -180,106 +180,106 @@ BEGIN
         l_watermark.get_string('pageRange'));
     END LOOP;
 
-    test_pass('All watermarks stored correctly');
+    passou('All watermarks stored correctly');
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error with multiple watermarks: ' || SQLERRM);
+      falhou('Error with multiple watermarks: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 5: AddWatermark - Invalid parameters (empty text)
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid text (should fail)');
+  caso('AddWatermark - Invalid text (should fail)');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
     PL_FPDF.AddWatermark('', 0.3, 45, 'ALL');  -- Empty text
-    test_fail('Should have raised error for empty text');
+    falhou('Should have raised error for empty text');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20816 THEN
-        test_pass('Correctly rejected empty watermark text');
+        passou('Correctly rejected empty watermark text');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 6: AddWatermark - Invalid opacity
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid opacity (should fail)');
+  caso('AddWatermark - Invalid opacity (should fail)');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
     PL_FPDF.AddWatermark('TEST', 1.5, 45, 'ALL');  -- Opacity > 1
-    test_fail('Should have raised error for opacity > 1');
+    falhou('Should have raised error for opacity > 1');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20817 THEN
-        test_pass('Correctly rejected invalid opacity');
+        passou('Correctly rejected invalid opacity');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 7: AddWatermark - Invalid rotation
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid rotation (should fail)');
+  caso('AddWatermark - Invalid rotation (should fail)');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
     PL_FPDF.AddWatermark('TEST', 0.3, 60, 'ALL');  -- Invalid rotation
-    test_fail('Should have raised error for invalid rotation');
+    falhou('Should have raised error for invalid rotation');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20818 THEN
-        test_pass('Correctly rejected invalid rotation (60 degrees)');
+        passou('Correctly rejected invalid rotation (60 degrees)');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 8: AddWatermark - Invalid page range
   --------------------------------------------------------------------------------
-  test_start('AddWatermark - Invalid page range (should fail)');
+  caso('AddWatermark - Invalid page range (should fail)');
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_pdf);
     PL_FPDF.AddWatermark('TEST', 0.3, 45, '1-20');  -- Page 20 doesn't exist
-    test_fail('Should have raised error for invalid page range');
+    falhou('Should have raised error for invalid page range');
   EXCEPTION
     WHEN OTHERS THEN
       IF SQLCODE = -20815 THEN
-        test_pass('Correctly rejected invalid page range (1-20)');
+        passou('Correctly rejected invalid page range (1-20)');
       ELSE
-        test_fail('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
+        falhou('Wrong error code: ' || SQLCODE || ' - ' || SQLERRM);
       END IF;
   END;
 
   --------------------------------------------------------------------------------
   -- TEST 9: ClearPDFCache - Verify watermarks cleared
   --------------------------------------------------------------------------------
-  test_start('ClearPDFCache - Verify watermarks cleared');
+  caso('ClearPDFCache - Verify watermarks cleared');
   BEGIN
     PL_FPDF.ClearPDFCache();
 
     -- GetWatermarks should fail after clearing
     BEGIN
       l_watermarks := PL_FPDF.GetWatermarks();
-      test_fail('Should have raised error after ClearPDFCache');
+      falhou('Should have raised error after ClearPDFCache');
     EXCEPTION
       WHEN OTHERS THEN
         IF SQLCODE = -20809 THEN
-          test_pass('Correctly raised error after clearing cache');
+          passou('Correctly raised error after clearing cache');
         ELSE
-          test_fail('Wrong error code: ' || SQLCODE);
+          falhou('Wrong error code: ' || SQLCODE);
         END IF;
     END;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Error clearing cache: ' || SQLERRM);
+      falhou('Error clearing cache: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------------
@@ -289,7 +289,7 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('================================================================================');
   DBMS_OUTPUT.PUT_LINE('TEST SUMMARY');
   DBMS_OUTPUT.PUT_LINE('================================================================================');
-  -- l_test_count conta blocos (test_start); l_pass/l_fail contam verificações.
+  -- l_test_count conta blocos (caso); l_pass/l_fail contam verificações.
   -- O percentual precisa ser sobre as verificações, senão passa de 100%.
   DBMS_OUTPUT.PUT_LINE('Testes:       ' || l_test_count);
   DBMS_OUTPUT.PUT_LINE('Verificações: ' || (l_pass_count + l_fail_count));

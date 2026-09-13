@@ -21,7 +21,15 @@ ninguém percebe: o código compila, os testes passam, a régua fecha.
 
 Este número tem PISO, e zero não é a meta
 ------------------------------------------
-Quatro etapas levaram 1091 -> 818. O que sobra não desce por reescrita, e é
+Quatro etapas levaram 1091 -> 818. O teto caiu de novo, para **680**, em
+setembro de 2026, e essa queda **não é reimplementação**: era medição errada.
+A linha que abre um bloco de comentário (`/****...`) entrava na conta, e ela é
+uma fileira de asteriscos — igual em qualquer arquivo que use esse estilo, e o
+original usa. Documentar a spec acrescentou 83 blocos e fez o número "herdado"
+subir 83 sem uma linha de código mudar; foi assim que o defeito apareceu.
+Corrigida a medida, 138 linhas saíram da conta por nunca terem sido código.
+
+ O que sobra não desce por reescrita, e é
 importante saber por quê antes de alguém tentar:
 
   - assinatura de API pública (`procedure SetY(py in number) is`). A superfície
@@ -93,8 +101,18 @@ def significativas(caminho):
     for n, l in enumerate(io.open(caminho, encoding='utf-8',
                                   errors='replace'), 1):
         s = re.sub(r'\s+', ' ', l).strip()
-        if len(s) > 25 and not s.startswith('--') and not s.startswith('*'):
-            fora.append((n, s))
+        if len(s) <= 25 or s.startswith('--') or s.startswith('*'):
+            continue
+        # Moldura não é código. A linha que ABRE um bloco de comentário —
+        # `/****...` — é uma fileira de asteriscos, igual em qualquer arquivo
+        # que use esse estilo, e o original usa. Contá-la media decoração: na
+        # revisão de setembro de 2026, documentar a spec acrescentou 83 blocos
+        # e o número "herdado" subiu 83 sem uma linha de código ter mudado.
+        # É a mesma razão pela qual linha curta já não conta: coincide por
+        # convenção, não por procedência.
+        if not re.search(r'[A-Za-z0-9]', s):
+            continue
+        fora.append((n, s))
     return fora
 
 
