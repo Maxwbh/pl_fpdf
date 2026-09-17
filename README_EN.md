@@ -22,6 +22,12 @@
   <a href="README.md">🇧🇷 Português (principal)</a>
 </p>
 
+> **3.4.0 is under test.** The latest published release is **3.3.0**, which does
+> **not** carry the WinAnsi conversion for accented text nor embedded TrueType
+> fonts — both are 3.4.0. The code on this branch runs the suite against an
+> Oracle **19c** database on every change; the **26ai** environment is being set
+> up for the full round, and the release follows it.
+
 A PDF library that runs **inside Oracle Database**: two PL/SQL packages, no
 Java, no external service, no database object beyond them. It generates and
 also **manipulates** — load, merge, split, watermark, and **protect with

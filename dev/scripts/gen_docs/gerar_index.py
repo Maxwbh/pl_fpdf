@@ -161,7 +161,9 @@ def pagina(c, k, versao):
         '    <p class="note" style="margin-top:26px">'
         + c.INSTALACAO['nota'][k] + '</p>\n\n'
         '    <code class="block">'
-        + esc(c.INSTALACAO['curl'].format(versao=versao)) + '</code>')
+        + esc(c.INSTALACAO['curl'].format(versao=versao,
+                                          release=c.ULTIMO_RELEASE))
+        + '</code>')
 
     partes['FINAL'] = (
         f'    <h2>{c.FINAL["h2"][k]}</h2>\n'

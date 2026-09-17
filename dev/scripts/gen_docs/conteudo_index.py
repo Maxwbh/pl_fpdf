@@ -18,6 +18,10 @@ Cada texto é um par `(português, inglês)`. O ícone do cartão e a imagem do
 exemplo são os mesmos nas duas línguas -- o que muda neles é só o `alt`.
 """
 
+# A ULTIMA versao publicada como release, que nao e a mesma coisa que o
+# `co_version`: este anda na frente enquanto a versao nova esta em teste.
+ULTIMO_RELEASE = '3.3.0'
+
 HERO = {
     'h1': ("PDF <span class=\"grad\">100% em PL/SQL</span>, direto no Oracle Database",
            "PDF <span class=\"grad\">100% in PL/SQL</span>, right inside Oracle Database"),
@@ -353,7 +357,12 @@ INSTALACAO = {
     ],
     'nota': ("<b>Para produção, fixe a versão.</b>\nO link acima serve sempre a mais nova — bom para experimentar, ruim para um\nchamado de mudança. Cada versão tem URL própria e imutável na\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">página de releases</a>, com o\n<code>SHA256.txt</code> ao lado para conferir o que foi baixado:",
              "<b>Pin the version for production.</b>\nThe link above always serves the newest one — fine to try it out, wrong for a\nchange ticket. Every version has its own immutable URL on the\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">releases page</a>, with a\n<code>SHA256.txt</code> beside it to verify what you downloaded:"),
-    'curl': "curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v{versao}/pl_fpdf_install.sql\ncurl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v{versao}/SHA256.txt\nsha256sum -c <(echo \"$(cat SHA256.txt)  pl_fpdf_install.sql\")",
+    # O comando abaixo PRENDE uma versao, entao ele tem de citar uma que exista
+    # como release -- e a do package NAO serve: ela anda na frente enquanto a
+    # versao nova esta em teste. Apontar para `v{versao}` deixou o comando
+    # devolvendo 404 no dia em que o co_version virou 3.4.0 e nao havia release.
+    # Quando a 3.4.0 for publicada, este numero sobe junto.
+    'curl': "curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v{release}/pl_fpdf_install.sql\ncurl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v{release}/SHA256.txt\nsha256sum -c <(echo \"$(cat SHA256.txt)  pl_fpdf_install.sql\")",
 }
 
 FINAL = {

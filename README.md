@@ -23,6 +23,12 @@
   <a href="README_EN.md">🇺🇸 English</a>
 </p>
 
+> **A 3.4.0 está em teste.** O último release publicado é a **3.3.0**, que
+> **não** tem a conversão de acentos para WinAnsi nem a fonte TrueType embutida
+> — as duas são da 3.4.0. O código desta branch roda a suíte contra um Oracle
+> **19c** a cada mudança; o ambiente **26ai** está sendo montado para a rodada
+> global, e o release sai depois dela.
+
 Uma biblioteca de PDF que roda **dentro do Oracle Database**: dois packages
 PL/SQL, sem Java, sem serviço externo, sem objeto de banco além deles. Gera e
 também **manipula** — carrega, mescla, divide, marca d'água e **protege com
