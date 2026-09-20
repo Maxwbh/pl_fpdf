@@ -351,6 +351,18 @@ jobs:
           check "README_EN.md (badge EN)" README_EN.md   "badge/version-$ver"
           check "site/index.html (chip hero)" site/index.html      ">v$ver<"
           check "site/index.html (JSON-LD)"   site/index.html      "\"softwareVersion\": \"$ver\""
-          check "PL_FPDF.pkb (header)"   src/PL_FPDF.pkb "PL_FPDF v$ver"
+
+          # O caminho inverso, e por que ele existe: o cabeçalho do .pkb
+          # trazia o histórico de versões copiado, e a cópia envelheceu --
+          # anunciava v3.2.0 num package 3.4.0. O histórico saiu para o
+          # CHANGELOG, e o número ficou só no co_version. Cobrar o número no
+          # cabeçalho, como se cobrava aqui, mandava de volta para a cópia que
+          # se acabou de tirar. Agora se cobra o contrário: nenhuma versão
+          # escrita à mão no corpo do package.
+          if grep -nE "PL_FPDF v[0-9]+\.[0-9]+" src/PL_FPDF.pkb src/PL_FPDF.pks; then
+            echo "  FALHA  versão escrita à mão no package — o número vem do co_version"
+            exit 1
+          fi
+          echo "  OK   nenhuma versão escrita à mão no package"
 
           echo "OK: versão $ver consistente em todos os arquivos"

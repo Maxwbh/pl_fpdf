@@ -30,9 +30,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="../assets/favicon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="../assets/apple-touch-icon.png">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="../assets/fonts/inter-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="../assets/fonts/jetbrains-mono-latin.woff2" crossorigin>
 
 <script type="application/ld+json">
 {
@@ -57,14 +56,39 @@
 </script>
 
 <style>
+  /* ============ fontes servidas daqui mesmo ============ */
+  /* Vinham do fonts.googleapis.com, e aquele CSS BLOQUEIA a renderização:
+     eram três saltos em série — documento, CSS do Google, .woff2 no
+     gstatic — e o PageSpeed mediu 1,7 s de atraso só nisso, num site que não
+     tem uma linha de JavaScript. Agora os arquivos ficam em assets/fonts/,
+     na mesma origem e na conexão que já está aberta, e o @font-face vem
+     aqui dentro: nenhuma requisição antes do primeiro pixel.
+     São os mesmos subsets que o Google serve. O Inter é fonte VARIÁVEL — um
+     arquivo cobre de 100 a 900 —, por isso um peso novo no molde não pede
+     arquivo novo. O `latin-ext` não é baixado enquanto a página não tiver um
+     caractere da faixa; hoje nenhuma tem, e ele está aí para o dia em que um
+     Javadoc trouxer. */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;
+    font-display:swap;src:url(../assets/fonts/inter-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;
+    font-display:swap;src:url(../assets/fonts/inter-latin-ext.woff2) format('woff2');
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;
+    font-display:swap;src:url(../assets/fonts/jetbrains-mono-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;
+    font-display:swap;src:url(../assets/fonts/jetbrains-mono-latin-ext.woff2) format('woff2');
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
   /* ============ tokens (dark first, valores explícitos) ============ */
   :root{
     --bg:#0b1422; --bg2:#101f36;
     --panel:#0a121e; --panelbar:#0e1929;
     --cardbg:rgba(18,32,54,.62); --cardbd:#243d5e; --cardbd-h:#33578a;
-    --fg:#f2f6fb; --muted:#9db8d4; --faint:#69829f;
+    --fg:#f2f6fb; --muted:#9db8d4; --faint:#7290ad;
     --accent:#e8503a; --accent2:#ff7a55; --blue:#6fb3e8;
-    --code:#7fd1a8; --key:#6fb3e8; --str:#e8c07d; --cmt:#54718f; --num:#d0a8ff;
+    --code:#7fd1a8; --key:#6fb3e8; --str:#e8c07d; --cmt:#6887a6; --num:#d0a8ff;
     --chipbg:rgba(111,179,232,.09); --chipbd:#2d4c74;
     --line:#1d3350;
     --gridline:rgba(111,179,232,.055);
@@ -78,7 +102,7 @@
       --bg:#f3f7fc; --bg2:#e7eef8;
       --panel:#0d1828; --panelbar:#101d30;
       --cardbg:rgba(255,255,255,.78); --cardbd:#d4e0ef; --cardbd-h:#a9c2de;
-      --fg:#0f1f33; --muted:#41607f; --faint:#6d87a3;
+      --fg:#0f1f33; --muted:#41607f; --faint:#5a748f;
       --accent:#d8452f; --accent2:#f06544; --blue:#2779c0;
       --chipbg:rgba(39,121,192,.07); --chipbd:#c3d5e8;
       --line:#d8e2ef;
@@ -191,13 +215,13 @@
   .win-bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid #1c3050;background:var(--panelbar)}
   .win-bar .r,.win-bar .y,.win-bar .g{width:11px;height:11px;border-radius:50%;flex:none}
   .win-bar .r{background:#ff5f57}.win-bar .y{background:#febc2e}.win-bar .g{background:#28c840}
-  .win-title{margin-left:8px;font-size:12.5px;color:#54718f;font-family:'JetBrains Mono',monospace;
+  .win-title{margin-left:8px;font-size:12.5px;color:#6887a6;font-family:'JetBrains Mono',monospace;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;line-height:1.2}
   .window pre{
     margin:0;padding:20px 22px;overflow-x:auto;
     font-family:'JetBrains Mono',Consolas,monospace;font-size:13.5px;line-height:1.75;color:var(--code);
   }
-  .window .k{color:#6fb3e8}.window .s{color:#e8c07d}.window .c{color:#54718f}.window .n{color:#d0a8ff}
+  .window .k{color:#6fb3e8}.window .s{color:#e8c07d}.window .c{color:#6887a6}.window .n{color:#d0a8ff}
 
   /* ============ fork note ============ */
   .fork{
@@ -386,6 +410,7 @@
 </nav>
 
 <div class="wrap">
+<main>
 
   <!-- HERO -->
   <div class="hero">
@@ -460,6 +485,8 @@
   <div class="final">
 {{FINAL}}
   </div>
+
+</main>
 
   <footer>
     <p>

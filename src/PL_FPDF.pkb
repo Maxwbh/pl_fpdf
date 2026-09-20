@@ -608,8 +608,9 @@ end getPDFDocLength;
 --
 -- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
 -- reportlab -- que se conferem entre si, glifo a glifo -- e a
--- WinAnsiEncoding. NAO EDITE A MAO: a tabela e regerada, e a edicao manual
--- se perde na geracao seguinte.
+-- WinAnsiEncoding. NAO EDITE A MAO daqui ate o fecho do bloco, NEM O
+-- COMENTARIO: a edicao se perde na geracao seguinte, e ate la o CI acusa o
+-- bloco como desatualizado. Para mudar este texto, mude o gerador.
 --
 -- Cada familia e uma sequencia de 256 campos de 4 digitos, um por posicao da
 -- codificacao. A chave da tabela indexada e chr(i).
@@ -624,8 +625,8 @@ begin
 end p_larguras_de;
 
 -- p_digitos_da_familia: a tabela de larguras de uma das 14 fontes padrao,
--- 256 entradas de 4 digitos hexadecimais na ordem do WinAnsi. Fica em codigo,
--- e nao em tabela do banco, porque a biblioteca nao cria objeto no schema.
+-- 256 entradas de 4 digitos na ordem do WinAnsi. Fica em codigo, e nao em
+-- tabela do banco, porque a biblioteca nao cria objeto no schema.
 function p_digitos_da_familia(p_familia in varchar2) return varchar2 is
 begin
   case p_familia
@@ -3535,7 +3536,10 @@ procedure Init(
   l_unit varchar2(10);
   l_format varchar2(20);
 begin
-  log_message(3, 'Initializing PL_FPDF v2.0...');
+  -- o numero vem do co_version. Estava escrito a mao, e dizia 'v2.0' num
+  -- package 3.4.0 -- o log mentia a versao para quem o estava lendo
+  -- justamente para saber qual versao respondeu.
+  log_message(3, 'Initializing PL_FPDF v' || co_version || '...');
 
   -- ========================================================================
   -- 1. confere os argumentos

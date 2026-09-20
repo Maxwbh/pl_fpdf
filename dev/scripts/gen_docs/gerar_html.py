@@ -115,6 +115,15 @@ ROTULOS_EN = {
 
 def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
            rot=ROTULOS_PT):
+    """O artigo de uma API: nome em `h3`, rótulos de seção em `h4`.
+
+    Os rótulos eram `h5`, e pular o nível 4 é o que o axe chama de
+    `heading-order` -- uma ocorrência por API, 119 por página, e a
+    acessibilidade da referência parava em 98. O `h4` que já existia é o da
+    barra lateral, em outro landmark e antes do `h1`, então a sequência de lá
+    não muda. Aparência idêntica: o tamanho e o espaçamento vêm do seletor
+    `.api h4` no molde, não do nível.
+    """
     nome = a['nome']
     tipo = 'Function' if a['tipo'] == 'function' else 'Procedure'
     alvo = nome.lower()
@@ -122,14 +131,14 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
          f'<h3>{esc(nome)} <span class="kind">{tipo}</span>'
          f'<a class="anchor" href="#{alvo}" aria-label="link">#</a></h3>',
          f'<p class="d">{esc(a["descricao"])}</p>',
-         f'<h5>{rot["sintaxe"]}</h5>',
+         f'<h4>{rot["sintaxe"]}</h4>',
          '<div class="code"><pre>' + realcar(sintaxe(a)) + '</pre></div>']
     for s in sobrecargas:
         o.append('<div class="code"><pre>' + realcar(sintaxe(s))
                  + '</pre></div>')
     if a['params']:
         tp = {p['name'].lower(): p for p in a['assinatura']['params']}
-        o.append(f'<h5>{rot["parametros"]}</h5><div class="tbl"><table>'
+        o.append(f'<h4>{rot["parametros"]}</h4><div class="tbl"><table>'
                  f'<thead><tr><th>{rot["col_param"]}</th>'
                  f'<th>{rot["col_tipo"]}</th><th>{rot["col_padrao"]}</th>'
                  f'<th>{rot["col_desc"]}</th></tr></thead><tbody>')
@@ -154,13 +163,13 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
             else:
                 o.append(f'<p class="d">{rot["sobrecarga_outra"]}</p>')
     if a['retorno']:
-        o.append(f'<h5>{rot["retorno"]}</h5>'
+        o.append(f'<h4>{rot["retorno"]}</h4>'
                  f'<p class="d">{esc(a["retorno"])}</p>')
     for n in a['notas']:
         titulo = rot['nota'].get(n['tipo'], n['tipo'].capitalize())
-        o.append(f'<h5>{titulo}</h5><p class="d">{esc(n["texto"])}</p>')
+        o.append(f'<h4>{titulo}</h4><p class="d">{esc(n["texto"])}</p>')
     if a['erros']:
-        o.append(f'<h5>{rot["erros"]}</h5><div class="tbl"><table><thead><tr>'
+        o.append(f'<h4>{rot["erros"]}</h4><div class="tbl"><table><thead><tr>'
                  f'<th>{rot["col_codigo"]}</th>'
                  f'<th>{rot["col_quando"]}</th></tr></thead><tbody>')
         for e in a['erros']:
@@ -170,7 +179,7 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
     if a['exemplo']:
         rec = min(len(x) - len(x.lstrip())
                   for x in a['exemplo'] if x.strip())
-        o.append(f'<h5>{rot["exemplo"]}</h5><div class="code"><pre>'
+        o.append(f'<h4>{rot["exemplo"]}</h4><div class="code"><pre>'
                  + realcar('\n'.join(x[rec:] for x in a['exemplo']))
                  + '</pre></div>')
     vt = veja_tambem.get(nome)

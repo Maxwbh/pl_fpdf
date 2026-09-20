@@ -59,9 +59,11 @@ def bloco():
 ----------------------------------------------------------------------------------------
 -- Larguras das 14 fontes padrao do PDF, em milesimos de em.
 --
--- GERADO por dev/scripts/font_reference/gerar.py a partir das fontes
--- primarias: os AFM da Adobe, as tabelas do reportlab (que se conferem entre
--- si, glifo a glifo) e a WinAnsiEncoding. NAO EDITE A MAO: rode o gerador.
+-- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- reportlab -- que se conferem entre si, glifo a glifo -- e a
+-- WinAnsiEncoding. NAO EDITE A MAO daqui ate o fecho do bloco, NEM O
+-- COMENTARIO: a edicao se perde na geracao seguinte, e ate la o CI acusa o
+-- bloco como desatualizado. Para mudar este texto, mude o gerador.
 --
 -- Cada familia e uma sequencia de 256 campos de 4 digitos, um por posicao da
 -- codificacao. A chave da tabela indexada e chr(i).
@@ -75,6 +77,9 @@ begin
   return mySet;
 end p_larguras_de;
 
+-- p_digitos_da_familia: a tabela de larguras de uma das 14 fontes padrao,
+-- 256 entradas de 4 digitos na ordem do WinAnsi. Fica em codigo, e nao em
+-- tabela do banco, porque a biblioteca nao cria objeto no schema.
 function p_digitos_da_familia(p_familia in varchar2) return varchar2 is
 begin
   case p_familia
