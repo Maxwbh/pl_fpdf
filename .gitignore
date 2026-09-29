@@ -13,3 +13,9 @@ amostras/
 
 # Instrucoes de trabalho, locais. Nao vao para o repositorio.
 CLAUDE.md
+
+# Issue 16 da origem: os dois packages instalaveis e o patch saem do montar.py,
+# que e a unica descricao do conserto. Copia versionada ao lado do gerador e
+# como as duas divergem.
+dev/issue16/build/
+dev/issue16/fix16.patch
