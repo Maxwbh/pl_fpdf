@@ -26,39 +26,43 @@ DECLARE
   l_pdfs JSON_ARRAY_T;
   l_pdf_obj JSON_OBJECT_T;
 
-  -- Helper procedures
-  PROCEDURE run_test(p_test_name VARCHAR2, p_result BOOLEAN) IS
+  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
+  -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
+  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
   BEGIN
     l_test_count := l_test_count + 1;
-    IF p_result THEN
+    IF NVL(p_cond, FALSE) THEN
       l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
     ELSE
       l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name || ' - FAIL');
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome);
     END IF;
-  END run_test;
+  END confere;
 
-  PROCEDURE expect_error(p_test_name VARCHAR2, p_expected_code NUMBER) IS
+  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;
     l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                         ' - FAIL (Expected error ' || p_expected_code || ' but succeeded)');
-  END expect_error;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                         p_codigo || ' e a chamada foi aceita');
+  END faltou_erro;
 
-  PROCEDURE handle_expected_error(p_test_name VARCHAR2, p_expected_code NUMBER, p_actual_code NUMBER) IS
+  PROCEDURE erro_esperado(p_nome VARCHAR2, p_codigo NUMBER, p_veio NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;
-    IF p_actual_code = p_expected_code THEN
+    IF p_veio = p_codigo THEN
       l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
     ELSE
       l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                           ' - FAIL (Expected ' || p_expected_code || ', got ' || p_actual_code || ')');
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                           p_codigo || ' e veio ORA' || p_veio);
     END IF;
-  END handle_expected_error;
+  END erro_esperado;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('Starting Phase 4.6 Multi-Document Tests...');
@@ -103,10 +107,10 @@ BEGIN
   -- Test 1: Load single PDF with ID
   BEGIN
     PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf1);
-    run_test('Load PDF with ID', TRUE);
+    confere('Load PDF with ID', TRUE);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Load PDF with ID', FALSE);
+      confere('Load PDF with ID', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -114,38 +118,38 @@ BEGIN
   BEGIN
     PL_FPDF.LoadPDFWithID('pdf2', l_test_pdf2);
     PL_FPDF.LoadPDFWithID('pdf3', l_test_pdf3);
-    run_test('Load multiple PDFs', TRUE);
+    confere('Load multiple PDFs', TRUE);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Load multiple PDFs', FALSE);
+      confere('Load multiple PDFs', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 3: Load duplicate ID (should error)
   BEGIN
     PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf1);
-    expect_error('Load duplicate PDF ID', -20828);
+    faltou_erro('Load duplicate PDF ID', -20828);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Load duplicate PDF ID', -20828, SQLCODE);
+      erro_esperado('Load duplicate PDF ID', -20828, SQLCODE);
   END;
 
   -- Test 4: Load with NULL ID (should error)
   BEGIN
     PL_FPDF.LoadPDFWithID(NULL, l_test_pdf1);
-    expect_error('Load with NULL ID', -20830);
+    faltou_erro('Load with NULL ID', -20830);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Load with NULL ID', -20830, SQLCODE);
+      erro_esperado('Load with NULL ID', -20830, SQLCODE);
   END;
 
   -- Test 5: Load with NULL BLOB (should error)
   BEGIN
     PL_FPDF.LoadPDFWithID('pdf_null', NULL);
-    expect_error('Load with NULL BLOB', -20830);
+    faltou_erro('Load with NULL BLOB', -20830);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Load with NULL BLOB', -20830, SQLCODE);
+      erro_esperado('Load with NULL BLOB', -20830, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -155,7 +159,7 @@ BEGIN
   -- Test 6: Get loaded PDFs
   BEGIN
     l_pdfs := PL_FPDF.GetLoadedPDFs();
-    run_test('GetLoadedPDFs returns array', l_pdfs IS NOT NULL AND l_pdfs.get_size() >= 3);
+    confere('GetLoadedPDFs returns array', l_pdfs IS NOT NULL AND l_pdfs.get_size() >= 3);
     DBMS_OUTPUT.PUT_LINE('   Found ' || l_pdfs.get_size() || ' loaded PDFs');
 
     -- Display PDF details
@@ -167,7 +171,7 @@ BEGIN
     END LOOP;
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('GetLoadedPDFs returns array', FALSE);
+      confere('GetLoadedPDFs returns array', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -178,41 +182,41 @@ BEGIN
   -- Test 7: Merge 2 PDFs
   BEGIN
     l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf2"]'), NULL);
-    run_test('Merge 2 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
+    confere('Merge 2 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
     DBMS_OUTPUT.PUT_LINE('   Merged PDF size: ' || DBMS_LOB.GETLENGTH(l_merged) || ' bytes');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Merge 2 PDFs', FALSE);
+      confere('Merge 2 PDFs', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 8: Merge 3 PDFs
   BEGIN
     l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf2","pdf3"]'), NULL);
-    run_test('Merge 3 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
+    confere('Merge 3 PDFs', l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
     DBMS_OUTPUT.PUT_LINE('   Merged PDF size: ' || DBMS_LOB.GETLENGTH(l_merged) || ' bytes');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Merge 3 PDFs', FALSE);
+      confere('Merge 3 PDFs', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 9: Merge with empty array (should error)
   BEGIN
     l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('[]'), NULL);
-    expect_error('Merge with empty array', -20832);
+    faltou_erro('Merge with empty array', -20832);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Merge with empty array', -20832, SQLCODE);
+      erro_esperado('Merge with empty array', -20832, SQLCODE);
   END;
 
   -- Test 10: Merge with non-loaded PDF (should error)
   BEGIN
     l_merged := PL_FPDF.MergePDFs(JSON_ARRAY_T('["pdf1","pdf_notloaded"]'), NULL);
-    expect_error('Merge with non-loaded PDF', -20833);
+    faltou_erro('Merge with non-loaded PDF', -20833);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Merge with non-loaded PDF', -20833, SQLCODE);
+      erro_esperado('Merge with non-loaded PDF', -20833, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -222,41 +226,41 @@ BEGIN
   -- Test 11: Extract ALL pages
   BEGIN
     l_extracted := PL_FPDF.ExtractPages('pdf1', 'ALL', NULL);
-    run_test('Extract ALL pages', l_extracted IS NOT NULL);
+    confere('Extract ALL pages', l_extracted IS NOT NULL);
     DBMS_OUTPUT.PUT_LINE('   Extracted PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Extract ALL pages', FALSE);
+      confere('Extract ALL pages', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 12: Extract single page
   BEGIN
     l_extracted := PL_FPDF.ExtractPages('pdf1', '1', NULL);
-    run_test('Extract single page', l_extracted IS NOT NULL);
+    confere('Extract single page', l_extracted IS NOT NULL);
     DBMS_OUTPUT.PUT_LINE('   Extracted PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Extract single page', FALSE);
+      confere('Extract single page', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 13: Extract from non-loaded PDF (should error)
   BEGIN
     l_extracted := PL_FPDF.ExtractPages('pdf_notexist', '1', NULL);
-    expect_error('Extract from non-loaded PDF', -20831);
+    faltou_erro('Extract from non-loaded PDF', -20831);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Extract from non-loaded PDF', -20831, SQLCODE);
+      erro_esperado('Extract from non-loaded PDF', -20831, SQLCODE);
   END;
 
   -- Test 14: Extract with NULL page spec (should error)
   BEGIN
     l_extracted := PL_FPDF.ExtractPages('pdf1', NULL, NULL);
-    expect_error('Extract with NULL page spec', -20838);
+    faltou_erro('Extract with NULL page spec', -20838);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Extract with NULL page spec', -20838, SQLCODE);
+      erro_esperado('Extract with NULL page spec', -20838, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -266,30 +270,30 @@ BEGIN
   -- Test 15: Split PDF
   BEGIN
     l_split_pdfs := PL_FPDF.SplitPDF('pdf1', JSON_ARRAY_T('["1"]'));
-    run_test('Split PDF into 1 part', l_split_pdfs IS NOT NULL AND l_split_pdfs.get_size() = 1);
+    confere('Split PDF into 1 part', l_split_pdfs IS NOT NULL AND l_split_pdfs.get_size() = 1);
     DBMS_OUTPUT.PUT_LINE('   Split into ' || l_split_pdfs.get_size() || ' parts');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Split PDF into 1 part', FALSE);
+      confere('Split PDF into 1 part', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 16: Split with empty ranges (should error)
   BEGIN
     l_split_pdfs := PL_FPDF.SplitPDF('pdf1', JSON_ARRAY_T('[]'));
-    expect_error('Split with empty ranges', -20835);
+    faltou_erro('Split with empty ranges', -20835);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Split with empty ranges', -20835, SQLCODE);
+      erro_esperado('Split with empty ranges', -20835, SQLCODE);
   END;
 
   -- Test 17: Split non-loaded PDF (should error)
   BEGIN
     l_split_pdfs := PL_FPDF.SplitPDF('pdf_notexist', JSON_ARRAY_T('["1"]'));
-    expect_error('Split non-loaded PDF', -20831);
+    faltou_erro('Split non-loaded PDF', -20831);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Split non-loaded PDF', -20831, SQLCODE);
+      erro_esperado('Split non-loaded PDF', -20831, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -300,21 +304,21 @@ BEGIN
   BEGIN
     PL_FPDF.UnloadPDF('pdf3');
     l_pdfs := PL_FPDF.GetLoadedPDFs();
-    run_test('Unload PDF', l_pdfs.get_size() = 2);
+    confere('Unload PDF', l_pdfs.get_size() = 2);
     DBMS_OUTPUT.PUT_LINE('   Remaining PDFs: ' || l_pdfs.get_size());
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Unload PDF', FALSE);
+      confere('Unload PDF', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 19: Unload non-existent PDF (should error)
   BEGIN
     PL_FPDF.UnloadPDF('pdf_notexist');
-    expect_error('Unload non-existent PDF', -20831);
+    faltou_erro('Unload non-existent PDF', -20831);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Unload non-existent PDF', -20831, SQLCODE);
+      erro_esperado('Unload non-existent PDF', -20831, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -331,11 +335,11 @@ BEGIN
 
     l_extracted := PL_FPDF.ExtractPages('merged', 'ALL', NULL);
 
-    run_test('Load-Merge-Extract workflow', l_extracted IS NOT NULL);
+    confere('Load-Merge-Extract workflow', l_extracted IS NOT NULL);
     DBMS_OUTPUT.PUT_LINE('   Final PDF size: ' || DBMS_LOB.GETLENGTH(l_extracted) || ' bytes');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Load-Merge-Extract workflow', FALSE);
+      confere('Load-Merge-Extract workflow', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
