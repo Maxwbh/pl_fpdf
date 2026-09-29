@@ -30,9 +30,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/inter-latin.woff2" crossorigin>
+<link rel="preload" as="font" type="font/woff2" href="assets/fonts/jetbrains-mono-latin.woff2" crossorigin>
 
 <script type="application/ld+json">
 {
@@ -50,21 +49,46 @@
     "url": "https://github.com/Maxwbh"
   },
   "isBasedOn": "https://github.com/Pilooz/pl_fpdf",
-  "softwareVersion": "3.3.0",
+  "softwareVersion": "3.4.0",
   "inLanguage": "pt-BR",
   "url": "https://maxwbh.github.io/pl_fpdf/"
 }
 </script>
 
 <style>
+  /* ============ fontes servidas daqui mesmo ============ */
+  /* Vinham do fonts.googleapis.com, e aquele CSS BLOQUEIA a renderização:
+     eram três saltos em série — documento, CSS do Google, .woff2 no
+     gstatic — e o PageSpeed mediu 1,7 s de atraso só nisso, num site que não
+     tem uma linha de JavaScript. Agora os arquivos ficam em assets/fonts/,
+     na mesma origem e na conexão que já está aberta, e o @font-face vem
+     aqui dentro: nenhuma requisição antes do primeiro pixel.
+     São os mesmos subsets que o Google serve. O Inter é fonte VARIÁVEL — um
+     arquivo cobre de 100 a 900 —, por isso um peso novo no molde não pede
+     arquivo novo. O `latin-ext` não é baixado enquanto a página não tiver um
+     caractere da faixa; hoje nenhuma tem, e ele está aí para o dia em que um
+     Javadoc trouxer. */
+  @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;
+    font-display:swap;src:url(assets/fonts/inter-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:'Inter';font-style:normal;font-weight:100 900;
+    font-display:swap;src:url(assets/fonts/inter-latin-ext.woff2) format('woff2');
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;
+    font-display:swap;src:url(assets/fonts/jetbrains-mono-latin.woff2) format('woff2');
+    unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:'JetBrains Mono';font-style:normal;font-weight:100 800;
+    font-display:swap;src:url(assets/fonts/jetbrains-mono-latin-ext.woff2) format('woff2');
+    unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
   /* ============ tokens (dark first, valores explícitos) ============ */
   :root{
     --bg:#0b1422; --bg2:#101f36;
     --panel:#0a121e; --panelbar:#0e1929;
     --cardbg:rgba(18,32,54,.62); --cardbd:#243d5e; --cardbd-h:#33578a;
-    --fg:#f2f6fb; --muted:#9db8d4; --faint:#69829f;
+    --fg:#f2f6fb; --muted:#9db8d4; --faint:#7290ad;
     --accent:#e8503a; --accent2:#ff7a55; --blue:#6fb3e8;
-    --code:#7fd1a8; --key:#6fb3e8; --str:#e8c07d; --cmt:#54718f; --num:#d0a8ff;
+    --code:#7fd1a8; --key:#6fb3e8; --str:#e8c07d; --cmt:#6887a6; --num:#d0a8ff;
     --chipbg:rgba(111,179,232,.09); --chipbd:#2d4c74;
     --line:#1d3350;
     --gridline:rgba(111,179,232,.055);
@@ -78,7 +102,7 @@
       --bg:#f3f7fc; --bg2:#e7eef8;
       --panel:#0d1828; --panelbar:#101d30;
       --cardbg:rgba(255,255,255,.78); --cardbd:#d4e0ef; --cardbd-h:#a9c2de;
-      --fg:#0f1f33; --muted:#41607f; --faint:#6d87a3;
+      --fg:#0f1f33; --muted:#41607f; --faint:#5a748f;
       --accent:#d8452f; --accent2:#f06544; --blue:#2779c0;
       --chipbg:rgba(39,121,192,.07); --chipbd:#c3d5e8;
       --line:#d8e2ef;
@@ -191,13 +215,13 @@
   .win-bar{display:flex;align-items:center;gap:8px;padding:13px 16px;border-bottom:1px solid #1c3050;background:var(--panelbar)}
   .win-bar .r,.win-bar .y,.win-bar .g{width:11px;height:11px;border-radius:50%;flex:none}
   .win-bar .r{background:#ff5f57}.win-bar .y{background:#febc2e}.win-bar .g{background:#28c840}
-  .win-title{margin-left:8px;font-size:12.5px;color:#54718f;font-family:'JetBrains Mono',monospace;
+  .win-title{margin-left:8px;font-size:12.5px;color:#6887a6;font-family:'JetBrains Mono',monospace;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;line-height:1.2}
   .window pre{
     margin:0;padding:20px 22px;overflow-x:auto;
     font-family:'JetBrains Mono',Consolas,monospace;font-size:13.5px;line-height:1.75;color:var(--code);
   }
-  .window .k{color:#6fb3e8}.window .s{color:#e8c07d}.window .c{color:#54718f}.window .n{color:#d0a8ff}
+  .window .k{color:#6fb3e8}.window .s{color:#e8c07d}.window .c{color:#6887a6}.window .n{color:#d0a8ff}
 
   /* ============ fork note ============ */
   .fork{
@@ -386,15 +410,16 @@
 </nav>
 
 <div class="wrap">
+<main>
 
   <!-- HERO -->
   <div class="hero">
     <div>
       <h1 class="fade">PDF <span class="grad">100% em PL/SQL</span>, direto no Oracle Database</h1>
       <p class="sub fade d1">Gere, modifique, mescle e criptografe PDFs <b>sem sair do banco</b> —
-      sem Java, sem middleware, sem dependências externas. Dois arquivos, um deploy.</p>
+sem Java, sem middleware, sem dependências externas. Dois arquivos, um deploy.</p>
       <div class="chips fade d1">
-        <span class="chip"><span class="dot"></span>v3.3.0</span>
+        <span class="chip"><span class="dot"></span>v3.4.0</span>
         <span class="chip">Oracle 19c+</span>
         <span class="chip">Licença MIT</span>
         <span class="chip">CI automatizado</span>
@@ -403,8 +428,7 @@
       <div class="cta fade d2">
         <a class="btn primary" href="https://github.com/Maxwbh/pl_fpdf">
           <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-          Ver no GitHub
-        </a>
+          Ver no GitHub</a>
         <a class="btn ghost" href="#instalacao">Como instalar</a>
       </div>
     </div>
@@ -439,18 +463,18 @@
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">relatorio.sql — SQL*Plus</span></div>
         <pre><span class="k">DECLARE</span>
-  l_pdf BLOB;
+  l_pdf <span class="k">BLOB</span>;
 <span class="k">BEGIN</span>
   <span class="c">-- cria o documento dentro do banco</span>
-  PL_FPDF.Init(<span class="s">'P'</span>, <span class="s">'mm'</span>, <span class="s">'A4'</span>);
+  PL_FPDF.Init(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;mm&#x27;</span>, <span class="s">&#x27;A4&#x27;</span>);
   PL_FPDF.AddPage();
-  PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">16</span>);
-  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">'Olá, Mundo!'</span>, <span class="s">'0'</span>, <span class="n">1</span>, <span class="s">'C'</span>);
+  PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">16</span>);
+  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">&#x27;Olá, Mundo!&#x27;</span>, <span class="s">&#x27;0&#x27;</span>, <span class="n">1</span>, <span class="s">&#x27;C&#x27;</span>);
 
   <span class="c">-- proteção com senha e permissões</span>
   l_pdf := PL_FPDF.EncryptPDF(
-    p_pdf        =&gt; PL_FPDF.OutputBlob(),
-    p_encryption =&gt; <span class="s">'AES-256'</span>);
+    p_pdf        => PL_FPDF.OutputBlob(),
+    p_encryption => <span class="s">&#x27;AES-256&#x27;</span>);
 <span class="k">END</span>;</pre>
       </div>
     </div>
@@ -460,16 +484,16 @@
   <div class="fork">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="6" r="2.6"/><circle cx="18" cy="6" r="2.6"/><circle cx="12" cy="19" r="2.6"/><path d="M6 8.6v1.4a3 3 0 0 0 3 3h6a3 3 0 0 0 3-3V8.6M12 13v3.4"/></svg>
     <span><b>Linhagem.</b> A base de geração descende do porte PL/SQL de
-    <a href="https://github.com/Pilooz/pl_fpdf">Pierre-Gilles Levallois</a>, que trouxe para o
-    Oracle a <a href="http://www.fpdf.org/">FPDF</a> de Olivier Plathey — daí vem a API que
-    talvez você já conheça. Sobre ela, <a href="https://github.com/Maxwbh">@Maxwbh</a> mantém
-    desde 2019 um projeto próprio: manipulação de PDF, leitura de PDF 1.5+, criptografia
-    AES-256, DEFLATE e INFLATE em PL/SQL e a extensão PIX/Boleto.</span>
+<a href="https://github.com/Pilooz/pl_fpdf">Pierre-Gilles Levallois</a>, que trouxe para o
+Oracle a <a href="http://www.fpdf.org/">FPDF</a> de Olivier Plathey — daí vem a API que
+talvez você já conheça. Sobre ela, <a href="https://github.com/Maxwbh">@Maxwbh</a> mantém
+desde 2019 um projeto próprio: manipulação de PDF, leitura de PDF 1.5+, criptografia
+AES-256, DEFLATE e INFLATE em PL/SQL e a extensão PIX/Boleto.</span>
   </div>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><b><em>3.3.0</em></b><span>versão atual</span></div>
+    <div class="stat"><b><em>3.4.0</em></b><span>versão atual</span></div>
     <div class="stat"><b>170</b><span>verificações automatizadas</span></div>
     <div class="stat"><b>2</b><span>arquivos para o deploy</span></div>
     <div class="stat"><b>0</b><span>dependências externas</span></div>
@@ -480,7 +504,7 @@
     <p class="kicker">Recursos</p>
     <h2>Tudo que seu relatório precisa, dentro do banco</h2>
     <p class="lead">Da geração à proteção do documento — cada etapa executa como PL/SQL puro,
-    pronto para triggers, jobs, APEX e APIs.</p>
+pronto para triggers, jobs, APEX e APIs.</p>
 
     <div class="grid">
       <div class="card">
@@ -521,143 +545,137 @@
     <p class="kicker">Exemplos</p>
     <h2>Do zero ao PDF em meia dúzia de linhas</h2>
     <p class="lead">A mesma API cobre a criação de documentos novos e a edição de arquivos existentes.</p>
-
     <div class="ex-grid">
       <div class="window">
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">criar_pdf.sql</span></div>
         <pre><span class="k">DECLARE</span>
-  l_pdf BLOB;
+  l_pdf <span class="k">BLOB</span>;
 <span class="k">BEGIN</span>
-  PL_FPDF.Init(<span class="s">'P'</span>, <span class="s">'mm'</span>, <span class="s">'A4'</span>);
+  PL_FPDF.Init(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;mm&#x27;</span>, <span class="s">&#x27;A4&#x27;</span>);
   PL_FPDF.AddPage();
-  PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">16</span>);
-  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">'Olá, Mundo!'</span>,
-               <span class="s">'0'</span>, <span class="n">1</span>, <span class="s">'C'</span>);
+  PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">16</span>);
+  PL_FPDF.Cell(<span class="n">0</span>, <span class="n">10</span>, <span class="s">&#x27;Olá, Mundo!&#x27;</span>,
+               <span class="s">&#x27;0&#x27;</span>, <span class="n">1</span>, <span class="s">&#x27;C&#x27;</span>);
 
   l_pdf := PL_FPDF.OutputBlob();
   <span class="c">-- e agora é seu: grave, envie, devolva</span>
-  <span class="k">INSERT INTO</span> documentos (pdf) <span class="k">VALUES</span> (l_pdf);
+  INSERT <span class="k">INTO</span> documentos (pdf) VALUES (l_pdf);
 <span class="k">END</span>;</pre>
       </div>
-
       <div class="window">
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">editar_pdf.sql</span></div>
         <pre><span class="k">DECLARE</span>
-  l_pdf BLOB;
+  l_pdf <span class="k">BLOB</span>;
 <span class="k">BEGIN</span>
   <span class="k">SELECT</span> pdf_blob <span class="k">INTO</span> l_pdf
     <span class="k">FROM</span> documentos <span class="k">WHERE</span> id = <span class="n">1</span>;
 
   PL_FPDF.LoadPDF(l_pdf);
   PL_FPDF.RotatePage(<span class="n">1</span>, <span class="n">90</span>);
-  PL_FPDF.AddWatermark(<span class="s">'CONFIDENCIAL'</span>, <span class="n">0.3</span>);
+  PL_FPDF.AddWatermark(<span class="s">&#x27;CONFIDENCIAL&#x27;</span>, <span class="n">0.3</span>);
   l_pdf := PL_FPDF.OutputModifiedPDF();
 <span class="k">END</span>;</pre>
       </div>
     </div>
-
     <h3 style="margin-top:36px">E quando o documento é difícil: o layout de um boleto</h3>
     <p class="lead">Página A4, três variantes de Helvetica em quatro corpos, 50 caixas
-      posicionadas ao milímetro em duas vias, a coluna do dinheiro alinhada à direita e o
-      código de barras ITF de 44 dígitos que um leitor de banco lê. <b>Sem imagem nenhuma</b>
-      — logotipo, réguas e barras são desenho vetorial, como num boleto de verdade.</p>
-
+posicionadas ao milímetro em duas vias, a coluna do dinheiro alinhada à direita e o
+código de barras ITF de 44 dígitos que um leitor de banco lê. <b>Sem imagem nenhuma</b>
+— logotipo, réguas e barras são desenho vetorial, como num boleto de verdade.</p>
     <p style="text-align:center;margin:24px 0 8px">
-      <img src="assets/exemplo-boleto.png" width="560"
-           style="max-width:100%;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)"
-           alt="Boleto bancário gerado pelo PL_FPDF: duas vias, grade de campos e código de barras ITF">
+      <picture>
+<source srcset="assets/exemplo-boleto.webp" type="image/webp">
+<img src="assets/exemplo-boleto.png" width="560" height="696" loading="lazy" decoding="async"
+style="max-width:100%;height:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)"
+alt="Boleto bancário gerado pelo PL_FPDF: duas vias, grade de campos e código de barras ITF">
+</picture>
     </p>
     <p class="lead" style="text-align:center;font-size:.9em;opacity:.75">
       Saída real do <code>examples/boleto.sql</code>, gerada dentro do Oracle.
-      Os 44 dígitos do código de barras chegam prontos — o PL_FPDF desenha,
-      cálculo de cobrança é outro assunto.
+Os 44 dígitos do código de barras chegam prontos — o PL_FPDF desenha,
+cálculo de cobrança é outro assunto.
     </p>
-
     <div class="ex-grid">
       <div class="window">
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">boleto.sql</span></div>
         <pre><span class="c">-- rótulo miúdo em cima, valor embaixo</span>
-PL_FPDF.Rect(px, py, pw, ph, <span class="s">'D'</span>);
-PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">''</span>, <span class="n">6</span>);
+PL_FPDF.Rect(px, py, pw, ph, <span class="s">&#x27;D&#x27;</span>);
+PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;&#x27;</span>, <span class="n">6</span>);
 PL_FPDF.SetXY(px, py + <span class="n">0.7</span>);
-PL_FPDF.Cell(pw, <span class="n">2.4</span>, protulo, <span class="s">'0'</span>, <span class="n">0</span>, <span class="s">'L'</span>);
+PL_FPDF.Cell(pw, <span class="n">2.4</span>, protulo, <span class="s">&#x27;0&#x27;</span>, <span class="n">0</span>, <span class="s">&#x27;L&#x27;</span>);
 
-PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">9</span>);
+PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">9</span>);
 PL_FPDF.SetXY(px, py + <span class="n">3.2</span>);
-PL_FPDF.Cell(pw, <span class="n">3.4</span>, pvalor, <span class="s">'0'</span>, <span class="n">0</span>, <span class="s">'R'</span>);</pre>
+PL_FPDF.Cell(pw, <span class="n">3.4</span>, pvalor, <span class="s">&#x27;0&#x27;</span>, <span class="n">0</span>, <span class="s">&#x27;R&#x27;</span>);</pre>
       </div>
-
       <div class="window">
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">codigo_de_barras.sql</span></div>
         <pre><span class="c">-- 103 x 13 mm, como manda a FEBRABAN</span>
 PL_FPDF.AddBarcode(
   <span class="n">16.5</span>, <span class="n">233</span>, <span class="n">103</span>, <span class="n">13</span>,
-  <span class="s">'34197167700000150001'</span> ||
-  <span class="s">'090000012323073123451000'</span>,
-  <span class="s">'ITF'</span>, <span class="k">FALSE</span>);
+  <span class="s">&#x27;34197167700000150001&#x27;</span> ||
+  <span class="s">&#x27;090000012323073123451000&#x27;</span>,
+  <span class="s">&#x27;ITF&#x27;</span>, <span class="k">FALSE</span>);
 
 <span class="c">-- e o PDF sai daqui, do próprio banco</span>
 l_pdf := PL_FPDF.OutputBlob();</pre>
       </div>
     </div>
-
     <p class="lead" style="margin-top:18px">
       <a class="btn ghost" href="https://github.com/Maxwbh/pl_fpdf/blob/master/examples/boleto.sql">
-        Ver o exemplo completo</a>
+Ver o exemplo completo</a>
     </p>
-
     <h3 style="margin-top:44px">E o irmão colorido: um ingresso de evento</h3>
     <p class="lead">O boleto prova grade. O ingresso prova o resto: <b>cor</b> —
-      faixa preenchida com texto branco por cima, painéis cinzas —, <b>QR Code e
-      Code 39 na mesma página</b> dizendo o mesmo código, <b>uma página por
-      ingresso</b> e uma forma que não é retângulo, o rabinho do balão. Também
-      sem imagem nenhuma.</p>
-
+faixa preenchida com texto branco por cima, painéis cinzas —, <b>QR Code e
+Code 39 na mesma página</b> dizendo o mesmo código, <b>uma página por
+ingresso</b> e uma forma que não é retângulo, o rabinho do balão. Também
+sem imagem nenhuma.</p>
     <p style="text-align:center;margin:24px 0 8px">
-      <img src="assets/exemplo-ticket.png" width="470"
-           style="max-width:100%;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)"
-           alt="Ingresso de evento gerado pelo PL_FPDF: cabeçalho colorido, QR Code e código de barras">
+      <picture>
+<source srcset="assets/exemplo-ticket.webp" type="image/webp">
+<img src="assets/exemplo-ticket.png" width="470" height="642" loading="lazy" decoding="async"
+style="max-width:100%;height:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)"
+alt="Ingresso de evento gerado pelo PL_FPDF: cabeçalho colorido, QR Code e código de barras">
+</picture>
     </p>
     <p class="lead" style="text-align:center;font-size:.9em;opacity:.75">
       Saída real do <code>examples/ticket.sql</code>, gerada dentro do Oracle.
     </p>
-
     <div class="ex-grid">
       <div class="window">
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">cores.sql</span></div>
         <pre><span class="c">-- painel colorido, e o título em branco</span>
 PL_FPDF.SetFillColor(<span class="n">13</span>, <span class="n">25</span>, <span class="n">44</span>);
-PL_FPDF.Rect(<span class="n">12</span>, <span class="n">13.5</span>, <span class="n">186</span>, <span class="n">36</span>, <span class="s">'F'</span>);
+PL_FPDF.Rect(<span class="n">12</span>, <span class="n">13.5</span>, <span class="n">186</span>, <span class="n">36</span>, <span class="s">&#x27;F&#x27;</span>);
 
 PL_FPDF.SetTextColor(<span class="n">255</span>, <span class="n">255</span>, <span class="n">255</span>);
-PL_FPDF.SetFont(<span class="s">'Arial'</span>, <span class="s">'B'</span>, <span class="n">17</span>);
+PL_FPDF.SetFont(<span class="s">&#x27;Arial&#x27;</span>, <span class="s">&#x27;B&#x27;</span>, <span class="n">17</span>);
 PL_FPDF.SetXY(<span class="n">16</span>, <span class="n">18</span>);
-PL_FPDF.Cell(<span class="n">178</span>, <span class="n">9</span>, l_titulo, <span class="s">'0'</span>, <span class="n">0</span>, <span class="s">'L'</span>);</pre>
+PL_FPDF.Cell(<span class="n">178</span>, <span class="n">9</span>, l_titulo, <span class="s">&#x27;0&#x27;</span>, <span class="n">0</span>, <span class="s">&#x27;L&#x27;</span>);</pre>
       </div>
-
       <div class="window">
         <div class="win-bar"><span class="r"></span><span class="y"></span><span class="g"></span>
           <span class="win-title">simbolos.sql</span></div>
         <pre><span class="c">-- o mesmo código em duas simbologias,</span>
 <span class="c">-- para leitura na portaria</span>
 PL_FPDF.AddQRCode(
-  p_x =&gt; <span class="n">156</span>, p_y =&gt; <span class="n">58</span>,
-  p_size =&gt; <span class="n">32</span>, p_data =&gt; l_codigo);
+  p_x => <span class="n">156</span>, p_y => <span class="n">58</span>,
+  p_size => <span class="n">32</span>, p_data => l_codigo);
 
 PL_FPDF.AddBarcode(
   <span class="n">45</span>, <span class="n">117</span>, <span class="n">120</span>, <span class="n">10</span>,
-  l_codigo, <span class="s">'CODE39'</span>, <span class="k">FALSE</span>);</pre>
+  l_codigo, <span class="s">&#x27;CODE39&#x27;</span>, <span class="k">FALSE</span>);</pre>
       </div>
     </div>
-
     <p class="lead" style="margin-top:18px">
       <a class="btn ghost" href="https://github.com/Maxwbh/pl_fpdf/blob/master/examples/ticket.sql">
-        Ver o exemplo do ingresso</a>
+Ver o exemplo do ingresso</a>
     </p>
   </section>
 
@@ -683,31 +701,33 @@ PL_FPDF.AddBarcode(
         <h3>Confirme a versão</h3>
         <p>Pronto para gerar o primeiro PDF.</p>
         <code class="block">SELECT PL_FPDF.co_version FROM DUAL;
--- 3.3.0</code>
+-- 3.4.0</code>
       </div>
     </div>
 
     <p class="note" style="margin-top:26px"><b>Para produção, fixe a versão.</b>
-    O link acima serve sempre a mais nova — bom para experimentar, ruim para um
-    chamado de mudança. Cada versão tem URL própria e imutável na
-    <a href="https://github.com/Maxwbh/pl_fpdf/releases">página de releases</a>, com o
-    <code>SHA256.txt</code> ao lado para conferir o que foi baixado:</p>
+O link acima serve sempre a mais nova — bom para experimentar, ruim para um
+chamado de mudança. Cada versão tem URL própria e imutável na
+<a href="https://github.com/Maxwbh/pl_fpdf/releases">página de releases</a>, com o
+<code>SHA256.txt</code> ao lado para conferir o que foi baixado:</p>
 
     <code class="block">curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql
 curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/SHA256.txt
-sha256sum -c &lt;(echo "$(cat SHA256.txt)  pl_fpdf_install.sql")</code>
+sha256sum -c &lt;(echo &quot;$(cat SHA256.txt)  pl_fpdf_install.sql&quot;)</code>
   </section>
 
   <!-- FINAL CTA -->
   <div class="final">
     <h2>Achou útil? Deixe uma estrela ⭐</h2>
     <p>Estrelas aumentam a visibilidade do projeto para outros desenvolvedores Oracle —
-    e são o melhor jeito de apoiar o trabalho.</p>
+e são o melhor jeito de apoiar o trabalho.</p>
     <div class="cta" style="justify-content:center">
       <a class="btn primary" href="https://github.com/Maxwbh/pl_fpdf/stargazers">Dar estrela no GitHub</a>
       <a class="btn ghost" href="https://github.com/Maxwbh/pl_fpdf/discussions">Tirar dúvidas nas Discussions</a>
     </div>
   </div>
+
+</main>
 
   <footer>
     <p>

@@ -1,6 +1,10 @@
 --------------------------------------------------------------------------------
 -- Diagnóstico: o UTL_COMPRESS serve como inflate para o FlateDecode do PDF?
 --
+-- EXPERIMENTO — não entra na suíte. Não afere nada: mede e imprime,
+-- para um humano ler. A pergunta foi respondida (o Oracle produz gzip padrão e o DEFLATE do PDF vestido de gzip funciona, mas exige o CRC-32 do conteúdo descomprimido),
+-- e o registro fica porque o caminho até a resposta vale mais que ela.
+--
 -- Por que isto existe
 -- -------------------
 -- O item mais valioso ainda em aberto no roadmap é a xref em stream (PDF 1.5+):
