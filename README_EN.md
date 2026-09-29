@@ -1,7 +1,7 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.3.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.4.0-blue.svg" alt="Version">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/security-AES--256-brightgreen.svg" alt="Security">
@@ -21,6 +21,12 @@
   <a href="#documentation">Docs</a> •
   <a href="README.md">🇧🇷 Português (principal)</a>
 </p>
+
+> **3.4.0 is under test.** The latest published release is **3.3.0**, which does
+> **not** carry the WinAnsi conversion for accented text nor embedded TrueType
+> fonts — both are 3.4.0. The code on this branch runs the suite against an
+> Oracle **19c** database on every change; the **26ai** environment is being set
+> up for the full round, and the release follows it.
 
 A PDF library that runs **inside Oracle Database**: two PL/SQL packages, no
 Java, no external service, no database object beyond them. It generates and
@@ -81,7 +87,7 @@ directory to create first.
 
 -- Verify
 SELECT PL_FPDF.co_version FROM DUAL;
--- Returns: 3.2.0
+-- Returns: 3.4.0
 ```
 
 **Requirements:** Oracle 19c+, and `CREATE PROCEDURE` in the schema where the
@@ -220,7 +226,7 @@ Manipulating existing PDFs, merge/split, encryption, QR codes, watermarks and th
 rest of the API are covered in the documentation:
 
 - 📖 **[Full usage reference](docs/DOCUMENTATION.md)** (Portuguese) — every API with parameters and examples
-- 🌐 **[API usage index on the site](https://maxwbh.github.io/pl_fpdf/api.html)** — browsable version
+- 🌐 **[API usage index on the site](https://maxwbh.github.io/pl_fpdf/en/api.html)** — browsable version
 
 ---
 
@@ -304,7 +310,7 @@ if it falls behind:
 | [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | The same guide in Portuguese |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | Signature, parameters and errors of each API |
 | [API reference on the site](https://maxwbh.github.io/pl_fpdf/en/reference.html) | The same reference, browsable, in English |
-| [API index on the site](https://maxwbh.github.io/pl_fpdf/api.html) | Task-oriented index (PT) |
+| [API index on the site](https://maxwbh.github.io/pl_fpdf/en/api.html) | Task-oriented index, in English |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 
 **For people maintaining the code** — tests, CI and working method:

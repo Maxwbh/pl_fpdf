@@ -26,39 +26,43 @@ DECLARE
   l_options JSON_OBJECT_T;
   l_overlay_id VARCHAR2(50);
 
-  -- Helper procedures
-  PROCEDURE run_test(p_test_name VARCHAR2, p_result BOOLEAN) IS
+  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
+  -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
+  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
   BEGIN
     l_test_count := l_test_count + 1;
-    IF p_result THEN
+    IF NVL(p_cond, FALSE) THEN
       l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
     ELSE
       l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name || ' - FAIL');
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome);
     END IF;
-  END run_test;
+  END confere;
 
-  PROCEDURE expect_error(p_test_name VARCHAR2, p_expected_code NUMBER) IS
+  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;
     l_fail_count := l_fail_count + 1;
-    DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                         ' - FAIL (Expected error ' || p_expected_code || ' but succeeded)');
-  END expect_error;
+    DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                         p_codigo || ' e a chamada foi aceita');
+  END faltou_erro;
 
-  PROCEDURE handle_expected_error(p_test_name VARCHAR2, p_expected_code NUMBER, p_actual_code NUMBER) IS
+  PROCEDURE erro_esperado(p_nome VARCHAR2, p_codigo NUMBER, p_veio NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;
-    IF p_actual_code = p_expected_code THEN
+    IF p_veio = p_codigo THEN
       l_pass_count := l_pass_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✓ Test ' || l_test_count || ': ' || p_test_name || ' - PASS');
+      DBMS_OUTPUT.PUT_LINE('  [PASS] ' || p_nome);
     ELSE
       l_fail_count := l_fail_count + 1;
-      DBMS_OUTPUT.PUT_LINE('✗ Test ' || l_test_count || ': ' || p_test_name ||
-                           ' - FAIL (Expected ' || p_expected_code || ', got ' || p_actual_code || ')');
+      DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ' — esperava ORA' ||
+                           p_codigo || ' e veio ORA' || p_veio);
     END IF;
-  END handle_expected_error;
+  END erro_esperado;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('Starting Phase 4.5 Overlay Tests...');
@@ -86,10 +90,10 @@ BEGIN
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.OverlayText(1, 'Test', 100, 700, NULL);
-    expect_error('OverlayText without PDF loaded', -20809);
+    faltou_erro('OverlayText without PDF loaded', -20809);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('OverlayText without PDF loaded', -20809, SQLCODE);
+      erro_esperado('OverlayText without PDF loaded', -20809, SQLCODE);
   END;
 
   -- Test 2: Simple text overlay
@@ -97,10 +101,10 @@ BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_test_pdf);
     PL_FPDF.OverlayText(1, 'APPROVED', 100, 700, NULL);
-    run_test('Simple text overlay', TRUE);
+    confere('Simple text overlay', TRUE);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Simple text overlay', FALSE);
+      confere('Simple text overlay', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -113,29 +117,29 @@ BEGIN
     l_options.put('opacity', 0.8);
     l_options.put('rotation', 45);
     PL_FPDF.OverlayText(1, 'CONFIDENTIAL', 200, 400, l_options);
-    run_test('Text overlay with formatting options', TRUE);
+    confere('Text overlay with formatting options', TRUE);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Text overlay with formatting options', FALSE);
+      confere('Text overlay with formatting options', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 4: Text overlay with invalid page number
   BEGIN
     PL_FPDF.OverlayText(999, 'Test', 100, 700, NULL);
-    expect_error('Text overlay with invalid page number', -20810);
+    faltou_erro('Text overlay with invalid page number', -20810);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Text overlay with invalid page number', -20810, SQLCODE);
+      erro_esperado('Text overlay with invalid page number', -20810, SQLCODE);
   END;
 
   -- Test 5: Text overlay with invalid coordinates
   BEGIN
     PL_FPDF.OverlayText(1, 'Test', -100, 700, NULL);
-    expect_error('Text overlay with negative X coordinate', -20821);
+    faltou_erro('Text overlay with negative X coordinate', -20821);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Text overlay with negative X coordinate', -20821, SQLCODE);
+      erro_esperado('Text overlay with negative X coordinate', -20821, SQLCODE);
   END;
 
   -- Test 6: Text overlay with invalid opacity
@@ -143,10 +147,10 @@ BEGIN
     l_options := JSON_OBJECT_T();
     l_options.put('opacity', 1.5);
     PL_FPDF.OverlayText(1, 'Test', 100, 700, l_options);
-    expect_error('Text overlay with invalid opacity', -20821);
+    faltou_erro('Text overlay with invalid opacity', -20821);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Text overlay with invalid opacity', -20821, SQLCODE);
+      erro_esperado('Text overlay with invalid opacity', -20821, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -156,10 +160,10 @@ BEGIN
   -- Test 7: Simple image overlay
   BEGIN
     PL_FPDF.OverlayImage(1, l_logo_blob, 450, 750, 100, 50, NULL);
-    run_test('Simple image overlay', TRUE);
+    confere('Simple image overlay', TRUE);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Simple image overlay', FALSE);
+      confere('Simple image overlay', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -170,38 +174,38 @@ BEGIN
     l_options.put('rotation', 45);
     l_options.put('maintainAspect', TRUE);
     PL_FPDF.OverlayImage(1, l_logo_blob, 200, 400, 300, NULL, l_options);
-    run_test('Image overlay with transparency and rotation', TRUE);
+    confere('Image overlay with transparency and rotation', TRUE);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Image overlay with transparency and rotation', FALSE);
+      confere('Image overlay with transparency and rotation', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 9: Image overlay with invalid format
   BEGIN
     PL_FPDF.OverlayImage(1, UTL_RAW.CAST_TO_RAW('Invalid'), 100, 100, NULL, NULL, NULL);
-    expect_error('Image overlay with invalid format', -20823);
+    faltou_erro('Image overlay with invalid format', -20823);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Image overlay with invalid format', -20823, SQLCODE);
+      erro_esperado('Image overlay with invalid format', -20823, SQLCODE);
   END;
 
   -- Test 10: Image overlay with NULL image
   BEGIN
     PL_FPDF.OverlayImage(1, NULL, 100, 100, NULL, NULL, NULL);
-    expect_error('Image overlay with NULL image', -20823);
+    faltou_erro('Image overlay with NULL image', -20823);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Image overlay with NULL image', -20823, SQLCODE);
+      erro_esperado('Image overlay with NULL image', -20823, SQLCODE);
   END;
 
   -- Test 11: Image overlay with invalid dimensions
   BEGIN
     PL_FPDF.OverlayImage(1, l_logo_blob, 100, 100, -50, 50, NULL);
-    expect_error('Image overlay with negative width', -20824);
+    faltou_erro('Image overlay with negative width', -20824);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('Image overlay with negative width', -20824, SQLCODE);
+      erro_esperado('Image overlay with negative width', -20824, SQLCODE);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -211,18 +215,18 @@ BEGIN
   -- Test 12: GetOverlays - list all overlays
   BEGIN
     l_overlays := PL_FPDF.GetOverlays();
-    run_test('GetOverlays - list all', l_overlays.get_size() > 0);
+    confere('GetOverlays - list all', l_overlays.get_size() > 0);
     DBMS_OUTPUT.PUT_LINE('   Found ' || l_overlays.get_size() || ' overlays');
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('GetOverlays - list all', FALSE);
+      confere('GetOverlays - list all', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 13: GetOverlays - filter by page
   BEGIN
     l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('GetOverlays - filter by page', l_overlays.get_size() > 0);
+    confere('GetOverlays - filter by page', l_overlays.get_size() > 0);
     DBMS_OUTPUT.PUT_LINE('   Found ' || l_overlays.get_size() || ' overlays on page 1');
 
     -- Display overlay details
@@ -233,7 +237,7 @@ BEGIN
     END LOOP;
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('GetOverlays - filter by page', FALSE);
+      confere('GetOverlays - filter by page', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -244,36 +248,36 @@ BEGIN
       l_overlay := TREAT(l_overlays.get(0) AS JSON_OBJECT_T);
       l_overlay_id := l_overlay.get_string('overlayId');
       PL_FPDF.RemoveOverlay(l_overlay_id);
-      run_test('RemoveOverlay - remove specific overlay', TRUE);
+      confere('RemoveOverlay - remove specific overlay', TRUE);
       DBMS_OUTPUT.PUT_LINE('   Removed overlay: ' || l_overlay_id);
     ELSE
-      run_test('RemoveOverlay - remove specific overlay', FALSE);
+      confere('RemoveOverlay - remove specific overlay', FALSE);
       DBMS_OUTPUT.PUT_LINE('   No overlays to remove');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('RemoveOverlay - remove specific overlay', FALSE);
+      confere('RemoveOverlay - remove specific overlay', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 15: RemoveOverlay with invalid ID
   BEGIN
     PL_FPDF.RemoveOverlay('INVALID_ID');
-    expect_error('RemoveOverlay with invalid ID', -20825);
+    faltou_erro('RemoveOverlay with invalid ID', -20825);
   EXCEPTION
     WHEN OTHERS THEN
-      handle_expected_error('RemoveOverlay with invalid ID', -20825, SQLCODE);
+      erro_esperado('RemoveOverlay with invalid ID', -20825, SQLCODE);
   END;
 
   -- Test 16: ClearOverlays - specific page
   BEGIN
     PL_FPDF.ClearOverlays(1);
     l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('ClearOverlays - specific page', l_overlays.get_size() = 0);
+    confere('ClearOverlays - specific page', l_overlays.get_size() = 0);
     DBMS_OUTPUT.PUT_LINE('   Overlays on page 1: ' || l_overlays.get_size());
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('ClearOverlays - specific page', FALSE);
+      confere('ClearOverlays - specific page', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -288,11 +292,11 @@ BEGIN
 
     PL_FPDF.ClearOverlays();  -- Clear all
     l_overlays := PL_FPDF.GetOverlays();
-    run_test('ClearOverlays - clear all', l_overlays.get_size() = 0);
+    confere('ClearOverlays - clear all', l_overlays.get_size() = 0);
     DBMS_OUTPUT.PUT_LINE('   Remaining overlays: ' || l_overlays.get_size());
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('ClearOverlays - clear all', FALSE);
+      confere('ClearOverlays - clear all', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -313,21 +317,21 @@ BEGIN
     PL_FPDF.OverlayText(1, 'Top Layer', 120, 120, l_options);
 
     l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('Multiple overlays with z-order', l_overlays.get_size() = 2);
+    confere('Multiple overlays with z-order', l_overlays.get_size() = 2);
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Multiple overlays with z-order', FALSE);
+      confere('Multiple overlays with z-order', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
   -- Test 19: Overlay persistence check
   BEGIN
     l_overlays := PL_FPDF.GetOverlays(1);
-    run_test('Overlay persistence', l_overlays.get_size() = 2);
+    confere('Overlay persistence', l_overlays.get_size() = 2);
     DBMS_OUTPUT.PUT_LINE('   Persisted overlays: ' || l_overlays.get_size());
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('Overlay persistence', FALSE);
+      confere('Overlay persistence', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 
@@ -336,18 +340,18 @@ BEGIN
     PL_FPDF.ClearPDFCache();
     BEGIN
       l_overlays := PL_FPDF.GetOverlays();
-      run_test('ClearPDFCache clears overlays', FALSE);
+      confere('ClearPDFCache clears overlays', FALSE);
     EXCEPTION
       WHEN OTHERS THEN
         IF SQLCODE = -20809 THEN
-          run_test('ClearPDFCache clears overlays', TRUE);
+          confere('ClearPDFCache clears overlays', TRUE);
         ELSE
-          run_test('ClearPDFCache clears overlays', FALSE);
+          confere('ClearPDFCache clears overlays', FALSE);
         END IF;
     END;
   EXCEPTION
     WHEN OTHERS THEN
-      run_test('ClearPDFCache clears overlays', FALSE);
+      confere('ClearPDFCache clears overlays', FALSE);
       DBMS_OUTPUT.PUT_LINE('   Error: ' || SQLERRM);
   END;
 

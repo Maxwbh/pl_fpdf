@@ -42,7 +42,7 @@ NATIVAS = {
     # cadeia e conversão
     'substr', 'substrb', 'instr', 'instrb', 'length', 'lengthb', 'lower',
     'upper', 'initcap', 'replace', 'translate', 'lpad', 'rpad', 'ltrim',
-    'rtrim', 'trim', 'concat', 'ascii', 'chr', 'to_char', 'to_number',
+    'rtrim', 'trim', 'concat', 'ascii', 'asciistr', 'chr', 'to_char', 'to_number',
     'to_date', 'to_timestamp', 'to_blob', 'to_clob', 'cast', 'convert',
     'regexp_replace', 'regexp_substr', 'regexp_instr', 'regexp_count',
     'regexp_like', 'validate_conversion', 'standard_hash', 'soundex',
