@@ -7,6 +7,44 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [3.4.0] - EM TESTE (sem release publicado)
+
+### Corrigido
+- Texto acentuado saía com dois glifos nas fontes padrão: o documento declarava
+  WinAnsi e recebia UTF-8 cru. `Cell`, `MultiCell`, `Write`, `Text` e overlays
+- `GetStringWidth` levantava `ORA-06502` com acento — logo, centralizar ou
+  alinhar à direita quebrava
+- A tabela de larguras era montada com `chr(i)` e passa a ser indexada pelo
+  byte WinAnsi: em AL32UTF8 o `CHR` de 192 para cima levanta `ORA-29275` na
+  primeira chamada que carrega uma métrica. `MultiCell`, `Write` e o overlay
+  ainda consultavam com o caractere cru, e mediam errado todo acentuado
+- `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
+- Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
+  último byte
+- `Link` numa página emitia `/Annots` com dicionário aberto nas páginas
+  anteriores, que nunca pediram link, e estourava `ORA-06533` no segundo
+  documento da sessão
+
+### Adicionado
+- `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
+- Fonte TrueType embutida de verdade: o `SetFont` passa a usar a fonte
+  registrada, as métricas saem do arquivo e o `/FontFile2` vai para o PDF
+
+
+### Removido
+- `SetUTF8Enabled` e `IsUTF8Enabled`, obsoletas e defeituosas: prometiam uma
+  chave de codificação que não existia — a variável era escrita e lida, e
+  nenhum outro ponto a consultava. A acentuação agora é sempre correta
+
+### Alterado
+- Caractere fora do WinAnsi levanta `ORA-20203` com a posição, em vez de sair
+  como `?`. Para outras escritas, embuta uma fonte TrueType
+- `Link` só aceita URL; `AddLink`, `SetLink` e `plink` numérico recusam com
+  `ORA-20601`. O link interno nunca teve o `/Dest` escrito, e o arquivo saía
+  malformado
+
+---
+
 ## [3.3.0] - 2026-08-31
 
 ### Adicionado

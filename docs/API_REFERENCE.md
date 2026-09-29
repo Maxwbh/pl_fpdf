@@ -1,32 +1,33 @@
 # PL_FPDF — Referência da API
 
-**Versão:** 3.3.0 | **Oracle:** 19c+ | **Licença:** MIT
+**Versão:** 3.4.0 | **Oracle:** 19c+ | **Licença:** MIT
 
-Documentação detalhada de cada função e procedure pública do package `PL_FPDF`:
-sintaxe, parâmetros com valores possíveis, retorno, erros levantados e exemplo.
+Documentação de cada função e procedure pública: sintaxe, parâmetros, retorno,
+erros levantados e exemplo.
 
-> Guia de uso por tarefa: [DOCUMENTATION.md](DOCUMENTATION.md) ·
-> Versão navegável: [maxwbh.github.io/pl_fpdf/reference.html](https://maxwbh.github.io/pl_fpdf/reference.html) ·
-> API Reference (English): [API_REFERENCE_EN.md](API_REFERENCE_EN.md)
+> **Página gerada** do Javadoc de `src/PL_FPDF.pks`.
+> Não edite aqui: corrija o bloco na spec e rode o gerador.
+
+> Guia de uso por tarefa: [DOCUMENTATION.md](DOCUMENTATION.md) · API Reference (English): [API_REFERENCE_EN.md](API_REFERENCE_EN.md)
 
 ## Índice
 
-**Ciclo de vida** — [fpdf](#fpdf) · [Init](#init) · [IsInitialized](#isinitialized) · [Reset](#reset)
-**Páginas e posicionamento** — [AcceptPageBreak](#acceptpagebreak) · [AddPage](#addpage) · [GetCurrentPage](#getcurrentpage) · [GetX](#getx) · [GetY](#gety) · [Ln](#ln) · [PageNo](#pageno) · [SetAutoPageBreak](#setautopagebreak) · [SetLeftMargin](#setleftmargin) · [SetMargins](#setmargins) · [SetPage](#setpage) · [SetRightMargin](#setrightmargin) · [SetTopMargin](#settopmargin) · [SetX](#setx) · [SetXY](#setxy) · [SetY](#sety)
-**Fontes e UTF-8** — [AddFont](#addfont) · [AddTTFFont](#addttffont) · [ClearTTFFontCache](#clearttffontcache) · [GetTTFFontInfo](#getttffontinfo) · [IsTTFFontLoaded](#isttffontloaded) · [IsUTF8Enabled](#isutf8enabled) · [LoadTTFFromFile](#loadttffromfile) · [SetFont](#setfont) · [SetFontSize](#setfontsize) · [SetUTF8Enabled](#setutf8enabled) · [UTF8ToPDFString](#utf8topdfstring)
-**Escrita de texto** — [Cell](#cell) · [CellRotated](#cellrotated) · [GetCurrentFontFamily](#getcurrentfontfamily) · [GetCurrentFontSize](#getcurrentfontsize) · [GetCurrentFontStyle](#getcurrentfontstyle) · [GetLineSpacing](#getlinespacing) · [GetStringWidth](#getstringwidth) · [MultiCell](#multicell) · [SetLineSpacing](#setlinespacing) · [Text](#text) · [Write](#write) · [WriteRotated](#writerotated)
-**Cores e desenho** — [Line](#line) · [Poly](#poly) · [Rect](#rect) · [SetDash](#setdash) · [SetDrawColor](#setdrawcolor) · [SetFillColor](#setfillcolor) · [SetLineDashPattern](#setlinedashpattern) · [SetLineWidth](#setlinewidth) · [SetTextColor](#settextcolor) · [Triangle](#triangle)
-**Imagens** — [getImageFromUrl](#getimagefromurl) · [image](#image)
-**Links** — [AddLink](#addlink) · [Link](#link) · [SetLink](#setlink)
-**Cabeçalho e rodapé** — [Footer](#footer) · [Header](#header) · [SetAliasNbPages](#setaliasnbpages) · [SetFooterProc](#setfooterproc) · [SetHeaderProc](#setheaderproc)
-**QR Code e código de barras** — [AddBarcode](#addbarcode) · [AddQRCode](#addqrcode)
-**Metadados e configuração** — [GetDocumentMetadata](#getdocumentmetadata) · [GetPageInfo](#getpageinfo) · [SetAuthor](#setauthor) · [SetCompression](#setcompression) · [SetCreator](#setcreator) · [SetDisplayMode](#setdisplaymode) · [SetDocumentConfig](#setdocumentconfig) · [SetKeywords](#setkeywords) · [SetSubject](#setsubject) · [SetTitle](#settitle)
-**Saída do documento** — [ClosePDF](#closepdf) · [OpenPDF](#openpdf) · [Output](#output) · [OutputBlob](#outputblob) · [OutputFile](#outputfile) · [ReturnBlob](#returnblob)
-**Manipulação de PDF existente** — [AddWatermark](#addwatermark) · [ClearPDFCache](#clearpdfcache) · [FlateDecode](#flatedecode) · [FlateEncode](#flateencode) · [GetActivePageCount](#getactivepagecount) · [GetPageCount](#getpagecount) · [GetPDFInfo](#getpdfinfo) · [GetWatermarks](#getwatermarks) · [IsPageRemoved](#ispageremoved) · [IsPDFModified](#ispdfmodified) · [LoadPDF](#loadpdf) · [OutputModifiedPDF](#outputmodifiedpdf) · [RemovePage](#removepage) · [RotatePage](#rotatepage)
-**Overlays** — [ClearOverlays](#clearoverlays) · [GetOverlays](#getoverlays) · [OverlayImage](#overlayimage) · [OverlayText](#overlaytext) · [RemoveOverlay](#removeoverlay)
-**Multi-PDF (merge, split, extract)** — [ExtractPages](#extractpages) · [GetLoadedPDFs](#getloadedpdfs) · [LoadPDFWithID](#loadpdfwithid) · [MergePDFs](#mergepdfs) · [SplitPDF](#splitpdf) · [UnloadPDF](#unloadpdf)
-**Segurança e criptografia** — [DecryptPDF](#decryptpdf) · [EncryptPDF](#encryptpdf) · [GetPDFVersion](#getpdfversion) · [GetSecurityInfo](#getsecurityinfo) · [IsEncrypted](#isencrypted) · [SetEncryption](#setencryption) · [SetPDFVersion](#setpdfversion) · [SetPermissions](#setpermissions)
-**Diagnóstico e utilidades** — [DebugDisabled](#debugdisabled) · [DebugEnabled](#debugenabled) · [Error](#error) · [GetLogLevel](#getloglevel) · [GetScaleFactor](#getscalefactor) · [SetLogLevel](#setloglevel)
+**Ciclo de vida** — [fpdf](#fpdf) · [Init](#init) · [IsInitialized](#isinitialized) · [Reset](#reset)  
+**Páginas e posicionamento** — [AcceptPageBreak](#acceptpagebreak) · [AddPage](#addpage) · [GetCurrentPage](#getcurrentpage) · [GetX](#getx) · [GetY](#gety) · [Ln](#ln) · [PageNo](#pageno) · [SetAutoPageBreak](#setautopagebreak) · [SetLeftMargin](#setleftmargin) · [SetMargins](#setmargins) · [SetPage](#setpage) · [SetRightMargin](#setrightmargin) · [SetTopMargin](#settopmargin) · [SetX](#setx) · [SetXY](#setxy) · [SetY](#sety)  
+**Fontes e UTF-8** — [AddFont](#addfont) · [AddTTFFont](#addttffont) · [ClearTTFFontCache](#clearttffontcache) · [GetTTFFontInfo](#getttffontinfo) · [IsTTFFontLoaded](#isttffontloaded) · [LoadTTFFromFile](#loadttffromfile) · [SetFont](#setfont) · [SetFontSize](#setfontsize) · [UTF8ToPDFString](#utf8topdfstring)  
+**Escrita de texto** — [Cell](#cell) · [CellRotated](#cellrotated) · [GetCurrentFontFamily](#getcurrentfontfamily) · [GetCurrentFontSize](#getcurrentfontsize) · [GetCurrentFontStyle](#getcurrentfontstyle) · [GetLineSpacing](#getlinespacing) · [GetStringWidth](#getstringwidth) · [MultiCell](#multicell) · [SetLineSpacing](#setlinespacing) · [Text](#text) · [Write](#write) · [WriteRotated](#writerotated)  
+**Cores e desenho** — [Line](#line) · [Poly](#poly) · [Rect](#rect) · [SetDash](#setdash) · [SetDrawColor](#setdrawcolor) · [SetFillColor](#setfillcolor) · [SetLineDashPattern](#setlinedashpattern) · [SetLineWidth](#setlinewidth) · [SetTextColor](#settextcolor) · [Triangle](#triangle)  
+**Imagens** — [getImageFromUrl](#getimagefromurl) · [image](#image) · [ImageFromBlob](#imagefromblob)  
+**Links** — [AddLink](#addlink) · [Link](#link) · [SetLink](#setlink)  
+**Cabeçalho e rodapé** — [Footer](#footer) · [Header](#header) · [SetAliasNbPages](#setaliasnbpages) · [SetFooterProc](#setfooterproc) · [SetHeaderProc](#setheaderproc)  
+**QR Code e código de barras** — [AddBarcode](#addbarcode) · [AddQRCode](#addqrcode)  
+**Metadados e configuração** — [GetDocumentMetadata](#getdocumentmetadata) · [GetPageInfo](#getpageinfo) · [SetAuthor](#setauthor) · [SetCompression](#setcompression) · [SetCreator](#setcreator) · [SetDisplayMode](#setdisplaymode) · [SetDocumentConfig](#setdocumentconfig) · [SetKeywords](#setkeywords) · [SetSubject](#setsubject) · [SetTitle](#settitle)  
+**Saída do documento** — [ClosePDF](#closepdf) · [OpenPDF](#openpdf) · [Output](#output) · [OutputBlob](#outputblob) · [OutputFile](#outputfile) · [ReturnBlob](#returnblob)  
+**Manipulação de PDF existente** — [AddWatermark](#addwatermark) · [ClearPDFCache](#clearpdfcache) · [FlateDecode](#flatedecode) · [FlateEncode](#flateencode) · [GetActivePageCount](#getactivepagecount) · [GetPageCount](#getpagecount) · [GetPDFInfo](#getpdfinfo) · [GetWatermarks](#getwatermarks) · [IsPageRemoved](#ispageremoved) · [IsPDFModified](#ispdfmodified) · [LoadPDF](#loadpdf) · [OutputModifiedPDF](#outputmodifiedpdf) · [RemovePage](#removepage) · [RotatePage](#rotatepage)  
+**Overlays** — [ClearOverlays](#clearoverlays) · [GetOverlays](#getoverlays) · [OverlayImage](#overlayimage) · [OverlayText](#overlaytext) · [RemoveOverlay](#removeoverlay)  
+**Multi-PDF (merge, split, extract)** — [ExtractPages](#extractpages) · [GetLoadedPDFs](#getloadedpdfs) · [LoadPDFWithID](#loadpdfwithid) · [MergePDFs](#mergepdfs) · [SplitPDF](#splitpdf) · [UnloadPDF](#unloadpdf)  
+**Segurança e criptografia** — [DecryptPDF](#decryptpdf) · [EncryptPDF](#encryptpdf) · [GetPDFVersion](#getpdfversion) · [GetSecurityInfo](#getsecurityinfo) · [IsEncrypted](#isencrypted) · [SetEncryption](#setencryption) · [SetPDFVersion](#setpdfversion) · [SetPermissions](#setpermissions)  
+**Diagnóstico e utilidades** — [DebugDisabled](#debugdisabled) · [DebugEnabled](#debugenabled) · [Error](#error) · [GetLogLevel](#getloglevel) · [GetScaleFactor](#getscalefactor) · [SetLogLevel](#setloglevel)  
 
 ---
 
@@ -34,7 +35,7 @@ sintaxe, parâmetros com valores possíveis, retorno, erros levantados e exemplo
 
 ### fpdf
 
-Inicializa o documento no estilo FPDF clássico. Mantido por compatibilidade com a v0.9.4; em código novo use Init.
+Construtor herdado do FPDF original. Continua valendo, e o código escrito para as versões 0.9.4 e 2.0.0 segue rodando com ele. Em código novo prefira Init, que valida os argumentos e levanta erro nomeado em vez de seguir com um valor inesperado.
 
 #### Sintaxe
 
@@ -47,11 +48,17 @@ PROCEDURE PL_FPDF.fpdf(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `orientation` | VARCHAR2 | Orientação. | 'P' (padrão) ou 'L' | `'P'` |
-| `unit` | VARCHAR2 | Unidade de medida. | 'mm' (padrão), 'cm', 'pt' ou 'in' | `'mm'` |
-| `format` | VARCHAR2 | Formato da página. | 'A3', 'A4' (padrão), 'A5', 'Letter' ou 'Legal' | `'A4'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `orientation` | VARCHAR2 | `'P'` | 'P' (Portrait, retrato) ou 'L' (Landscape, paisagem) |
+| `unit` | VARCHAR2 | `'mm'` | unidade de medida ('mm','cm','in','pt') |
+| `format` | VARCHAR2 | `'A4'` | formato da página ('A4', 'Letter'...) |
+
+#### Exemplo
+
+```sql
+PL_FPDF.fpdf('L', 'mm', 'A4');
+```
 
 **Veja também:** [Init](#init)
 
@@ -59,7 +66,7 @@ PROCEDURE PL_FPDF.fpdf(
 
 ### Init
 
-Inicializa um novo documento PDF. Deve ser a primeira chamada de qualquer geração; define orientação, unidade de medida, formato de página e codificação usados por todas as demais APIs.
+Prepara o gerador para um documento novo. Substitui o construtor legado fpdf(), acrescentando validação dos argumentos e os buffers em CLOB. Chamar de novo com um documento em andamento descarta o anterior.
 
 #### Sintaxe
 
@@ -73,48 +80,49 @@ PROCEDURE PL_FPDF.Init(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_orientation` | VARCHAR2 | Orientação padrão das páginas. | 'P' (retrato, padrão) ou 'L' (paisagem) | `'P'` |
-| `p_unit` | VARCHAR2 | Unidade de medida de todas as coordenadas e dimensões do documento. | 'mm' (padrão), 'cm', 'pt' ou 'in' | `'mm'` |
-| `p_format` | VARCHAR2 | Formato de página padrão. | 'A3', 'A4' (padrão), 'A5', 'Letter' ou 'Legal' | `'A4'` |
-| `p_encoding` | VARCHAR2 | Codificação de caracteres do texto. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_orientation` | VARCHAR2 | `'P'` | orientação da página: 'P' (Portrait, retrato) ou 'L' (Landscape, paisagem) |
+| `p_unit` | VARCHAR2 | `'mm'` | unidade de medida ('mm', 'cm', 'in', 'pt') |
+| `p_format` | VARCHAR2 | `'A4'` | formato da página ('A4', 'Letter', 'Legal') |
+| `p_encoding` | VARCHAR2 | `'UTF-8'` | codificação de entrada |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20001` | orientação inválida |
+| `ORA-20002` | unidade de medida inválida |
+| `ORA-20003` | codificação não suportada |
 
 #### Exemplo
 
 ```sql
-BEGIN
-  PL_FPDF.Init(p_orientation => 'P', p_unit => 'mm', p_format => 'A4');
-  PL_FPDF.AddPage();
-  -- ...
-END;
+PL_FPDF.Init('P', 'mm', 'A4');
 ```
 
-**Veja também:** [Reset](#reset), [IsInitialized](#isinitialized), [AddPage](#addpage)
+**Veja também:** [Reset](#reset) · [IsInitialized](#isinitialized) · [AddPage](#addpage)
 
 ---
 
 ### IsInitialized
 
-Indica se há um documento em construção na sessão atual.
+Diz se Init (ou fpdf) já foi chamado nesta sessão.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.IsInitialized
-    RETURN BOOLEAN;
+FUNCTION PL_FPDF.IsInitialized RETURN BOOLEAN;
 ```
 
 #### Retorno
 
-BOOLEAN — TRUE se Init já foi chamado e o documento não foi finalizado.
+BOOLEAN - TRUE se inicializado
 
 #### Exemplo
 
 ```sql
-IF NOT PL_FPDF.IsInitialized THEN
-  PL_FPDF.Init;
-END IF;
+IF NOT PL_FPDF.IsInitialized THEN PL_FPDF.Init; END IF;
 ```
 
 **Veja também:** [Init](#init)
@@ -123,7 +131,7 @@ END IF;
 
 ### Reset
 
-Reinicia o motor de PDF ao estado inicial, liberando CLOBs temporários e limpando todos os arrays internos. Use entre documentos gerados no mesmo job ou ao final de rotinas longas.
+Devolve o package ao estado inicial: libera os CLOBs temporários e esvazia todas as tabelas de estado (fontes, imagens, links, metadados, mudanças de orientação). O package tem estado de sessão, e quem gera documentos em lote precisa chamar isto entre um e outro — sem isso, a configuração de um vaza para o seguinte.
 
 #### Sintaxe
 
@@ -137,7 +145,7 @@ PROCEDURE PL_FPDF.Reset;
 PL_FPDF.Reset;
 ```
 
-**Veja também:** [Init](#init), [ClearPDFCache](#clearpdfcache)
+**Veja também:** [Init](#init) · [ClearPDFCache](#clearpdfcache)
 
 ---
 
@@ -145,18 +153,23 @@ PL_FPDF.Reset;
 
 ### AcceptPageBreak
 
-Informa se a quebra automática deve ocorrer no ponto atual. Chamada internamente pelo motor; pode ser consultada para lógicas próprias de paginação.
+Diz se a quebra automática está ligada. É consultada pelo Cell antes de decidir abrir página nova.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.AcceptPageBreak
-    RETURN BOOLEAN;
+FUNCTION PL_FPDF.AcceptPageBreak RETURN BOOLEAN;
 ```
 
 #### Retorno
 
-BOOLEAN — TRUE se a quebra automática está habilitada.
+BOOLEAN - TRUE se a quebra automática está ligada
+
+#### Exemplo
+
+```sql
+IF PL_FPDF.AcceptPageBreak THEN ... END IF;
+```
 
 **Veja também:** [SetAutoPageBreak](#setautopagebreak)
 
@@ -164,7 +177,7 @@ BOOLEAN — TRUE se a quebra automática está habilitada.
 
 ### AddPage
 
-Adiciona uma nova página ao documento e a torna a página corrente. Parâmetros nulos herdam os valores definidos em Init, permitindo misturar orientações e formatos no mesmo PDF.
+Fecha a página corrente, executando o rodapé, e abre outra, executando o cabeçalho. Orientação e formato em branco repetem os da página anterior. Além dos formatos com nome, aceita 'largura,altura' na unidade corrente.
 
 #### Sintaxe
 
@@ -177,86 +190,105 @@ PROCEDURE PL_FPDF.AddPage(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_orientation` | VARCHAR2 | Orientação apenas desta página. | 'P', 'L' ou NULL (herda de Init) | `null` |
-| `p_format` | VARCHAR2 | Formato apenas desta página. | 'A3', 'A4', 'A5', 'Letter', 'Legal' ou NULL (herda de Init) | `null` |
-| `p_rotation` | PLS_INTEGER | Rotação de exibição da página no leitor de PDF. | 0 (padrão), 90, 180 ou 270 | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_orientation` | VARCHAR2 | `null` | 'P' (Portrait, retrato) ou 'L' (Landscape, paisagem); NULL mantém a da página anterior |
+| `p_format` | VARCHAR2 | `null` | 'A4', 'Letter', 'Legal', ou 'largura,altura'; NULL mantém o anterior |
+| `p_rotation` | PLS_INTEGER | `0` | giro da página em graus (0, 90, 180, 270) |
+
+#### Nota
+
+O NOME do primeiro parâmetro mudou entre versões -- era 'orientation' na 2.0.0 e hoje é 'p_orientation'. Quem chama por posição (AddPage('L')) não sente nada; quem chama por nome (AddPage(orientation => 'L')) precisa acertar o nome. Não há como aceitar os dois: sobrecargas que diferem só pelo nome do parâmetro deixam a chamada ambígua, e o Oracle recusa com PLS-00307. Quem chama por posição não é afetado.
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20005` | Documento não inicializado (chame Init antes) |
-| `-20107` | Orientação inválida (só 'P' ou 'L') |
-| `-20103` | Formato de página desconhecido |
-| `-20101` | Dimensões do formato personalizado inválidas |
-| `-20104` | Rotação inválida (só 0, 90, 180 ou 270) |
+| Código | Quando |
+|--------|--------|
+| `ORA-20005` | Init ainda não foi chamado |
+| `ORA-20107` | orientação inválida |
+| `ORA-20103` | formato desconhecido |
+| `ORA-20101` | dimensões inválidas no formato livre |
+| `ORA-20104` | giro inválido |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.AddPage;                                      -- herda tudo de Init
-PL_FPDF.AddPage(p_orientation => 'L');                -- só esta em paisagem
-PL_FPDF.AddPage(p_format => 'A5', p_rotation => 90);  -- A5 rotacionada
+PL_FPDF.AddPage;
+PL_FPDF.AddPage('L');
+PL_FPDF.AddPage('P', '210,297', 90);
 ```
 
-**Veja também:** [Init](#init), [SetPage](#setpage), [GetCurrentPage](#getcurrentpage)
+**Veja também:** [Init](#init) · [SetPage](#setpage) · [GetCurrentPage](#getcurrentpage)
 
 ---
 
 ### GetCurrentPage
 
-Retorna o número da página corrente (a que está recebendo conteúdo).
+Devolve o número da página em que se está escrevendo.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetCurrentPage
-    RETURN PLS_INTEGER;
+FUNCTION PL_FPDF.GetCurrentPage RETURN PLS_INTEGER;
 ```
 
 #### Retorno
 
-PLS_INTEGER — número da página ativa.
+PLS_INTEGER - a página corrente
 
-**Veja também:** [SetPage](#setpage), [PageNo](#pageno)
+#### Exemplo
+
+```sql
+l_pagina := PL_FPDF.GetCurrentPage;
+```
+
+**Veja também:** [SetPage](#setpage) · [PageNo](#pageno)
 
 ---
 
 ### GetX
 
-Retorna a posição X atual do cursor.
+Devolve a abscissa corrente, na unidade em uso.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetX
-    RETURN NUMBER;
+FUNCTION PL_FPDF.GetX RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — coordenada X.
+NUMBER - o x corrente
 
-**Veja também:** [SetX](#setx), [SetXY](#setxy)
+#### Exemplo
+
+```sql
+l_x := PL_FPDF.GetX;
+```
+
+**Veja também:** [SetX](#setx) · [SetXY](#setxy)
 
 ---
 
 ### GetY
 
-Retorna a posição Y atual do cursor.
+Devolve a ordenada corrente, contada do topo da página.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetY
-    RETURN NUMBER;
+FUNCTION PL_FPDF.GetY RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — coordenada Y.
+NUMBER - o y corrente
+
+#### Exemplo
+
+```sql
+l_y := PL_FPDF.GetY;
+```
 
 **Veja também:** [SetY](#sety)
 
@@ -264,7 +296,7 @@ NUMBER — coordenada Y.
 
 ### Ln
 
-Move o cursor para a próxima linha, retornando à margem esquerda.
+Vai para a linha seguinte: leva o x de volta à margem esquerda e desce o y. Sem altura, desce o da última célula escrita.
 
 #### Sintaxe
 
@@ -275,14 +307,15 @@ PROCEDURE PL_FPDF.Ln(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `h` | NUMBER | Altura do salto. | Número na unidade definida em Init (mm, cm, pt ou in); NULL (padrão) usa a altura da última célula escrita | `null` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `h` | NUMBER | `null` | quanto descer, na unidade corrente |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Ln(6);
+PL_FPDF.Cell(40, 10, 'Primeira');
+PL_FPDF.Ln;
 ```
 
 **Veja também:** [SetXY](#setxy)
@@ -291,32 +324,31 @@ PL_FPDF.Ln(6);
 
 ### PageNo
 
-Retorna o número da página atual durante a geração — usado tipicamente em rodapés.
+Devolve o número da página que está sendo escrita, começando em 1.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.PageNo
-    RETURN NUMBER;
+FUNCTION PL_FPDF.PageNo RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — número da página corrente.
+NUMBER - a página corrente
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Cell(0, 10, 'Página ' || PL_FPDF.PageNo || '/{nb}', 0, 0, 'C');
+PL_FPDF.Cell(0, 10, 'Pagina ' || PL_FPDF.PageNo);
 ```
 
-**Veja também:** [SetAliasNbPages](#setaliasnbpages), [SetFooterProc](#setfooterproc)
+**Veja também:** [SetAliasNbPages](#setaliasnbpages) · [SetFooterProc](#setfooterproc)
 
 ---
 
 ### SetAutoPageBreak
 
-Liga ou desliga a quebra automática de página e define a distância da borda inferior em que ela ocorre.
+Liga ou desliga a quebra automática e define a margem de rodapé que a dispara. Desligada, o conteúdo que passar do fim da página é escrito fora dela e some -- sem erro nenhum.
 
 #### Sintaxe
 
@@ -328,24 +360,24 @@ PROCEDURE PL_FPDF.SetAutoPageBreak(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pauto` | BOOLEAN | Ativa a quebra automática. | TRUE ou FALSE | — |
-| `pMargin` | NUMBER | Margem inferior que dispara a quebra. | Número na unidade definida em Init (mm, cm, pt ou in); 0 é o padrão | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pauto` | BOOLEAN | — | ligar a quebra automática |
+| `pMargin` | NUMBER | `0` | margem de rodapé que dispara |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetAutoPageBreak(pauto => TRUE, pMargin => 15);
+PL_FPDF.SetAutoPageBreak(TRUE, 20);
 ```
 
-**Veja também:** [AcceptPageBreak](#acceptpagebreak), [SetMargins](#setmargins)
+**Veja também:** [AcceptPageBreak](#acceptpagebreak) · [SetMargins](#setmargins)
 
 ---
 
 ### SetLeftMargin
 
-Define apenas a margem esquerda.
+Define a margem esquerda. Com página já aberta e o cursor à esquerda da margem nova, o cursor é trazido para ela.
 
 #### Sintaxe
 
@@ -356,9 +388,15 @@ PROCEDURE PL_FPDF.SetLeftMargin(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pMargin` | NUMBER | Margem esquerda. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pMargin` | NUMBER | — | a margem, na unidade corrente |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetLeftMargin(25);
+```
 
 **Veja também:** [SetMargins](#setmargins)
 
@@ -366,7 +404,7 @@ PROCEDURE PL_FPDF.SetLeftMargin(
 
 ### SetMargins
 
-Define as margens esquerda, superior e direita do documento. A margem inferior é controlada por SetAutoPageBreak.
+Define as margens esquerda, superior e direita. A direita em branco fica igual à esquerda.
 
 #### Sintaxe
 
@@ -379,25 +417,25 @@ PROCEDURE PL_FPDF.SetMargins(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `left` | NUMBER | Margem esquerda. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `top` | NUMBER | Margem superior. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `right` | NUMBER | Margem direita. | Número na unidade definida em Init (mm, cm, pt ou in); -1 (padrão) usa o mesmo valor da margem esquerda | `-1` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `left` | NUMBER | — | margem esquerda |
+| `top` | NUMBER | — | margem superior |
+| `right` | NUMBER | `-1` | margem direita (- 1 = igual à esquerda) |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetMargins(left => 20, top => 15, right => 20);
+PL_FPDF.SetMargins(20, 15);
 ```
 
-**Veja também:** [SetLeftMargin](#setleftmargin), [SetTopMargin](#settopmargin), [SetRightMargin](#setrightmargin), [SetAutoPageBreak](#setautopagebreak)
+**Veja também:** [SetLeftMargin](#setleftmargin) · [SetTopMargin](#settopmargin) · [SetRightMargin](#setrightmargin) · [SetAutoPageBreak](#setautopagebreak)
 
 ---
 
 ### SetPage
 
-Define qual página existente recebe o conteúdo das próximas chamadas, permitindo voltar a páginas anteriores (por exemplo, para preencher um sumário depois de conhecer os números finais).
+Torna corrente uma página já criada, para escrever nela de novo. Serve para preencher depois um espaço que só se sabe no fim -- um total, por exemplo.
 
 #### Sintaxe
 
@@ -408,32 +446,30 @@ PROCEDURE PL_FPDF.SetPage(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página que passa a ser a corrente. | Inteiro ≥ 1, até GetPageCount | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | — | a página, que precisa existir |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20005` | Documento não inicializado (chame Init antes) |
-| `-20106` | A página informada não existe |
+| Código | Quando |
+|--------|--------|
+| `ORA-20005` | Init ainda não foi chamado |
+| `ORA-20106` | a página não existe |
 
 #### Exemplo
 
 ```sql
 PL_FPDF.SetPage(1);
-PL_FPDF.SetXY(20, 40);
-PL_FPDF.Cell(0, 8, 'Preenchido depois');
 ```
 
-**Veja também:** [AddPage](#addpage), [GetCurrentPage](#getcurrentpage)
+**Veja também:** [AddPage](#addpage) · [GetCurrentPage](#getcurrentpage)
 
 ---
 
 ### SetRightMargin
 
-Define apenas a margem direita.
+Define a margem direita, que é o que limita a largura de uma célula pedida com largura 0.
 
 #### Sintaxe
 
@@ -444,9 +480,15 @@ PROCEDURE PL_FPDF.SetRightMargin(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pMargin` | NUMBER | Margem direita. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pMargin` | NUMBER | — | a margem, na unidade corrente |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetRightMargin(20);
+```
 
 **Veja também:** [SetMargins](#setmargins)
 
@@ -454,7 +496,7 @@ PROCEDURE PL_FPDF.SetRightMargin(
 
 ### SetTopMargin
 
-Define apenas a margem superior.
+Define a margem superior, usada pelas páginas seguintes.
 
 #### Sintaxe
 
@@ -465,9 +507,15 @@ PROCEDURE PL_FPDF.SetTopMargin(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pMargin` | NUMBER | Margem superior. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pMargin` | NUMBER | — | a margem, na unidade corrente |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetTopMargin(15);
+```
 
 **Veja também:** [SetMargins](#setmargins)
 
@@ -475,7 +523,7 @@ PROCEDURE PL_FPDF.SetTopMargin(
 
 ### SetX
 
-Define a posição X do cursor.
+Move a abscissa. Valor negativo conta a partir da borda direita: SetX(-30) põe o cursor a 30 da direita.
 
 #### Sintaxe
 
@@ -486,9 +534,15 @@ PROCEDURE PL_FPDF.SetX(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `px` | NUMBER | Nova coordenada X. | Número na unidade definida em Init (mm, cm, pt ou in); valores negativos contam a partir da borda direita | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `px` | NUMBER | — | a nova abscissa |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetX(-40);
+```
 
 **Veja também:** [GetX](#getx)
 
@@ -496,7 +550,7 @@ PROCEDURE PL_FPDF.SetX(
 
 ### SetXY
 
-Define X e Y do cursor em uma única chamada.
+Move as duas coordenadas. Ao contrário do SetY sozinho, o x informado é respeitado.
 
 #### Sintaxe
 
@@ -508,24 +562,24 @@ PROCEDURE PL_FPDF.SetXY(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `x` | NUMBER | Coordenada X. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `y` | NUMBER | Coordenada Y. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `x` | NUMBER | — | a abscissa |
+| `y` | NUMBER | — | a ordenada |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetXY(x => 20, y => 40);
+PL_FPDF.SetXY(20, 50);
 ```
 
-**Veja também:** [SetX](#setx), [SetY](#sety)
+**Veja também:** [SetX](#setx) · [SetY](#sety)
 
 ---
 
 ### SetY
 
-Define a posição Y do cursor (e reposiciona X na margem esquerda).
+Move a ordenada E devolve o x à margem esquerda -- é o efeito que surpreende quem só queria descer. Para mover os dois sem esse efeito, use SetXY. Valor negativo conta a partir do pé da página.
 
 #### Sintaxe
 
@@ -536,17 +590,17 @@ PROCEDURE PL_FPDF.SetY(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `py` | NUMBER | Nova coordenada Y. | Número na unidade definida em Init (mm, cm, pt ou in); valores negativos contam a partir da borda inferior — ex.: -15 para rodapé | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `py` | NUMBER | — | a nova ordenada |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetY(-15);  -- 15 unidades acima do fim da página
+PL_FPDF.SetY(-20);   -- 20 acima do pé
 ```
 
-**Veja também:** [GetY](#gety), [SetXY](#setxy)
+**Veja também:** [GetY](#gety) · [SetXY](#setxy)
 
 ---
 
@@ -554,7 +608,7 @@ PL_FPDF.SetY(-15);  -- 15 unidades acima do fim da página
 
 ### AddFont
 
-Registra uma fonte adicional (compatibilidade FPDF). Para TrueType com UTF-8, prefira AddTTFFont.
+Registra uma fonte para uso pelo SetFont. Para as 14 fontes padrão do PDF não é preciso chamar isto -- elas já estão disponíveis, e escrevem acentuado desde a 3.4.0.
 
 #### Sintaxe
 
@@ -567,19 +621,25 @@ PROCEDURE PL_FPDF.AddFont(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `family` | VARCHAR2 | Nome da família a registrar. | Texto livre; usado depois em SetFont | — |
-| `style` | VARCHAR2 | Estilo associado ao arquivo. | '', 'B', 'I' ou 'BI' | `''` |
-| `filename` | VARCHAR2 | Arquivo de definição da fonte. | Nome do arquivo; vazio usa a convenção padrão do FPDF | `''` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `family` | VARCHAR2 | — | nome da família |
+| `style` | VARCHAR2 | `''` | '' normal, 'B' negrito (Bold), 'I' itálico (Italic), 'BI' os dois |
+| `filename` | VARCHAR2 | `''` | arquivo de métricas da fonte |
 
-**Veja também:** [AddTTFFont](#addttffont), [SetFont](#setfont)
+#### Exemplo
+
+```sql
+PL_FPDF.AddFont('Arial', 'B');
+```
+
+**Veja também:** [AddTTFFont](#addttffont) · [SetFont](#setfont)
 
 ---
 
 ### AddTTFFont
 
-Carrega uma fonte TrueType a partir de um BLOB (por exemplo, de uma tabela de assets) e a disponibiliza para SetFont, com suporte completo a UTF-8.
+Registra uma fonte TrueType a partir de um BLOB e a deixa disponível para o SetFont, pelo nome dado aqui. As tabelas do arquivo são lidas de verdade -- head, hhea, hmtx, cmap, OS/2 e post --, e a fonte vai embutida no PDF como /FontFile2. O arquivo cresce: o programa da fonte sai em hexadecimal, então ocupa o DOBRO do tamanho dela, e ainda não há subset — a fonte inteira vai embutida, mesmo que o documento use dez glifos. Para texto em português com acento não é preciso embutir nada: as fontes padrão escrevem acentuado desde a 3.4.0.
 
 #### Sintaxe
 
@@ -593,37 +653,45 @@ PROCEDURE PL_FPDF.AddTTFFont(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_font_name` | VARCHAR2 | Nome pelo qual a fonte será referenciada em SetFont. | Texto livre, ex.: 'Roboto' | — |
-| `p_font_blob` | BLOB | Conteúdo binário do arquivo .ttf. | BLOB não nulo com fonte TrueType válida | — |
-| `p_encoding` | VARCHAR2 | Codificação da fonte. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
-| `p_embed` | BOOLEAN | Embute a fonte no PDF (garante a aparência em qualquer leitor, aumenta o arquivo). | TRUE ou FALSE; TRUE é o padrão | `true` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_font_name` | VARCHAR2 | — | nome pelo qual SetFont a chamará |
+| `p_font_blob` | BLOB | — | o arquivo.ttf |
+| `p_encoding` | VARCHAR2 | `'UTF-8'` | codificação da fonte |
+| `p_embed` | BOOLEAN | `true` | embutir no PDF |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20210` | nome da fonte vazio |
+| `ORA-20211` | BLOB da fonte nulo |
 
 #### Exemplo
 
 ```sql
-DECLARE
-  l_ttf BLOB;
-BEGIN
-  SELECT arquivo INTO l_ttf FROM fontes WHERE nome = 'Roboto-Regular';
-  PL_FPDF.AddTTFFont(p_font_name => 'Roboto', p_font_blob => l_ttf, p_embed => TRUE);
-  PL_FPDF.SetFont('Roboto', '', 12);
-END;
+SELECT arquivo INTO l_ttf FROM fontes WHERE nome = 'Roboto';
+PL_FPDF.AddTTFFont('Roboto', l_ttf);
 ```
 
-**Veja também:** [LoadTTFFromFile](#loadttffromfile), [IsTTFFontLoaded](#isttffontloaded), [SetFont](#setfont)
+**Veja também:** [LoadTTFFromFile](#loadttffromfile) · [IsTTFFontLoaded](#isttffontloaded) · [SetFont](#setfont)
 
 ---
 
 ### ClearTTFFontCache
 
-Descarta todas as fontes TrueType carregadas, liberando memória da sessão.
+Descarrega as fontes TrueType e libera os LOBs temporários delas. Vale chamar ao fim de um lote: cada fonte embutida ocupa centenas de KB na sessão.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.ClearTTFFontCache;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.ClearTTFFontCache;
 ```
 
 **Veja também:** [AddTTFFont](#addttffont)
@@ -632,25 +700,36 @@ PROCEDURE PL_FPDF.ClearTTFFontCache;
 
 ### GetTTFFontInfo
 
-Retorna os metadados de uma fonte TrueType carregada.
+Devolve o registro da fonte: os bytes guardados e as métricas lidas do arquivo -- unidades por em, ascendente, descendente, altura de caixa alta, a caixa e o ângulo do itálico. Tudo já reescalado para as 1000 unidades por em do PDF, menos o units_per_em, que é o do arquivo.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.GetTTFFontInfo(
-    p_font_name varchar2)
-    RETURN RECTTFFONT;
+    p_font_name varchar2) RETURN RECTTFFONT;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_font_name` | VARCHAR2 | Nome da fonte. | O mesmo usado no carregamento | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_font_name` | VARCHAR2 | — | nome da fonte |
 
 #### Retorno
 
-recTTFFont — record com métricas e informações da fonte.
+recTTFFont - as métricas da fonte
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20206` | fonte não carregada |
+
+#### Exemplo
+
+```sql
+l_fonte := PL_FPDF.GetTTFFontInfo('Roboto');
+```
 
 **Veja também:** [AddTTFFont](#addttffont)
 
@@ -658,52 +737,38 @@ recTTFFont — record com métricas e informações da fonte.
 
 ### IsTTFFontLoaded
 
-Verifica se uma fonte TrueType já foi carregada na sessão.
+Diz se a fonte está registrada nesta sessão, e portanto disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.IsTTFFontLoaded(
-    p_font_name varchar2)
-    RETURN BOOLEAN;
+    p_font_name varchar2) RETURN BOOLEAN;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_font_name` | VARCHAR2 | Nome da fonte. | O mesmo usado no carregamento | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_font_name` | VARCHAR2 | — | nome da fonte |
 
 #### Retorno
 
-BOOLEAN — TRUE se a fonte está no cache.
+BOOLEAN - TRUE se carregada
 
-**Veja também:** [AddTTFFont](#addttffont), [ClearTTFFontCache](#clearttffontcache)
-
----
-
-### IsUTF8Enabled
-
-Indica se o modo UTF-8 está ativo.
-
-#### Sintaxe
+#### Exemplo
 
 ```sql
-FUNCTION PL_FPDF.IsUTF8Enabled
-    RETURN BOOLEAN;
+IF NOT PL_FPDF.IsTTFFontLoaded('Roboto') THEN ... END IF;
 ```
 
-#### Retorno
-
-BOOLEAN — TRUE se UTF-8 está habilitado.
-
-**Veja também:** [SetUTF8Enabled](#setutf8enabled)
+**Veja também:** [AddTTFFont](#addttffont) · [ClearTTFFontCache](#clearttffontcache)
 
 ---
 
 ### LoadTTFFromFile
 
-Carrega uma fonte TrueType a partir de um arquivo em um DIRECTORY do Oracle.
+Lê um .ttf de um DIRECTORY do banco e o registra como o AddTTFFont. Exige READ no diretório concedido ao schema; sem isso, AddTTFFont recebe os bytes direto, sem concessão nenhuma.
 
 #### Sintaxe
 
@@ -717,12 +782,20 @@ PROCEDURE PL_FPDF.LoadTTFFromFile(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_font_name` | VARCHAR2 | Nome para uso em SetFont. | Texto livre | — |
-| `p_file_path` | VARCHAR2 | Nome do arquivo .ttf dentro do diretório. | Ex.: 'Roboto-Regular.ttf' | — |
-| `p_directory` | VARCHAR2 | DIRECTORY do Oracle com permissão de leitura. | Padrão: 'FONTS_DIR' | `'FONTS_DIR'` |
-| `p_encoding` | VARCHAR2 | Codificação da fonte. | 'UTF-8' (padrão) ou 'WINDOWS-1252' | `'UTF-8'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_font_name` | VARCHAR2 | — | nome pelo qual SetFont a chamará |
+| `p_file_path` | VARCHAR2 | — | nome do arquivo |
+| `p_directory` | VARCHAR2 | `'FONTS_DIR'` | DIRECTORY do banco |
+| `p_encoding` | VARCHAR2 | `'UTF-8'` | codificação da fonte |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20202` | arquivo de fonte inválido |
+| `ORA-20401` | diretório inválido |
+| `ORA-20402` | sem permissão de leitura |
 
 #### Exemplo
 
@@ -736,7 +809,7 @@ PL_FPDF.LoadTTFFromFile('Roboto', 'Roboto-Regular.ttf', 'FONTS_DIR');
 
 ### SetFont
 
-Define a fonte, o estilo e o tamanho usados pelas próximas escritas de texto.
+Escolhe a fonte, o estilo e o corpo do texto que vier depois. Corpo zero mantém o que já estava. As fontes padrão -- Helvetica, Times, Courier, Symbol e ZapfDingbats -- não precisam ser carregadas.
 
 #### Sintaxe
 
@@ -749,25 +822,37 @@ PROCEDURE PL_FPDF.SetFont(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pfamily` | VARCHAR2 | Família da fonte. | 'Arial'/'Helvetica', 'Times', 'Courier', 'Symbol', 'ZapfDingbats' ou o nome de uma fonte TrueType carregada com AddTTFFont/LoadTTFFromFile | — |
-| `pstyle` | VARCHAR2 | Estilo do texto. | '' (normal), 'B' (negrito), 'I' (itálico), 'BI' (negrito itálico) ou 'U' (sublinhado) | `''` |
-| `psize` | NUMBER | Tamanho em pontos. | Número > 0; 0 (padrão) mantém o tamanho atual | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pfamily` | VARCHAR2 | — | família ('Helvetica', 'Times', 'Courier'...) |
+| `pstyle` | VARCHAR2 | `''` | '' normal, 'B' negrito (Bold), 'I' itálico (Italic), 'U' sublinhado (Underline), ou a combinação |
+| `psize` | NUMBER | `0` | corpo em pontos ( 0 = mantém) |
+
+#### Nota
+
+A família é guardada em minúscula e o estilo em maiúscula. É o que os getters devolvem, e não o texto que entrou aqui.
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20005` | Init ainda não foi chamado |
+| `ORA-20201` | fonte não encontrada -- nem entre as padrão, nem no registro de TrueType |
+| `ORA-20100` | estilo inválido |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetFont('Arial', 'B', 16);
+PL_FPDF.SetFont('Helvetica', 'B', 12);
 ```
 
-**Veja também:** [SetFontSize](#setfontsize), [AddTTFFont](#addttffont), [GetStringWidth](#getstringwidth)
+**Veja também:** [SetFontSize](#setfontsize) · [AddTTFFont](#addttffont) · [GetStringWidth](#getstringwidth)
 
 ---
 
 ### SetFontSize
 
-Altera apenas o tamanho da fonte corrente.
+Troca só o corpo, mantendo família e estilo.
 
 #### Sintaxe
 
@@ -778,60 +863,48 @@ PROCEDURE PL_FPDF.SetFontSize(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `psize` | NUMBER | Tamanho em pontos. | Número > 0 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `psize` | NUMBER | — | corpo em pontos |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetFontSize(8);
+```
 
 **Veja também:** [SetFont](#setfont)
 
 ---
 
-### SetUTF8Enabled
-
-Liga ou desliga o tratamento UTF-8 do texto.
-
-#### Sintaxe
-
-```sql
-PROCEDURE PL_FPDF.SetUTF8Enabled(
-    p_enabled boolean DEFAULT true);
-```
-
-#### Parâmetros
-
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_enabled` | BOOLEAN | Ativa UTF-8. | TRUE ou FALSE; TRUE é o padrão | `true` |
-
-**Veja também:** [IsUTF8Enabled](#isutf8enabled), [UTF8ToPDFString](#utf8topdfstring)
-
----
-
 ### UTF8ToPDFString
 
-Converte um texto UTF-8 para a representação interna do PDF. Chamada internamente; útil para depuração de acentuação.
+Escapa os caracteres que a sintaxe de string do PDF reserva -- o parêntese e a barra invertida. NÃO converte codificação: quem escreve texto pelas rotinas normais (Cell, Write, Text) não precisa chamar isto, porque a conversão para WinAnsi já acontece lá dentro.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.UTF8ToPDFString(
     p_text   varchar2,
-    p_escape boolean DEFAULT true)
-    RETURN VARCHAR2;
+    p_escape boolean DEFAULT true) RETURN VARCHAR2;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_text` | VARCHAR2 | Texto a converter. | Qualquer VARCHAR2 em UTF-8 | — |
-| `p_escape` | BOOLEAN | Aplica escape dos caracteres especiais do PDF (parênteses e barra invertida). | TRUE ou FALSE | `true` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_text` | VARCHAR2 | — | o texto |
+| `p_escape` | BOOLEAN | `true` | escapar os caracteres reservados |
 
 #### Retorno
 
-VARCHAR2 — texto convertido.
+VARCHAR2 - o texto pronto para ir entre parênteses num objeto PDF
 
-**Veja também:** [SetUTF8Enabled](#setutf8enabled)
+#### Exemplo
+
+```sql
+l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido)');
+```
 
 ---
 
@@ -839,7 +912,7 @@ VARCHAR2 — texto convertido.
 
 ### Cell
 
-Escreve um bloco retangular de texto, com bordas, alinhamento, preenchimento e link opcionais. É a API mais usada para montar relatórios e tabelas.
+Escreve uma célula retangular: opcionalmente com borda, com fundo e com texto dentro, e move o cursor conforme pln. É a rotina mais usada da biblioteca. Se a célula não couber no que resta da página e a quebra automática estiver ligada, a página é trocada antes de escrever.
 
 #### Sintaxe
 
@@ -857,38 +930,50 @@ PROCEDURE PL_FPDF.Cell(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pw` | NUMBER | Largura da célula. | Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita | — |
-| `ph` | NUMBER | Altura da célula. | Número na unidade definida em Init (mm, cm, pt ou in); 0 é o padrão | `0` |
-| `ptxt` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2; vazio desenha apenas a célula | `''` |
-| `pborder` | VARCHAR2 | Bordas desenhadas. | '0' (nenhuma), '1' (moldura completa) ou combinação de 'L', 'T', 'R', 'B' — ex.: 'LTB' | `'0'` |
-| `pln` | NUMBER | Para onde o cursor vai depois. | 0 = à direita da célula (padrão), 1 = início da próxima linha, 2 = abaixo da célula | `0` |
-| `palign` | VARCHAR2 | Alinhamento do texto. | 'L' (esquerda), 'C' (centro), 'R' (direita) ou '' (padrão, esquerda) | `''` |
-| `pfill` | NUMBER | Preenche o fundo com a cor de SetFillColor. | 0 = transparente (padrão), 1 = preenchido | `0` |
-| `plink` | VARCHAR2 | Torna a célula clicável. | URL ('https://…') ou identificador retornado por AddLink | `''` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pw` | NUMBER | — | largura; 0 vai até a margem direita |
+| `ph` | NUMBER | `0` | altura |
+| `ptxt` | VARCHAR2 | `''` | o texto |
+| `pborder` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou as letras dos lados que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas laterais; 'TB', só topo e base |
+| `pln` | NUMBER | `0` | para onde vai o cursor: 0 = à direita da célula; 1 = próxima linha, na margem esquerda; 2 = abaixo, mantendo o x |
+| `palign` | VARCHAR2 | `''` | 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) |
+| `pfill` | NUMBER | `0` | 1 pinta o fundo com a cor de SetFillColor, 0 não |
+| `plink` | VARCHAR2 | `''` | URL ou identificador de link interno |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | qualquer falha na escrita da célula. O Cell embrulha o erro original neste código, mas preserva a pilha (keeperrorstack), de modo que a causa -- um ORA-20203 de caractere fora do WinAnsi, por exemplo -- continua visível no rastro. |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetFillColor(240, 240, 240);
-PL_FPDF.Cell(
-  pw      => 0,
-  ph      => 10,
-  ptxt    => 'Total: R$ 1.234,56',
-  pborder => 'LTB',
-  pln     => 1,
-  palign  => 'R',
-  pfill   => 1);
+-- moldura inteira em volta da célula
+PL_FPDF.Cell(40, 8, 'Total', '1', 0, 'L');
+PL_FPDF.Cell(30, 8, '1.234,56', '1', 1, 'R');
+
+-- só a base, para sublinhar o título de uma coluna
+PL_FPDF.Cell(100, 8, 'Produto', 'B', 1, 'L');
+
+-- corpo de tabela: cada célula desenha só as laterais ('LR'), e uma
+-- célula vazia com o topo ('T') fecha a tabela embaixo. Sem isso, usar
+-- '1' em todas daria traço duplo entre as linhas.
+PL_FPDF.Cell(60, 8, 'Licença anual', 'LR', 0, 'L');
+PL_FPDF.Cell(40, 8, '28.400,00',     'LR', 1, 'R');
+PL_FPDF.Cell(60, 8, 'Suporte 8x5',   'LR', 0, 'L');
+PL_FPDF.Cell(40, 8, '15.750,50',     'LR', 1, 'R');
+PL_FPDF.Cell(100, 0, '', 'T', 1);
 ```
 
-**Veja também:** [MultiCell](#multicell), [Write](#write), [CellRotated](#cellrotated), [SetFillColor](#setfillcolor)
+**Veja também:** [MultiCell](#multicell) · [Write](#write) · [CellRotated](#cellrotated) · [SetFillColor](#setfillcolor)
 
 ---
 
 ### CellRotated
 
-Versão de Cell com rotação do texto — útil para cabeçalhos verticais de tabelas e etiquetas.
+O mesmo que Cell, com o texto girado dentro da célula. Serve para cabeçalho de coluna estreita e para carimbo na lateral da página.
 
 #### Sintaxe
 
@@ -907,48 +992,53 @@ PROCEDURE PL_FPDF.CellRotated(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_width` | NUMBER | Largura da célula. | Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita | — |
-| `p_height` | NUMBER | Altura da célula. | Número na unidade definida em Init (mm, cm, pt ou in) | `0` |
-| `p_text` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | `''` |
-| `p_border` | VARCHAR2 | Bordas. | '0', '1' ou combinação de 'L', 'T', 'R', 'B' | `'0'` |
-| `p_ln` | NUMBER | Posição do cursor depois. | 0 = à direita, 1 = próxima linha, 2 = abaixo | `0` |
-| `p_align` | VARCHAR2 | Alinhamento. | 'L', 'C' ou 'R' | `''` |
-| `p_fill` | NUMBER | Preenchimento. | 0 ou 1 | `0` |
-| `p_link` | VARCHAR2 | Link opcional. | URL ou identificador de AddLink | `''` |
-| `p_rotation` | PLS_INTEGER | Ângulo de rotação do texto. | 0 (padrão), 90, 180 ou 270 — outros valores geram erro | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_width` | NUMBER | — | largura; 0 vai até a margem direita |
+| `p_height` | NUMBER | `0` | altura |
+| `p_text` | VARCHAR2 | `''` | o texto |
+| `p_border` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou as letras dos lados que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas laterais; 'TB', só topo e base |
+| `p_ln` | NUMBER | `0` | 0 à direita, 1 próxima linha na margem esquerda, 2 abaixo mantendo o x |
+| `p_align` | VARCHAR2 | `''` | 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) |
+| `p_fill` | NUMBER | `0` | 1 pinta o fundo, 0 não |
+| `p_link` | VARCHAR2 | `''` | URL ou link interno |
+| `p_rotation` | PLS_INTEGER | `0` | giro do texto em graus (0, 90, 180, 270) |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20110` | Valor de rotação inválido (use 0, 90, 180 ou 270) |
+| Código | Quando |
+|--------|--------|
+| `ORA-20110` | giro inválido |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.CellRotated(40, 10, 'VERTICAL', p_rotation => 90);
+PL_FPDF.CellRotated(10, 40, 'Janeiro', '1', 0, 'C', 0, '', 90);
 ```
 
-**Veja também:** [Cell](#cell), [WriteRotated](#writerotated)
+**Veja também:** [Cell](#cell) · [WriteRotated](#writerotated)
 
 ---
 
 ### GetCurrentFontFamily
 
-Retorna a família da fonte corrente.
+Devolve o nome da família em uso. Sempre em MINÚSCULA: o SetFont normaliza, então 'Times' entra e 'times' volta. Comparar com 'Times' nunca casa -- use LOWER() dos dois lados.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetCurrentFontFamily
-    RETURN VARCHAR2;
+FUNCTION PL_FPDF.GetCurrentFontFamily RETURN VARCHAR2;
 ```
 
 #### Retorno
 
-VARCHAR2 — nome da família.
+VARCHAR2 - a família corrente
+
+#### Exemplo
+
+```sql
+l_familia := PL_FPDF.GetCurrentFontFamily;
+```
 
 **Veja também:** [SetFont](#setfont)
 
@@ -956,18 +1046,23 @@ VARCHAR2 — nome da família.
 
 ### GetCurrentFontSize
 
-Retorna o tamanho da fonte corrente.
+Devolve o corpo da fonte em uso, em pontos.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetCurrentFontSize
-    RETURN NUMBER;
+FUNCTION PL_FPDF.GetCurrentFontSize RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — tamanho em pontos.
+NUMBER - o tamanho em pontos
+
+#### Exemplo
+
+```sql
+l_corpo := PL_FPDF.GetCurrentFontSize;
+```
 
 **Veja também:** [SetFont](#setfont)
 
@@ -975,18 +1070,23 @@ NUMBER — tamanho em pontos.
 
 ### GetCurrentFontStyle
 
-Retorna o estilo da fonte corrente.
+Devolve o estilo em uso: '' (normal), 'B' (Bold, negrito), 'I' (Italic, itálico), 'U' (Underline, sublinhado) ou a combinação. Sempre em MAIÚSCULA: o SetFont normaliza, então 'b' entra e 'B' volta.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetCurrentFontStyle
-    RETURN VARCHAR2;
+FUNCTION PL_FPDF.GetCurrentFontStyle RETURN VARCHAR2;
 ```
 
 #### Retorno
 
-VARCHAR2 — '', 'B', 'I', 'BI' ou 'U'.
+VARCHAR2 - o estilo corrente
+
+#### Exemplo
+
+```sql
+l_estilo := PL_FPDF.GetCurrentFontStyle;
+```
 
 **Veja também:** [SetFont](#setfont)
 
@@ -994,18 +1094,23 @@ VARCHAR2 — '', 'B', 'I', 'BI' ou 'U'.
 
 ### GetLineSpacing
 
-Retorna o espaçamento de linhas atual.
+Devolve a entrelinha usada pelo MultiCell quando a altura da linha vai em branco.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetLineSpacing
-    RETURN NUMBER;
+FUNCTION PL_FPDF.GetLineSpacing RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — espaçamento configurado.
+NUMBER - a entrelinha, na unidade corrente
+
+#### Exemplo
+
+```sql
+l_entre := PL_FPDF.GetLineSpacing;
+```
 
 **Veja também:** [SetLineSpacing](#setlinespacing)
 
@@ -1013,40 +1118,44 @@ NUMBER — espaçamento configurado.
 
 ### GetStringWidth
 
-Calcula a largura que um texto ocupará na fonte e no tamanho correntes — use para centralizar manualmente, dimensionar colunas ou decidir quebras.
+Mede quanto o texto ocupa na fonte e no corpo correntes, na unidade em uso. É o que permite alinhar, centralizar e decidir onde quebrar. Caractere acentuado mede o mesmo que o caractere base -- nas 14 fontes padrão do PDF o glifo acentuado tem a mesma largura de avanço.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.GetStringWidth(
-    pstr varchar2)
-    RETURN NUMBER;
+    pstr varchar2) RETURN NUMBER;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pstr` | VARCHAR2 | Texto a medir. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pstr` | VARCHAR2 | — | o texto a medir |
 
 #### Retorno
 
-NUMBER — largura na unidade do documento.
+NUMBER - a largura, na unidade corrente
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20203` | caractere fora do WinAnsi |
 
 #### Exemplo
 
 ```sql
-l_w := PL_FPDF.GetStringWidth(l_titulo);
-PL_FPDF.SetX((210 - l_w) / 2);   -- centraliza em A4 retrato (210 mm)
+l_larg := PL_FPDF.GetStringWidth('São Paulo');
 ```
 
-**Veja também:** [SetFont](#setfont), [Cell](#cell)
+**Veja também:** [SetFont](#setfont) · [Cell](#cell)
 
 ---
 
 ### MultiCell
 
-Escreve um parágrafo com quebra automática de linha dentro de uma largura definida. Existe como function (retorna o número de linhas) e como procedure.
+Escreve um bloco de texto que quebra sozinho na largura pedida, uma célula por linha, e devolve quantas linhas saíram. A quebra respeita o espaço entre palavras e a quebra explícita (CHR(10)). Esta é a versão FUNCTION, para quem precisa saber quantas linhas foram gastas -- para calcular a altura de uma tabela, tipicamente.
 
 #### Sintaxe
 
@@ -1058,8 +1167,7 @@ FUNCTION PL_FPDF.MultiCell(
     pborder varchar2 DEFAULT '0',
     palign  varchar2 DEFAULT 'J',
     pfill   number DEFAULT 0,
-    phMax   number DEFAULT 0)
-    RETURN NUMBER;
+    phMax   number DEFAULT 0) RETURN NUMBER;
 ```
 
 ```sql
@@ -1075,45 +1183,48 @@ PROCEDURE PL_FPDF.MultiCell(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pw` | NUMBER | Largura do bloco. | Número na unidade definida em Init (mm, cm, pt ou in); 0 estende até a margem direita | — |
-| `ph` | NUMBER | Altura de cada linha. | Número na unidade definida em Init (mm, cm, pt ou in) | `0` |
-| `ptxt` | VARCHAR2 | Texto do parágrafo (aceita quebras de linha). | Qualquer VARCHAR2 | — |
-| `pborder` | VARCHAR2 | Bordas do bloco. | '0', '1' ou combinação de 'L', 'T', 'R', 'B' | `'0'` |
-| `palign` | VARCHAR2 | Alinhamento. | 'J' (justificado, padrão), 'L', 'C' ou 'R' | `'J'` |
-| `pfill` | NUMBER | Preenche o fundo. | 0 (padrão) ou 1 | `0` |
-| `phMax` | NUMBER | Altura máxima do bloco; o texto é truncado se exceder. | Número; 0 (padrão) = sem limite | `0` |
-| `pwidth` | NUMBER | Largura do bloco (versão procedure). | Número na unidade definida em Init (mm, cm, pt ou in); 0 até a margem direita | — |
-| `pheight` | NUMBER | Altura de cada linha (versão procedure). | Número na unidade definida em Init (mm, cm, pt ou in) | `0` |
-| `ptext` | VARCHAR2 | Texto do parágrafo (versão procedure). | Qualquer VARCHAR2 | — |
-| `pbrdr` | VARCHAR2 | Bordas (versão procedure). | '0', '1' ou 'LTRB' | `'0'` |
-| `palignment` | VARCHAR2 | Alinhamento (versão procedure). | 'J', 'L', 'C' ou 'R' | `'J'` |
-| `pfillin` | NUMBER | Preenchimento (versão procedure). | 0 ou 1 | `0` |
-| `phMaximum` | NUMBER | Altura máxima (versão procedure). | Número; 0 = sem limite | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pw` | NUMBER | — | largura do bloco; 0 vai até a margem direita |
+| `ph` | NUMBER | `0` | altura de cada linha; em branco usa a entrelinha de SetLineSpacing |
+| `ptxt` | VARCHAR2 | — | o texto |
+| `pborder` | VARCHAR2 | `'0'` | '0' sem borda, '1' moldura inteira, ou as letras dos lados que se quer, combinadas: 'L' (Left, esquerda), 'T' (Top, topo), 'R' (Right, direita) e 'B' (Bottom, base). 'LR' desenha só as duas laterais; 'TB', só topo e base |
+| `palign` | VARCHAR2 | `'J'` | 'J' justificado (Justified, o padrão), 'L' (Left, esquerda), 'C' (Center, centro) ou 'R' (Right, direita) |
+| `pfill` | NUMBER | `0` | 1 pinta o fundo, 0 não |
+| `phMax` | NUMBER | `0` | altura máxima do bloco; 0 sem limite |
+
+Na sobrecarga acima os parâmetros são os mesmos, na mesma ordem, com outros nomes: `pwidth`, `pheight`, `ptext`, `pbrdr`, `palignment`, `pfillin`, `phMaximum`.
 
 #### Retorno
 
-NUMBER (versão function) — quantidade de linhas geradas.
+NUMBER - quantas linhas foram escritas
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | qualquer falha na escrita, com a pilha original preservada |
 
 #### Exemplo
 
 ```sql
-l_linhas := PL_FPDF.MultiCell(
-  pw      => 0,
-  ph      => 6,
-  ptxt    => l_descricao,
-  pborder => '1',
-  palign  => 'J');
+-- parágrafo justificado, com moldura inteira
+l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '1', 'J');
+
+-- sem borda nenhuma, que é o caso comum em corpo de texto
+l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '0', 'J');
+
+-- só as laterais, para um bloco dentro de uma tabela
+l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, 'LR', 'L');
 ```
 
-**Veja também:** [Cell](#cell), [Write](#write)
+**Veja também:** [Cell](#cell) · [Write](#write)
 
 ---
 
 ### SetLineSpacing
 
-Define o espaçamento entre linhas usado por Write e MultiCell.
+Define a entrelinha do MultiCell para quando a altura da linha não for informada.
 
 #### Sintaxe
 
@@ -1124,9 +1235,15 @@ PROCEDURE PL_FPDF.SetLineSpacing(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pls` | NUMBER | Fator/altura de espaçamento. | Número > 0 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pls` | NUMBER | — | a entrelinha, na unidade corrente |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetLineSpacing(5);
+```
 
 **Veja também:** [GetLineSpacing](#getlinespacing)
 
@@ -1134,7 +1251,7 @@ PROCEDURE PL_FPDF.SetLineSpacing(
 
 ### Text
 
-Escreve texto em coordenadas absolutas, sem alterar a posição do cursor nem quebrar linha.
+Escreve texto num ponto exato, sem célula, sem quebra e sem mover o cursor. (px, py) é a LINHA DE BASE do texto, não o topo dele.
 
 #### Sintaxe
 
@@ -1147,19 +1264,31 @@ PROCEDURE PL_FPDF.Text(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `px` | NUMBER | Coordenada X do início do texto. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `py` | NUMBER | Coordenada Y da linha de base. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `ptxt` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `px` | NUMBER | — | a linha de base |
+| `py` | NUMBER | — | a linha de base |
+| `ptxt` | VARCHAR2 | — | o texto |
 
-**Veja também:** [Cell](#cell), [Write](#write)
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20203` | caractere fora do WinAnsi |
+
+#### Exemplo
+
+```sql
+PL_FPDF.Text(20, 50, 'Endereço de cobrança');
+```
+
+**Veja também:** [Cell](#cell) · [Write](#write)
 
 ---
 
 ### Write
 
-Escreve texto de forma fluida, continuando de onde o anterior parou e quebrando linha automaticamente — permite alternar fontes e estilos no meio de uma frase.
+Escreve texto corrido a partir de onde o cursor está, indo até a margem direita e continuando na linha seguinte -- como um parágrafo de processador de texto. Diferente do MultiCell, começa no meio da linha onde o cursor parou, o que é o que se quer para emendar texto de formatações diferentes.
 
 #### Sintaxe
 
@@ -1172,27 +1301,34 @@ PROCEDURE PL_FPDF.Write(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pH` | VARCHAR2 | Altura da linha. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `ptxt` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | — |
-| `plink` | VARCHAR2 | Link opcional aplicado ao texto. | URL ou identificador de AddLink; NULL (padrão) = sem link | `null` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pH` | VARCHAR2 | — | altura da linha, na unidade corrente |
+| `ptxt` | VARCHAR2 | — | o texto |
+| `plink` | VARCHAR2 | `null` | URL ou identificador de link interno |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | qualquer falha na escrita, com a pilha original preservada |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Write(6, 'Documento gerado por ');
-PL_FPDF.SetFont('Arial', 'B');
-PL_FPDF.Write(6, 'PL_FPDF', 'https://maxwbh.github.io/pl_fpdf/');
+PL_FPDF.SetFont('Helvetica', '', 10);
+PL_FPDF.Write(5, 'Consulte o ');
+PL_FPDF.SetFont('Helvetica', 'U', 10);
+PL_FPDF.Write(5, 'manual', 'https://example.com/manual');
 ```
 
-**Veja também:** [Cell](#cell), [MultiCell](#multicell), [WriteRotated](#writerotated)
+**Veja também:** [Cell](#cell) · [MultiCell](#multicell) · [WriteRotated](#writerotated)
 
 ---
 
 ### WriteRotated
 
-Versão de Write com rotação do texto.
+O mesmo que Write, com o texto girado.
 
 #### Sintaxe
 
@@ -1206,20 +1342,27 @@ PROCEDURE PL_FPDF.WriteRotated(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_height` | NUMBER | Altura da linha. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_text` | VARCHAR2 | Texto a escrever. | Qualquer VARCHAR2 | — |
-| `p_link` | VARCHAR2 | Link opcional. | URL ou identificador de AddLink; NULL = sem link | `null` |
-| `p_rotation` | PLS_INTEGER | Ângulo de rotação. | 0 (padrão), 90, 180 ou 270 | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_height` | NUMBER | — | altura da linha |
+| `p_text` | VARCHAR2 | — | o texto |
+| `p_link` | VARCHAR2 | `null` | URL ou link interno |
+| `p_rotation` | PLS_INTEGER | `0` | giro em graus (0, 90, 180, 270) |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20110` | Valor de rotação inválido |
+| Código | Quando |
+|--------|--------|
+| `ORA-20110` | giro inválido |
+| `ORA-20111` | só o giro de 0 grau é suportado; use CellRotated |
 
-**Veja também:** [Write](#write), [CellRotated](#cellrotated)
+#### Exemplo
+
+```sql
+PL_FPDF.WriteRotated(5, 'CONFIDENCIAL', NULL, 90);
+```
+
+**Veja também:** [Write](#write) · [CellRotated](#cellrotated)
 
 ---
 
@@ -1227,7 +1370,7 @@ PROCEDURE PL_FPDF.WriteRotated(
 
 ### Line
 
-Desenha uma linha reta entre dois pontos.
+Desenha um segmento de reta entre dois pontos, com a cor e a espessura correntes.
 
 #### Sintaxe
 
@@ -1241,26 +1384,26 @@ PROCEDURE PL_FPDF.Line(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `x1` | NUMBER | X do ponto inicial. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `y1` | NUMBER | Y do ponto inicial. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `x2` | NUMBER | X do ponto final. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `y2` | NUMBER | Y do ponto final. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `x1` | NUMBER | — | ponto inicial |
+| `y1` | NUMBER | — | ponto inicial |
+| `x2` | NUMBER | — | ponto final |
+| `y2` | NUMBER | — | ponto final |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Line(10, 30, 200, 30);
+PL_FPDF.Line(20, 60, 190, 60);
 ```
 
-**Veja também:** [SetDrawColor](#setdrawcolor), [SetLineWidth](#setlinewidth)
+**Veja também:** [SetDrawColor](#setdrawcolor) · [SetLineWidth](#setlinewidth)
 
 ---
 
 ### Poly
 
-Desenha um polígono a partir de uma coleção de pontos.
+Desenha um polígono ligando os pontos na ordem da tabela, que precisa começar no índice 0. Fechado, o último ponto liga de volta ao primeiro.
 
 #### Sintaxe
 
@@ -1273,19 +1416,28 @@ PROCEDURE PL_FPDF.Poly(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `points` | TAB_POINTS | Pontos do polígono. | Coleção tab_points com pares X/Y na unidade do documento | — |
-| `pclose` | BOOLEAN | Fecha o polígono ligando o último ponto ao primeiro. | TRUE ou FALSE | — |
-| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (contorno), 'F' (preenchido), 'DF' (ambos) | `''` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `points` | TAB_POINTS | — | os vértices, indexados a partir de 0 |
+| `pclose` | BOOLEAN | — | fechar o contorno |
+| `pstyle` | VARCHAR2 | `''` | '' desenha o contorno (padrão), 'F' preenche (Fill), 'FD' ou 'DF' preenche e contorna (Fill and Draw) |
 
-**Veja também:** [Line](#line), [Triangle](#triangle)
+#### Exemplo
+
+```sql
+l_pontos(0).x := 10; l_pontos(0).y := 10;
+l_pontos(1).x := 50; l_pontos(1).y := 10;
+l_pontos(2).x := 30; l_pontos(2).y := 40;
+PL_FPDF.Poly(l_pontos, TRUE, 'F');
+```
+
+**Veja também:** [Line](#line) · [Triangle](#triangle)
 
 ---
 
 ### Rect
 
-Desenha um retângulo com contorno, preenchimento ou ambos.
+Desenha um retângulo a partir do canto superior esquerdo.
 
 #### Sintaxe
 
@@ -1300,27 +1452,27 @@ PROCEDURE PL_FPDF.Rect(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `px` | NUMBER | X do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `py` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `pw` | NUMBER | Largura. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `ph` | NUMBER | Altura. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (apenas contorno, padrão), 'F' (apenas preenchimento), 'DF'/'FD' (contorno + preenchimento) | `''` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `px` | NUMBER | — | canto superior esquerdo |
+| `py` | NUMBER | — | canto superior esquerdo |
+| `pw` | NUMBER | — | largura |
+| `ph` | NUMBER | — | altura |
+| `pstyle` | VARCHAR2 | `''` | '' contorna (padrão), 'F' preenche (Fill), 'FD' ou 'DF' preenche e contorna (Fill and Draw) |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Rect(px => 10, py => 40, pw => 60, ph => 25, pstyle => 'DF');
+PL_FPDF.Rect(20, 40, 60, 25, 'FD');
 ```
 
-**Veja também:** [SetDrawColor](#setdrawcolor), [SetFillColor](#setfillcolor)
+**Veja também:** [SetDrawColor](#setdrawcolor) · [SetFillColor](#setfillcolor)
 
 ---
 
 ### SetDash
 
-Define um padrão de linha tracejada simples.
+Passa a desenhar linha tracejada, com o comprimento do traço e o do intervalo na unidade corrente. Os dois em zero voltam à linha cheia. Vale para tudo o que for desenhado depois, até ser trocado.
 
 #### Sintaxe
 
@@ -1332,16 +1484,17 @@ PROCEDURE PL_FPDF.SetDash(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pblack` | NUMBER | Comprimento do traço. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) volta para linha contínua | `0` |
-| `pwhite` | NUMBER | Comprimento do espaço. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) volta para linha contínua | `0` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pblack` | NUMBER | `0` | comprimento do traço |
+| `pwhite` | NUMBER | `0` | comprimento do intervalo |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetDash(2, 2);   -- tracejado
-PL_FPDF.SetDash(0, 0);   -- volta ao contínuo
+PL_FPDF.SetDash(2, 2);          -- tracejado
+PL_FPDF.Line(10, 50, 200, 50);
+PL_FPDF.SetDash;                -- volta à linha cheia
 ```
 
 **Veja também:** [SetLineDashPattern](#setlinedashpattern)
@@ -1350,7 +1503,7 @@ PL_FPDF.SetDash(0, 0);   -- volta ao contínuo
 
 ### SetDrawColor
 
-Define a cor das linhas e contornos desenhados a seguir.
+Define a cor com que se desenham linhas, contornos e bordas de célula. Com um argumento só, é tom de cinza (0 preto, 255 branco); com três, é RGB. Vale do ponto em que é chamada em diante.
 
 #### Sintaxe
 
@@ -1363,26 +1516,32 @@ PROCEDURE PL_FPDF.SetDrawColor(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `r` | NUMBER | Componente vermelho ou tom de cinza quando g e b são omitidos. | 0 a 255 | — |
-| `g` | NUMBER | Componente verde. | 0 a 255; -1 (padrão) indica escala de cinza usando r | `-1` |
-| `b` | NUMBER | Componente azul. | 0 a 255; -1 (padrão) indica escala de cinza usando r | `-1` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `r` | NUMBER | — | vermelho, ou o nível de cinza (0..255) |
+| `g` | NUMBER | `-1` | verde (0..255) |
+| `b` | NUMBER | `-1` | azul (0..255) |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20501` | componente fora de 0..255 |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetDrawColor(200, 0, 0);   -- vermelho
-PL_FPDF.SetDrawColor(128);         -- cinza médio
+PL_FPDF.SetDrawColor(200);            -- cinza claro
+PL_FPDF.SetDrawColor(0, 90, 160);     -- azul
 ```
 
-**Veja também:** [SetFillColor](#setfillcolor), [SetTextColor](#settextcolor), [SetLineWidth](#setlinewidth)
+**Veja também:** [SetFillColor](#setfillcolor) · [SetTextColor](#settextcolor) · [SetLineWidth](#setlinewidth)
 
 ---
 
 ### SetFillColor
 
-Define a cor de preenchimento de células (pfill = 1), retângulos e formas.
+Define a cor de fundo das células preenchidas e das formas com estilo 'F'. Um argumento é cinza, três são RGB.
 
 #### Sintaxe
 
@@ -1395,25 +1554,32 @@ PROCEDURE PL_FPDF.SetFillColor(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `r` | NUMBER | Componente vermelho ou tom de cinza. | 0 a 255 | — |
-| `g` | NUMBER | Componente verde. | 0 a 255; -1 = escala de cinza | `-1` |
-| `b` | NUMBER | Componente azul. | 0 a 255; -1 = escala de cinza | `-1` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `r` | NUMBER | — | vermelho, ou o nível de cinza (0..255) |
+| `g` | NUMBER | `-1` | verde (0..255) |
+| `b` | NUMBER | `-1` | azul (0..255) |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20501` | componente fora de 0..255 |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetFillColor(240, 240, 240);
+PL_FPDF.SetFillColor(230, 230, 230);
+PL_FPDF.Cell(40, 8, 'Cabecalho', '1', 0, 'C', 1);
 ```
 
-**Veja também:** [Cell](#cell), [Rect](#rect)
+**Veja também:** [Cell](#cell) · [Rect](#rect)
 
 ---
 
 ### SetLineDashPattern
 
-Define o padrão de tracejado usando a sintaxe nativa do PDF, para controle fino.
+Escreve o operador 'd' do PDF direto no fluxo de conteúdo, para quem precisa de um padrão que o SetDash não monta. O texto vai como está, e um padrão malformado só aparece no leitor. Prefira SetDash.
 
 #### Sintaxe
 
@@ -1424,9 +1590,15 @@ PROCEDURE PL_FPDF.SetLineDashPattern(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pdash` | VARCHAR2 | Padrão no formato PDF. | '[] 0' (contínuo, padrão), '[3 2] 0' (3 on, 2 off), '[1 2 3 2] 0' etc. | `'[] 0'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pdash` | VARCHAR2 | `'[] 0'` | o padrão, na sintaxe do PDF ('[] 0' = linha cheia) |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetLineDashPattern('[3 2] 0');
+```
 
 **Veja também:** [SetDash](#setdash)
 
@@ -1434,7 +1606,7 @@ PROCEDURE PL_FPDF.SetLineDashPattern(
 
 ### SetLineWidth
 
-Define a espessura das linhas desenhadas a seguir.
+Define a espessura do traço, na unidade corrente.
 
 #### Sintaxe
 
@@ -1445,17 +1617,29 @@ PROCEDURE PL_FPDF.SetLineWidth(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `width` | NUMBER | Espessura da linha. | Número na unidade definida em Init (mm, cm, pt ou in); padrão do PDF ≈ 0.2 mm | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `width` | NUMBER | — | a espessura, maior que zero |
 
-**Veja também:** [Line](#line), [Rect](#rect)
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20502` | espessura zero ou negativa |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetLineWidth(0.5);
+```
+
+**Veja também:** [Line](#line) · [Rect](#rect)
 
 ---
 
 ### SetTextColor
 
-Define a cor do texto escrito a seguir.
+Define a cor do texto. Um argumento é cinza, três são RGB.
 
 #### Sintaxe
 
@@ -1468,19 +1652,31 @@ PROCEDURE PL_FPDF.SetTextColor(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `r` | NUMBER | Componente vermelho ou tom de cinza. | 0 a 255 | — |
-| `g` | NUMBER | Componente verde. | 0 a 255; -1 = escala de cinza | `-1` |
-| `b` | NUMBER | Componente azul. | 0 a 255; -1 = escala de cinza | `-1` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `r` | NUMBER | — | vermelho, ou o nível de cinza (0..255) |
+| `g` | NUMBER | `-1` | verde (0..255) |
+| `b` | NUMBER | `-1` | azul (0..255) |
 
-**Veja também:** [SetFont](#setfont), [Cell](#cell)
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20501` | componente fora de 0..255 |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetTextColor(180, 0, 0);
+```
+
+**Veja também:** [SetFont](#setfont) · [Cell](#cell)
 
 ---
 
 ### Triangle
 
-Desenha um triângulo isósceles de base 2×psize e altura psize, com a ponta voltada para a direção informada.
+Desenha um triângulo isósceles de base 2*psize e altura psize, com a ponta virada para porientation. (px, py) é o canto superior esquerdo da caixa que envolve o triângulo, e não o vértice.
 
 #### Sintaxe
 
@@ -1495,21 +1691,27 @@ PROCEDURE PL_FPDF.Triangle(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `px` | NUMBER | X do canto superior esquerdo da caixa que envolve o triângulo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `py` | NUMBER | Y do canto superior esquerdo da caixa que envolve o triângulo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `psize` | NUMBER | Altura do triângulo; a base mede o dobro disso. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `porientation` | VARCHAR2 | Direção para onde a ponta aponta. | 'up', 'down', 'left' ou 'right' — ou a inicial 'U', 'D', 'L', 'R' | `'left'` |
-| `pstyle` | VARCHAR2 | Estilo de renderização. | '' ou 'D' (contorno), 'F' (preenchido), 'DF' (ambos) | `''` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `px` | NUMBER | — | canto superior esquerdo da caixa |
+| `py` | NUMBER | — | canto superior esquerdo da caixa |
+| `psize` | NUMBER | — | metade da base, e a altura |
+| `porientation` | VARCHAR2 | `'left'` | para onde aponta: 'up'/'U', 'down'/'D', 'left'/'L', 'right'/'R' |
+| `pstyle` | VARCHAR2 | `''` | '' contorna, 'F' preenche (Fill), 'FD'/'DF' os dois |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20821` | Orientação inválida — use up/down/left/right ou U/D/L/R |
+| Código | Quando |
+|--------|--------|
+| `ORA-20821` | orientação inválida |
 
-**Veja também:** [Poly](#poly), [Rect](#rect)
+#### Exemplo
+
+```sql
+PL_FPDF.Triangle(20, 20, 5, 'right', 'F');
+```
+
+**Veja também:** [Poly](#poly) · [Rect](#rect)
 
 ---
 
@@ -1517,25 +1719,42 @@ PROCEDURE PL_FPDF.Triangle(
 
 ### getImageFromUrl
 
-Baixa uma imagem de uma URL via UTL_HTTP para uso no documento. Requer ACL de rede configurada no banco.
+Busca uma imagem pela rede e devolve os bytes com o cabeçalho já interpretado. Exige ACL de rede concedida ao schema. Substitui a implementação sobre OrdImage, que saiu de linha.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.getImageFromUrl(
-    p_Url varchar2)
-    RETURN RECIMAGEBLOB;
+    p_Url varchar2) RETURN RECIMAGEBLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_Url` | VARCHAR2 | Endereço da imagem. | URL http:// ou https:// acessível a partir do banco | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_Url` | VARCHAR2 | — | a URL da imagem (http/https) |
 
 #### Retorno
 
-recImageBlob — record com o conteúdo e os metadados da imagem.
+recImageBlob - os bytes e os metadados
+
+#### Nota
+
+Formatos aceitos: PNG, JPEG/JPG
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20301` | cabeçalho de imagem inválido |
+| `ORA-20302` | não foi possível buscar a imagem |
+| `ORA-20303` | formato não suportado |
+
+#### Exemplo
+
+```sql
+l_img := PL_FPDF.getImageFromUrl('https://example.com/logo.png');
+```
 
 **Veja também:** [Image](#image)
 
@@ -1543,7 +1762,7 @@ recImageBlob — record com o conteúdo e os metadados da imagem.
 
 ### image
 
-Insere uma imagem PNG ou JPEG na página corrente, com dimensionamento proporcional opcional.
+Coloca uma imagem buscada por URL. A busca sai pela rede e exige ACL concedida ao schema -- quando a imagem já está numa tabela ou numa variável, ImageFromBlob faz o mesmo sem rede e sem permissão. Largura e altura em zero saem da própria imagem, a 72 dpi; com uma das duas em zero, ela é derivada da outra, mantendo a proporção.
 
 #### Sintaxe
 
@@ -1560,28 +1779,76 @@ PROCEDURE PL_FPDF.image(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pFile` | VARCHAR2 | Origem da imagem. | Nome de arquivo em DIRECTORY do Oracle ou identificador retornado por getImageFromUrl | — |
-| `pX` | NUMBER | X do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `pY` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `pWidth` | NUMBER | Largura desejada. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) calcula a partir da altura | `0` |
-| `pHeight` | NUMBER | Altura desejada. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) calcula a partir da largura, mantendo a proporção | `0` |
-| `pType` | VARCHAR2 | Formato da imagem. | 'PNG', 'JPG'/'JPEG' ou NULL (padrão) para autodetecção | `null` |
-| `pLink` | VARCHAR2 | Torna a imagem clicável. | URL ou identificador de AddLink; NULL = sem link | `null` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pFile` | VARCHAR2 | — | URL da imagem |
+| `pX` | NUMBER | — | canto superior esquerdo |
+| `pY` | NUMBER | — | canto superior esquerdo |
+| `pWidth` | NUMBER | `0` | largura ( 0 = derivada) |
+| `pHeight` | NUMBER | `0` | altura ( 0 = derivada) |
+| `pType` | VARCHAR2 | `null` | formato, quando não se quer deduzir do arquivo |
+| `pLink` | VARCHAR2 | `null` | URL ou identificador de link interno sobre a imagem |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | falha ao buscar ou interpretar a imagem, com a pilha original preservada |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Image(
-  pFile   => 'logo.png',
-  pX      => 10, pY => 10,
-  pWidth  => 40,
-  pHeight => 0,                     -- proporcional à largura
-  pLink   => 'https://msbrasil.inf.br');
+PL_FPDF.Image('https://example.com/logo.png', 10, 10, 40);
 ```
 
-**Veja também:** [getImageFromUrl](#getimagefromurl), [OverlayImage](#overlayimage)
+**Veja também:** [getImageFromUrl](#getimagefromurl) · [OverlayImage](#overlayimage)
+
+---
+
+### ImageFromBlob
+
+Coloca uma imagem que o chamador já tem em mãos, sem passar por URL. O Image() busca pela rede e exige ACL concedida ao schema; quando a imagem já está numa tabela ou numa variável, esta entrada dispensa a rede e a permissão. O formato é reconhecido pelos primeiros bytes do arquivo, não pela extensão: PNG e JPEG; qualquer outra coisa é recusada.
+
+#### Sintaxe
+
+```sql
+PROCEDURE PL_FPDF.ImageFromBlob(
+    p_blob  blob,
+    p_name  varchar2,
+    pX      number,
+    pY      number,
+    pWidth  number DEFAULT 0,
+    pHeight number DEFAULT 0,
+    pLink   varchar2 DEFAULT null);
+```
+
+#### Parâmetros
+
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_blob` | BLOB | — | bytes da imagem (PNG ou JPEG) |
+| `p_name` | VARCHAR2 | — | chave no cache de imagens. Um BLOB não tem nome, então o chamador escolhe: nomes distintos para imagens distintas, e o mesmo nome reaproveita o objeto já emitido no documento |
+| `pX` | NUMBER | — | posição, na unidade corrente |
+| `pY` | NUMBER | — | posição, na unidade corrente |
+| `pWidth` | NUMBER | `0` | largura ( 0 = derivada) |
+| `pHeight` | NUMBER | `0` | altura ( 0 = derivada) |
+| `pLink` | VARCHAR2 | `null` | link opcional sobre a área da imagem |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20301` | cabeçalho inválido, BLOB vazio ou nome ausente |
+| `ORA-20303` | formato não suportado |
+
+#### Exemplo
+
+```sql
+SELECT logo INTO l_logo FROM empresa WHERE id = 1;
+PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);
+```
+
+**Veja também:** [image](#image) · [OverlayImage](#overlayimage)
 
 ---
 
@@ -1589,34 +1856,38 @@ PL_FPDF.Image(
 
 ### AddLink
 
-Cria um link interno (ainda sem destino) e retorna seu identificador, usado depois em SetLink e nas APIs de texto.
+RECUSA com -20601. Criaria um link interno, e link interno não está implementado: o /Dest nunca chegou a ser escrito no arquivo, então o identificador que esta função devolveria não levaria a lugar nenhum -- e o Link o recusa. Até setembro/2026 a chamada levantava ORA-06531, "reference to uninitialized collection", porque a coleção interna nunca foi inicializada: nunca funcionou, em nenhuma versão. Passa a recusar com mensagem que diz o que usar no lugar.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.AddLink
-    RETURN NUMBER;
+FUNCTION PL_FPDF.AddLink RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — identificador do link.
+NUMBER - nunca devolve: levanta antes
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20601` | link interno não implementado |
 
 #### Exemplo
 
 ```sql
-l_link := PL_FPDF.AddLink;
-PL_FPDF.SetLink(l_link, 0, 3);
-PL_FPDF.Cell(60, 8, 'Ir ao capítulo 3', plink => l_link);
+-- Use URL:
+PL_FPDF.Cell(60, 8, 'Site', plink => 'https://example.com');
 ```
 
-**Veja também:** [SetLink](#setlink), [Link](#link)
+**Veja também:** [SetLink](#setlink) · [Link](#link)
 
 ---
 
 ### Link
 
-Cria uma área retangular clicável em qualquer região da página.
+Marca uma área retangular como clicável, levando a uma URL.
 
 #### Sintaxe
 
@@ -1631,21 +1902,37 @@ PROCEDURE PL_FPDF.Link(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `px` | NUMBER | X do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `py` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `pw` | NUMBER | Largura da área. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `ph` | NUMBER | Altura da área. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `plink` | VARCHAR2 | Destino. | URL ('https://…') ou identificador de AddLink | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `px` | NUMBER | — | canto superior esquerdo da área |
+| `py` | NUMBER | — | canto superior esquerdo da área |
+| `pw` | NUMBER | — | largura |
+| `ph` | NUMBER | — | altura |
+| `plink` | VARCHAR2 | — | a URL |
 
-**Veja também:** [AddLink](#addlink), [SetLink](#setlink)
+#### Limitação
+
+1. Uma área por página. Uma segunda chamada na mesma página substitui a primeira, em silêncio -- a estrutura guarda um registro por página. Documentado por ser assim, não por ser o desejável. 2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que escreveria o /Dest saiu comentado no porte original e nunca voltou; emiti-lo assim produzia um /Annot com o dicionário aberto, isto é, arquivo malformado. Desde setembro/2026 a chamada levanta erro em vez de gravar o arquivo quebrado. Use URL.
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20601` | destino não é URL -- link interno ou NULL |
+
+#### Exemplo
+
+```sql
+PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
+```
+
+**Veja também:** [AddLink](#addlink) · [SetLink](#setlink)
 
 ---
 
 ### SetLink
 
-Define o destino de um link interno criado por AddLink.
+RECUSA com -20601, pelo mesmo motivo do AddLink: guardar o destino não adiantaria, porque o /Dest não é emitido e ninguém o lê. Até setembro/2026 levantava ORA-06531.
 
 #### Sintaxe
 
@@ -1658,11 +1945,24 @@ PROCEDURE PL_FPDF.SetLink(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `plink` | NUMBER | Identificador do link. | Valor retornado por AddLink | — |
-| `py` | NUMBER | Posição vertical de destino na página. | Número na unidade definida em Init (mm, cm, pt ou in); 0 (padrão) = topo da página | `0` |
-| `ppage` | NUMBER | Página de destino. | Número da página; -1 (padrão) = página corrente | `-1` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `plink` | NUMBER | — | identificador devolvido por AddLink |
+| `py` | NUMBER | `0` | ordenada de chegada (- 1 = a posição corrente) |
+| `ppage` | NUMBER | `-1` | página de chegada (- 1 = a página corrente) |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20601` | link interno não implementado |
+
+#### Exemplo
+
+```sql
+-- Use URL:
+PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
+```
 
 **Veja também:** [AddLink](#addlink)
 
@@ -1672,12 +1972,18 @@ PROCEDURE PL_FPDF.SetLink(
 
 ### Footer
 
-Ponto de extensão do rodapé, chamado internamente ao fechar cada página.
+Executa a rotina registrada em SetFooterProc. É chamada sozinha ao fechar cada página; não se chama à mão.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.Footer;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetFooterProc('MEU_PKG.RODAPE');      -- e o resto é automático
 ```
 
 **Veja também:** [SetFooterProc](#setfooterproc)
@@ -1686,12 +1992,18 @@ PROCEDURE PL_FPDF.Footer;
 
 ### Header
 
-Ponto de extensão do cabeçalho, chamado internamente a cada nova página.
+Executa a rotina registrada em SetHeaderProc. É chamada sozinha ao abrir cada página; não se chama à mão.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.Header;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetHeaderProc('MEU_PKG.CABECALHO');   -- e o resto é automático
 ```
 
 **Veja também:** [SetHeaderProc](#setheaderproc)
@@ -1700,7 +2012,7 @@ PROCEDURE PL_FPDF.Header;
 
 ### SetAliasNbPages
 
-Define o marcador que será substituído pelo total de páginas ao finalizar o documento — permite escrever 'Página 2 de 10' sem saber o total antecipadamente.
+Define o texto que será trocado pelo total de páginas na hora de fechar o documento. É como se escreve "página 3 de 12" sem saber o 12 enquanto se escreve a página 3.
 
 #### Sintaxe
 
@@ -1711,15 +2023,15 @@ PROCEDURE PL_FPDF.SetAliasNbPages(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `palias` | VARCHAR2 | Marcador a substituir. | Qualquer texto; '{nb}' é o padrão | `'{nb}'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `palias` | VARCHAR2 | `'{nb}'` | o marcador |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetAliasNbPages;   -- habilita '{nb}'
-PL_FPDF.Cell(0, 10, 'Página ' || PL_FPDF.PageNo || ' de {nb}', 0, 0, 'C');
+PL_FPDF.SetAliasNbPages;
+PL_FPDF.Cell(0, 10, 'Pagina ' || PL_FPDF.PageNo || ' de {nb}');
 ```
 
 **Veja também:** [PageNo](#pageno)
@@ -1728,7 +2040,7 @@ PL_FPDF.Cell(0, 10, 'Página ' || PL_FPDF.PageNo || ' de {nb}', 0, 0, 'C');
 
 ### SetFooterProc
 
-Registra uma procedure sua para ser executada automaticamente no rodapé de cada página.
+Como SetHeaderProc, para o rodapé: a rotina é executada ao fechar cada página, e é onde costuma entrar o "página N de {nb}".
 
 #### Sintaxe
 
@@ -1740,28 +2052,24 @@ PROCEDURE PL_FPDF.SetFooterProc(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `footerprocname` | VARCHAR2 | Nome qualificado da procedure. | 'pacote.procedure' ou 'procedure' | — |
-| `paramTable` | TV4000A | Parâmetros repassados à procedure, por nome. | PL_FPDF.tv4000a — associative array INDEXADO PELO NOME do parâmetro da sua procedure: l_p('p_titulo') := 'Relatório'. Não tem construtor tv4000a(...): declare uma variável e preencha por chave. noParam (padrão) = chamada sem parâmetros | `noParam` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `footerprocname` | VARCHAR2 | — | nome da rotina (NULL desliga) |
+| `paramTable` | TV4000A | `noParam` | parâmetros nomeados |
 
 #### Exemplo
 
 ```sql
--- procedure sua:
---   PL_FPDF.SetY(-15);
---   PL_FPDF.Cell(0, 10, 'Página ' || PL_FPDF.PageNo || '/{nb}', 0, 0, 'C');
-PL_FPDF.SetFooterProc('meu_pkg.rodape');
-PL_FPDF.SetAliasNbPages;
+PL_FPDF.SetFooterProc('MEU_PKG.RODAPE');
 ```
 
-**Veja também:** [SetHeaderProc](#setheaderproc), [SetAliasNbPages](#setaliasnbpages), [Footer](#footer)
+**Veja também:** [SetHeaderProc](#setheaderproc) · [SetAliasNbPages](#setaliasnbpages) · [Footer](#footer)
 
 ---
 
 ### SetHeaderProc
 
-Registra uma procedure sua para ser executada automaticamente no início de cada página.
+Registra o NOME de uma rotina que será executada no início de cada página. O nome e os nomes dos parâmetros são validados como identificadores SQL (DBMS_ASSERT) aqui, na configuração -- e não no meio do relatório, que é onde um nome inválido apareceria. O bloco é montado uma vez só, e não a cada página.
 
 #### Sintaxe
 
@@ -1773,33 +2081,18 @@ PROCEDURE PL_FPDF.SetHeaderProc(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `headerprocname` | VARCHAR2 | Nome qualificado da procedure. | 'pacote.procedure' ou 'procedure'; deve ser acessível ao usuário do banco | — |
-| `paramTable` | TV4000A | Parâmetros repassados à procedure, por nome. | PL_FPDF.tv4000a — associative array INDEXADO PELO NOME do parâmetro da sua procedure: l_p('p_titulo') := 'Relatório'. Não tem construtor tv4000a(...): declare uma variável e preencha por chave. noParam (padrão) = chamada sem parâmetros | `noParam` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `headerprocname` | VARCHAR2 | — | nome da rotina (NULL desliga) |
+| `paramTable` | TV4000A | `noParam` | parâmetros nomeados |
 
 #### Exemplo
 
 ```sql
-DECLARE
-  l_p PL_FPDF.tv4000a;   -- associative array: sem construtor, preenchido por chave
-BEGIN
-  PL_FPDF.Init('P', 'mm', 'A4');
-
-  -- sem parâmetros
-  PL_FPDF.SetHeaderProc('meu_pkg.cabecalho');
-
-  -- com parâmetros: a chave é o NOME do parâmetro da sua procedure
-  l_p('p_titulo')  := 'Relatório Mensal';
-  l_p('p_periodo') := 'Ago/2026';
-  PL_FPDF.SetHeaderProc('meu_pkg.cabecalho', l_p);
-  -- gera: Begin meu_pkg.cabecalho(p_titulo=>'Relatório Mensal', p_periodo=>'Ago/2026'); end;
-
-  PL_FPDF.AddPage();
-END;
+PL_FPDF.SetHeaderProc('MEU_PKG.CABECALHO');
 ```
 
-**Veja também:** [SetFooterProc](#setfooterproc), [Header](#header)
+**Veja também:** [SetFooterProc](#setfooterproc) · [Header](#header)
 
 ---
 
@@ -1807,7 +2100,7 @@ END;
 
 ### AddBarcode
 
-Desenha um código de barras linear na página corrente, com texto legível opcional.
+Desenha um código de barras linear na página corrente. O codificador é o do PL_FPDF_UTIL, validado contra o zxing-cpp.
 
 #### Sintaxe
 
@@ -1824,38 +2117,34 @@ PROCEDURE PL_FPDF.AddBarcode(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_x` | NUMBER | X do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_y` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_width` | NUMBER | Largura total do código. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_height` | NUMBER | Altura das barras. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_code` | VARCHAR2 | Dado a codificar. | Deve respeitar o padrão escolhido: EAN13 = 13 dígitos, EAN8 = 8 dígitos, ITF = qualquer quantidade par de dígitos (o do boleto tem 44), ITF14 = 14 dígitos, CODE39 = alfanumérico maiúsculo, CODE128 = ASCII | — |
-| `p_type` | VARCHAR2 | Simbologia do código de barras. | 'CODE128' (padrão), 'CODE39', 'EAN13', 'EAN8', 'ITF' ou 'ITF14' | `'CODE128'` |
-| `p_show_text` | BOOLEAN | Imprime o valor legível abaixo das barras. | TRUE ou FALSE; TRUE é o padrão | `true` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_x` | NUMBER | — | canto superior esquerdo |
+| `p_y` | NUMBER | — | canto superior esquerdo |
+| `p_width` | NUMBER | — | largura |
+| `p_height` | NUMBER | — | altura |
+| `p_code` | VARCHAR2 | — | o conteúdo a codificar |
+| `p_type` | VARCHAR2 | `'CODE128'` | simbologia: 'CODE128', 'CODE39', 'EAN13', 'EAN8', 'ITF14', ou 'ITF' (Interleaved 2 of 5, qualquer quantidade par de dígitos -- o código de barras do boleto bancário tem 44) |
+| `p_show_text` | BOOLEAN | `true` | escrever o código embaixo, legível |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20880` | Código vazio |
-| `-20881` | Largura e altura devem ser positivas |
-| `-20882` | Simbologia não suportada |
-| `-20883` | CODE39 não aceita o caractere informado |
-| `-20884` | CODE128 (Code B) aceita apenas ASCII de 32 a 126 |
-| `-20885` | EAN exige a quantidade de dígitos da simbologia |
-| `-20886` | EAN: dígito verificador inválido |
-| `-20887` | ITF14 exige 13 ou 14 dígitos |
-| `-20888` | ITF sem nenhum dígito no conteúdo |
+| Código | Quando |
+|--------|--------|
+| `ORA-20880` | código vazio |
+| `ORA-20882` | simbologia não suportada |
+| `ORA-20881` | largura ou altura não positiva |
+| `ORA-20883` | CODE39 não aceita o caractere informado |
+| `ORA-20884` | CODE128 aceita só ASCII de 32 a 126 |
+| `ORA-20885` | EAN com quantidade de dígitos errada |
+| `ORA-20886` | EAN com dígito verificador inválido |
+| `ORA-20887` | ITF14 exige 13 dígitos (verificador calculado) ou 14 |
+| `ORA-20888` | ITF sem nenhum dígito no conteúdo |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.AddBarcode(
-  p_x => 30, p_y => 70, p_width => 150, p_height => 20,
-  p_code      => '7891234567895',
-  p_type      => 'EAN13',
-  p_show_text => TRUE);
+PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
 ```
 
 **Veja também:** [AddQRCode](#addqrcode)
@@ -1864,7 +2153,7 @@ PL_FPDF.AddBarcode(
 
 ### AddQRCode
 
-Desenha um QR Code na página corrente, com formato de conteúdo e nível de correção de erros configuráveis.
+Desenha um QR Code na página corrente. O codificador é o do PL_FPDF_UTIL, validado contra o zxing-cpp -- o critério aqui não é "desenha um símbolo", é "um leitor decodifica".
 
 #### Sintaxe
 
@@ -1880,32 +2169,28 @@ PROCEDURE PL_FPDF.AddQRCode(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_x` | NUMBER | X do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_y` | NUMBER | Y do canto superior esquerdo. | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_size` | NUMBER | Lado do QR Code (largura = altura). | Número na unidade definida em Init (mm, cm, pt ou in) | — |
-| `p_data` | VARCHAR2 | Conteúdo a codificar. | Até 2953 bytes em modo binário; o conteúdo deve seguir o formato escolhido em p_format | — |
-| `p_format` | VARCHAR2 | Formato do conteúdo, que define como leitores interpretam o código. | 'TEXT' (padrão, texto livre), 'URL', 'PIX', 'VCARD', 'WIFI' ou 'EMAIL' | `'TEXT'` |
-| `p_error_correction` | VARCHAR2 | Nível de correção de erros: quanto maior, mais o código resiste a sujeira e dobras, porém menos dados cabem. | 'L' (7%), 'M' (15%, padrão), 'Q' (25%) ou 'H' (30%) | `'M'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_x` | NUMBER | — | canto superior esquerdo, na unidade corrente |
+| `p_y` | NUMBER | — | canto superior esquerdo, na unidade corrente |
+| `p_size` | NUMBER | — | o lado do símbolo |
+| `p_data` | VARCHAR2 | — | o conteúdo a codificar |
+| `p_format` | VARCHAR2 | `'TEXT'` | 'TEXT', 'URL', 'PIX', 'VCARD', 'WIFI', 'EMAIL' |
+| `p_error_correction` | VARCHAR2 | `'M'` | quanto do símbolo pode ser perdido e ainda assim ler: 'L' (Low, 7%), 'M' (Medium, 15%), 'Q' (Quartile, 25%) ou 'H' (High, 30%). Quanto maior, mais módulos o símbolo ocupa |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20870` | Conteúdo vazio |
-| `-20871` | Tamanho deve ser maior que zero |
-| `-20872` | Nível de correção inválido (use L, M, Q ou H) |
-| `-20873` | Conteúdo excede a capacidade do QR Code no nível pedido |
+| Código | Quando |
+|--------|--------|
+| `ORA-20870` | conteúdo vazio |
+| `ORA-20872` | nível de correção inválido |
+| `ORA-20871` | tamanho não positivo |
+| `ORA-20873` | conteúdo além da capacidade do QR Code |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.AddQRCode(
-  p_x => 150, p_y => 20, p_size => 40,
-  p_data             => 'https://msbrasil.inf.br',
-  p_format           => 'URL',
-  p_error_correction => 'M');
+PL_FPDF.AddQRCode(50, 50, 40, 'https://example.com', 'URL', 'M');
 ```
 
 **Veja também:** [AddBarcode](#addbarcode)
@@ -1916,18 +2201,32 @@ PL_FPDF.AddQRCode(
 
 ### GetDocumentMetadata
 
-Retorna os metadados atualmente definidos no documento.
+Devolve, em JSON, o que está configurado no documento em andamento e quantas páginas ele já tem.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetDocumentMetadata
-    RETURN JSON_OBJECT_T;
+FUNCTION PL_FPDF.GetDocumentMetadata RETURN JSON_OBJECT_T;
 ```
 
 #### Retorno
 
-JSON_OBJECT_T — objeto com title, subject, author, keywords, creator e demais opções.
+JSON_OBJECT_T - os metadados
+
+#### Nota
+
+Estrutura do JSON: { "pageCount": <number>, "title": "<string>", "author": "<string>", "subject": "<string>", "keywords": "<string>", "format": "<string>", "orientation": "<string>", "unit": "<string>", "initialized": <boolean> }
+
+#### Exemplo
+
+```sql
+DECLARE
+  l_meta JSON_OBJECT_T;
+BEGIN
+  l_meta := PL_FPDF.GetDocumentMetadata();
+  DBMS_OUTPUT.PUT_LINE('Pages: ' || l_meta.get_Number('pageCount'));
+END;
+```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
 
@@ -1935,33 +2234,54 @@ JSON_OBJECT_T — objeto com title, subject, author, keywords, creator e demais 
 
 ### GetPageInfo
 
-Retorna as informações de uma página do documento em construção.
+Devolve, em JSON, o formato, a orientação e as medidas de uma página do documento em andamento.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.GetPageInfo(
-    p_page_number pls_integer DEFAULT null)
-    RETURN JSON_OBJECT_T;
+    p_page_number pls_integer DEFAULT null) RETURN JSON_OBJECT_T;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página consultada. | Inteiro ≥ 1, até GetPageCount; NULL (padrão) = página corrente | `null` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | `null` | a página ( NULL = a corrente) |
 
 #### Retorno
 
-JSON_OBJECT_T — largura, altura, orientação e rotação da página.
+JSON_OBJECT_T - os dados da página
 
-**Veja também:** [GetCurrentPage](#getcurrentpage), [GetPDFInfo](#getpdfinfo)
+#### Nota
+
+Estrutura do JSON: { "number": <number>, "format": "<string>", "orientation": "<string>", "width": <number>, "height": <number>, "unit": "<string>" }
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20106` | a página não existe |
+| `ORA-20812` | número de página fora da faixa |
+
+#### Exemplo
+
+```sql
+DECLARE
+  l_page_info JSON_OBJECT_T;
+BEGIN
+  l_page_info := PL_FPDF.GetPageInfo(1);
+  DBMS_OUTPUT.PUT_LINE('Width: ' || l_page_info.get_Number('width'));
+END;
+```
+
+**Veja também:** [GetCurrentPage](#getcurrentpage) · [GetPDFInfo](#getpdfinfo)
 
 ---
 
 ### SetAuthor
 
-Define o autor do documento nos metadados.
+Grava o autor nos metadados do PDF.
 
 #### Sintaxe
 
@@ -1972,9 +2292,15 @@ PROCEDURE PL_FPDF.SetAuthor(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pauthor` | VARCHAR2 | Autor. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pauthor` | VARCHAR2 | — | o autor |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetAuthor('Departamento Financeiro');
+```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
 
@@ -1982,7 +2308,7 @@ PROCEDURE PL_FPDF.SetAuthor(
 
 ### SetCompression
 
-Liga ou desliga a compressão do fluxo de conteúdo das páginas. Ligada, cada página sai com /Filter [/ASCIIHexDecode /FlateDecode] — deflate escrito no próprio package, em hexadecimal porque o documento é montado como texto. O hexadecimal dobra o tamanho do comprimido, então a compressão só é aplicada quando ainda assim o fluxo fica menor que o original; página que não compensa sai sem filtro. Texto costuma cair para menos de um quinto.
+Liga a compressão dos fluxos de conteúdo. Até agosto/2026 isto não fazia nada -- procurava uma rotina de zlib que o Oracle não tem e desligava sempre. Hoje o deflate está escrito no próprio pacote (PL_FPDF_UTIL.deflate) e a opção vale.
 
 #### Sintaxe
 
@@ -1993,17 +2319,23 @@ PROCEDURE PL_FPDF.SetCompression(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_compress` | BOOLEAN | Ativa a compressão. | TRUE ou FALSE; FALSE é o padrão | `false` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_compress` | BOOLEAN | `false` | comprimir os fluxos |
 
-**Veja também:** [FlateEncode](#flateencode), [FlateDecode](#flatedecode)
+#### Exemplo
+
+```sql
+PL_FPDF.SetCompression(TRUE);
+```
+
+**Veja também:** [FlateEncode](#flateencode) · [FlateDecode](#flatedecode)
 
 ---
 
 ### SetCreator
 
-Define o aplicativo criador do documento nos metadados.
+Grava, nos metadados, o nome do sistema que gerou o documento.
 
 #### Sintaxe
 
@@ -2014,9 +2346,15 @@ PROCEDURE PL_FPDF.SetCreator(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pcreator` | VARCHAR2 | Nome do sistema gerador. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pcreator` | VARCHAR2 | — | o sistema gerador |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetCreator('ERP - modulo de faturamento');
+```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
 
@@ -2024,7 +2362,7 @@ PROCEDURE PL_FPDF.SetCreator(
 
 ### SetDisplayMode
 
-Define como o leitor de PDF deve exibir o documento ao abri-lo.
+Diz ao leitor de PDF como abrir o documento. É preferência de apresentação: o leitor pode ignorar.
 
 #### Sintaxe
 
@@ -2036,22 +2374,28 @@ PROCEDURE PL_FPDF.SetDisplayMode(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `zoom` | VARCHAR2 | Nível de zoom inicial. | 'fullpage' (página inteira), 'fullwidth' (largura da página), 'real' (100%), 'default' ou um número representando a porcentagem | — |
-| `layout` | VARCHAR2 | Disposição das páginas. | 'continuous' (padrão), 'single', 'two' ou 'default' | `'continuous'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `zoom` | VARCHAR2 | — | 'fullpage' (página inteira), 'fullwidth' (largura da página), 'real' (tamanho real), 'default' (padrão do leitor), ou um número que é o percentual de ampliação |
+| `layout` | VARCHAR2 | `'continuous'` | 'single' (uma página), 'continuous' (contínuo), 'two' (duas colunas), 'default' (padrão do leitor) |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | modo de zoom ou de layout desconhecido |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetDisplayMode(zoom => 'fullpage', layout => 'single');
+PL_FPDF.SetDisplayMode('fullwidth', 'continuous');
 ```
 
 ---
 
 ### SetDocumentConfig
 
-Define vários metadados e opções do documento de uma só vez, a partir de um objeto JSON.
+Configura o documento inteiro a partir de um objeto JSON -- metadados, orientação, formato, fonte e margens numa chamada só. Serve a quem recebe a configuração de fora, de uma tabela ou de um serviço.
 
 #### Sintaxe
 
@@ -2062,24 +2406,42 @@ PROCEDURE PL_FPDF.SetDocumentConfig(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_config` | JSON_OBJECT_T | Configuração do documento. | JSON_OBJECT_T com as chaves opcionais: title, subject, author, keywords, creator, compression (boolean) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_config` | JSON_OBJECT_T | — | o objeto JSON com as opções |
+
+#### Nota
+
+Chaves JSON: - title, author, subject, keywords, creator (metadados do documento) - orientation ('P' ou 'L'), unit ('mm','cm','in','pt'), format (formato da página) - fontFamily, fontSize, fontStyle (fonte padrão) - leftMargin, topMargin, rightMargin (margens, na unidade corrente)
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20001` | orientação inválida; só P ou L |
+| `ORA-20002` | unidade inválida; só mm, cm, in ou pt |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetDocumentConfig(
-  JSON_OBJECT_T('{"title":"Relatório Mensal","author":"M&S do Brasil","compression":true}'));
+DECLARE
+  l_config JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  l_config.put('title', 'Monthly Report');
+  l_config.put('author', 'Maxwell Oliveira');
+  l_config.put('orientation', 'P');
+  l_config.put('format', 'A4');
+  PL_FPDF.SetDocumentConfig(l_config);
+END;
 ```
 
-**Veja também:** [GetDocumentMetadata](#getdocumentmetadata), [SetTitle](#settitle)
+**Veja também:** [GetDocumentMetadata](#getdocumentmetadata) · [SetTitle](#settitle)
 
 ---
 
 ### SetKeywords
 
-Define as palavras-chave do documento (auxiliam buscas e indexação).
+Grava as palavras-chave nos metadados do PDF, separadas por espaço.
 
 #### Sintaxe
 
@@ -2090,9 +2452,15 @@ PROCEDURE PL_FPDF.SetKeywords(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pkeywords` | VARCHAR2 | Palavras-chave. | Texto livre, normalmente separado por vírgulas | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pkeywords` | VARCHAR2 | — | as palavras-chave |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetKeywords('relatorio producao 2026');
+```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
 
@@ -2100,7 +2468,7 @@ PROCEDURE PL_FPDF.SetKeywords(
 
 ### SetSubject
 
-Define o assunto do documento nos metadados.
+Grava o assunto nos metadados do PDF.
 
 #### Sintaxe
 
@@ -2111,9 +2479,15 @@ PROCEDURE PL_FPDF.SetSubject(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `psubject` | VARCHAR2 | Assunto. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `psubject` | VARCHAR2 | — | o assunto |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetSubject('Fechamento mensal');
+```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
 
@@ -2121,7 +2495,7 @@ PROCEDURE PL_FPDF.SetSubject(
 
 ### SetTitle
 
-Define o título do documento (exibido na barra do leitor de PDF).
+Grava o título nos metadados do PDF -- o que o leitor mostra na barra de título e o que o buscador indexa.
 
 #### Sintaxe
 
@@ -2132,9 +2506,15 @@ PROCEDURE PL_FPDF.SetTitle(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `ptitle` | VARCHAR2 | Título. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `ptitle` | VARCHAR2 | — | o título |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetTitle('Relatório de Produção');
+```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
 
@@ -2144,12 +2524,18 @@ PROCEDURE PL_FPDF.SetTitle(
 
 ### ClosePDF
 
-Fecha a estrutura do documento (uso avançado; as APIs de saída já fazem isso).
+Fecha o documento: escreve o rodapé da última página, monta a estrutura do arquivo e troca o marcador do total de páginas. Sem nenhuma página, uma é criada em branco. As rotinas de saída chamam isto sozinhas.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.ClosePDF;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.ClosePDF;
 ```
 
 **Veja também:** [OutputBlob](#outputblob)
@@ -2158,12 +2544,18 @@ PROCEDURE PL_FPDF.ClosePDF;
 
 ### OpenPDF
 
-Abre explicitamente a estrutura do documento (uso avançado; Init já faz isso).
+Marca o documento como aberto. O AddPage já faz isto quando preciso; chamar à mão é raro.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.OpenPDF;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.OpenPDF;
 ```
 
 **Veja também:** [Init](#init)
@@ -2172,7 +2564,7 @@ PROCEDURE PL_FPDF.OpenPDF;
 
 ### Output
 
-Saída no estilo FPDF clássico (compatibilidade). Prefira OutputBlob ou OutputFile.
+Fecha o documento e grava em arquivo, no DIRECTORY PDF_DIR. É a forma legada: os modos de entrega ao navegador ('I', 'D', 'S') saíram junto com o OWA/HTP e hoje recusam com -20306, dizendo o que usar no lugar. Para receber os bytes, use OutputBlob.
 
 #### Sintaxe
 
@@ -2184,29 +2576,54 @@ PROCEDURE PL_FPDF.Output(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pname` | VARCHAR2 | Nome do arquivo/documento. | Qualquer VARCHAR2 | `null` |
-| `pdest` | VARCHAR2 | Destino. | 'S', 'D', 'I' ou 'F' | `null` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pname` | VARCHAR2 | `null` | nome do arquivo (NULL grava 'doc.pdf') |
+| `pdest` | VARCHAR2 | `null` | destino: 'F' (File, arquivo) é o único suportado |
 
-**Veja também:** [OutputBlob](#outputblob), [OutputFile](#outputfile)
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | destino desconhecido, ou falha na gravação |
+| `ORA-20306` | modo de entrega ao navegador não é mais suportado; a mensagem aponta OutputBlob e o cabeçalho Content-Type |
+
+#### Exemplo
+
+```sql
+PL_FPDF.Output('relatorio.pdf', 'F');
+```
+
+**Veja também:** [OutputBlob](#outputblob) · [OutputFile](#outputfile)
 
 ---
 
 ### OutputBlob
 
-Sinônimo de OutputBlob: finaliza o documento e retorna o PDF como BLOB.
+Fecha o documento e devolve os bytes do PDF. É a saída principal da biblioteca: quem grava em tabela, quem anexa a e-mail e quem entrega por HTTP começa aqui.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.OutputBlob
-    RETURN BLOB;
+FUNCTION PL_FPDF.OutputBlob RETURN BLOB;
 ```
 
 #### Retorno
 
-BLOB — conteúdo do PDF.
+BLOB - o PDF pronto
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20005` | Init ainda não foi chamado. Antes de agosto/2026 esta chamada seguia em frente e devolvia um PDF vazio, sem apontar a causa. |
+
+#### Exemplo
+
+```sql
+l_pdf := PL_FPDF.OutputBlob;
+INSERT INTO documentos (id, arquivo) VALUES (1, l_pdf);
+```
 
 **Veja também:** [OutputBlob](#outputblob)
 
@@ -2214,7 +2631,7 @@ BLOB — conteúdo do PDF.
 
 ### OutputFile
 
-Finaliza o documento e grava o PDF diretamente em um arquivo no servidor de banco de dados.
+Fecha o documento e grava num DIRECTORY do banco. Exige WRITE no diretório concedido ao schema.
 
 #### Sintaxe
 
@@ -2226,10 +2643,18 @@ PROCEDURE PL_FPDF.OutputFile(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_filename` | VARCHAR2 | Nome do arquivo de saída. | Ex.: 'relatorio.pdf' | — |
-| `p_directory` | VARCHAR2 | DIRECTORY do Oracle com permissão de escrita. | Padrão: 'PDF_DIR' | `'PDF_DIR'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_filename` | VARCHAR2 | — | nome do arquivo |
+| `p_directory` | VARCHAR2 | `'PDF_DIR'` | DIRECTORY do banco |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20401` | diretório inválido |
+| `ORA-20402` | sem permissão de escrita |
+| `ORA-20403` | falha ao gravar |
 
 #### Exemplo
 
@@ -2243,27 +2668,38 @@ PL_FPDF.OutputFile('relatorio.pdf', 'PDF_DIR');
 
 ### ReturnBlob
 
-Retorna o PDF como BLOB (compatibilidade com código legado). Prefira OutputBlob.
+Fecha o documento e devolve os bytes. Existe por compatibilidade: os dois parâmetros são ACEITOS E IGNORADOS, e a chamada é repassada ao OutputBlob. Em código novo, chame OutputBlob direto.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.ReturnBlob(
     pname varchar2 DEFAULT null,
-    pdest varchar2 DEFAULT null)
-    RETURN BLOB;
+    pdest varchar2 DEFAULT null) RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pname` | VARCHAR2 | Nome lógico do documento. | Qualquer VARCHAR2; NULL = sem nome | `null` |
-| `pdest` | VARCHAR2 | Destino no estilo FPDF. | 'S' (string/BLOB), 'D' (download), 'I' (inline), 'F' (arquivo) | `null` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pname` | VARCHAR2 | `null` | ignorado |
+| `pdest` | VARCHAR2 | `null` | ignorado |
 
 #### Retorno
 
-BLOB — conteúdo do PDF.
+BLOB - o PDF
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | falha ao fechar ou montar o documento, com a pilha original preservada |
+
+#### Exemplo
+
+```sql
+l_pdf := PL_FPDF.OutputBlob;    -- prefira esta
+```
 
 **Veja também:** [OutputBlob](#outputblob)
 
@@ -2273,7 +2709,7 @@ BLOB — conteúdo do PDF.
 
 ### AddWatermark
 
-Registra uma marca d'água de texto, desenhada por OutputModifiedPDF() no fluxo de conteúdo da página: cada página afetada ganha um objeto de conteúdo próprio e um /Resources próprio, de modo que um /Resources compartilhado entre páginas nunca é contaminado. A marca é centralizada e girada em torno do centro da página, sempre em Helvetica.
+Acrescenta marca d'água de texto às páginas indicadas
 
 #### Sintaxe
 
@@ -2290,43 +2726,48 @@ PROCEDURE PL_FPDF.AddWatermark(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_text` | VARCHAR2 | Texto da marca d'água. | Qualquer VARCHAR2, ex.: 'CONFIDENCIAL' | — |
-| `p_opacity` | NUMBER | Opacidade da marca. | 0.0 (invisível) a 1.0 (opaca); 0.3 é o padrão | `0.3` |
-| `p_rotation` | NUMBER | Ângulo do texto em graus. | 0 a 360; 45 (diagonal) é o padrão | `45` |
-| `p_pages` | VARCHAR2 | Páginas que recebem a marca. | 'ALL' (padrão) ou lista/intervalos como '1', '1,3,5', '2-8', '1,3-5,10' | `'ALL'` |
-| `p_font` | VARCHAR2 | Fonte usada. | 'Helvetica' (padrão), 'Arial', 'Times' ou 'Courier' | `'Helvetica'` |
-| `p_size` | NUMBER | Tamanho da fonte em pontos. | Número > 0; 48 é o padrão | `48` |
-| `p_color` | VARCHAR2 | Cor da marca d'água. | 'gray' (padrão), 'red', 'blue', 'green', 'black' ou hexadecimal RGB como 'FF0000' | `'gray'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_text` | VARCHAR2 | — | Texto da marca d'água |
+| `p_opacity` | NUMBER | `0.3` | Opacidade (0.0 a 1.0), padrão 0.3 |
+| `p_rotation` | NUMBER | `45` | Ângulo de rotação (0, 45, 90, 135, 180, 225, 270, 315), default 45 |
+| `p_pages` | VARCHAR2 | `'ALL'` | Range de páginas: 'ALL', '1-5', '1,3,5', default 'ALL' |
+| `p_font` | VARCHAR2 | `'Helvetica'` | Nome da fonte, default 'Helvetica' |
+| `p_size` | NUMBER | `48` | Tamanho da fonte em pontos, default 48 |
+| `p_color` | VARCHAR2 | `'gray'` | Nome da cor ('gray', 'red', 'blue'), default 'gray' |
+
+#### Nota
+
+Desenhada por OutputModifiedPDF() no fluxo de conteúdo: cada página afetada ganha um objeto de conteúdo próprio e um /Resources próprio, de modo que um /Resources compartilhado entre páginas nunca é contaminado. Centralizada e girada em torno do centro da página; a fonte é sempre Helvetica.
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
+| `ORA-20816` | texto da marca vazio |
+| `ORA-20817` | opacidade fora de 0..1 |
+| `ORA-20818` | rotação fora de 0, 45, 90, 135, 180, 225, 270, 315 |
 
 #### Exemplo
 
 ```sql
 PL_FPDF.LoadPDF(l_pdf);
-PL_FPDF.AddWatermark(
-  p_text     => 'CONFIDENCIAL',
-  p_opacity  => 0.3,
-  p_rotation => 45,
-  p_pages    => 'ALL',
-  p_size     => 48,
-  p_color    => 'gray');
-l_pdf := PL_FPDF.OutputModifiedPDF();
+-- Todas as páginas
+PL_FPDF.AddWatermark('CONFIDENTIAL', 0.2, 45, 'ALL');
+-- Páginas específicas
+PL_FPDF.AddWatermark('DRAFT', 0.3, 45, '1-5,10');
+-- Estilo personalizado
+PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '1', 'Helvetica', 72, 'green');
 ```
 
-**Veja também:** [GetWatermarks](#getwatermarks), [OverlayText](#overlaytext), [OutputModifiedPDF](#outputmodifiedpdf)
+**Veja também:** [GetWatermarks](#getwatermarks) · [OverlayText](#overlaytext) · [OutputModifiedPDF](#outputmodifiedpdf)
 
 ---
 
 ### ClearPDFCache
 
-Descarta os PDFs carregados e libera a memória usada pela manipulação.
+Limpar PDF carregado da memória e liberar todos os recursos em cache
 
 #### Sintaxe
 
@@ -2334,42 +2775,55 @@ Descarta os PDFs carregados e libera a memória usada pela manipulação.
 PROCEDURE PL_FPDF.ClearPDFCache;
 ```
 
-**Veja também:** [LoadPDF](#loadpdf), [UnloadPDF](#unloadpdf)
+#### Nota
+
+Sempre chame isso após processar um PDF para liberar recursos de memória. Limpa: PDF carregado, info páginas, rotações, páginas removidas, marcas d'água.
+
+#### Exemplo
+
+```sql
+PL_FPDF.LoadPDF(l_pdf);
+-- Processar PDF
+l_modified := PL_FPDF.OutputModifiedPDF();
+-- Limpar memória
+PL_FPDF.ClearPDFCache();
+```
+
+**Veja também:** [LoadPDF](#loadpdf) · [UnloadPDF](#unloadpdf)
 
 ---
 
 ### FlateDecode
 
-Descomprime um stream /FlateDecode do PDF (zlib, RFC 1950). Implementado em PL/SQL puro: o UTL_COMPRESS não serve porque só aceita rodapé gzip com CRC-32 correto, e esse CRC é do conteúdo DESCOMPRIMIDO — para saber o CRC seria preciso descomprimir antes. Útil por si, e é o que permite ao copiador ler xref em stream e object streams.
+Descomprime um stream /FlateDecode do PDF (zlib, RFC 1950). Implementado em PL/SQL puro: o UTL_COMPRESS não serve porque só aceita rodapé gzip com CRC-32 correto, e esse CRC é do conteúdo DESCOMPRIMIDO — para saber o CRC seria preciso descomprimir antes.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.FlateDecode(
     p_stream    BLOB,
-    p_max_bytes PLS_INTEGER DEFAULT 8388608)
-    RETURN BLOB;
+    p_max_bytes PLS_INTEGER DEFAULT 8388608) RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_stream` | BLOB | Stream comprimido. | BLOB com dados zlib (o que o PDF marca como /FlateDecode) | — |
-| `p_max_bytes` | PLS_INTEGER | Teto da saída, em bytes. | Número > 0; 8388608 (8 MB) é o padrão. Um stream comprimido é entrada NÃO CONFIÁVEL: alguns KB podem expandir para gigabytes (zip bomb) e derrubar a sessão com ORA-04036. Com o teto, levanta -20893 e diz onde parou | `8388608` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_stream` | BLOB | — | Stream comprimido (BLOB) |
+| `p_max_bytes` | PLS_INTEGER | `8388608` | Teto da saída, 8 MB por padrão. Um stream comprimido é entrada não confiável: alguns KB podem virar gigabytes (zip bomb) e derrubar a sessão. Levanta -20893 em vez disso. |
 
 #### Retorno
 
-BLOB — conteúdo descomprimido.
+Conteúdo descomprimido
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20890` | Stream truncado |
-| `-20891` | Dados DEFLATE malformados |
-| `-20892` | Cabeçalho zlib inválido |
-| `-20893` | A saída passou de p_max_bytes (entrada corrompida ou zip bomb) |
+| Código | Quando |
+|--------|--------|
+| `ORA-20890` | Stream truncado |
+| `ORA-20891` | Dados DEFLATE malformados |
+| `ORA-20892` | Cabeçalho zlib inválido |
+| `ORA-20893` | Saída passou de p_max_bytes |
 
 #### Exemplo
 
@@ -2383,119 +2837,175 @@ l_claro := PL_FPDF.FlateDecode(l_comprimido);
 
 ### FlateEncode
 
-Comprime dados num stream /FlateDecode do PDF (zlib, RFC 1950). Escrito em PL/SQL puro: um bloco único com Huffman FIXA e LZ77 guloso — comprime menos que a Huffman dinâmica do zlib e muito mais que nada. Quando o dado é incompressível, cai para bloco armazenado, de modo que a saída nunca passa da entrada mais o custo do bloco.
+Comprime dados num stream /FlateDecode do PDF (zlib, RFC 1950). Escrito em PL/SQL puro: um bloco único com Huffman fixa e LZ77 guloso. Comprime menos que a Huffman dinâmica do zlib e muito mais que nada, e nunca devolve mais que a entrada somada ao custo do bloco armazenado.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.FlateEncode(
-    p_data BLOB)
-    RETURN BLOB;
+    p_data BLOB) RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_data` | BLOB | Conteúdo a comprimir. | BLOB de qualquer tamanho; NULL é tratado como vazio | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_data` | BLOB | — | conteúdo a comprimir (BLOB) |
 
 #### Retorno
 
-BLOB — stream zlib: cabeçalho, DEFLATE e Adler-32.
+BLOB - stream zlib: cabeçalho, DEFLATE e Adler-32
 
-**Veja também:** [FlateDecode](#flatedecode), [SetCompression](#setcompression)
+#### Exemplo
+
+```sql
+l_comprimido := PL_FPDF.FlateEncode(l_claro);
+```
+
+**Veja também:** [FlateDecode](#flatedecode) · [SetCompression](#setcompression)
 
 ---
 
 ### GetActivePageCount
 
-Retorna quantas páginas restarão após as remoções pendentes.
+Obter contagem de páginas não marcadas para remoção
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetActivePageCount
-    RETURN PLS_INTEGER;
+FUNCTION PL_FPDF.GetActivePageCount RETURN PLS_INTEGER;
 ```
 
 #### Retorno
 
-PLS_INTEGER — páginas não marcadas para remoção.
+Número de páginas ativas
 
-**Veja também:** [RemovePage](#removepage), [GetPageCount](#getpagecount)
+#### Nota
+
+Difere de GetPageCount() que retorna a contagem original
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
+
+#### Exemplo
+
+```sql
+l_total := PL_FPDF.GetPageCount();        -- Original: 10
+PL_FPDF.RemovePage(2);
+l_active := PL_FPDF.GetActivePageCount(); -- Ativas: 9
+```
+
+**Veja também:** [RemovePage](#removepage) · [GetPageCount](#getpagecount)
 
 ---
 
 ### GetPageCount
 
-Retorna o total de páginas do PDF carregado (incluindo as marcadas para remoção).
+Obter o número total de páginas no documento PDF carregado
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetPageCount
-    RETURN PLS_INTEGER;
+FUNCTION PL_FPDF.GetPageCount RETURN PLS_INTEGER;
 ```
 
 #### Retorno
 
-PLS_INTEGER — número de páginas.
+Número de páginas
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
 
-**Veja também:** [LoadPDF](#loadpdf), [GetActivePageCount](#getactivepagecount)
+#### Exemplo
+
+```sql
+l_pages := PL_FPDF.GetPageCount();
+DBMS_OUTPUT.PUT_LINE('Total de páginas:' || l_pages);
+```
+
+**Veja também:** [LoadPDF](#loadpdf) · [GetActivePageCount](#getactivepagecount)
 
 ---
 
 ### GetPDFInfo
 
-Retorna informações do PDF carregado: versão, metadados e contagem de páginas.
+Obter metadados e informações sobre o documento PDF carregado
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetPDFInfo
-    RETURN JSON_OBJECT_T;
+FUNCTION PL_FPDF.GetPDFInfo RETURN JSON_OBJECT_T;
 ```
 
 #### Retorno
 
-JSON_OBJECT_T — versão do PDF, título, autor, número de páginas e demais metadados.
+com: - version: versão do PDF (por exemplo "1.4") - pageCount: Número de páginas - fileSize: Tamanho em bytes - objectCount: Número de objetos na xref - rootObjectId: ID do objeto Catalog
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
 
-**Veja também:** [LoadPDF](#loadpdf), [GetPageInfo](#getpageinfo)
+#### Exemplo
+
+```sql
+DECLARE
+  l_info JSON_OBJECT_T;
+BEGIN
+  l_info := PL_FPDF.GetPDFInfo();
+  DBMS_OUTPUT.PUT_LINE('Versão:' || l_info.get_string('version'));
+  DBMS_OUTPUT.PUT_LINE('Páginas:' || l_info.get_number('pageCount'));
+END;
+```
+
+**Veja também:** [LoadPDF](#loadpdf) · [GetPageInfo](#getpageinfo)
 
 ---
 
 ### GetWatermarks
 
-Lista todas as marcas d'água aplicadas ao PDF carregado.
+Obter lista de todas as marcas d'água aplicadas como array JSON
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetWatermarks
-    RETURN JSON_ARRAY_T;
+FUNCTION PL_FPDF.GetWatermarks RETURN JSON_ARRAY_T;
 ```
 
 #### Retorno
 
-JSON_ARRAY_T — objetos com id, text, opacity, rotation, pageRange, font, fontSize e color.
+JSON_ARRAY_T - array com os objetos de marca d'água e suas propriedades: - id: ID da marca d'água - text: Texto da marca d'água - opacity: Valor de opacidade (0.0-1.0) (0.0-1.0) - rotation: Ângulo de rotação em graus - pageRange: faixa de páginas (separada por vírgulas) - font: Nome da fonte - fontSize: Tamanho da fonte em pontos - color: Nome da cor
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
+
+#### Exemplo
+
+```sql
+DECLARE
+  l_watermarks JSON_ARRAY_T;
+  l_watermark JSON_OBJECT_T;
+BEGIN
+  PL_FPDF.LoadPDF(l_pdf);
+  PL_FPDF.AddWatermark('CONFIDENTIAL', 0.2, 45, 'ALL');
+  l_watermarks := PL_FPDF.GetWatermarks();
+  FOR i IN 0..l_watermarks.get_size() - 1 LOOP
+    l_watermark := TREAT(l_watermarks.get(i) AS JSON_OBJECT_T);
+    DBMS_OUTPUT.PUT_LINE('Marca d''água:' ||
+                         l_watermark.get_string('text'));
+  END LOOP;
+END;
+```
 
 **Veja também:** [AddWatermark](#addwatermark)
 
@@ -2503,25 +3013,32 @@ JSON_ARRAY_T — objetos com id, text, opacity, rotation, pageRange, font, fontS
 
 ### IsPageRemoved
 
-Indica se uma página está marcada para remoção.
+Verificar se uma página está marcada para remoção
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.IsPageRemoved(
-    p_page_number PLS_INTEGER)
-    RETURN BOOLEAN;
+    p_page_number PLS_INTEGER) RETURN BOOLEAN;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página consultada. | Inteiro ≥ 1, até GetPageCount | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | — | Número da página para verificar |
 
 #### Retorno
 
-BOOLEAN — TRUE se a página será removida na saída.
+caso contrário
+
+#### Exemplo
+
+```sql
+IF PL_FPDF.IsPageRemoved(2) THEN
+  DBMS_OUTPUT.PUT_LINE('Página 2 removida');
+END IF;
+```
 
 **Veja também:** [RemovePage](#removepage)
 
@@ -2529,18 +3046,29 @@ BOOLEAN — TRUE se a página será removida na saída.
 
 ### IsPDFModified
 
-Indica se há alterações pendentes (rotação, remoção, marca d'água, overlay) no PDF carregado.
+Verificar se o PDF carregado foi modificado
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.IsPDFModified
-    RETURN BOOLEAN;
+FUNCTION PL_FPDF.IsPDFModified RETURN BOOLEAN;
 ```
 
 #### Retorno
 
-BOOLEAN — TRUE se existem modificações não aplicadas.
+TRUE se modificado, FALSE caso contrário
+
+#### Nota
+
+Use para determinar se OutputModifiedPDF() precisa ser chamado
+
+#### Exemplo
+
+```sql
+IF PL_FPDF.IsPDFModified() THEN
+  l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+END IF;
+```
 
 **Veja também:** [OutputModifiedPDF](#outputmodifiedpdf)
 
@@ -2548,7 +3076,7 @@ BOOLEAN — TRUE se existem modificações não aplicadas.
 
 ### LoadPDF
 
-Carrega um PDF existente na memória da sessão para leitura e modificação. É o ponto de partida de todo o fluxo de manipulação, encerrado por OutputModifiedPDF.
+Carregar documento PDF existente na memória para leitura e modificação
 
 #### Sintaxe
 
@@ -2559,19 +3087,19 @@ PROCEDURE PL_FPDF.LoadPDF(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf_blob` | BLOB | Documento PDF a carregar. | BLOB não nulo, com cabeçalho %PDF válido | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf_blob` | BLOB | — | Documento PDF como BLOB |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20800` | PDF inválido (NULL ou muito pequeno) |
-| `-20801` | Cabeçalho PDF inválido |
-| `-20802` | startxref não encontrado |
-| `-20803` | Tabela xref inválida |
-| `-20804` | Objeto Root não encontrado no trailer |
+| Código | Quando |
+|--------|--------|
+| `ORA-20800` | PDF nulo, ou pequeno demais para ter cabeçalho e trailer |
+| `ORA-20801` | Cabeçalho PDF inválido |
+| `ORA-20802` | startxref não encontrado |
+| `ORA-20803` | Tabela xref inválida |
+| `ORA-20804` | Objeto Root não encontrado |
 
 #### Exemplo
 
@@ -2579,57 +3107,80 @@ PROCEDURE PL_FPDF.LoadPDF(
 DECLARE
   l_pdf BLOB;
 BEGIN
-  SELECT pdf_content INTO l_pdf FROM documentos WHERE id = 123;
+  SELECT pdf_content INTO l_pdf FROM documents WHERE id = 123;
   PL_FPDF.LoadPDF(l_pdf);
-  DBMS_OUTPUT.PUT_LINE('Páginas: ' || PL_FPDF.GetPageCount());
+  DBMS_OUTPUT.PUT_LINE('Páginas:' || PL_FPDF.GetPageCount());
 END;
 ```
 
-**Veja também:** [LoadPDFWithID](#loadpdfwithid), [GetPageCount](#getpagecount), [OutputModifiedPDF](#outputmodifiedpdf), [ClearPDFCache](#clearpdfcache)
+**Veja também:** [LoadPDFWithID](#loadpdfwithid) · [GetPageCount](#getpagecount) · [OutputModifiedPDF](#outputmodifiedpdf) · [ClearPDFCache](#clearpdfcache)
 
 ---
 
 ### OutputModifiedPDF
 
-Gera o PDF com as alterações aplicadas, copiando objeto a objeto as páginas mantidas: conteúdo, fontes, imagens e anotações chegam intactos, sem re-renderização. Aplica RemovePage e RotatePage, e desenha marcas d'água e overlays de texto e de imagem no fluxo de conteúdo: cada página afetada ganha um objeto de conteúdo próprio e um /Resources próprio.
+Gerar o PDF modificado copiando as páginas mantidas objeto a objeto. Conteúdo, fontes, imagens e anotações são copiados sem alteração: nada é re-renderizado. Aplica RemovePage e RotatePage.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.OutputModifiedPDF
-    RETURN BLOB;
+FUNCTION PL_FPDF.OutputModifiedPDF RETURN BLOB;
 ```
 
 #### Retorno
 
-BLOB — PDF modificado.
+Documento PDF modificado
+
+#### Processo
+
+1. Valida se PDF está carregado e modificado 2. Indexa a origem (cadeia de xref + árvore de páginas achatada) 3. Seleciona as páginas não marcadas por RemovePage, na ordem original 4. Copia todo objeto alcançável a partir dessas páginas, renumerando as referências indiretas; o payload dos streams é copiado byte a byte 5. Emite um novo Catalog, um novo nó /Pages, xref e trailer
+
+#### Limitação
+
+Marcas d'água e overlays de texto e de imagem são todos desenhados. xref em stream e object streams (PDF 1.5+) são lidos, inclusive com o predictor PNG; um malformado levanta -20843/-20847/-20848.
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
-| `-20819` | PDF sem alterações pendentes |
-| `-20820` | Todas as páginas foram removidas |
-| `-20843` | xref em stream malformada (/W, /Index ou /Filter que não dá para ler) |
-| `-20847` | object stream malformado (/N, /First ou offset fora do stream) |
-| `-20848` | predictor não suportado ou linha inválida na xref em stream |
-| `-20823` | Imagem inválida ou não suportada (entrelaçada abaixo de 8 bits, indexada e entrelaçada, ou acima de 4 megapixels com alfa/entrelace) |
-| `-20846` | /Resources da página não permite sobreposição (sub-dicionário indireto compartilhado) |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
+| `ORA-20819` | o PDF não foi modificado (sem alterações para aplicar) |
+| `ORA-20820` | todas as páginas foram removidas (não dá para gerar PDF vazio) |
+| `ORA-20841` | dicionário de objeto grande demais para renumerar |
+| `ORA-20843` | xref em stream malformada |
+| `ORA-20847` | object stream malformado |
+| `ORA-20848` | predictor não suportado na xref em stream |
+| `ORA-20823` | imagem inválida ou não suportada. PNG com alfa e entrelaçado são suportados; recusados são o entrelaçado abaixo de 8 bits por componente, o indexado E entrelaçado, e imagens acima de 4 megapixels no caminho que reprocessa pixels |
+| `ORA-20846` | o /Resources da página não pode ser sobreposto (subdicionário indireto compartilhado) |
 
 #### Exemplo
 
 ```sql
-l_pdf := PL_FPDF.OutputModifiedPDF();
+DECLARE
+  l_pdf BLOB;
+  l_modified_pdf BLOB;
+BEGIN
+  -- Carregar PDF
+  SELECT pdf_blob INTO l_pdf FROM docs WHERE id = 1;
+  PL_FPDF.LoadPDF(l_pdf);
+  -- Aplicar modificações
+  PL_FPDF.RotatePage(1, 90);
+  PL_FPDF.RemovePage(3);
+  -- Gerar PDF modificado
+  l_modified_pdf := PL_FPDF.OutputModifiedPDF();
+  -- Salvar PDF modificado
+  UPDATE docs SET pdf_blob = l_modified_pdf WHERE id = 1;
+  PL_FPDF.ClearPDFCache();
+END;
 ```
 
-**Veja também:** [LoadPDF](#loadpdf), [ClearPDFCache](#clearpdfcache)
+**Veja também:** [LoadPDF](#loadpdf) · [ClearPDFCache](#clearpdfcache)
 
 ---
 
 ### RemovePage
 
-Marca uma página do PDF carregado para remoção. A exclusão é lógica: só é aplicada em OutputModifiedPDF.
+Marcar uma página para remoção do PDF
 
 #### Sintaxe
 
@@ -2640,24 +3191,38 @@ PROCEDURE PL_FPDF.RemovePage(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página a remover. | Inteiro ≥ 1, até GetPageCount | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | — | Número da página para remover |
+
+#### Nota
+
+Página marcada para remoção. Use OutputModifiedPDF() para gerar PDF modificado
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
-| `-20810` | Número de página inválido |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
+| `ORA-20812` | número de página fora da faixa |
+| `ORA-20814` | a página já estava marcada para remoção |
+| `ORA-20810` | /Pages não encontrado no catálogo do PDF |
 
-**Veja também:** [IsPageRemoved](#ispageremoved), [GetActivePageCount](#getactivepagecount), [OutputModifiedPDF](#outputmodifiedpdf)
+#### Exemplo
+
+```sql
+PL_FPDF.LoadPDF(l_pdf);
+PL_FPDF.RemovePage(2);  -- Remover página 2
+PL_FPDF.RemovePage(5);  -- Remover página 5
+```
+
+**Veja também:** [IsPageRemoved](#ispageremoved) · [GetActivePageCount](#getactivepagecount) · [OutputModifiedPDF](#outputmodifiedpdf)
 
 ---
 
 ### RotatePage
 
-Rotaciona uma página do PDF carregado.
+Rotacionar uma página específica (armazenado em memória, aplicado na saída)
 
 #### Sintaxe
 
@@ -2669,25 +3234,32 @@ PROCEDURE PL_FPDF.RotatePage(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página a rotacionar. | Inteiro ≥ 1, até GetPageCount | — |
-| `p_rotation` | NUMBER | Ângulo de rotação aplicado. | 0, 90, 180 ou 270 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | — | Número da página para rotacionar |
+| `p_rotation` | NUMBER | — | Ângulo de rotação (0, 90, 180, 270) |
+
+#### Nota
+
+Mudanças armazenadas em memória. Use OutputModifiedPDF() para gerar PDF
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
-| `-20810` | Número de página inválido |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | nenhum PDF carregado -- chame LoadPDF antes |
+| `ORA-20813` | giro inválido; só 0, 90, 180 ou 270 |
+| `ORA-20810` | /Pages não encontrado no catálogo do PDF |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.RotatePage(p_page_number => 1, p_rotation => 90);
+PL_FPDF.LoadPDF(l_pdf);
+PL_FPDF.RotatePage(1, 90);    -- Rotacionar página 1
+PL_FPDF.RotatePage(2, 180);   -- Rotacionar página 2
 ```
 
-**Veja também:** [LoadPDF](#loadpdf), [RemovePage](#removepage), [OutputModifiedPDF](#outputmodifiedpdf)
+**Veja também:** [LoadPDF](#loadpdf) · [RemovePage](#removepage) · [OutputModifiedPDF](#outputmodifiedpdf)
 
 ---
 
@@ -2695,7 +3267,7 @@ PL_FPDF.RotatePage(p_page_number => 1, p_rotation => 90);
 
 ### ClearOverlays
 
-Remove todas as sobreposições, de uma página específica ou de todo o documento.
+Limpar todas as sobreposições de todas ou de página específica
 
 #### Sintaxe
 
@@ -2706,49 +3278,72 @@ PROCEDURE PL_FPDF.ClearOverlays(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página a limpar. | Inteiro ≥ 1, até GetPageCount; NULL (padrão) limpa todas as páginas | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | `NULL` | limpar da página ( NULL = todas) |
 
-**Veja também:** [RemoveOverlay](#removeoverlay), [GetOverlays](#getoverlays)
+#### Exemplo
+
+```sql
+-- Limpar todas as sobreposições
+PL_FPDF.ClearOverlays();
+-- Limpar apenas da página 1
+PL_FPDF.ClearOverlays(1);
+```
+
+**Veja também:** [RemoveOverlay](#removeoverlay) · [GetOverlays](#getoverlays)
 
 ---
 
 ### GetOverlays
 
-Lista as sobreposições aplicadas, opcionalmente filtrando por página.
+Obter lista de todas as sobreposições aplicadas como array JSON
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.GetOverlays(
-    p_page_number PLS_INTEGER DEFAULT NULL)
-    RETURN JSON_ARRAY_T;
+    p_page_number PLS_INTEGER DEFAULT NULL) RETURN JSON_ARRAY_T;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Filtro de página. | Inteiro ≥ 1, até GetPageCount; NULL (padrão) retorna as de todas as páginas | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | `NULL` | filtrar por página ( NULL = todas) |
 
 #### Retorno
 
-JSON_ARRAY_T — objetos com overlayId, overlayType ('TEXT' ou 'IMAGE'), pageNumber, x, y, content, opacity, rotation e zOrder.
+JSON_ARRAY_T - Array de objetos de sobreposição [{ "overlayId": "OVL_001", "overlayType": "TEXT" | "IMAGE", "pageNumber": 1, "x": 100, "y": 700, "content": "APPROVED", // só para sobreposição de texto "opacity": 0.8, "rotation": 45, "zOrder": 100 }, ...]
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | Nenhum PDF carregado |
 
-**Veja também:** [OverlayText](#overlaytext), [RemoveOverlay](#removeoverlay)
+#### Exemplo
+
+```sql
+DECLARE
+  l_overlays JSON_ARRAY_T;
+  l_overlay JSON_OBJECT_T;
+BEGIN
+  l_overlays := PL_FPDF.GetOverlays(1);  -- Page 1 overlays
+  FOR i IN 0..l_overlays.get_size() - 1 LOOP
+    l_overlay := TREAT(l_overlays.get(i) AS JSON_OBJECT_T);
+    DBMS_OUTPUT.PUT_LINE('Type: ' || l_overlay.get_string('overlayType'));
+  END LOOP;
+END;
+```
+
+**Veja também:** [OverlayText](#overlaytext) · [RemoveOverlay](#removeoverlay)
 
 ---
 
 ### OverlayImage
 
-Sobrepõe uma imagem em posição exata de uma página do PDF carregado — logotipos, assinaturas digitalizadas e selos. Desenhada por OutputModifiedPDF() no fluxo de conteúdo. Nenhum dos dois formatos é descomprimido: o JPEG entra inteiro como /DCTDecode, e os blocos IDAT do PNG já são zlib, que é o /FlateDecode do PDF. Não suportados, e recusados com -20823 em vez de desenhados errado: PNG com canal alfa, PNG entrelaçado (Adam7) e profundidade de 16 bits.
+Adicionar sobreposição de imagem em posição específica com controle de tamanho Desenhada por OutputModifiedPDF() no fluxo de conteúdo. No caminho comum nada é descomprimido: o JPEG entra inteiro como /DCTDecode, e os blocos IDAT do PNG já são zlib, que é o /FlateDecode do PDF — são concatenados e declarados com /Predictor 15, o que vale de 1 a 16 bits por componente. PNG com canal alfa (color types 4 e 6) e entrelaçado (Adam7) também são desenhados, por um caminho que reprocessa pixel a pixel — e por isso sai sem compressão, já que não há deflate neste trecho. Recusados com -20823, em vez de desenhados errado: entrelaçado com menos de 8 bits por componente, indexado E entrelaçado, e imagem acima do teto de pixels do caminho que reprocessa.
 
 #### Sintaxe
 
@@ -2765,44 +3360,56 @@ PROCEDURE PL_FPDF.OverlayImage(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página que recebe a imagem. | Inteiro ≥ 1, até GetPageCount | — |
-| `p_image_blob` | BLOB | Conteúdo da imagem. | BLOB em formato JPEG ou PNG | — |
-| `p_x` | NUMBER | Posição X em pontos PDF. | 0 a 612 em A4 retrato | — |
-| `p_y` | NUMBER | Posição Y em pontos PDF (da base). | 0 a 792 em A4 retrato | — |
-| `p_width` | NUMBER | Largura em pontos. | Número > 0; NULL (padrão) usa a largura original | `NULL` |
-| `p_height` | NUMBER | Altura em pontos. | Número > 0; NULL (padrão) usa a altura original ou mantém a proporção | `NULL` |
-| `p_options` | JSON_OBJECT_T | Configurações da imagem. | JSON_OBJECT_T com as chaves opcionais: opacity (0.0–1.0), rotation (0–360), maintainAspect (true/false), scaleToFit (true/false), zOrder (inteiro) | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | — | Número da página (base 1) |
+| `p_image_blob` | BLOB | — | os bytes da imagem, em JPEG ou PNG |
+| `p_x` | NUMBER | — | Posição X em pontos PDF |
+| `p_y` | NUMBER | — | Posição Y (de baixo) (from bottom) |
+| `p_width` | NUMBER | `NULL` | Largura em pontos ( NULL = original) |
+| `p_height` | NUMBER | `NULL` | Altura em pontos ( NULL = original) |
+| `p_options` | JSON_OBJECT_T | `NULL` | Configuração JSON (opcional) |
+
+#### Nota
+
+Opções (JSON_OBJECT_T): { "opacity": 1.0, // Opacidade 0.0 a 1.0 "rotation": 0, // Ângulo de rotação "maintainAspect": true, // Manter proporção "scaleToFit": false, // Escalar para caber "zOrder": 100 // Ordem da camada }
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
-| `-20810` | Número de página inválido |
-| `-20821` | Coordenadas inválidas |
-| `-20823` | Formato de imagem inválido (use JPEG ou PNG) |
-| `-20824` | Dimensões de imagem inválidas |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | Nenhum PDF carregado |
+| `ORA-20810` | Número de página inválido |
+| `ORA-20821` | Coordenadas de posição inválidas |
+| `ORA-20823` | formato de imagem inválido -- só JPEG ou PNG |
+| `ORA-20824` | Dimensões da imagem inválidas |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.OverlayImage(
-  p_page_number => 1,
-  p_image_blob  => l_logo,
-  p_x => 450, p_y => 750,
-  p_width => 100, p_height => NULL,
-  p_options => JSON_OBJECT_T('{"opacity":0.9,"maintainAspect":true}'));
+DECLARE
+  l_logo BLOB;
+  l_options JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  SELECT logo_blob INTO l_logo FROM company_assets WHERE id = 1;
+  PL_FPDF.LoadPDF(l_pdf);
+  -- Adicionar logo no canto superior direito
+  PL_FPDF.OverlayImage(1, l_logo, 450, 750, 100, 50, NULL);
+  -- Marca d'água com transparência
+  l_options.put('opacity', 0.3);
+  l_options.put('rotation', 45);
+  PL_FPDF.OverlayImage(1, l_watermark, 200, 400, 300, NULL, l_options);
+  l_modified := PL_FPDF.OutputModifiedPDF();
+END;
 ```
 
-**Veja também:** [OverlayText](#overlaytext), [Image](#image), [GetOverlays](#getoverlays)
+**Veja também:** [OverlayText](#overlaytext) · [Image](#image) · [GetOverlays](#getoverlays)
 
 ---
 
 ### OverlayText
 
-Sobrepõe texto em uma posição exata de uma página do PDF carregado — carimbos, protocolos e assinaturas. As coordenadas são em pontos PDF, com Y crescendo de baixo para cima. Desenhado por OutputModifiedPDF() no fluxo de conteúdo. Quando width é informado ele define a CAIXA do texto: as linhas quebram dentro dela e o align é relativo a [x, x+width]. Sem width não há o que quebrar, e o align passa a ser relativo ao próprio ponto — 'center' centraliza o texto em x, 'right' o termina em x.
+Adicionar sobreposição de texto em posição específica com controle completo de formatação Desenhada por OutputModifiedPDF() no fluxo de conteúdo. x e y vão em pontos PDF, a partir do canto inferior esquerdo. Quando width é informado ele define a CAIXA do texto: as linhas quebram dentro dela e o align é relativo a [x, x+width]. Sem width não há o que quebrar, e o align passa a ser relativo ao próprio ponto — 'center' centraliza o texto em x, 'right' o termina em x.
 
 #### Sintaxe
 
@@ -2817,39 +3424,53 @@ PROCEDURE PL_FPDF.OverlayText(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_page_number` | PLS_INTEGER | Página que recebe o texto. | Inteiro ≥ 1, até GetPageCount | — |
-| `p_text` | VARCHAR2 | Texto sobreposto. | Qualquer VARCHAR2 | — |
-| `p_x` | NUMBER | Posição X em pontos PDF (1 pt = 1/72 pol), a partir da esquerda. | 0 a 612 em A4 retrato | — |
-| `p_y` | NUMBER | Posição Y em pontos PDF, a partir da base da página. | 0 a 792 em A4 retrato | — |
-| `p_options` | JSON_OBJECT_T | Configurações visuais do texto. | JSON_OBJECT_T com as chaves opcionais: font ('Helvetica'/'Arial', 'Times' ou 'Courier'; outro nome cai em Helvetica), fontSize (número, 12), color (hexadecimal RGB, '000000'), opacity (0.0–1.0), rotation (0–360), align ('left', 'center', 'right'), width (largura da caixa, em pontos: define a quebra de linha e a referência do align), bold (true/false), zOrder (inteiro; maior fica por cima, sendo desenhado por último) | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_page_number` | PLS_INTEGER | — | Número da página (base 1) |
+| `p_text` | VARCHAR2 | — | Conteúdo do texto |
+| `p_x` | NUMBER | — | Posição X (1 point = 1/72 inch, from left) |
+| `p_y` | NUMBER | — | Posição Y (de baixo) (from bottom) |
+| `p_options` | JSON_OBJECT_T | `NULL` | Configuração JSON (opcional) |
+
+#### Nota
+
+Opções (JSON_OBJECT_T): { "font": "Helvetica", // Nome da fonte "fontSize": 12, // Tamanho da fonte "color": "000000", // Cor RGB hexadecimal "opacity": 1.0, // Opacidade 0.0 a 1.0 "rotation": 0, // ângulo de rotação (0-360) "align": "left", // esquerda, centro, direita "width": null, // largura máxima (quebra sozinho) "bold": false, // Texto em negrito "zOrder": 100 // ordem da camada (maior fica por cima) }
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20809` | Nenhum PDF carregado |
-| `-20810` | Número de página inválido |
-| `-20821` | Coordenadas de posição inválidas |
+| Código | Quando |
+|--------|--------|
+| `ORA-20809` | Nenhum PDF carregado |
+| `ORA-20810` | Número de página inválido |
+| `ORA-20821` | Coordenadas de posição inválidas, ou opacidade fora de 0.0..1.0 |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.OverlayText(
-  p_page_number => 1,
-  p_text        => 'APROVADO',
-  p_x => 400, p_y => 700,
-  p_options => JSON_OBJECT_T('{"fontSize":24,"color":"FF0000","opacity":0.8,"bold":true}'));
+DECLARE
+  l_options JSON_OBJECT_T := JSON_OBJECT_T();
+BEGIN
+  PL_FPDF.LoadPDF(l_pdf);
+  -- Sobreposição simples
+  PL_FPDF.OverlayText(1, 'APPROVED', 100, 700, NULL);
+  -- Texto formatado
+  l_options.put('font', 'Helvetica-Bold');
+  l_options.put('fontSize', 24);
+  l_options.put('color', 'FF0000');  -- Vermelho
+  l_options.put('opacity', 0.8);
+  l_options.put('rotation', 45);
+  PL_FPDF.OverlayText(1, 'CONFIDENTIAL', 200, 400, l_options);
+  l_modified := PL_FPDF.OutputModifiedPDF();
+END;
 ```
 
-**Veja também:** [OverlayImage](#overlayimage), [GetOverlays](#getoverlays), [AddWatermark](#addwatermark)
+**Veja também:** [OverlayImage](#overlayimage) · [GetOverlays](#getoverlays) · [AddWatermark](#addwatermark)
 
 ---
 
 ### RemoveOverlay
 
-Remove uma sobreposição específica pelo seu identificador.
+Remover sobreposição específica por ID
 
 #### Sintaxe
 
@@ -2860,11 +3481,23 @@ PROCEDURE PL_FPDF.RemoveOverlay(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_overlay_id` | VARCHAR2 | Identificador da sobreposição. | Valor overlayId retornado por GetOverlays, ex.: 'OVL_001' | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_overlay_id` | VARCHAR2 | — | ID da sobreposição () |
 
-**Veja também:** [GetOverlays](#getoverlays), [ClearOverlays](#clearoverlays)
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20825` | Sobreposição não encontrada |
+
+#### Exemplo
+
+```sql
+PL_FPDF.RemoveOverlay('OVL_001');
+```
+
+**Veja também:** [GetOverlays](#getoverlays) · [ClearOverlays](#clearoverlays)
 
 ---
 
@@ -2872,7 +3505,7 @@ PROCEDURE PL_FPDF.RemoveOverlay(
 
 ### ExtractPages
 
-Cria um novo PDF contendo apenas as páginas selecionadas de um documento carregado. A ordem pedida é respeitada e uma página pode repetir; só os objetos alcançáveis a partir das páginas escolhidas são copiados, então o resultado fica menor que a origem.
+Extrair as páginas indicadas de um PDF carregado para um novo documento. A ordem pedida é respeitada ('5,1' devolve a página 5 e depois a 1) e uma página pode repetir. Só os objetos alcançáveis a partir das páginas escolhidas são copiados, então o resultado fica menor que a origem.
 
 #### Sintaxe
 
@@ -2880,66 +3513,86 @@ Cria um novo PDF contendo apenas as páginas selecionadas de um documento carreg
 FUNCTION PL_FPDF.ExtractPages(
     p_pdf_id  VARCHAR2,
     p_pages   VARCHAR2,
-    p_options JSON_OBJECT_T DEFAULT NULL)
-    RETURN BLOB;
+    p_options JSON_OBJECT_T DEFAULT NULL) RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf_id` | VARCHAR2 | Identificador do documento de origem. | O mesmo usado em LoadPDFWithID | — |
-| `p_pages` | VARCHAR2 | Páginas a extrair. | Lista e intervalos separados por vírgula, ex.: '1', '1,5,9', '1,5-10,15', '5,1' (ordem invertida) ou 'ALL' | — |
-| `p_options` | JSON_OBJECT_T | Opções da extração. | JSON_OBJECT_T opcional; chaves reservadas para uso futuro | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf_id` | VARCHAR2 | — | Identificador do PDF |
+| `p_pages` | VARCHAR2 | — | Especificação: '1', '1,3,5-7,10', '5,1' ou 'ALL' |
+| `p_options` | JSON_OBJECT_T | `NULL` | Configuração opcional (future use) |
 
 #### Retorno
 
-BLOB — PDF com as páginas extraídas.
+Novo PDF com páginas extraídas
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20831` | ID do PDF não encontrado |
-| `-20838` | Especificação de páginas inválida |
-| `-20839` | Número de página fora do intervalo |
-| `-20841` | Dicionário de objeto grande demais para renumerar |
-| `-20843` | xref em stream malformada (/W, /Index ou /Filter que não dá para ler) |
-| `-20847` | object stream malformado (/N, /First ou offset fora do stream) |
-| `-20848` | predictor não suportado ou linha inválida na xref em stream |
+| Código | Quando |
+|--------|--------|
+| `ORA-20831` | ID do PDF não encontrado |
+| `ORA-20838` | Especificação de páginas inválida |
+| `ORA-20839` | Número de página fora do intervalo |
+| `ORA-20841` | Dicionário de objeto grande demais para renumerar |
+| `ORA-20843` | xref em stream malformada |
+| `ORA-20847` | object stream malformado |
+| `ORA-20848` | predictor não suportado na xref em stream |
 
 #### Exemplo
 
 ```sql
-l_resumo := PL_FPDF.ExtractPages('corpo', '1,5-10,15');
+DECLARE
+  l_extracted BLOB;
+BEGIN
+  PL_FPDF.LoadPDFWithID('manual', l_manual_pdf);
+  -- Extrair páginas 1, 5-10 e 15
+  l_extracted := PL_FPDF.ExtractPages('manual', '1,5-10,15', NULL);
+  INSERT INTO documents VALUES ('Summary', l_extracted);
+END;
 ```
 
-**Veja também:** [SplitPDF](#splitpdf), [MergePDFs](#mergepdfs)
+**Veja também:** [SplitPDF](#splitpdf) · [MergePDFs](#mergepdfs)
 
 ---
 
 ### GetLoadedPDFs
 
-Lista os documentos atualmente carregados com identificador.
+Obter lista de todos os IDs de PDF carregados e seus metadados
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetLoadedPDFs
-    RETURN JSON_ARRAY_T;
+FUNCTION PL_FPDF.GetLoadedPDFs RETURN JSON_ARRAY_T;
 ```
 
 #### Retorno
 
-JSON_ARRAY_T — objetos com o id e as informações de cada PDF carregado.
+JSON_ARRAY_T - Array de objetos PDF [{ "pdfId": "report_jan", "pageCount": 5, "fileSize": 125678, "loadedDate": "2026-01-25T10:30:00" }, ...]
 
-**Veja também:** [LoadPDFWithID](#loadpdfwithid), [UnloadPDF](#unloadpdf)
+#### Exemplo
+
+```sql
+DECLARE
+  l_pdfs JSON_ARRAY_T;
+  l_pdf JSON_OBJECT_T;
+BEGIN
+  l_pdfs := PL_FPDF.GetLoadedPDFs();
+  FOR i IN 0..l_pdfs.get_size() - 1 LOOP
+    l_pdf := TREAT(l_pdfs.get(i) AS JSON_OBJECT_T);
+    DBMS_OUTPUT.PUT_LINE('PDF: ' || l_pdf.get_string('pdfId'));
+  END LOOP;
+END;
+```
+
+**Veja também:** [LoadPDFWithID](#loadpdfwithid) · [UnloadPDF](#unloadpdf)
 
 ---
 
 ### LoadPDFWithID
 
-Carrega um PDF na memória associando-o a um identificador, permitindo manter vários documentos abertos simultaneamente para mesclar, dividir ou extrair páginas.
+Carregar PDF em memória com identificador único para operações multi-documento
 
 #### Sintaxe
 
@@ -2951,127 +3604,156 @@ PROCEDURE PL_FPDF.LoadPDFWithID(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf_id` | VARCHAR2 | Identificador do documento na sessão. | Texto único, ex.: 'capa', 'anexo1' | — |
-| `p_pdf_blob` | BLOB | Documento a carregar. | BLOB com PDF válido | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf_id` | VARCHAR2 | — | Identificador único (max 50 chars) |
+| `p_pdf_blob` | BLOB | — | Documento PDF como BLOB |
+
+#### Nota
+
+Máximo de 10 PDFs podem ser carregados simultaneamente
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20800` | PDF inválido |
-| `-20801` | Cabeçalho PDF inválido |
+| Código | Quando |
+|--------|--------|
+| `ORA-20828` | ID do PDF já carregado |
+| `ORA-20829` | Máximo de PDFs excedido (10 max) |
+| `ORA-20830` | identificador vazio ou longo demais |
+| `ORA-20800` | PDF nulo ou pequeno demais para ser válido |
+| `ORA-20801` | cabeçalho %PDF-x.x ausente ou malformado |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.LoadPDFWithID(l_capa,  'capa');
-PL_FPDF.LoadPDFWithID(l_corpo, 'corpo');
+BEGIN
+  PL_FPDF.LoadPDFWithID('report_jan', l_jan_pdf);
+  PL_FPDF.LoadPDFWithID('report_feb', l_feb_pdf);
+  PL_FPDF.LoadPDFWithID('report_mar', l_mar_pdf);
+END;
 ```
 
-**Veja também:** [MergePDFs](#mergepdfs), [SplitPDF](#splitpdf), [ExtractPages](#extractpages), [UnloadPDF](#unloadpdf), [GetLoadedPDFs](#getloadedpdfs)
+**Veja também:** [MergePDFs](#mergepdfs) · [SplitPDF](#splitpdf) · [ExtractPages](#extractpages) · [UnloadPDF](#unloadpdf) · [GetLoadedPDFs](#getloadedpdfs)
 
 ---
 
 ### MergePDFs
 
-Mescla vários PDFs carregados em um único documento, na ordem informada. Os objetos de cada origem (páginas, fontes, imagens, anotações) são copiados com as referências indiretas renumeradas: nada é re-renderizado e o conteúdo original chega intacto. O mesmo identificador pode aparecer mais de uma vez.
+Mesclar múltiplos PDFs carregados em um único documento, na ordem dada. Todos os objetos de cada origem são copiados (páginas, fontes, imagens, anotações) com as referências indiretas renumeradas, e uma nova árvore de páginas é montada. Nada é re-renderizado: o conteúdo original chega intacto. O mesmo ID pode aparecer mais de uma vez.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.MergePDFs(
     p_pdf_ids JSON_ARRAY_T,
-    p_options JSON_OBJECT_T DEFAULT NULL)
-    RETURN BLOB;
+    p_options JSON_OBJECT_T DEFAULT NULL) RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf_ids` | JSON_ARRAY_T | Identificadores dos documentos, na ordem desejada. | JSON_ARRAY_T de textos, ex.: JSON_ARRAY_T('["capa","corpo","anexo"]') | — |
-| `p_options` | JSON_OBJECT_T | Opções da mesclagem. | JSON_OBJECT_T opcional; chaves reservadas para uso futuro | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf_ids` | JSON_ARRAY_T | — | Array JSON de IDs de PDF Example: JSON_ARRAY_T('["pdf1","pdf2","pdf3"]') |
+| `p_options` | JSON_OBJECT_T | `NULL` | Configuração opcional (future use) |
 
 #### Retorno
 
-BLOB — PDF resultante da mesclagem.
+Documento PDF mesclado
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20832` | Nenhum ID de PDF informado |
-| `-20833` | ID de PDF não carregado |
-| `-20834` | Falha na mesclagem |
-| `-20841` | Dicionário de objeto grande demais para renumerar |
-| `-20843` | xref em stream malformada (/W, /Index ou /Filter que não dá para ler) |
-| `-20847` | object stream malformado (/N, /First ou offset fora do stream) |
-| `-20848` | predictor não suportado ou linha inválida na xref em stream |
+| Código | Quando |
+|--------|--------|
+| `ORA-20832` | Nenhum ID de PDF fornecido |
+| `ORA-20833` | ID de PDF na lista não carregado |
+| `ORA-20834` | Mesclagem falhou |
+| `ORA-20841` | Dicionário de objeto grande demais para renumerar |
+| `ORA-20843` | xref em stream malformada |
+| `ORA-20847` | object stream malformado |
+| `ORA-20848` | predictor não suportado na xref em stream |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.LoadPDFWithID(l_capa,  'capa');
-PL_FPDF.LoadPDFWithID(l_corpo, 'corpo');
-l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T('["capa","corpo"]'));
+DECLARE
+  l_merged BLOB;
+BEGIN
+  PL_FPDF.LoadPDFWithID('jan', l_jan_pdf);
+  PL_FPDF.LoadPDFWithID('feb', l_feb_pdf);
+  PL_FPDF.LoadPDFWithID('mar', l_mar_pdf);
+  l_merged := PL_FPDF.MergePDFs(
+    JSON_ARRAY_T('["jan","feb","mar"]'),
+    NULL
+  );
+  INSERT INTO reports VALUES ('Q1_2026', l_merged);
+END;
 ```
 
-**Veja também:** [LoadPDFWithID](#loadpdfwithid), [SplitPDF](#splitpdf), [ExtractPages](#extractpages)
+**Veja também:** [LoadPDFWithID](#loadpdfwithid) · [SplitPDF](#splitpdf) · [ExtractPages](#extractpages)
 
 ---
 
 ### SplitPDF
 
-Divide um PDF carregado em vários documentos, conforme os intervalos informados. Cada parte leva apenas os objetos alcançáveis a partir das suas páginas, e por isso fica bem menor que a origem. Os intervalos não podem se sobrepor.
+Dividir o PDF carregado em vários documentos, um por intervalo. Cada parte leva apenas os objetos alcançáveis a partir das suas páginas, e por isso fica bem menor que a origem. Os intervalos não podem se sobrepor.
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.SplitPDF(
     p_pdf_id      VARCHAR2,
-    p_page_ranges JSON_ARRAY_T)
-    RETURN JSON_ARRAY_T;
+    p_page_ranges JSON_ARRAY_T) RETURN JSON_ARRAY_T;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf_id` | VARCHAR2 | Identificador do documento a dividir. | O mesmo usado em LoadPDFWithID | — |
-| `p_page_ranges` | JSON_ARRAY_T | Intervalos que definem cada parte gerada. | JSON_ARRAY_T de textos: '1-10', '11-20', '5' (página única), '1,3,5' (lista) ou 'ALL' | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf_id` | VARCHAR2 | — | Identificador do PDF |
+| `p_page_ranges` | JSON_ARRAY_T | — | Array de intervalos Examples: '1-5', '6-10', '11', '1,3,5', 'ALL' |
 
 #### Retorno
 
-JSON_ARRAY_T — uma entrada por intervalo, com o PDF da parte em base64, sem quebras de linha.
+Array com PDFs em base64, um por intervalo, sem quebras de linha
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20831` | ID do PDF não encontrado |
-| `-20835` | Nenhum intervalo informado |
-| `-20836` | Intervalos sobrepostos |
-| `-20838` | Especificação de páginas inválida |
-| `-20839` | Número de página fora do intervalo |
-| `-20843` | xref em stream malformada (/W, /Index ou /Filter que não dá para ler) |
-| `-20847` | object stream malformado (/N, /First ou offset fora do stream) |
-| `-20848` | predictor não suportado ou linha inválida na xref em stream |
+| Código | Quando |
+|--------|--------|
+| `ORA-20831` | ID do PDF não encontrado |
+| `ORA-20835` | Nenhum intervalo fornecido |
+| `ORA-20836` | Intervalos sobrepostos |
+| `ORA-20838` | Especificação de páginas inválida |
+| `ORA-20839` | Número de página fora do intervalo |
+| `ORA-20843` | xref em stream malformada |
+| `ORA-20847` | object stream malformado |
+| `ORA-20848` | predictor não suportado na xref em stream |
 
 #### Exemplo
 
 ```sql
-l_partes := PL_FPDF.SplitPDF('corpo', JSON_ARRAY_T('["1-10","11-20","21-30"]'));
+DECLARE
+  l_split_pdfs JSON_ARRAY_T;
+  l_part CLOB;
+BEGIN
+  PL_FPDF.LoadPDFWithID('contract', l_contract_pdf);
+  l_split_pdfs := PL_FPDF.SplitPDF('contract',
+    JSON_ARRAY_T('["1-5", "6-10", "11-15"]')
+  );
+  FOR i IN 0..l_split_pdfs.get_size() - 1 LOOP
+    l_part := l_split_pdfs.get_string(i);
+    -- Processar cada parte
+  END LOOP;
+END;
 ```
 
-**Veja também:** [ExtractPages](#extractpages), [MergePDFs](#mergepdfs)
+**Veja também:** [ExtractPages](#extractpages) · [MergePDFs](#mergepdfs)
 
 ---
 
 ### UnloadPDF
 
-Remove da memória um documento carregado por LoadPDFWithID.
+Remover PDF específico da memória para liberar recursos
 
 #### Sintaxe
 
@@ -3082,17 +3764,23 @@ PROCEDURE PL_FPDF.UnloadPDF(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf_id` | VARCHAR2 | Identificador do documento. | O mesmo usado em LoadPDFWithID | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf_id` | VARCHAR2 | — | Identificador do PDF |
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20831` | ID do PDF não encontrado |
+| Código | Quando |
+|--------|--------|
+| `ORA-20831` | ID do PDF não encontrado |
 
-**Veja também:** [LoadPDFWithID](#loadpdfwithid), [ClearPDFCache](#clearpdfcache)
+#### Exemplo
+
+```sql
+PL_FPDF.UnloadPDF('report_jan');
+```
+
+**Veja também:** [LoadPDFWithID](#loadpdfwithid) · [ClearPDFCache](#clearpdfcache)
 
 ---
 
@@ -3100,44 +3788,54 @@ PROCEDURE PL_FPDF.UnloadPDF(
 
 ### DecryptPDF
 
-Remove a proteção de um PDF criptografado, exigindo a senha correta. Suporta RC4-40, RC4-128, AES-128 (AESV2) e AES-256 (AESV3), com a senha de usuário ou a de proprietário. O filtro é lido do /CFM do documento, não presumido. Origem em PDF 1.5+ é achatada, e os object streams são decifrados antes de descomprimidos.
+Remover criptografia do PDF usando senha
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.DecryptPDF(
     p_pdf      BLOB,
-    p_password VARCHAR2)
-    RETURN BLOB;
+    p_password VARCHAR2) RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf` | BLOB | Documento criptografado. | BLOB com PDF protegido | — |
-| `p_password` | VARCHAR2 | Senha de usuário ou de proprietário. | Texto correspondente a uma das senhas do documento | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf` | BLOB | — | PDF blob criptografado |
+| `p_password` | VARCHAR2 | — | Senha de usuário ou owner |
 
 #### Retorno
 
-BLOB — PDF sem criptografia.
+PDF descriptografado
+
+#### Nota
+
+Origem em PDF 1.5+ é achatada, e os object streams são decifrados antes de descomprimidos.
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20853` | O PDF não está criptografado |
-| `-20854` | Senha ausente ou inválida |
-| `-20857` | Fluxo AES inválido ou preenchimento inconsistente |
-| `-20861` | Dicionário /Encrypt incompleto (AESV3 sem /UE) |
+| Código | Quando |
+|--------|--------|
+| `ORA-20853` | PDF não está criptografado |
+| `ORA-20854` | Senha inválida |
+| `ORA-20855` | Falha na descriptografia |
+| `ORA-20861` | dicionário /Encrypt não encontrado no PDF |
+| `ORA-20857` | versão de PDF inválida |
 
-**Veja também:** [EncryptPDF](#encryptpdf), [IsEncrypted](#isencrypted)
+#### Exemplo
+
+```sql
+l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
+```
+
+**Veja também:** [EncryptPDF](#encryptpdf) · [IsEncrypted](#isencrypted)
 
 ---
 
 ### EncryptPDF
 
-Criptografa um PDF já existente, aplicando senhas e permissões. É a forma recomendada de proteger documentos gerados ou recebidos. Origem em PDF 1.5+ (xref em stream, object streams) é achatada: os objetos de dentro dos object streams viram objetos de primeiro nível e a saída leva xref clássica.
+Criptografar PDF com proteção por senha seguindo especificação PDF
 
 #### Sintaxe
 
@@ -3147,69 +3845,68 @@ FUNCTION PL_FPDF.EncryptPDF(
     p_user_password  VARCHAR2,
     p_owner_password VARCHAR2 DEFAULT NULL,
     p_permissions    JSON_OBJECT_T DEFAULT NULL,
-    p_encryption     VARCHAR2 DEFAULT 'RC4-128')
-    RETURN BLOB;
+    p_encryption     VARCHAR2 DEFAULT 'RC4-128') RETURN BLOB;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf` | BLOB | Documento a proteger. | BLOB com PDF válido, não criptografado | — |
-| `p_user_password` | VARCHAR2 | Senha solicitada para abrir o documento. | Texto; vazio permite abrir sem senha, mantendo as restrições | — |
-| `p_owner_password` | VARCHAR2 | Senha de proprietário, que permite alterar permissões. | Texto; NULL (padrão) usa a mesma senha de usuário | `NULL` |
-| `p_permissions` | JSON_OBJECT_T | Permissões concedidas ao leitor. | JSON_OBJECT_T com as chaves booleanas: print, modify, copy, annotate, fill_forms, extract, assemble, print_high. Ausentes assumem o padrão restritivo | `NULL` |
-| `p_encryption` | VARCHAR2 | Algoritmo de criptografia. | 'AES-256' e 'AES-128' (recomendados), 'RC4-128' (padrão, mantido por compatibilidade) ou 'RC4-40' (legado). O RC4 está quebrado há anos e o PDF 2.0 o removeu da especificação; leitores novos avisam ou recusam | `'RC4-128'` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf` | BLOB | — | PDF blob para criptografar |
+| `p_user_password` | VARCHAR2 | — | Senha para abrir documento |
+| `p_owner_password` | VARCHAR2 | `NULL` | senha de acesso total (opcional) |
+| `p_permissions` | JSON_OBJECT_T | `NULL` | JSON com flags de permissão |
+| `p_encryption` | VARCHAR2 | `'RC4-128'` | Encryption method: 'RC4-40','RC4-128','AES-128','AES-256' |
 
 #### Retorno
 
-BLOB — PDF criptografado.
+PDF criptografado
+
+#### Nota
+
+Origem em PDF 1.5+ (xref em stream, object streams) é achatada: os objetos de dentro dos object streams viram objetos de primeiro nível e a saída leva xref clássica.
 
 #### Erros
 
-| Código | Condição |
-|--------|----------|
-| `-20850` | Método de criptografia inválido |
-| `-20851` | Senha de usuário obrigatória |
-| `-20859` | O PDF já está criptografado |
-| `-20863` | O AES não reproduz o vetor do FIPS-197 neste banco |
-| `-20864` | Fluxo além do teto do RC4 em RAW (uso interno) |
+| Código | Quando |
+|--------|--------|
+| `ORA-20850` | Método de criptografia inválido |
+| `ORA-20851` | Senha obrigatória |
+| `ORA-20852` | Falha na criptografia |
+| `ORA-20859` | o PDF já está cifrado; decifre antes |
+| `ORA-20860` | PDF inválido: /Root não encontrado no trailer |
+| `ORA-20863` | chave RC4 vazia |
+| `ORA-20864` | conteúdo acima do limite que o RC4 desta base trata |
 
 #### Exemplo
 
 ```sql
-DECLARE
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
-BEGIN
-  l_perms.put('print', TRUE);
-  l_perms.put('copy',  FALSE);
-  l_seguro := PL_FPDF.EncryptPDF(
-    p_pdf            => l_pdf,
-    p_user_password  => 'senhaLeitura',
-    p_owner_password => 'senhaAdmin',
-    p_permissions    => l_perms,
-    p_encryption     => 'RC4-128');
-END;
+l_encrypted := PL_FPDF.EncryptPDF(
+  p_pdf => l_pdf,
+  p_user_password => 'user123',
+  p_owner_password => 'owner456',
+  p_permissions => JSON_OBJECT_T('{"print":true,"copy":false}'),
+  p_encryption => 'AES-128'
+);
 ```
 
-**Veja também:** [DecryptPDF](#decryptpdf), [IsEncrypted](#isencrypted), [SetEncryption](#setencryption), [SetPermissions](#setpermissions)
+**Veja também:** [DecryptPDF](#decryptpdf) · [IsEncrypted](#isencrypted) · [SetEncryption](#setencryption) · [SetPermissions](#setpermissions)
 
 ---
 
 ### GetPDFVersion
 
-Retorna a versão de PDF configurada para a saída.
+Obter a configuração atual de versão do PDF
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetPDFVersion
-    RETURN VARCHAR2;
+FUNCTION PL_FPDF.GetPDFVersion RETURN VARCHAR2;
 ```
 
 #### Retorno
 
-VARCHAR2 — versão, ex.: '1.7'.
+VARCHAR2 - a versão de PDF corrente (por exemplo '1.4')
 
 **Veja também:** [SetPDFVersion](#setpdfversion)
 
@@ -3217,59 +3914,70 @@ VARCHAR2 — versão, ex.: '1.7'.
 
 ### GetSecurityInfo
 
-Retorna os detalhes de segurança de um PDF criptografado.
+Obter informações de segurança do PDF
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.GetSecurityInfo(
-    p_pdf BLOB)
-    RETURN JSON_OBJECT_T;
+    p_pdf BLOB) RETURN JSON_OBJECT_T;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf` | BLOB | Documento a inspecionar. | BLOB com PDF válido | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf` | BLOB | — | PDF blob |
 
 #### Retorno
 
-JSON_OBJECT_T — algoritmo, tamanho da chave e permissões concedidas.
+JSON_OBJECT_T - Security info including: - encrypted: boolean - method: string (RC4-40, RC4-128, AES-128, AES-256) - permissions: object with print, copy, modify, etc. - hasUserPassword: boolean - hasOwnerPassword: boolean
 
-**Veja também:** [IsEncrypted](#isencrypted), [EncryptPDF](#encryptpdf)
+#### Exemplo
+
+```sql
+l_info := PL_FPDF.GetSecurityInfo(l_pdf);
+IF l_info.get_boolean('encrypted') THEN ...
+```
+
+**Veja também:** [IsEncrypted](#isencrypted) · [EncryptPDF](#encryptpdf)
 
 ---
 
 ### IsEncrypted
 
-Verifica se um PDF está criptografado.
+Verificar se PDF está criptografado
 
 #### Sintaxe
 
 ```sql
 FUNCTION PL_FPDF.IsEncrypted(
-    p_pdf BLOB)
-    RETURN BOOLEAN;
+    p_pdf BLOB) RETURN BOOLEAN;
 ```
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_pdf` | BLOB | Documento a verificar. | BLOB com PDF válido | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_pdf` | BLOB | — | PDF blob para verificar |
 
 #### Retorno
 
-BOOLEAN — TRUE se o documento possui criptografia.
+TRUE se criptografado
 
-**Veja também:** [GetSecurityInfo](#getsecurityinfo), [DecryptPDF](#decryptpdf)
+#### Exemplo
+
+```sql
+IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
+```
+
+**Veja também:** [GetSecurityInfo](#getsecurityinfo) · [DecryptPDF](#decryptpdf)
 
 ---
 
 ### SetEncryption
 
-Define a criptografia de um documento em construção; aplicada quando o PDF for finalizado por OutputBlob.
+Definir criptografia para PDF em geração (usar antes do Output)
 
 #### Sintaxe
 
@@ -3282,28 +3990,39 @@ PROCEDURE PL_FPDF.SetEncryption(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_encryption` | VARCHAR2 | Algoritmo de criptografia. | 'RC4-128' ou 'RC4-40' | — |
-| `p_user_password` | VARCHAR2 | Senha de abertura. | Texto | — |
-| `p_owner_password` | VARCHAR2 | Senha de proprietário. | Texto; NULL (padrão) = igual à de usuário | `NULL` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_encryption` | VARCHAR2 | — | Method: 'RC4-40','RC4-128','AES-128','AES-256' |
+| `p_user_password` | VARCHAR2 | — | Senha para abrir |
+| `p_owner_password` | VARCHAR2 | `NULL` | Senha acesso total |
+
+#### Nota
+
+Mapeamento de Versão: RC4-40/RC4-128 -> PDF 1.4 AES-128 -> PDF 1.5 AES-256 -> PDF 1.7
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20850` | método de cifragem não suportado |
+| `ORA-20851` | senha inválida |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.Init; PL_FPDF.AddPage;
-PL_FPDF.SetEncryption('RC4-128', 'senhaLeitura', 'senhaAdmin');
-PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE);
-l_pdf := PL_FPDF.OutputBlob();
+PL_FPDF.Init;
+PL_FPDF.SetEncryption('AES-128', 'user123', 'owner456');
+PL_FPDF.AddPage;
+l_pdf := PL_FPDF.OutputBlob;
 ```
 
-**Veja também:** [SetPermissions](#setpermissions), [EncryptPDF](#encryptpdf)
+**Veja também:** [SetPermissions](#setpermissions) · [EncryptPDF](#encryptpdf)
 
 ---
 
 ### SetPDFVersion
 
-Define a versão declarada no cabeçalho do PDF gerado.
+Definir a versão do PDF para documentos gerados
 
 #### Sintaxe
 
@@ -3314,9 +4033,26 @@ PROCEDURE PL_FPDF.SetPDFVersion(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_version` | VARCHAR2 | Versão do arquivo PDF. | '1.4', '1.5', '1.6' ou '1.7' | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_version` | VARCHAR2 | — | PDF version: '1.4', '1.5', '1.6', '1.7', '2.0' |
+
+#### Nota
+
+Recursos por Versão: 1.4: cifra RC4 de 128 bits, transparência 1.5: AES de 128 bits, object streams, cross-reference streams 1.6: AES de 128 bits, fontes OpenType 1.7: AES de 256 bits, formulários XFA 2.0: só AES de 256 bits, sem RC4
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20857` | versão de PDF inválida; só 1.4, 1.5, 1.6, 1.7 ou 2.0 |
+| `ORA-20858` | AES-128 exige PDF 1.5 ou maior, e AES-256 exige 1.7 |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetPDFVersion('1.5');
+```
 
 **Veja também:** [GetPDFVersion](#getpdfversion)
 
@@ -3324,7 +4060,7 @@ PROCEDURE PL_FPDF.SetPDFVersion(
 
 ### SetPermissions
 
-Define as permissões do documento em construção, aplicadas junto com a criptografia definida em SetEncryption.
+Definir permissões do documento (requer SetEncryption antes)
 
 #### Sintaxe
 
@@ -3342,27 +4078,31 @@ PROCEDURE PL_FPDF.SetPermissions(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_print` | BOOLEAN | Permite imprimir. | TRUE ou FALSE; TRUE é o padrão | `TRUE` |
-| `p_modify` | BOOLEAN | Permite alterar o conteúdo. | TRUE ou FALSE; FALSE é o padrão | `FALSE` |
-| `p_copy` | BOOLEAN | Permite copiar texto e imagens. | TRUE ou FALSE; FALSE é o padrão | `FALSE` |
-| `p_annotate` | BOOLEAN | Permite adicionar comentários e anotações. | TRUE ou FALSE; TRUE é o padrão | `TRUE` |
-| `p_fill_forms` | BOOLEAN | Permite preencher campos de formulário. | TRUE ou FALSE; TRUE é o padrão | `TRUE` |
-| `p_extract` | BOOLEAN | Permite extrair conteúdo para acessibilidade. | TRUE ou FALSE; FALSE é o padrão | `FALSE` |
-| `p_assemble` | BOOLEAN | Permite inserir, remover e girar páginas. | TRUE ou FALSE; FALSE é o padrão | `FALSE` |
-| `p_print_high` | BOOLEAN | Permite impressão em alta resolução. | TRUE ou FALSE; TRUE é o padrão | `TRUE` |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_print` | BOOLEAN | `TRUE` | Permitir impressão |
+| `p_modify` | BOOLEAN | `FALSE` | Permitir modificação |
+| `p_copy` | BOOLEAN | `FALSE` | Permitir cópia/extração |
+| `p_annotate` | BOOLEAN | `TRUE` | Permitir anotações |
+| `p_fill_forms` | BOOLEAN | `TRUE` | Permitir preenchimento de formulários |
+| `p_extract` | BOOLEAN | `FALSE` | Permitir extração de conteúdo |
+| `p_assemble` | BOOLEAN | `FALSE` | Permitir montagem de documento |
+| `p_print_high` | BOOLEAN | `TRUE` | Permitir impressão alta qualidade |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20856` | SetEncryption tem de ser chamada antes |
 
 #### Exemplo
 
 ```sql
-PL_FPDF.SetPermissions(
-  p_print  => TRUE,
-  p_copy   => FALSE,
-  p_modify => FALSE);
+PL_FPDF.SetEncryption('AES-128', 'user', 'owner');
+PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE, p_modify => FALSE);
 ```
 
-**Veja também:** [SetEncryption](#setencryption), [EncryptPDF](#encryptpdf)
+**Veja também:** [SetEncryption](#setencryption) · [EncryptPDF](#encryptpdf)
 
 ---
 
@@ -3370,12 +4110,18 @@ PL_FPDF.SetPermissions(
 
 ### DebugDisabled
 
-Desativa as mensagens de depuração.
+Desliga a saída de diagnóstico. É o estado padrão.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.DebugDisabled;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.DebugDisabled;
 ```
 
 **Veja também:** [SetLogLevel](#setloglevel)
@@ -3384,12 +4130,18 @@ PROCEDURE PL_FPDF.DebugDisabled;
 
 ### DebugEnabled
 
-Ativa as mensagens de depuração do package.
+Liga a saída de diagnóstico do tratamento de erro. Serve para depuração; num processo em produção deixa o erro mais verboso.
 
 #### Sintaxe
 
 ```sql
 PROCEDURE PL_FPDF.DebugEnabled;
+```
+
+#### Exemplo
+
+```sql
+PL_FPDF.DebugEnabled;
 ```
 
 **Veja também:** [SetLogLevel](#setloglevel)
@@ -3398,7 +4150,7 @@ PROCEDURE PL_FPDF.DebugEnabled;
 
 ### Error
 
-Levanta um erro padronizado do PL_FPDF. Uso interno e em extensões.
+Levanta ORA-20100 com a mensagem dada, acrescentando o rastro da origem e preservando a pilha original (keeperrorstack) -- é isso que mantém rastreável o erro de verdade por trás do -20100. É o caminho interno de erro da biblioteca; está público por herança.
 
 #### Sintaxe
 
@@ -3409,26 +4161,43 @@ PROCEDURE PL_FPDF.Error(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `pmsg` | VARCHAR2 | Mensagem do erro. | Qualquer VARCHAR2 | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `pmsg` | VARCHAR2 | — | a mensagem |
+
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | sempre; é o que esta rotina faz |
+
+#### Exemplo
+
+```sql
+PL_FPDF.Error('nao foi possivel montar o documento');
+```
 
 ---
 
 ### GetLogLevel
 
-Retorna o nível de log configurado.
+Devolve o nível de registro em uso.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetLogLevel
-    RETURN PLS_INTEGER;
+FUNCTION PL_FPDF.GetLogLevel RETURN PLS_INTEGER;
 ```
 
 #### Retorno
 
-PLS_INTEGER — nível atual (0 a 4).
+PLS_INTEGER - o nível corrente (0-4)
+
+#### Exemplo
+
+```sql
+l_nivel := PL_FPDF.GetLogLevel;
+```
 
 **Veja também:** [SetLogLevel](#setloglevel)
 
@@ -3436,18 +4205,23 @@ PLS_INTEGER — nível atual (0 a 4).
 
 ### GetScaleFactor
 
-Retorna o fator de conversão entre a unidade do documento e pontos PDF.
+Devolve quantos pontos PDF valem uma unidade corrente -- 2,8346 para milímetro, 1 para ponto. É o número que converte entre a unidade do chamador e a do arquivo.
 
 #### Sintaxe
 
 ```sql
-FUNCTION PL_FPDF.GetScaleFactor
-    RETURN NUMBER;
+FUNCTION PL_FPDF.GetScaleFactor RETURN NUMBER;
 ```
 
 #### Retorno
 
-NUMBER — fator de escala (ex.: 2.8346 para milímetros).
+NUMBER - pontos por unidade
+
+#### Exemplo
+
+```sql
+l_pontos := 10 * PL_FPDF.GetScaleFactor;
+```
 
 **Veja também:** [Init](#init)
 
@@ -3455,7 +4229,7 @@ NUMBER — fator de escala (ex.: 2.8346 para milímetros).
 
 ### SetLogLevel
 
-Define o nível de detalhamento das mensagens de log do package.
+Define quanta informação a biblioteca escreve no DBMS_OUTPUT.
 
 #### Sintaxe
 
@@ -3466,10 +4240,23 @@ PROCEDURE PL_FPDF.SetLogLevel(
 
 #### Parâmetros
 
-| Parâmetro | Tipo | Descrição | Valores possíveis | Padrão |
-|-----------|------|-----------|-------------------|--------|
-| `p_level` | PLS_INTEGER | Nível de log. | 0 (desligado), 1 (erro), 2 (aviso), 3 (info) ou 4 (debug) | — |
+| Parâmetro | Tipo | Padrão | Descrição |
+|-----------|------|--------|-----------|
+| `p_level` | PLS_INTEGER | — | 0 desligado (OFF), 1 erro (ERROR), 2 aviso (WARN), 3 informação (INFO), 4 depuração (DEBUG) |
 
-**Veja também:** [GetLogLevel](#getloglevel), [DebugEnabled](#debugenabled)
+#### Erros
+
+| Código | Quando |
+|--------|--------|
+| `ORA-20100` | nível fora da faixa 0..4 |
+
+#### Exemplo
+
+```sql
+PL_FPDF.SetLogLevel(3);
+```
+
+**Veja também:** [GetLogLevel](#getloglevel) · [DebugEnabled](#debugenabled)
 
 ---
+

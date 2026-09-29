@@ -11,9 +11,10 @@ modo que a troca não muda o comportamento — muda de onde o dado vem.
 
 A forma também muda, e para melhor. Antes eram ~230 linhas de
 `mySet(chr(n)) := w;`. Agora cada família é uma linha de dígitos, lida por um
-decodificador só. A chave continua sendo `chr(i)`: o original usava literal
-(`mySet(' ')`) até 126 e `chr(n)` acima, e as duas formas dão o mesmo
-caractere, então o índice não muda.
+decodificador só, e **a chave é o byte WinAnsi**, não `chr(i)`: em AL32UTF8 o
+`CHR` de 192 para cima abre uma sequência multibyte que nunca se completa e
+levanta `ORA-29275` — era o que derrubava a primeira chamada de quem rodava
+num banco UTF-8.
 
 Uso:  python dev/scripts/font_reference/gerar.py [--check]
 """
@@ -59,22 +60,40 @@ def bloco():
 ----------------------------------------------------------------------------------------
 -- Larguras das 14 fontes padrao do PDF, em milesimos de em.
 --
--- GERADO por dev/scripts/font_reference/gerar.py a partir das fontes
--- primarias: os AFM da Adobe, as tabelas do reportlab (que se conferem entre
--- si, glifo a glifo) e a WinAnsiEncoding. NAO EDITE A MAO: rode o gerador.
+-- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- reportlab -- que se conferem entre si, glifo a glifo -- e a
+-- WinAnsiEncoding. NAO EDITE A MAO daqui ate o fecho do bloco, NEM O
+-- COMENTARIO: a edicao se perde na geracao seguinte, e ate la o CI acusa o
+-- bloco como desatualizado. Para mudar este texto, mude o gerador.
 --
 -- Cada familia e uma sequencia de 256 campos de 4 digitos, um por posicao da
--- codificacao. A chave da tabela indexada e chr(i).
+-- codificacao. A chave da tabela indexada e O BYTE WinAnsi, nao o caractere.
+--
+-- Era `chr(i)`, e nao podia ser: CHR devolve o caractere cujo BYTE e i no
+-- charset do banco, e em AL32UTF8 os valores de 128 a 191 dao caractere
+-- invalido enquanto os de 192 para cima abrem uma sequencia multibyte que
+-- nunca se completa -- `ORA-29275`. O relato que expos isso e a issue 16 do
+-- projeto de origem: em AL32UTF8 o erro estourava na PRIMEIRA chamada que
+-- carregasse uma metrica, com a pilha apontando para a linha da tabela onde
+-- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 e caractere
+-- valido de um byte, e por isso o mesmo codigo sempre funcionou la.
+--
+-- O byte ja era o que a tabela guardava: quem consulta parte do caractere,
+-- converte para WinAnsi com p_winansi_byte e so entao mede. Indexar por
+-- PLS_INTEGER tira o CHR do caminho e acaba com a conversao de ida e volta.
 ----------------------------------------------------------------------------------------
 function p_larguras_de(p_tabela in varchar2) return charSet is
   mySet charSet;
 begin
   for i in 0..255 loop
-    mySet(chr(i)) := to_number(substr(p_tabela, i * 4 + 1, 4));
+    mySet(i) := to_number(substr(p_tabela, i * 4 + 1, 4));
   end loop;
   return mySet;
 end p_larguras_de;
 
+-- p_digitos_da_familia: a tabela de larguras de uma das 14 fontes padrao,
+-- 256 entradas de 4 digitos na ordem do WinAnsi. Fica em codigo, e nao em
+-- tabela do banco, porque a biblioteca nao cria objeto no schema.
 function p_digitos_da_familia(p_familia in varchar2) return varchar2 is
 begin
   case p_familia

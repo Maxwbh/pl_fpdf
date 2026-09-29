@@ -13,7 +13,10 @@ def do_repo(*partes):
     return os.path.join(RAIZ, *partes)
 
 
-SRC = do_repo('src', 'PL_FPDF.pks')
+# As DUAS specs. Ate outubro de 2026 so o PL_FPDF era lido, e por isso as 18
+# APIs do PL_FPDF_UTIL saiam na referencia SEM assinatura e SEM tipo -- um
+# `PROCEDURE PL_FPDF_UTIL.qr_matriz;` sem parametro nenhum.
+SRCS = [do_repo('src', 'PL_FPDF.pks'), do_repo('src', 'PL_FPDF_UTIL.pks')]
 
 def strip_comments(text):
     text = re.sub(r'/\*.*?\*/', '', text, flags=re.S)
@@ -42,10 +45,23 @@ def parse_param(p):
     default = dm.group(1).strip() if dm else None
     typ = rest[:dm.start()].strip() if dm else rest
     typ = re.sub(r'\s+', ' ', typ).strip()
+    # NOCOPY e modo de passagem, nao tipo: sem isto a tabela da referencia
+    # mostrava "NOCOPY TQR" na coluna Tipo
+    m2 = re.match(r'^nocopy\s+(.*)$', typ, re.I)
+    if m2:
+        typ = m2.group(1)
+        mode = (mode + ' NOCOPY').strip()
     return {'name': name, 'mode': mode, 'type': typ, 'default': default}
 
 def parse():
-    text = strip_comments(open(SRC, encoding='utf-8', errors='replace').read())
+    out = []
+    for src in SRCS:
+        out += parse_um(src)
+    return out
+
+
+def parse_um(src):
+    text = strip_comments(open(src, encoding='utf-8', errors='replace').read())
     # remove o cabeçalho PACKAGE ... AS
     pat = re.compile(r'\b(procedure|function)\s+(\w+)\s*(\(((?:[^()]|\([^()]*\))*)\))?\s*'
                      r'(?:return\s+([\w\.%]+))?\s*(?:deterministic|parallel_enable|result_cache|pipelined|\s)*;',
@@ -56,7 +72,8 @@ def parse():
         plist = [parse_param(p) for p in split_params(params or '')]
         plist = [p for p in plist if p]
         out.append({'kind': kind, 'name': name, 'params': plist,
-                    'returns': (ret or '').upper() or None})
+                    'returns': (ret or '').upper() or None,
+                    'spec': os.path.basename(src)})
     return out
 
 if __name__ == '__main__':

@@ -15,12 +15,13 @@ O repositório tem dois lados, e vale saber de qual você está mexendo:
 | `dev/tests/` | Suíte, validações e diagnósticos | Não |
 | `dev/scripts/` | Runner, verificações do CI, referências em Python | Não |
 
-Três arquivos são **gerados** — edite a origem, nunca o resultado:
+Alguns arquivos são **gerados** — edite a origem, nunca o resultado:
 
 | Gerado | Origem | Comando |
 |--------|--------|---------|
 | `dist/pl_fpdf_install.sql` | `src/*.pks`, `src/*.pkb` | `python dev/scripts/build_release.py` |
 | `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` | `python dev/scripts/build_run_all.py` |
+| `docs/API_REFERENCE*.md` e as quatro páginas de `site/` | Javadoc de `src/*.pks` e os módulos de `dev/scripts/gen_docs/` | `python dev/scripts/gen_docs/generate.py` |
 
 ---
 
@@ -73,6 +74,7 @@ python dev/scripts/plsql_lint/check_test_calls.py
 python dev/scripts/plsql_lint/check_examples_sync.py
 python dev/scripts/build_run_all.py  --check
 python dev/scripts/build_release.py  --check
+python dev/scripts/gen_docs/generate.py --check
 python dev/scripts/gen_docs/check_refs.py
 python dev/scripts/gen_docs/check_links.py
 ```
@@ -144,7 +146,7 @@ que o runner carrega para testar, então exemplo e teste não podem divergir
 
 - [ ] As verificações sem banco passam
 - [ ] A suíte passa contra um banco
-- [ ] Os arquivos gerados foram regerados (`--check` passa nos três)
+- [ ] Os arquivos gerados foram regerados (`--check` passa em todos)
 - [ ] A documentação do lado certo foi atualizada — usuário e manutenção não se
       misturam
 

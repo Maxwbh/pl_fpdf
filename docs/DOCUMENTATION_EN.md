@@ -1,6 +1,6 @@
 # PL_FPDF — Complete Usage Reference
 
-**Version:** 3.3.0 | **Oracle:** 19c+ | **Licence:** MIT
+**Version:** 3.4.0 | **Oracle:** 19c+ | **Licence:** MIT
 
 > The official guide to everything PL_FPDF does: what each API is for and how to call it.
 > Browsable version on the site: [maxwbh.github.io/pl_fpdf/en/api.html](https://maxwbh.github.io/pl_fpdf/en/api.html) ·
@@ -73,7 +73,7 @@ Developer SQL Window and in SQL\*Plus.
 
 ```sql
 -- Check
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.3.0
+SELECT PL_FPDF.co_version FROM DUAL;  -- 3.4.0
 
 -- Both objects must come out VALID
 SELECT object_name, object_type, status FROM user_objects
@@ -175,12 +175,22 @@ PL_FPDF.SetFont('Roboto', '', 12);
 
 Helpers: `IsTTFFontLoaded(name)`, `GetTTFFontInfo(name)`, `ClearTTFFontCache`.
 
-### UTF-8
+### Accented text
+
+With the standard PDF fonts — Helvetica, Times, Courier — accented text comes
+out right with no call at all: the conversion to the encoding the document
+declares happens on the way out.
 
 ```sql
-PL_FPDF.SetUTF8Enabled(TRUE);        -- the default; accents work natively
-IF PL_FPDF.IsUTF8Enabled THEN ... END IF;
+PL_FPDF.SetFont('Helvetica', '', 12);
+PL_FPDF.Cell(0, 10, 'Endereço de cobrança - São Paulo');
 ```
+
+The reach is WinAnsi's: the western latin scripts, plus euro, em dash, curly
+quotes and the like. A character outside that range — an ideograph, an emoji —
+is **rejected** with `ORA-20203` and its position, rather than silently
+becoming `?`. For those scripts, embed a TrueType font with
+[AddTTFFont](API_REFERENCE_EN.md#addttffont).
 
 ---
 
@@ -297,12 +307,23 @@ Still refused: interlaced with fewer than 8 bits per component, and indexed
 ## 7. Links
 
 ```sql
-l_link := PL_FPDF.AddLink;                 -- create an internal link
-PL_FPDF.SetLink(l_link, 0, 3);             -- destination: top of page 3
-PL_FPDF.Cell(60, 8, 'Go to chapter 3', plink => l_link);
 PL_FPDF.Cell(60, 8, 'Website', plink => 'https://maxwbh.github.io/pl_fpdf/');
 PL_FPDF.Link(10, 10, 50, 12, 'https://...');   -- an arbitrary clickable area
 ```
+
+**URL links only.** Internal links -- which would jump to another page of the
+same document -- are **not supported**: `AddLink`, `SetLink` and a numeric
+`plink` all raise `ORA-20601`. The internal destination (`/Dest`) was never
+written to the file: the fragment that would write it was commented out in the
+original port and never came back, and emitting it as it stood produced a
+malformed PDF that readers refuse. `AddLink` itself had failed with `ORA-06531`
+since the first version, because the internal collection was never initialised
+-- that is, the function never once worked. Since 3.4.0 all three refuse with a
+message that says what to use instead, rather than writing a broken file or
+failing with no explanation.
+
+One note on the clickable area: there is **one per page**. A second `Link` call
+on the same page replaces the first.
 
 ---
 
@@ -642,6 +663,69 @@ PL_FPDF.Output('F', path);           PL_FPDF.OutputFile(name, directory);
 | `Output('S')` | `OutputBlob` |
 | Limited UTF-8 | Full UTF-8 + TrueType |
 | No encryption | AES-256, AES-128 and RC4 |
+
+### What actually breaks
+
+We took the public surface of all three versions and compared it name by name
+and signature by signature. In numbers:
+
+| | 0.9.4 | 2.0.0 | 3.4.0 |
+|---|---|---|---|
+| Public subprograms | 70 | 94 | 119 |
+
+**Seven names are gone from 0.9.4 to 3.4.0**, and all seven are the demo
+routines the package itself shipped — `helloworld`, `test`, `testImg`,
+`testheader`, `myRepetitiveHeader`, `myRepetitiveFooter` and `lpc_footer`. None
+is API: calling `helloworld` from a system meant running the bundled sample,
+not the library.
+
+**Two are gone from 2.0.0 to 3.4.0**, `SetUTF8Enabled` and `IsUTF8Enabled` —
+which did nothing. The flag was written by the setter and read by the getter,
+and no other point in the package consulted it. Accented text now comes out
+right always, with no switch.
+
+**Of the 133 shared signatures, one changed**, and not in 3.x: the `AddPage`
+parameter went from `orientation` to `p_orientation` in 2.0.0.
+
+```sql
+PL_FPDF.AddPage('L');                    -- positional: still valid
+PL_FPDF.AddPage(orientation   => 'L');   -- 0.9.4: no longer compiles
+PL_FPDF.AddPage(p_orientation => 'L');   -- today
+```
+
+The **positional** form — the one the 2017 examples use — goes through
+unchanged. Only the **named** form needs one word changed.
+
+> **Why not keep both names?** PL/SQL overload resolution goes by type and
+> position, never by parameter name, and a parameter can only have one name.
+> Two `AddPage` procedures whose first parameter is `VARCHAR2` are
+> indistinguishable: `AddPage('L')` would match both and Oracle rejects it with
+> `PLS-00307`.
+
+### The legacy entry points still stand
+
+The 2017 constructor and flow keep working, and there is a test that runs the
+original `helloworld` sequence call by call:
+
+```sql
+PL_FPDF.FPDF('P', 'cm', 'A4');   -- the legacy constructor leaves it ready
+PL_FPDF.openpdf;                 -- accepted; AddPage calls it on its own now
+PL_FPDF.AddPage();
+PL_FPDF.SetFont('Arial', 'B', 16);
+PL_FPDF.Cell(0, 1.2, 'Hello World', 0, 1, 'C');
+l_pdf := PL_FPDF.ReturnBlob;     -- from 0.9.4, still there
+```
+
+`SetHeaderProc` and `SetFooterProc`, the header/footer-by-procedure-name
+mechanism, are still there too.
+
+### What changed in behaviour, not in signature
+
+A character outside WinAnsi — an ideograph, an emoji — is now **rejected** with
+`ORA-20203` and its position, instead of being drawn wrong. With the standard
+PDF fonts that never worked: the glyph came out wrong and the file opened as if
+it were fine. For those scripts, embed a TrueType font with
+[AddTTFFont](API_REFERENCE_EN.md#addttffont).
 
 ---
 

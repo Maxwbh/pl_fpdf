@@ -17,7 +17,7 @@
 *
 * Usage:
 *   SET SERVEROUTPUT ON SIZE UNLIMITED
-*   @tests/validate_phase_4_complete.sql
+*   @tests/test_manipulacao_completa.sql
 *******************************************************************************/
 
 -- ================================================================================
@@ -38,7 +38,7 @@ DECLARE
   l_arr  JSON_ARRAY_T;   -- retornos JSON_ARRAY_T
   l_num  PLS_INTEGER;    -- retornos numéricos
 
-  PROCEDURE test_result(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE confere(p_test_name VARCHAR2, p_passed BOOLEAN, p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_test_count := l_test_count + 1;
     IF p_passed THEN
@@ -49,7 +49,7 @@ DECLARE
       DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_test_name ||
         CASE WHEN p_message IS NOT NULL THEN ' - ' || p_message ELSE '' END);
     END IF;
-  END test_result;
+  END confere;
 
   PROCEDURE create_test_pdf IS
   BEGIN
@@ -92,17 +92,17 @@ BEGIN
   BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_test_pdf);
-    test_result('LoadPDF - Load existing PDF', TRUE);
+    confere('LoadPDF - Load existing PDF', TRUE);
   EXCEPTION WHEN OTHERS THEN
-    test_result('LoadPDF', FALSE, SQLERRM);
+    confere('LoadPDF', FALSE, SQLERRM);
   END;
 
   -- Test: PDF carregado
   -- Nao existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
   BEGIN
-    test_result('PDF carregado - GetPageCount responde', PL_FPDF.GetPageCount > 0);
+    confere('PDF carregado - GetPageCount responde', PL_FPDF.GetPageCount > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('PDF carregado', FALSE, SQLERRM);
+    confere('PDF carregado', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -114,19 +114,19 @@ BEGIN
   -- Test: GetPageCount
   BEGIN
     l_num := PL_FPDF.GetPageCount;
-    test_result('GetPageCount - Count pages in PDF', l_num = 3);
+    confere('GetPageCount - Count pages in PDF', l_num = 3);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetPageCount', FALSE, SQLERRM);
+    confere('GetPageCount', FALSE, SQLERRM);
   END;
 
   -- Test: GetPageInfo
   BEGIN
     l_info := PL_FPDF.GetPageInfo(1);
     -- as chaves do JSON são camelCase: pageNumber, não page_number
-    test_result('GetPageInfo - Get page 1 information',
+    confere('GetPageInfo - Get page 1 information',
                 l_info.has('pageNumber') AND l_info.get_number('pageNumber') = 1);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetPageInfo', FALSE, SQLERRM);
+    confere('GetPageInfo', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -141,10 +141,10 @@ BEGIN
     PL_FPDF.LoadPDF(l_test_pdf);
     PL_FPDF.RotatePage(1, 90);
     l_info := PL_FPDF.GetPageInfo(1);
-    test_result('RotatePage - Rotate page 90 degrees',
+    confere('RotatePage - Rotate page 90 degrees',
                 l_info.get_number('rotation') = 90);
   EXCEPTION WHEN OTHERS THEN
-    test_result('RotatePage', FALSE, SQLERRM);
+    confere('RotatePage', FALSE, SQLERRM);
   END;
 
   -- Test: RemovePage
@@ -155,12 +155,12 @@ BEGIN
     -- RemovePage apenas MARCA a página; GetPageCount continua devolvendo o
     -- total do documento carregado. A remoção se concretiza em
     -- OutputModifiedPDF, e o estado é consultável por IsPageRemoved.
-    test_result('RemovePage - Remove page 2',
+    confere('RemovePage - Remove page 2',
                 PL_FPDF.IsPageRemoved(2)
                 AND NOT PL_FPDF.IsPageRemoved(1)
                 AND PL_FPDF.GetPageCount = 3);
   EXCEPTION WHEN OTHERS THEN
-    test_result('RemovePage', FALSE, SQLERRM);
+    confere('RemovePage', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -174,9 +174,9 @@ BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_test_pdf);
     PL_FPDF.AddWatermark('CONFIDENTIAL', NULL);
-    test_result('AddWatermark - Add watermark to all pages', TRUE);
+    confere('AddWatermark - Add watermark to all pages', TRUE);
   EXCEPTION WHEN OTHERS THEN
-    test_result('AddWatermark', FALSE, SQLERRM);
+    confere('AddWatermark', FALSE, SQLERRM);
   END;
 
   -- Test: GetWatermarks
@@ -184,10 +184,10 @@ BEGIN
     l_watermarks JSON_ARRAY_T;
   BEGIN
     l_watermarks := PL_FPDF.GetWatermarks();
-    test_result('GetWatermarks - List watermarks',
+    confere('GetWatermarks - List watermarks',
                 l_watermarks IS NOT NULL AND l_watermarks.get_size() > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetWatermarks', FALSE, SQLERRM);
+    confere('GetWatermarks', FALSE, SQLERRM);
   END;
 
   -- RemoveWatermark e ClearWatermarks nao existem na API: o teste antigo as
@@ -197,10 +197,10 @@ BEGIN
     l_watermarks JSON_ARRAY_T;
   BEGIN
     l_watermarks := PL_FPDF.GetWatermarks();
-    test_result('GetWatermarks - lista as marcas registradas',
+    confere('GetWatermarks - lista as marcas registradas',
                 l_watermarks.get_size() > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetWatermarks', FALSE, SQLERRM);
+    confere('GetWatermarks', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -215,10 +215,10 @@ BEGIN
     PL_FPDF.LoadPDF(l_test_pdf);
     PL_FPDF.RotatePage(1, 90);
     l_result := PL_FPDF.OutputModifiedPDF();
-    test_result('OutputModifiedPDF - Generate modified PDF',
+    confere('OutputModifiedPDF - Generate modified PDF',
                 l_result IS NOT NULL AND DBMS_LOB.GETLENGTH(l_result) > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('OutputModifiedPDF', FALSE, SQLERRM);
+    confere('OutputModifiedPDF', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -232,9 +232,9 @@ BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDF(l_test_pdf);
     PL_FPDF.OverlayText(1, 'APPROVED', 100, 100, NULL);
-    test_result('OverlayText - Add text overlay to page', TRUE);
+    confere('OverlayText - Add text overlay to page', TRUE);
   EXCEPTION WHEN OTHERS THEN
-    test_result('OverlayText', FALSE, SQLERRM);
+    confere('OverlayText', FALSE, SQLERRM);
   END;
 
   -- Test: GetOverlays
@@ -242,10 +242,10 @@ BEGIN
     l_overlays JSON_ARRAY_T;
   BEGIN
     l_overlays := PL_FPDF.GetOverlays(NULL);
-    test_result('GetOverlays - List all overlays',
+    confere('GetOverlays - List all overlays',
                 l_overlays IS NOT NULL AND l_overlays.get_size() > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetOverlays', FALSE, SQLERRM);
+    confere('GetOverlays', FALSE, SQLERRM);
   END;
 
   -- Test: OverlayImage
@@ -264,9 +264,9 @@ BEGIN
       '0D0A2DB40000000049454E44AE426082'); -- IEND chunk
 
     PL_FPDF.OverlayImage(1, l_minimal_png, 50, 50, NULL, NULL, NULL);
-    test_result('OverlayImage - Add image overlay to page', TRUE);
+    confere('OverlayImage - Add image overlay to page', TRUE);
   EXCEPTION WHEN OTHERS THEN
-    test_result('OverlayImage', FALSE, SQLERRM);
+    confere('OverlayImage', FALSE, SQLERRM);
   END;
 
   -- Test: RemoveOverlay
@@ -280,21 +280,21 @@ BEGIN
       l_overlay := TREAT(l_overlays.get(0) AS JSON_OBJECT_T);
       l_overlay_id := l_overlay.get_string('overlayId');   -- camelCase
       PL_FPDF.RemoveOverlay(l_overlay_id);
-      test_result('RemoveOverlay - Remove specific overlay', TRUE);
+      confere('RemoveOverlay - Remove specific overlay', TRUE);
     ELSE
-      test_result('RemoveOverlay', FALSE, 'No overlays to remove');
+      confere('RemoveOverlay', FALSE, 'No overlays to remove');
     END IF;
   EXCEPTION WHEN OTHERS THEN
-    test_result('RemoveOverlay', FALSE, SQLERRM);
+    confere('RemoveOverlay', FALSE, SQLERRM);
   END;
 
   -- Test: ClearOverlays
   BEGIN
     PL_FPDF.ClearOverlays(NULL);
     l_arr := PL_FPDF.GetOverlays(NULL);
-    test_result('ClearOverlays - Clear all overlays', l_arr.get_size() = 0);
+    confere('ClearOverlays - Clear all overlays', l_arr.get_size() = 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('ClearOverlays', FALSE, SQLERRM);
+    confere('ClearOverlays', FALSE, SQLERRM);
   END;
 
   DBMS_OUTPUT.PUT_LINE('');
@@ -308,9 +308,9 @@ BEGIN
     PL_FPDF.ClearPDFCache();
     PL_FPDF.LoadPDFWithID('pdf1', l_test_pdf);
     PL_FPDF.LoadPDFWithID('pdf2', l_test_pdf_2);
-    test_result('LoadPDFWithID - Load multiple PDFs with IDs', TRUE);
+    confere('LoadPDFWithID - Load multiple PDFs with IDs', TRUE);
   EXCEPTION WHEN OTHERS THEN
-    test_result('LoadPDFWithID', FALSE, SQLERRM);
+    confere('LoadPDFWithID', FALSE, SQLERRM);
   END;
 
   -- Test: GetLoadedPDFs
@@ -318,10 +318,10 @@ BEGIN
     l_pdfs JSON_ARRAY_T;
   BEGIN
     l_pdfs := PL_FPDF.GetLoadedPDFs();
-    test_result('GetLoadedPDFs - List loaded PDFs',
+    confere('GetLoadedPDFs - List loaded PDFs',
                 l_pdfs IS NOT NULL AND l_pdfs.get_size() = 2);
   EXCEPTION WHEN OTHERS THEN
-    test_result('GetLoadedPDFs', FALSE, SQLERRM);
+    confere('GetLoadedPDFs', FALSE, SQLERRM);
   END;
 
   -- Test: MergePDFs
@@ -331,10 +331,10 @@ BEGIN
   BEGIN
     l_pdf_ids := JSON_ARRAY_T('["pdf1", "pdf2"]');
     l_merged := PL_FPDF.MergePDFs(l_pdf_ids, NULL);
-    test_result('MergePDFs - Merge two PDFs',
+    confere('MergePDFs - Merge two PDFs',
                 l_merged IS NOT NULL AND DBMS_LOB.GETLENGTH(l_merged) > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('MergePDFs', FALSE, SQLERRM);
+    confere('MergePDFs', FALSE, SQLERRM);
   END;
 
   -- Test: ExtractPages
@@ -342,10 +342,10 @@ BEGIN
     l_extracted BLOB;
   BEGIN
     l_extracted := PL_FPDF.ExtractPages('pdf1', '1', NULL);
-    test_result('ExtractPages - Extract single page',
+    confere('ExtractPages - Extract single page',
                 l_extracted IS NOT NULL AND DBMS_LOB.GETLENGTH(l_extracted) > 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('ExtractPages', FALSE, SQLERRM);
+    confere('ExtractPages', FALSE, SQLERRM);
   END;
 
   -- Test: SplitPDF
@@ -355,28 +355,28 @@ BEGIN
   BEGIN
     l_ranges := JSON_ARRAY_T('["1", "2-3"]');
     l_splits := PL_FPDF.SplitPDF('pdf1', l_ranges);
-    test_result('SplitPDF - Split PDF into multiple parts',
+    confere('SplitPDF - Split PDF into multiple parts',
                 l_splits IS NOT NULL AND l_splits.get_size() = 2);
   EXCEPTION WHEN OTHERS THEN
-    test_result('SplitPDF', FALSE, SQLERRM);
+    confere('SplitPDF', FALSE, SQLERRM);
   END;
 
   -- Test: UnloadPDF
   BEGIN
     PL_FPDF.UnloadPDF('pdf2');
     l_arr := PL_FPDF.GetLoadedPDFs();
-    test_result('UnloadPDF - Unload specific PDF', l_arr.get_size() = 1);
+    confere('UnloadPDF - Unload specific PDF', l_arr.get_size() = 1);
   EXCEPTION WHEN OTHERS THEN
-    test_result('UnloadPDF', FALSE, SQLERRM);
+    confere('UnloadPDF', FALSE, SQLERRM);
   END;
 
   -- Test: ClearPDFCache
   BEGIN
     PL_FPDF.ClearPDFCache();
     l_arr := PL_FPDF.GetLoadedPDFs();
-    test_result('ClearPDFCache - Clear all loaded PDFs', l_arr.get_size() = 0);
+    confere('ClearPDFCache - Clear all loaded PDFs', l_arr.get_size() = 0);
   EXCEPTION WHEN OTHERS THEN
-    test_result('ClearPDFCache', FALSE, SQLERRM);
+    confere('ClearPDFCache', FALSE, SQLERRM);
   END;
 
   -- Summary

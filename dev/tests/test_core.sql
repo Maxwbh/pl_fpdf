@@ -11,7 +11,7 @@ DECLARE
   l_pass_count  PLS_INTEGER := 0;
   l_fail_count  PLS_INTEGER := 0;
 
-  PROCEDURE test_start(p_test_name VARCHAR2) IS
+  PROCEDURE caso(p_test_name VARCHAR2) IS
   BEGIN
     l_test_count := l_test_count + 1;
     DBMS_OUTPUT.PUT_LINE('');
@@ -19,13 +19,13 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE(RPAD('-', 60, '-'));
   END;
 
-  PROCEDURE test_pass(p_message VARCHAR2 DEFAULT NULL) IS
+  PROCEDURE passou(p_message VARCHAR2 DEFAULT NULL) IS
   BEGIN
     l_pass_count := l_pass_count + 1;
     DBMS_OUTPUT.PUT_LINE('  [PASS] ' || NVL(p_message, 'Test passed'));
   END;
 
-  PROCEDURE test_fail(p_message VARCHAR2) IS
+  PROCEDURE falhou(p_message VARCHAR2) IS
   BEGIN
     l_fail_count := l_fail_count + 1;
     DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_message);
@@ -37,7 +37,7 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE('================================================================');
 
   --------------------------------------------------------------------------
-  test_start('Página única com 3.000 células (muito acima de 32 KB)');
+  caso('Página única com 3.000 células (muito acima de 32 KB)');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -52,18 +52,18 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 32767 THEN
-      test_pass('PDF gerado com ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+      passou('PDF gerado com ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
     ELSE
-      test_fail('PDF vazio ou truncado: ' || NVL(DBMS_LOB.GETLENGTH(l_pdf), 0) || ' bytes');
+      falhou('PDF vazio ou truncado: ' || NVL(DBMS_LOB.GETLENGTH(l_pdf), 0) || ' bytes');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
       -- ORA-06502 aqui significa que o teto de 32 KB por página voltou
-      test_fail('Exceção ao gerar página grande: ' || SQLERRM);
+      falhou('Exceção ao gerar página grande: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Múltiplas páginas grandes mantêm o conteúdo separado');
+  caso('Múltiplas páginas grandes mantêm o conteúdo separado');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -79,17 +79,17 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 32767 THEN
-      test_pass('3 páginas grandes geradas: ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
+      passou('3 páginas grandes geradas: ' || DBMS_LOB.GETLENGTH(l_pdf) || ' bytes');
     ELSE
-      test_fail('PDF vazio ou truncado');
+      falhou('PDF vazio ou truncado');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção com múltiplas páginas grandes: ' || SQLERRM);
+      falhou('Exceção com múltiplas páginas grandes: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Alias {nb} substituído em página que ultrapassa 32 KB');
+  caso('Alias {nb} substituído em página que ultrapassa 32 KB');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -109,19 +109,19 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NULL OR DBMS_LOB.GETLENGTH(l_pdf) = 0 THEN
-      test_fail('PDF vazio');
+      falhou('PDF vazio');
     ELSIF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW('{nb}')) > 0 THEN
-      test_fail('Alias {nb} não foi substituído além do primeiro bloco');
+      falhou('Alias {nb} não foi substituído além do primeiro bloco');
     ELSE
-      test_pass('Alias substituído corretamente em página grande');
+      passou('Alias substituído corretamente em página grande');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção no teste de alias: ' || SQLERRM);
+      falhou('Exceção no teste de alias: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Reset libera recursos e permite novo documento');
+  caso('Reset libera recursos e permite novo documento');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -139,17 +139,17 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
-      test_pass('Segundo documento gerado após Reset');
+      passou('Segundo documento gerado após Reset');
     ELSE
-      test_fail('Falha ao gerar documento após Reset');
+      falhou('Falha ao gerar documento após Reset');
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção após Reset: ' || SQLERRM);
+      falhou('Exceção após Reset: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  test_start('Geração funciona com NLS decimal vírgula e não altera a sessão');
+  caso('Geração funciona com NLS decimal vírgula e não altera a sessão');
   --------------------------------------------------------------------------
   DECLARE
     l_nls_antes  VARCHAR2(64);
@@ -175,26 +175,26 @@ BEGIN
      WHERE parameter = 'NLS_NUMERIC_CHARACTERS';
 
     IF l_pdf IS NULL OR DBMS_LOB.GETLENGTH(l_pdf) = 0 THEN
-      test_fail('PDF não gerado com NLS vírgula');
+      falhou('PDF não gerado com NLS vírgula');
     ELSIF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW(',25')) > 0
        OR DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW(',75')) > 0 THEN
-      test_fail('Vírgula vazou como separador decimal no conteúdo do PDF');
+      falhou('Vírgula vazou como separador decimal no conteúdo do PDF');
     ELSIF l_nls_depois != l_nls_antes THEN
-      test_fail('A biblioteca alterou NLS_NUMERIC_CHARACTERS da sessão: ' ||
+      falhou('A biblioteca alterou NLS_NUMERIC_CHARACTERS da sessão: ' ||
                 l_nls_antes || ' -> ' || l_nls_depois);
     ELSE
-      test_pass('PDF correto e sessão preservada (' || l_nls_depois || ')');
+      passou('PDF correto e sessão preservada (' || l_nls_depois || ')');
     END IF;
 
     EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ''.,''';
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Exceção com NLS vírgula: ' || SQLERRM);
+      falhou('Exceção com NLS vírgula: ' || SQLERRM);
       EXECUTE IMMEDIATE 'ALTER SESSION SET NLS_NUMERIC_CHARACTERS = ''.,''';
   END;
 
   --------------------------------------------------------------------------
-  test_start('Callback com nome válido é aceito');
+  caso('Callback com nome válido é aceito');
   --------------------------------------------------------------------------
   DECLARE
     -- tv4000a é um associative array (INDEX BY word): não tem construtor
@@ -205,18 +205,18 @@ BEGIN
     PL_FPDF.SetHeaderProc('meu_pkg.cabecalho');
     l_params('titulo') := 'Relatorio';
     PL_FPDF.SetFooterProc('meu_pkg.rodape', l_params);
-    test_pass('Nomes qualificados aceitos na configuração');
+    passou('Nomes qualificados aceitos na configuração');
     -- meu_pkg nao existe: sem limpar, todo AddPage seguinte falharia ao
     -- executar o bloco dinamico do header.
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Nome válido foi rejeitado: ' || SQLERRM);
+      falhou('Nome válido foi rejeitado: ' || SQLERRM);
       PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Reset limpa os callbacks de header e rodapé');
+  caso('Reset limpa os callbacks de header e rodapé');
   --------------------------------------------------------------------------
   -- Regressao: os callbacks sobreviviam ao Reset (e ao Init, que chama Reset).
   -- Um nome invalido configurado uma vez deixava a sessao inutilizavel: todo
@@ -235,19 +235,19 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob();
 
     IF l_pdf IS NOT NULL AND DBMS_LOB.GETLENGTH(l_pdf) > 0 THEN
-      test_pass('Documento gerado após Reset, sem o callback anterior');
+      passou('Documento gerado após Reset, sem o callback anterior');
     ELSE
-      test_fail('PDF vazio após Reset');
+      falhou('PDF vazio após Reset');
     END IF;
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('Callback sobreviveu ao Reset: ' || SQLERRM);
+      falhou('Callback sobreviveu ao Reset: ' || SQLERRM);
       PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Callback com injeção de PL/SQL é rejeitado na configuração');
+  caso('Callback com injeção de PL/SQL é rejeitado na configuração');
   --------------------------------------------------------------------------
   DECLARE
     TYPE t_payloads IS TABLE OF VARCHAR2(200);
@@ -271,34 +271,34 @@ BEGIN
     END LOOP;
 
     IF l_rejeitados = l_payloads.COUNT THEN
-      test_pass('Todos os ' || l_rejeitados || ' payloads rejeitados');
+      passou('Todos os ' || l_rejeitados || ' payloads rejeitados');
     ELSE
-      test_fail('Apenas ' || l_rejeitados || ' de ' || l_payloads.COUNT || ' rejeitados');
+      falhou('Apenas ' || l_rejeitados || ' de ' || l_payloads.COUNT || ' rejeitados');
     END IF;
     PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Erro do package informa a origem (backtrace)');
+  caso('Erro do package informa a origem (backtrace)');
   --------------------------------------------------------------------------
   BEGIN
     PL_FPDF.Reset;
     BEGIN
       -- SetPage sem documento inicializado: erro conhecido do package
       PL_FPDF.SetPage(99);
-      test_fail('Erro esperado não ocorreu');
+      falhou('Erro esperado não ocorreu');
     EXCEPTION
       WHEN OTHERS THEN
         IF DBMS_UTILITY.FORMAT_ERROR_BACKTRACE IS NOT NULL THEN
-          test_pass('Erro propagado com rastreamento disponível');
+          passou('Erro propagado com rastreamento disponível');
         ELSE
-          test_fail('Erro sem backtrace');
+          falhou('Erro sem backtrace');
         END IF;
     END;
   END;
 
   --------------------------------------------------------------------------
-  test_start('QR Code gera matriz correta (vetores de referência)');
+  caso('QR Code gera matriz correta (vetores de referência)');
   --------------------------------------------------------------------------
   -- QR Code: confere a matriz gerada contra vetores de referência.
   --
@@ -376,15 +376,15 @@ BEGIN
     END LOOP;
 
     IF l_falhas = 0 THEN
-      test_pass('Matriz do QR Code igual à referência nos ' ||
+      passou('Matriz do QR Code igual à referência nos ' ||
                 l_casos.COUNT || ' casos');
     ELSE
-      test_fail(l_falhas || ' de ' || l_casos.COUNT || ' casos divergiram');
+      falhou(l_falhas || ' de ' || l_casos.COUNT || ' casos divergiram');
     END IF;
   END;
 
   --------------------------------------------------------------------------
-  test_start('QR Code e barcode: cada recusa com o seu código de erro');
+  caso('QR Code e barcode: cada recusa com o seu código de erro');
   --------------------------------------------------------------------------
   -- Os códigos do QR (-20870..-20879) e dos códigos de barras
   -- (-20880..-20889) colidiam com os da manipulação de PDF e da segurança:
@@ -412,7 +412,7 @@ BEGIN
     l_erros PLS_INTEGER := 0;
     l_msg   VARCHAR2(4000);
 
-    PROCEDURE confere(p_i PLS_INTEGER) IS
+    PROCEDURE invocar(p_i PLS_INTEGER) IS
     BEGIN
       CASE p_i
         WHEN 1  THEN PL_FPDF.AddQRCode(10, 10, 40, NULL);
@@ -443,23 +443,23 @@ BEGIN
           l_msg := l_msg || ' [' || l_casos(p_i).nome || ': ' || SQLCODE
                          || ', esperado ' || l_casos(p_i).esperado || ']';
         END IF;
-    END confere;
+    END invocar;
   BEGIN
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage();
     FOR i IN 1 .. l_casos.COUNT LOOP
-      confere(i);
+      invocar(i);
     END LOOP;
     IF l_erros = 0 THEN
-      test_pass(l_casos.COUNT || ' recusas, cada uma com o código da sua faixa');
+      passou(l_casos.COUNT || ' recusas, cada uma com o código da sua faixa');
     ELSE
-      test_fail(l_erros || ' divergência(s):' || l_msg);
+      falhou(l_erros || ' divergência(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Código de barras gera desenho correto (vetores de referência)');
+  caso('Código de barras gera desenho correto (vetores de referência)');
   --------------------------------------------------------------------------
   -- Código de barras: confere o desenho contra vetores de referência.
   --
@@ -530,15 +530,15 @@ BEGIN
     END LOOP;
 
     IF l_falhas = 0 THEN
-      test_pass('Código de barras igual à referência nas ' ||
+      passou('Código de barras igual à referência nas ' ||
                 l_casos.COUNT || ' simbologias');
     ELSE
-      test_fail(l_falhas || ' de ' || l_casos.COUNT || ' divergiram');
+      falhou(l_falhas || ' de ' || l_casos.COUNT || ' divergiram');
     END IF;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Código de barras valida entrada e calcula verificador');
+  caso('Código de barras valida entrada e calcula verificador');
   --------------------------------------------------------------------------
   DECLARE
     l_erros PLS_INTEGER := 0;
@@ -574,15 +574,15 @@ BEGIN
     l_b := barras('7891234567895', 'EAN13');
 
     IF l_erros = 3 AND l_a = l_b AND l_a > 0 THEN
-      test_pass('3 entradas inválidas rejeitadas; verificador calculado confere');
+      passou('3 entradas inválidas rejeitadas; verificador calculado confere');
     ELSE
-      test_fail('erros=' || l_erros || ' (esperado 3), barras ' || l_a || ' vs ' || l_b);
+      falhou('erros=' || l_erros || ' (esperado 3), barras ' || l_a || ' vs ' || l_b);
     END IF;
     PL_FPDF.Reset;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Merge / Split / Extract: cópia real de objetos');
+  caso('Merge / Split / Extract: cópia real de objetos');
   --------------------------------------------------------------------------
   DECLARE
     l_a      BLOB;
@@ -712,21 +712,21 @@ BEGIN
     PL_FPDF.UnloadPDF('B');
 
     IF l_erros = 0 THEN
-      test_pass('merge, extract e split preservam a contagem de páginas e '
+      passou('merge, extract e split preservam a contagem de páginas e '
                 || 'rejeitam entradas inválidas');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
       -- sem este handler um erro aqui abortava o arquivo de teste inteiro
-      test_fail('exceção: ' || SQLERRM);
+      falhou('exceção: ' || SQLERRM);
       BEGIN PL_FPDF.ClearPDFCache; PL_FPDF.Reset; EXCEPTION WHEN OTHERS THEN NULL; END;
   END;
 
   --------------------------------------------------------------------------
-  test_start('Merge preserva stream binário e acima de 32 KB');
+  caso('Merge preserva stream binário e acima de 32 KB');
   --------------------------------------------------------------------------
   -- Regressão: pdf_obj_extent devolvia o FIM do payload como se fosse o
   -- início, então o conteúdo do stream passava por VARCHAR2 e por
@@ -790,19 +790,19 @@ BEGIN
 
     PL_FPDF.ClearPDFCache;
     IF l_erros = 0 THEN
-      test_pass('stream acima de 32 KB copiado sem truncar nem corromper');
+      passou('stream acima de 32 KB copiado sem truncar nem corromper');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
-      test_fail('exceção: ' || SQLERRM);
+      falhou('exceção: ' || SQLERRM);
       BEGIN PL_FPDF.ClearPDFCache; PL_FPDF.Reset; EXCEPTION WHEN OTHERS THEN NULL; END;
   END;
 
   --------------------------------------------------------------------------
-  test_start('OutputModifiedPDF: remoção de página e rotação');
+  caso('OutputModifiedPDF: remoção de página e rotação');
   --------------------------------------------------------------------------
   DECLARE
     l_src   BLOB;
@@ -856,9 +856,9 @@ BEGIN
     PL_FPDF.ClearPDFCache;
 
     IF l_erros = 0 THEN
-      test_pass('página removida e rotação aplicada no documento copiado');
+      passou('página removida e rotação aplicada no documento copiado');
     ELSE
-      test_fail(l_erros || ' problema(s):' || l_msg);
+      falhou(l_erros || ' problema(s):' || l_msg);
     END IF;
     PL_FPDF.Reset;
   END;
