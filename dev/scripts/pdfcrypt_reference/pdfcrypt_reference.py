@@ -178,7 +178,7 @@ def cifrar_objeto(corpo: bytes, ok: bytes) -> bytes:
 
 
 def percorrer_strings(dic: bytes, transforma) -> bytes:
-    """Aplica `transforma(bytes_em_claro) -> bytes` a cada string literal.
+    r"""Aplica `transforma(bytes_em_claro) -> bytes` a cada string literal.
 
     Varredura com **contagem de profundidade**, e não regex. Uma string do PDF
     pode conter parênteses BALANCEADOS sem escape: `(Titulo (2026) final)` é uma

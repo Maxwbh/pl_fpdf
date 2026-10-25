@@ -233,8 +233,26 @@ def resumos_ambiguos(caminho, bruto):
     return fora
 
 
+def nomes_nao_subprograma():
+    """Tipos, subtipos, constantes e excecoes da spec.
+
+    Aparecem como `PL_FPDF.x` num teste e sao legitimos — `PL_FPDF.tab_points`
+    numa declaracao, `PL_FPDF.co_version` num SELECT. Sem esta lista, a
+    verificacao de nome inexistente acusaria os tres tipos que os testes usam.
+    """
+    spec = io.open(do_repo('src', 'PL_FPDF.pks'), encoding='utf-8').read()
+    fora = set()
+    for padrao in (r'^\s*(?:sub)?type\s+([a-z_][a-z_0-9$#]*)',
+                   r'^\s*([a-z_][a-z_0-9$#]*)\s+constant\b',
+                   r'^\s*([a-z_][a-z_0-9$#]*)\s+exception\b'):
+        fora |= {m.group(1).lower()
+                 for m in re.finditer(padrao, spec, re.I | re.M)}
+    return fora
+
+
 def main():
     api = carrega_api()
+    nao_subprogramas = nomes_nao_subprograma()
     chaves = chaves_json_do_package()
     problemas = []
     # os exemplos entram junto: um exemplo que nao compila e pior que um teste
@@ -259,6 +277,20 @@ def main():
         for m in CALL.finditer(src):
             nome = m.group(1).lower()
             if nome not in api:
+                # Nome que a spec nao declara. Isso NAO passava batido por
+                # acaso: o `continue` daqui deixava a chamada seguir, e o lint
+                # so conferia aridade e tipo do que ja conhecia. Custou uma
+                # rodada contra o banco -- dois testes chamavam uma API que
+                # tinha acabado de sair da spec, o lint aprovou, e o Oracle
+                # respondeu ORA-06550 na compilacao do bloco.
+                #
+                # Tipo e constante do package tambem aparecem como PL_FPDF.x e
+                # sao legitimos; so subprograma inexistente e erro.
+                if nome not in nao_subprogramas:
+                    problemas.append(
+                        (f, src[:m.start()].count('\n') + 1,
+                         f'PL_FPDF.{nome} nao existe na spec — foi removido, '
+                         f'ou o nome esta errado. O bloco nao compila.'))
                 continue
             ln = src[:m.start()].count('\n') + 1
             info = api[nome]

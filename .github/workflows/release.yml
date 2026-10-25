@@ -42,19 +42,36 @@ jobs:
       # A tag diz uma versão; o co_version diz outra. Publicar as duas
       # divergentes entrega um arquivo que se apresenta como o que não é —
       # e o instalador imprime a sua própria versão no fim.
+      #
+      # O SUFIXO DE CANDIDATO É PARTE DA TAG, NÃO DA VERSÃO. A `v3.4.0-rc1`
+      # marca o mesmo código que a 3.4.0 vai levar, e o `co_version` só sobe
+      # quando a versão nasce — então exigir igualdade exata reprovava TODO
+      # candidato. Foi o que aconteceu nas cinco tentativas de publicar a
+      # rc1: o passo morria aqui, e o release acabou saindo à mão. Compara-se
+      # a parte de versão; o sufixo decide se é pré-lançamento.
       - name: A tag bate com o co_version
         run: |
           set -e
           tag="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
           tag_ver="${tag#v}"
+          base_ver="${tag_ver%%-*}"
           ver=$(grep -oP "co_version CONSTANT VARCHAR2\(10\) := '\K[0-9.]+" src/PL_FPDF.pks)
-          echo "tag=$tag_ver  co_version=$ver"
-          if [ "$tag_ver" != "$ver" ]; then
-            echo "FALHA: a tag diz $tag_ver e o co_version diz $ver."
+          echo "tag=$tag_ver  base=$base_ver  co_version=$ver"
+          if [ "$base_ver" != "$ver" ]; then
+            echo "FALHA: a tag diz $base_ver e o co_version diz $ver."
             echo "Suba o co_version, ou marque a tag certa — nao publique os dois."
             exit 1
           fi
           echo "VERSAO=$ver" >> "$GITHUB_ENV"
+          # TAG_VERSAO leva o sufixo: é o que vai no título, para um candidato
+          # não se anunciar como a versão final na lista de releases.
+          echo "TAG_VERSAO=$tag_ver" >> "$GITHUB_ENV"
+          if [ "$tag_ver" != "$base_ver" ]; then
+            echo "PRE=--prerelease" >> "$GITHUB_ENV"
+            echo "candidato: sai marcado como pré-lançamento"
+          else
+            echo "PRE=" >> "$GITHUB_ENV"
+          fi
 
       # dist/ é gerado de src/. Se estiver atrasado, o release sairia com um
       # instalador que não corresponde ao código da tag.
@@ -97,8 +114,15 @@ jobs:
             mv NOTAS.curta NOTAS.md
           fi
 
-          sha256sum dist/pl_fpdf_install.sql | awk '{print $1}' > SHA256.txt
-          sha=$(cat SHA256.txt)
+          # O SHA256.txt sai no formato do proprio sha256sum -- soma, dois
+          # espacos, NOME DO ARQUIVO --, e com o nome que o anexo tem no
+          # release, sem o `dist/`. Antes saia so a soma, e entao
+          # `sha256sum -c SHA256.txt` recusava o arquivo: faltava o nome. A
+          # pagina de instalacao contornava remontando a linha na hora, e a
+          # rc1 publicada a mao ja veio no formato completo -- ou seja, o
+          # arquivo e a instrucao discordavam conforme quem tinha publicado.
+          (cd dist && sha256sum pl_fpdf_install.sql) > SHA256.txt
+          sha=$(awk '{print $1}' SHA256.txt)
           linhas=$(wc -l < dist/pl_fpdf_install.sql)
 
           {
@@ -130,8 +154,8 @@ jobs:
         run: |
           set -e
           tag="${GITHUB_REF_NAME:-${{ github.event.inputs.tag }}}"
-          gh release create "$tag" \
-            --title "PL_FPDF $VERSAO" \
+          gh release create "$tag" $PRE \
+            --title "PL_FPDF $TAG_VERSAO" \
             --notes-file NOTAS.md \
             dist/pl_fpdf_install.sql \
             SHA256.txt

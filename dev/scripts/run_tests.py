@@ -216,11 +216,22 @@ def rodar_testes(con, arquivos, verboso=False):
         extra = f" | {do_arq['SKIP']} pulado(s)" if do_arq['SKIP'] else ''
         print(f"   {sit:<5} {nome:<34} {do_arq['PASS']}/{verif}{extra}")
 
-        # o detalhe só interessa quando algo falhou (ou se pedirem tudo)
+        # O detalhe só interessa quando algo falhou (ou se pedirem tudo). A
+        # exceção é a linha marcada com '***': ela sai sempre.
+        #
+        # Serve a duas coisas que não são aferição e por isso não têm [FAIL]
+        # para chamar atenção: o bloco que nem chegou a executar, e a medição
+        # de um diag_*, cujo resultado É a saída. Um arquivo que mede, passa e
+        # não imprime nada não serve para nada — foi o que aconteceu com o
+        # diag_winansi, que rodou duas vezes sem dizer o que mediu.
+        marcadas = [l for l in linhas_arq if l.startswith('***')]
         if verboso or do_arq['FAIL']:
             for l in linhas_arq:
                 if verboso or '[FAIL]' in l or l.startswith('***'):
                     print('         ' + l.strip())
+        elif marcadas:
+            for l in marcadas:
+                print('         ' + l.strip())
     return total, falhas, situacao
 
 
@@ -451,6 +462,66 @@ AMOSTRAS = [
       # o azul-escuro do fundo do banner, no centro da área desenhada —
       # conferido no PNG de origem, em (640, 320) de 1280x640
       'pixel': (1, 300, 540, (13, 25, 44))}),
+
+    # ── texto acentuado nas fontes padrao ───────────────────────────────────
+    #
+    # A prova que interessa não é o escape estar no arquivo — é um LEITOR
+    # devolver o texto certo. O validador extrai o texto com o MuPDF e compara,
+    # e é isso que separa "converteu" de "converteu para a coisa certa".
+    #
+    # Sem a conversão, cada acentuado saía como dois glifos: o leitor devolvia
+    # 'EndereÃ§o de cobranÃ§a'. O arquivo abria, e ninguém percebia sem olhar.
+    ('acentos', """
+        BEGIN
+          PL_FPDF.ClearPDFCache;
+          PL_FPDF.Init('P','mm','A4'); PL_FPDF.SetFont('Helvetica','',12);
+          PL_FPDF.AddPage();
+          PL_FPDF.Cell(0, 10, 'Endereco de cobranca - Sao Paulo', '0', 1);
+          PL_FPDF.Cell(0, 10, 'Endereço de cobrança - São Paulo', '0', 1);
+          PL_FPDF.Cell(0, 10, 'Acentuacao: à é î õ ü ç ñ Ç', '0', 1);
+          -- alinhado à direita: só este caminho chama GetStringWidth, e era
+          -- onde o ORA-06502 aparecia
+          PL_FPDF.Cell(0, 10, 'Total à direita', '0', 1, 'R');
+          :saida := PL_FPDF.OutputBlob();
+          PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
+        END;""",
+     # 'textos' e uma lista POR PAGINA: o indice e a pagina, nao o item. Tres
+     # strings soltas fariam o validador procurar texto nas paginas 2 e 3, que
+     # nao existem -- foi o que aconteceu na primeira versao desta amostra.
+     {'paginas': 1,
+      'textos': [['Endereço de cobrança - São Paulo',
+                  'Acentuacao: à é î õ ü ç ñ Ç',
+                  'Total à direita']]}),
+
+    # ── imagem pelo caminho do parser, com os pixels conferidos ─────────────
+    #
+    # As outras três amostras de imagem entram por OverlayImage, que é outro
+    # percurso: recebe o BLOB e o rasteriza. Esta entra por ImageFromBlob, que
+    # atravessa o p_parseImage — o parser que percorre os chunks do PNG — e sai
+    # pelo p_putstream. Era o único caminho de imagem sem aferição de pixel, e
+    # foi por isso que dois defeitos moraram nele por quatro versões: a
+    # assinatura comparada como caractere e o stream escrito em hexadecimal sem
+    # filtro declarado. Os dois produziam arquivo que abre, então nenhuma
+    # checagem estrutural pegava.
+    ('imagem_blob', """
+        DECLARE l_pdf BLOB; l_img BLOB := TO_BLOB(:img); BEGIN
+          PL_FPDF.ClearPDFCache;
+          PL_FPDF.Init('P','mm','A4'); PL_FPDF.SetFont('Arial','B',16);
+          PL_FPDF.AddPage(); PL_FPDF.Cell(100,10,'Imagem pelo parser','1',1);
+          PL_FPDF.ImageFromBlob(l_img, 'AMOSTRA', 20, 40, 60, 60);
+          :saida := PL_FPDF.OutputBlob();
+          PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
+        END;""",
+     {'paginas': 1, 'textos': ['Imagem pelo parser'], 'imagens': {1: 1},
+      # o proprio vermelho do PNG de origem, no meio da area desenhada.
+      #
+      # A conta, que erra facil: o ImageFromBlob recebe mm e conta o pY do
+      # TOPO; o validador quer PONTOS contados da BASE. Imagem em x=20 mm,
+      # 60 mm de lado, 40 mm abaixo do topo, numa A4 de 297 mm:
+      #   x = (20 + 30) mm x 2,8346          = 142 pt
+      #   y = (297 - 40 - 60 + 30) mm x 2,8346 = 643 pt
+      # Usar o 227 mm sem converter cai bem abaixo da imagem, em papel branco.
+      'pixel': (1, 142, 643, (200, 60, 40))}),
 
     # ── documento de complexidade real: um boleto bancário ───────────────────
     #
@@ -1021,6 +1092,9 @@ CONTEUDOS = {'qrcode_pix': PIX, 'barcode_code128': 'PL-FPDF-2026',
              # três conteúdos diferentes no mesmo bloco
              'marca_dagua': 'CONFIDENCIAL',
              'overlay_img': {'img': png_solido(8, (32, 144, 208))},
+             # mesmo helper do overlay, cor diferente para nao confundir as
+             # duas amostras quando uma falha
+             'imagem_blob': {'img': png_solido(8, (200, 60, 40))},
              'png_alfa': {'img': png_alfa(8, (200, 60, 40, 128))},
              'png_entrelacado': {'img': png_entrelacado(16)},
              # o banner do próprio projeto: 1280x640, 326 KB — a única
