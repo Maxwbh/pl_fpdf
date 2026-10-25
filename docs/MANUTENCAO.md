@@ -35,18 +35,24 @@ A instalação de quem usa é o `dist/pl_fpdf_install.sql`, e nada mais.
 
 ## Atualizar a cópia que roda os testes
 
-**Nesta branch, use `fetch` + `reset`. Nunca `pull`.**
+**Na `melhorias`, `git pull --ff-only`.**
 
-A `melhorias` é mantida como **um commit único**: cada mudança entra por
-`git commit --amend` e sobe com `--force-with-lease`, então o SHA muda a cada
-envio. Um `git pull` tenta *mesclar* a história nova com a cópia local da
-antiga, as duas mexeram nos mesmos arquivos, e o resultado é conflito — toda
-vez, sem exceção. Foi assim que apareceram `run_all_tests_BACKUP_276.sql` e
-`run_all_tests_REMOTE_276.sql`, sobras de merge que o runner ainda tentou
-executar como se fossem teste.
+A `melhorias` recebe **commits normais**, um por mudança, e sobe sem forçar.
+
+Até 25/10/2026 ela era mantida como um commit único, por `git commit --amend`
+e `--force-with-lease`: o SHA mudava a cada envio, e um `pull` tentava mesclar
+a história nova com a cópia local da antiga — conflito toda vez. Foi assim que
+apareceram `run_all_tests_BACKUP_276.sql` e `run_all_tests_REMOTE_276.sql`,
+sobras de merge que o runner ainda tentou executar como teste.
+
+O que mudou a regra foi a `master` passar a receber a `melhorias` por merge.
+Com amend, o commit reescrito não descende do que a `master` já tem, e cada
+merge seguinte conflitava em todo arquivo alterado. Com commit por cima, o
+merge sai limpo.
 
 No Git Bash do Windows, o caminho vai entre aspas e com barra normal — `\` é
-escape e `&` corta o comando:
+escape e `&` corta o comando. **Uma vez**, para alinhar a cópia que ainda
+guarda a história reescrita:
 
 ```bash
 cd "/c/Projetos/M&S/pl_fpdf"
@@ -54,6 +60,16 @@ git merge --abort            # se um merge ficou pela metade
 git fetch origin melhorias
 git reset --hard origin/melhorias
 ```
+
+Daí em diante:
+
+```bash
+git pull --ff-only origin melhorias
+```
+
+O `--ff-only` recusa em vez de mesclar quando a história diverge. Se ele
+recusar, alguém reescreveu a branch — é aviso, não obstáculo, e o caminho é o
+`fetch` + `reset` acima.
 
 **Não use `git clean`.** Foi recomendado uma vez e deu errado: a cópia local
 guarda pastas órfãs do layout antigo (`scripts/`, `tests/`, `assets/`, de antes
