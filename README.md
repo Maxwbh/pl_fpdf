@@ -326,7 +326,8 @@ O que a biblioteca **não** faz, para você não descobrir tarde:
 | [docs/DOCUMENTATION_EN.md](docs/DOCUMENTATION_EN.md) | O mesmo guia em inglês |
 | [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Assinatura, parâmetros e erros de cada API |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | A mesma referência em inglês (gerada) |
-| [Índice da API no site](https://maxwbh.github.io/pl_fpdf/api.html) | Versão navegável da referência |
+| [Referência da API no site](https://maxwbh.github.io/pl_fpdf/reference.html) | A mesma referência, navegável |
+| [Índice da API no site](https://maxwbh.github.io/pl_fpdf/api.html) | Índice por tarefa |
 | [CHANGELOG.md](CHANGELOG.md) | Histórico de versões |
 
 **Para quem mantém o código** — testes, CI e método de trabalho:
