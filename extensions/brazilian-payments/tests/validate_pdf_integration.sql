@@ -28,6 +28,14 @@ DECLARE
   v_tests_failed PLS_INTEGER := 0;
   v_test_name VARCHAR2(200);
 
+  -- As variaveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
+  -- declarado depois de subprograma e PLS-00103. Estavam depois, e o bloco
+  -- nao compilava em versao nenhuma do Oracle -- os testes nunca rodaram.
+  -- Test variables
+  l_pix_data JSON_OBJECT_T;
+  l_boleto_data JSON_OBJECT_T;
+  l_pdf_blob BLOB;
+
   -- Test helper procedures
   PROCEDURE start_test(p_name VARCHAR2) IS
   BEGIN
@@ -50,10 +58,6 @@ DECLARE
     END IF;
   END;
 
-  -- Test variables
-  l_pix_data JSON_OBJECT_T;
-  l_boleto_data JSON_OBJECT_T;
-  l_pdf_blob BLOB;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('=== Integration Tests ===');
@@ -347,8 +351,8 @@ BEGIN
     PL_FPDF.Text(10, 10, 'Page 1: PIX Payment');
 
     l_pix_data := JSON_OBJECT_T();
-    l_pix_data.put('pixKey', '11987654321');
-    l_pix_data.put('pixKeyType', 'PHONE');
+    l_pix_data.put('pixKey', '+5511987654321');
+    l_pix_data.put('pixKeyType', 'PHONE');  -- chave de telefone leva o DDI: +55
     l_pix_data.put('merchantName', 'Store ABC');
     l_pix_data.put('merchantCity', 'Brasilia');
     l_pix_data.put('amount', 750.50);

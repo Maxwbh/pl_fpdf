@@ -7,28 +7,36 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [3.4.0] - EM TESTE (sem release publicado)
+## [3.4.0] - EM TESTE (candidata publicada: v3.4.0-rc2)
 
 ### Corrigido
 - Texto acentuado saía com dois glifos nas fontes padrão: o documento declarava
   WinAnsi e recebia UTF-8 cru. `Cell`, `MultiCell`, `Write`, `Text` e overlays
+  passam a converter o texto para WinAnsi antes de escrever
 - `GetStringWidth` levantava `ORA-06502` com acento — logo, centralizar ou
   alinhar à direita quebrava
 - A tabela de larguras era montada com `chr(i)` e passa a ser indexada pelo
-  byte WinAnsi: em AL32UTF8 o `CHR` de 192 para cima levanta `ORA-29275` na
-  primeira chamada que carrega uma métrica. `MultiCell`, `Write` e o overlay
-  ainda consultavam com o caractere cru, e mediam errado todo acentuado
+  byte WinAnsi: no 26ai em AL32UTF8, o `CHR` dos bytes que abrem sequência UTF-8
+  (194 a 244) levanta `ORA-29275` na primeira chamada que carrega uma métrica.
+  `MultiCell`, `Write` e o overlay ainda consultavam com o caractere cru, e
+  mediam errado todo acentuado
 - `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
+- `LoadPDF` aceitava PDF cifrado sem avisar, e o `OutputModifiedPDF` saía com as
+  páginas em branco; agora recusa com `ORA-20867` (o `LoadPDFWithID` também)
 - Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
   último byte
 - `Link` numa página emitia `/Annots` com dicionário aberto nas páginas
   anteriores, que nunca pediram link, e estourava `ORA-06533` no segundo
   documento da sessão
+- Extensão de boleto recusava vencimento a partir de 22/02/2025: o fator passa
+  de 9999 a 1000, como manda a FEBRABAN. As suítes da extensão não compilavam
 
 ### Adicionado
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
 - Fonte TrueType embutida de verdade: o `SetFont` passa a usar a fonte
   registrada, as métricas saem do arquivo e o `/FontFile2` vai para o PDF
+- Guias de instalação, compatibilidade, migração e problemas comuns, em
+  português e inglês, e a integração com o Oracle APEX no guia de uso
 
 
 ### Removido
@@ -71,20 +79,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Planned 📋
+## [Não lançado]
 
-### 🎯 Advanced Page Operations
-
-**Status:** Planned - Q2 2026
-
-### Planned Features
-
-- `InsertPagesFrom()` - Insert pages from another PDF at specific position
-- `PrependPages()` / `AppendPages()` - Insert pages at beginning/end
-- `ReorderPages()` - Reorder pages by new sequence
-- `ReplacePage()` - Replace page content from another PDF
-- `DuplicatePage()` - Copy page within or across documents
-- `BatchProcess()` - Apply same operations to multiple PDFs
+O que está planejado, e em que ordem, fica no [ROADMAP](docs/ROADMAP.md). As
+"operações avançadas de página" que este espaço anunciava para o 2º trimestre
+de 2026 não saíram, e foram para o backlog de lá, sem data.
 
 ---
 

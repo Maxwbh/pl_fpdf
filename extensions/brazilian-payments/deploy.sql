@@ -28,7 +28,7 @@ PROMPT This extension provides Brazilian-specific payment functionality:
 PROMPT   - PIX QR Codes (EMV standard)
 PROMPT   - Boleto Bancario (FEBRABAN standard)
 PROMPT
-PROMPT WARNING: This is an OPTIONAL extension and NOT part of official PL_FPDF
+PROMPT WARNING: OPTIONAL extension, outside the PL_FPDF core package (best-effort support)
 PROMPT
 
 -- Check if PL_FPDF core is installed

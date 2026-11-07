@@ -182,6 +182,24 @@ erro estoura na carga, com o nome do arquivo.
 > verificado. `check_examples_sync.py` roda no CI e falha se algum exemplo
 > deixar de ser exercitado, ou se alguém colar um bloco de volta no runner.
 
+### Os exemplos da documentação também rodam
+
+O runner executa ainda cada bloco anônimo completo (`DECLARE`/`BEGIN`) dos
+guias de quem usa — README, instalação, compatibilidade, uso, migração,
+problemas comuns, nos dois idiomas —, um a um, com `ROLLBACK` depois de cada.
+Exemplo que não compila ou levanta é falha: é o texto que alguém vai copiar.
+
+```bash
+python dev/scripts/run_tests.py --docs     # só esta fase
+python dev/scripts/exemplos_doc.py         # lista o que seria executado
+```
+
+Bloco que depende do que o schema de teste não tem — APEX, gateway OWA, uma
+tabela do usuário — leva, na linha logo acima da cerca, a marca
+`<!-- exemplo-ilustrativo: motivo -->`, que não aparece na página. O
+`check_exemplos_doc.py`, no CI, recusa bloco com bind, `apex_*` ou `owa_util`
+sem a marca, marca sem motivo, e PT e EN com contagens diferentes.
+
 ### O que o runner não cobre: regra de cobrança
 
 O `PL_FPDF` **desenha**. Montar o código de barras de um boleto a partir de
@@ -235,7 +253,16 @@ python dev/scripts/build_run_all.py --check
 python dev/scripts/gen_docs/check_refs.py
 python dev/scripts/gen_docs/check_links.py
 python dev/scripts/gen_docs/check_paridade.py
+python dev/scripts/gen_docs/check_paridade_md.py
+python dev/scripts/gen_docs/check_extensao_api.py
+python dev/scripts/gen_docs/check_exemplos_doc.py
+python dev/scripts/gen_docs/rastreabilidade.py --check
+python dev/scripts/plsql_lint/check_licencas.py
 ```
+
+Fora do push, num workflow próprio (`links-externos.yml`, semanal e a cada
+release): `check_links_externos.py`, que pede cada link da documentação para os
+releases, o `dist/` cru e o site. Rede a cada commit deixaria o CI instável.
 
 Cada um existe porque um erro específico custou uma rodada de compilação ou uma
 ida ao banco. A tabela com o que cada um pega está no
@@ -526,6 +553,7 @@ python dev/scripts/ticket_reference/validate.py           # cor + QR + Code 39
 | `dev/tests/run_all_tests.sql` | `dev/scripts/build_run_all.py` | `dev/tests/test_*.sql` |
 | `dist/pl_fpdf_install.sql` | `dev/scripts/build_release.py` | `src/*.pks`, `src/*.pkb` |
 | `dev/tests/diag_xrefstm.sql` | `dev/scripts/pdfxref_reference/gen_diag.py` | os construtores de `validate.py` |
+| `docs/TRACEABILITY.md` | `dev/scripts/gen_docs/rastreabilidade.py` | as specs, `dev/tests/` e as amostras do `run_tests.py` |
 
 O CI falha se algum deles estiver desatualizado.
 

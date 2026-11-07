@@ -145,7 +145,7 @@ def repartir_subitens(texto):
 def ler_bloco(bloco):
     """O bloco Javadoc (lista de linhas) como estrutura."""
     doc = {'descricao': '', 'params': [], 'retorno': '', 'erros': [],
-           'exemplo': [], 'notas': []}
+           'exemplo': [], 'notas': [], 'desde': ''}
     tag, buf = None, []
 
     def fechar():
@@ -167,6 +167,8 @@ def ler_bloco(bloco):
                                  'texto': (m.group(2) if m else texto).strip()})
         elif tag in ('@note', '@limitation', '@process', '@options'):
             doc['notas'].append({'tipo': tag[1:], 'texto': texto})
+        elif tag == '@since':
+            doc['desde'] = texto
 
     for l in bloco[1:-1]:
         m = TAG.match(l)

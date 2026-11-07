@@ -32,6 +32,7 @@ Extrai os nomes `check_*.py` citados no `ci.yml` e os citados entre crases no
 
 Uso:  python dev/scripts/plsql_lint/check_roadmap_ci.py
 """
+import glob
 import io
 import os
 import re
@@ -46,8 +47,11 @@ def do_repo(*partes):
 
 
 def main():
-    ci = io.open(do_repo('.github', 'workflows', 'ci.yml'),
-                 encoding='utf-8').read()
+    # Todos os workflows, e nao so o ci.yml: a verificacao de links externos
+    # roda num workflow proprio, semanal, e continua sendo rede que a tabela
+    # tem de registrar.
+    ci = ''.join(io.open(w, encoding='utf-8').read() for w in sorted(
+        glob.glob(do_repo('.github', 'workflows', '*.yml'))))
     roadmap = io.open(do_repo('docs', 'ROADMAP.md'), encoding='utf-8').read()
 
     no_ci = set(re.findall(r'check_[a-z_0-9]+\.py', ci))
@@ -66,7 +70,7 @@ def main():
                   f'uma rede que não existe')
         return 1
 
-    print(f'OK — as {len(no_ci)} verificações do ci.yml estão todas na tabela '
+    print(f'OK — as {len(no_ci)} verificações dos workflows estão todas na tabela '
           f'do ROADMAP, e a tabela não promete nenhuma a mais')
     return 0
 

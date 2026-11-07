@@ -4469,6 +4469,7 @@ END;
 * - Section 4: Decryption
 * - Section 5: Security Info Parsing
 * - Section 6: Error Handling
+* - Section 7: Loading an Encrypted PDF (LoadPDF refuses instead of blanking)
 *******************************************************************************/
 
 DECLARE
@@ -4490,6 +4491,8 @@ DECLARE
   l_perms JSON_OBJECT_T;
   l_is_encrypted BOOLEAN;
   l_permissions JSON_OBJECT_T;
+  l_cifrado BLOB;
+  l_paginas PLS_INTEGER;
 
   -- Test helper procedures
   PROCEDURE secao(p_name VARCHAR2) IS
@@ -5523,6 +5526,105 @@ BEGIN
       ELSE
         falhou('Wrong error: ' || SQLERRM);
       END IF;
+  END;
+
+  --------------------------------------------------------------------------------
+  -- SECTION 7: Loading an Encrypted PDF
+  --
+  -- O LoadPDF le a estrutura e nao decifra os streams. Antes ele aceitava o PDF
+  -- cifrado sem avisar, e o OutputModifiedPDF saia com as paginas EM BRANCO --
+  -- medido no 26ai com AES-256 e RC4-128. Agora recusa com -20867.
+  --------------------------------------------------------------------------------
+  secao('SECTION 7: Loading an Encrypted PDF');
+
+  -- TEST 7.1: AES-256
+  caso('LoadPDF refuses an AES-256 encrypted PDF');
+  BEGIN
+    l_cifrado := PL_FPDF.EncryptPDF(generate_test_pdf(), 'leitura', 'dono', NULL, 'AES-256');
+    PL_FPDF.LoadPDF(l_cifrado);
+    falhou('LoadPDF accepted an encrypted PDF');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20867 THEN
+        passou('Refused with -20867');
+      ELSE
+        falhou('Wrong error: ' || SQLERRM);
+      END IF;
+  END;
+
+  -- TEST 7.2: RC4-128
+  caso('LoadPDF refuses an RC4-128 encrypted PDF');
+  BEGIN
+    PL_FPDF.LoadPDF(PL_FPDF.EncryptPDF(generate_test_pdf(), 'leitura', 'dono', NULL, 'RC4-128'));
+    falhou('LoadPDF accepted an encrypted PDF');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20867 THEN
+        passou('Refused with -20867');
+      ELSE
+        falhou('Wrong error: ' || SQLERRM);
+      END IF;
+  END;
+
+  -- TEST 7.3: a recusa nao deixa o documento anterior misturado com o recusado
+  caso('After the refusal, nothing is left half-loaded');
+  BEGIN
+    PL_FPDF.LoadPDF(generate_test_pdf());
+    BEGIN
+      PL_FPDF.LoadPDF(l_cifrado);
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF SQLCODE != -20867 THEN
+          RAISE;
+        END IF;
+    END;
+    l_paginas := PL_FPDF.GetPageCount;
+    falhou('GetPageCount answered ' || l_paginas || ' after a refused load');
+  EXCEPTION
+    WHEN OTHERS THEN
+      IF SQLCODE = -20809 THEN
+        passou('No PDF loaded (-20809)');
+      ELSE
+        falhou('Wrong error: ' || SQLERRM);
+      END IF;
+  END;
+
+  -- TEST 7.4: LoadPDFWithID recusa e nao registra o ID
+  caso('LoadPDFWithID refuses an encrypted PDF and does not register the ID');
+  BEGIN
+    BEGIN
+      PL_FPDF.LoadPDFWithID('cifrado', l_cifrado);
+      falhou('LoadPDFWithID accepted an encrypted PDF');
+    EXCEPTION
+      WHEN OTHERS THEN
+        IF SQLCODE = -20867 THEN
+          -- o ID ficou livre: carregar um PDF valido com ele tem de funcionar
+          PL_FPDF.LoadPDFWithID('cifrado', generate_test_pdf());
+          PL_FPDF.UnloadPDF('cifrado');
+          passou('Refused with -20867, ID not registered');
+        ELSE
+          falhou('Wrong error: ' || SQLERRM);
+        END IF;
+    END;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Unexpected: ' || SQLERRM);
+  END;
+
+  -- TEST 7.5: decifrado, carrega
+  caso('After DecryptPDF, LoadPDF works');
+  BEGIN
+    PL_FPDF.LoadPDF(PL_FPDF.DecryptPDF(l_cifrado, 'dono'));
+    l_paginas := PL_FPDF.GetPageCount;
+    IF l_paginas = 1 THEN
+      passou('Loaded, 1 page');
+    ELSE
+      falhou('Expected 1 page, got ' || l_paginas);
+    END IF;
+    PL_FPDF.ClearPDFCache;
+  EXCEPTION
+    WHEN OTHERS THEN
+      falhou('Error: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------------

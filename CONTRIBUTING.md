@@ -155,7 +155,7 @@ que o runner carrega para testar, então exemplo e teste não podem divergir
 ## Relatando um problema
 
 Abra uma issue com a versão do Oracle, a versão do PL_FPDF
-(`SELECT PL_FPDF.co_version FROM DUAL`), como reproduzir e a mensagem de erro
+(`BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;`), como reproduzir e a mensagem de erro
 inteira.
 
 ## Contato

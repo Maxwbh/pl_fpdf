@@ -325,6 +325,34 @@ jobs:
       - name: As páginas do site em inglês acompanham as portuguesas
         run: python dev/scripts/gen_docs/check_paridade.py
 
+      # O mesmo para os guias em Markdown: o README_EN passou meses sem a secao
+      # de Limitacoes que o README tem, e nada reclamava.
+      - name: Os guias em inglês acompanham os portugueses
+        run: python dev/scripts/gen_docs/check_paridade_md.py
+
+      # A referencia da extensao e escrita a mao nos READMEs dela, e chegou a
+      # documentar uma funcao com outro nome, outro parametro e outro retorno.
+      - name: A referência da extensão bate com a spec dela
+        run: python dev/scripts/gen_docs/check_extensao_api.py
+
+      # Quem EXECUTA os exemplos e o run_tests.py, contra o Oracle. Aqui, sem
+      # banco, so o previsivel: bloco que nao tem como rodar sem a marca.
+      - name: Os exemplos da documentação estão prontos para o runner
+        run: python dev/scripts/gen_docs/check_exemplos_doc.py
+
+      - name: docs/TRACEABILITY.md em dia, e a tabela de cobertura completa
+        run: python dev/scripts/gen_docs/rastreabilidade.py --check
+
+      # O que o site anuncia (chip, versao estavel, JSON-LD, aviso de
+      # candidata, selos do README) contra o co_version e a estrategia de
+      # distribuicao. A parte que consulta os releases roda antes de publicar.
+      - name: O site anuncia a versão que o código e a estratégia dizem
+        run: python dev/scripts/gen_docs/check_publicacao.py
+
+      # Versoes antigas do README da extensao se declaravam GPL v2, com selo.
+      - name: Toda declaração de licença diz MIT
+        run: python dev/scripts/plsql_lint/check_licencas.py
+
   package-sanity:
     name: Package version consistency
     runs-on: ubuntu-latest
@@ -349,8 +377,10 @@ jobs:
           check "CHANGELOG.md"           CHANGELOG.md    "## \[$ver\]"
           check "README.md (badge PT)"   README.md       "badge/versão-$ver"
           check "README_EN.md (badge EN)" README_EN.md   "badge/version-$ver"
-          check "site/index.html (chip hero)" site/index.html      ">v$ver<"
-          check "site/index.html (JSON-LD)"   site/index.html      "\"softwareVersion\": \"$ver\""
+          # o chip pode trazer o sufixo de candidata (v3.4.0-rc2 · pre-lancamento),
+          # e o JSON-LD anuncia a ESTAVEL: os dois sao cobrados por inteiro no
+          # check_publicacao.py, a partir da estrategia do conteudo_index.
+          check "site/index.html (chip hero)" site/index.html      ">v$ver"
 
           # O caminho inverso, e por que ele existe: o cabeçalho do .pkb
           # trazia o histórico de versões copiado, e a cópia envelheceu --

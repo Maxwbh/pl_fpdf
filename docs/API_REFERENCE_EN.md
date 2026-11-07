@@ -37,6 +37,8 @@ return, errors raised and an example.
 
 Initialises the document in the classic FPDF style. Kept for compatibility with v0.9.4; use Init in new code.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -67,6 +69,8 @@ PL_FPDF.fpdf('L', 'mm', 'A4');
 ### Init
 
 Initialises a new PDF document. This must be the first call of any generation; it sets the orientation, unit of measurement, page format and encoding used by every other API.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -109,6 +113,8 @@ PL_FPDF.Init('P', 'mm', 'A4');
 
 Tells whether a document is currently being built in this session.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -133,6 +139,8 @@ IF NOT PL_FPDF.IsInitialized THEN PL_FPDF.Init; END IF;
 
 Returns the PDF engine to its initial state, freeing temporary CLOBs and clearing every internal array. Use it between documents generated in the same job, or at the end of long routines.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -154,6 +162,8 @@ PL_FPDF.Reset;
 ### AcceptPageBreak
 
 Reports whether an automatic page break should happen at the current point. The engine calls it internally; you can read it for your own pagination logic.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -178,6 +188,8 @@ IF PL_FPDF.AcceptPageBreak THEN ... END IF;
 ### AddPage
 
 Adds a new page to the document and makes it the current one. NULL parameters inherit the values set in Init, which lets you mix orientations and formats within the same PDF.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -226,6 +238,8 @@ PL_FPDF.AddPage('P', '210,297', 90);
 
 Returns the number of the current page — the one receiving content.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -249,6 +263,8 @@ l_pagina := PL_FPDF.GetCurrentPage;
 ### GetX
 
 Returns the current X position of the cursor.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -274,6 +290,8 @@ l_x := PL_FPDF.GetX;
 
 Returns the current Y position of the cursor.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -297,6 +315,8 @@ l_y := PL_FPDF.GetY;
 ### Ln
 
 Moves the cursor to the next line, back at the left margin.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -326,6 +346,8 @@ PL_FPDF.Ln;
 
 Returns the current page number during generation; typically used in footers.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -349,6 +371,8 @@ PL_FPDF.Cell(0, 10, 'Page ' || PL_FPDF.PageNo);
 ### SetAutoPageBreak
 
 Turns the automatic page break on or off and sets how far from the bottom edge it happens.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -379,6 +403,8 @@ PL_FPDF.SetAutoPageBreak(TRUE, 20);
 
 Sets the left margin only.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -405,6 +431,8 @@ PL_FPDF.SetLeftMargin(25);
 ### SetMargins
 
 Sets the left, top and right margins of the document. The bottom margin is controlled by SetAutoPageBreak.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -436,6 +464,8 @@ PL_FPDF.SetMargins(20, 15);
 ### SetPage
 
 Chooses which existing page receives the content of the next calls, so you can go back to an earlier page — to fill in a table of contents once the final page numbers are known, for instance.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -471,6 +501,8 @@ PL_FPDF.SetPage(1);
 
 Sets the right margin only.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -497,6 +529,8 @@ PL_FPDF.SetRightMargin(20);
 ### SetTopMargin
 
 Sets the top margin only.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -525,6 +559,8 @@ PL_FPDF.SetTopMargin(15);
 
 Sets the X position of the cursor.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -551,6 +587,8 @@ PL_FPDF.SetX(-40);
 ### SetXY
 
 Sets both X and Y of the cursor in a single call.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -581,6 +619,8 @@ PL_FPDF.SetXY(20, 50);
 
 Sets the Y position of the cursor, and moves X back to the left margin.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -609,6 +649,8 @@ PL_FPDF.SetY(-20);   -- 20 above the foot of the page
 ### AddFont
 
 Registers an additional font (FPDF compatibility). For TrueType with UTF-8, prefer AddTTFFont.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -640,6 +682,8 @@ PL_FPDF.AddFont('Arial', 'B');
 ### AddTTFFont
 
 Registers a TrueType font from a BLOB and makes it available to `SetFont`. The file's tables are really parsed, and the font is embedded in the PDF as `/FontFile2`.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -682,6 +726,8 @@ PL_FPDF.AddTTFFont('Roboto', l_ttf);
 
 Discards every loaded TrueType font, freeing session memory.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -701,6 +747,8 @@ PL_FPDF.ClearTTFFontCache;
 ### GetTTFFontInfo
 
 Returns a TrueType font's record: the stored bytes and the metrics parsed from the file, rescaled to the PDF's 1000 units per em.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -739,6 +787,8 @@ l_fonte := PL_FPDF.GetTTFFontInfo('Roboto');
 
 Checks whether a TrueType font has already been loaded in this session.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -769,6 +819,8 @@ IF NOT PL_FPDF.IsTTFFontLoaded('Roboto') THEN ... END IF;
 ### LoadTTFFromFile
 
 Loads a TrueType font from a file inside an Oracle DIRECTORY.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -810,6 +862,8 @@ PL_FPDF.LoadTTFFromFile('Roboto', 'Roboto-Regular.ttf', 'FONTS_DIR');
 ### SetFont
 
 Sets the font family, style and size used by the next text writes.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -854,6 +908,8 @@ PL_FPDF.SetFont('Helvetica', 'B', 12);
 
 Changes only the size of the current font.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -880,6 +936,8 @@ PL_FPDF.SetFontSize(8);
 ### UTF8ToPDFString
 
 Converts UTF-8 text to the PDF's internal representation. Called internally; useful when debugging accented characters.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -913,6 +971,8 @@ l_txt := PL_FPDF.UTF8ToPDFString('Total (net)');
 ### Cell
 
 Writes a rectangular block of text, with optional borders, alignment, fill and link. It is the API most used to build reports and tables.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -975,6 +1035,8 @@ PL_FPDF.Cell(100, 0, '', 'T', 1);
 
 Cell with the text rotated — useful for vertical table headers and labels.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -1024,6 +1086,8 @@ PL_FPDF.CellRotated(10, 40, 'January', '1', 0, 'C', 0, '', 90);
 
 Returns the family of the current font.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1047,6 +1111,8 @@ l_familia := PL_FPDF.GetCurrentFontFamily;
 ### GetCurrentFontSize
 
 Returns the size of the current font.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1072,6 +1138,8 @@ l_corpo := PL_FPDF.GetCurrentFontSize;
 
 Returns the style of the current font.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1096,6 +1164,8 @@ l_estilo := PL_FPDF.GetCurrentFontStyle;
 
 Returns the current line spacing.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1119,6 +1189,8 @@ l_entre := PL_FPDF.GetLineSpacing;
 ### GetStringWidth
 
 Measures how wide a piece of text will be in the current font and size — use it to centre by hand, size columns, or decide where to break.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1156,6 +1228,8 @@ l_larg := PL_FPDF.GetStringWidth('São Paulo');
 ### MultiCell
 
 Writes a paragraph with automatic line breaking inside a given width. It exists as a function, returning the number of lines, and as a procedure.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1226,6 +1300,8 @@ l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, 'LR', 'L');
 
 Sets the line spacing used by Write and MultiCell.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1252,6 +1328,8 @@ PL_FPDF.SetLineSpacing(5);
 ### Text
 
 Writes text at absolute coordinates, without moving the cursor or breaking lines.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1289,6 +1367,8 @@ PL_FPDF.Text(20, 50, 'Billing address');
 ### Write
 
 Writes text as a flow, continuing where the previous one stopped and breaking lines automatically — which lets you switch fonts and styles in the middle of a sentence.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1329,6 +1409,8 @@ PL_FPDF.Write(5, 'manual', 'https://example.com/manual');
 ### WriteRotated
 
 Write with the text rotated.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -1372,6 +1454,8 @@ PL_FPDF.WriteRotated(5, 'CONFIDENTIAL', NULL, 90);
 
 Draws a straight line between two points.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1404,6 +1488,8 @@ PL_FPDF.Line(20, 60, 190, 60);
 ### Poly
 
 Draws a polygon from a collection of points.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1438,6 +1524,8 @@ PL_FPDF.Poly(l_pontos, TRUE, 'F');
 ### Rect
 
 Draws a rectangle: outlined, filled, or both.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1474,6 +1562,8 @@ PL_FPDF.Rect(20, 40, 60, 25, 'FD');
 
 Sets a simple dashed-line pattern.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1504,6 +1594,8 @@ PL_FPDF.SetDash;                -- back to the solid line
 ### SetDrawColor
 
 Sets the colour of the lines and outlines drawn next.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1543,6 +1635,8 @@ PL_FPDF.SetDrawColor(0, 90, 160);     -- azul
 
 Sets the fill colour of cells (pfill = 1), rectangles and shapes.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1581,6 +1675,8 @@ PL_FPDF.Cell(40, 8, 'Heading', '1', 0, 'C', 1);
 
 Sets the dash pattern using the PDF's own syntax, for fine control.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1607,6 +1703,8 @@ PL_FPDF.SetLineDashPattern('[3 2] 0');
 ### SetLineWidth
 
 Sets the thickness of the lines drawn next.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1640,6 +1738,8 @@ PL_FPDF.SetLineWidth(0.5);
 ### SetTextColor
 
 Sets the colour of the text written next.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1677,6 +1777,8 @@ PL_FPDF.SetTextColor(180, 0, 0);
 ### Triangle
 
 Draws an isosceles triangle with a base of 2xpsize and a height of psize, pointing in the direction given.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1721,6 +1823,8 @@ PL_FPDF.Triangle(20, 20, 5, 'right', 'F');
 
 Downloads an image from a URL through UTL_HTTP for use in the document. The database needs a network ACL for this.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1763,6 +1867,8 @@ l_img := PL_FPDF.getImageFromUrl('https://example.com/logo.png');
 ### image
 
 Places a PNG or JPEG image on the current page, with optional proportional scaling.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1808,6 +1914,8 @@ PL_FPDF.Image('https://example.com/logo.png', 10, 10, 40);
 ### ImageFromBlob
 
 Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. `Image` fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission.
+
+*Since version 3.4.0* — **only in 3.4.0, still a candidate — not in 3.3.0, the stable one**
 
 #### Syntax
 
@@ -1858,6 +1966,8 @@ PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);
 
 Creates an internal link, still without a destination, and returns its identifier.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1888,6 +1998,8 @@ PL_FPDF.Cell(60, 8, 'Site', plink => 'https://example.com');
 ### Link
 
 Creates a clickable rectangle anywhere on the page.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -1934,6 +2046,8 @@ PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
 
 Sets the destination of an internal link created by AddLink.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1974,6 +2088,8 @@ PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
 
 Footer extension point, called internally as each page is closed.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -1994,6 +2110,8 @@ PL_FPDF.SetFooterProc('MY_PKG.FOOTER');       -- the rest is automatic
 
 Header extension point, called internally on every new page.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2013,6 +2131,8 @@ PL_FPDF.SetHeaderProc('MY_PKG.HEADER');       -- the rest is automatic
 ### SetAliasNbPages
 
 Sets the placeholder that will be replaced by the total page count when the document is finalised — so you can write 'Page 2 of 10' without knowing the total in advance.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2042,6 +2162,8 @@ PL_FPDF.Cell(0, 10, 'Page ' || PL_FPDF.PageNo || ' of {nb}');
 
 Registers a procedure of yours to run automatically in the footer of every page.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2070,6 +2192,8 @@ PL_FPDF.SetFooterProc('MY_PKG.FOOTER');
 ### SetHeaderProc
 
 Registers a procedure of yours to run automatically at the top of every page.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2101,6 +2225,8 @@ PL_FPDF.SetHeaderProc('MY_PKG.HEADER');
 ### AddBarcode
 
 Draws a linear barcode on the current page, with an optional human-readable caption.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -2155,6 +2281,8 @@ PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
 
 Draws a QR code on the current page, with a configurable content format and error-correction level.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -2203,6 +2331,8 @@ PL_FPDF.AddQRCode(50, 50, 40, 'https://example.com', 'URL', 'M');
 
 Returns the metadata currently set on the document.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -2235,6 +2365,8 @@ END;
 ### GetPageInfo
 
 Returns information about a page of the document being built.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -2283,6 +2415,8 @@ END;
 
 Sets the document author in the metadata.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2309,6 +2443,8 @@ PL_FPDF.SetAuthor('Finance Department');
 ### SetCompression
 
 Turns compression of the page content stream on or off. When on, each page comes out with /Filter [/ASCIIHexDecode /FlateDecode] — a deflate written inside the package itself, in hexadecimal because the document is assembled as text. Hexadecimal doubles the compressed size, so compression is only applied when the stream still ends up smaller than the original; a page that does not benefit comes out unfiltered. Text usually drops below a fifth.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2337,6 +2473,8 @@ PL_FPDF.SetCompression(TRUE);
 
 Sets the creating application in the document metadata.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2363,6 +2501,8 @@ PL_FPDF.SetCreator('ERP - billing module');
 ### SetDisplayMode
 
 Tells the PDF reader how to display the document when it opens.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2396,6 +2536,8 @@ PL_FPDF.SetDisplayMode('fullwidth', 'continuous');
 ### SetDocumentConfig
 
 Sets several document metadata fields and options at once, from a JSON object.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -2443,6 +2585,8 @@ END;
 
 Sets the document keywords, which help search and indexing.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2470,6 +2614,8 @@ PL_FPDF.SetKeywords('production report 2026');
 
 Sets the document subject in the metadata.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2496,6 +2642,8 @@ PL_FPDF.SetSubject('Monthly close');
 ### SetTitle
 
 Sets the document title, shown in the PDF reader's title bar.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2526,6 +2674,8 @@ PL_FPDF.SetTitle('Production Report');
 
 Closes the document structure (advanced use; the output APIs already do it).
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2546,6 +2696,8 @@ PL_FPDF.ClosePDF;
 
 Explicitly opens the document structure (advanced use; Init already does it).
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -2565,6 +2717,8 @@ PL_FPDF.OpenPDF;
 ### Output
 
 Classic FPDF-style output (compatibility). Prefer OutputBlob or OutputFile.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2602,6 +2756,8 @@ PL_FPDF.Output('report.pdf', 'F');
 
 Synonym of OutputBlob: finalises the document and returns the PDF as a BLOB.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -2632,6 +2788,8 @@ INSERT INTO documentos (id, arquivo) VALUES (1, l_pdf);
 ### OutputFile
 
 Finalises the document and writes the PDF straight to a file on the database server.
+
+*Since version 2.0.0*
 
 #### Syntax
 
@@ -2669,6 +2827,8 @@ PL_FPDF.OutputFile('report.pdf', 'PDF_DIR');
 ### ReturnBlob
 
 Returns the PDF as a BLOB (legacy compatibility). Prefer OutputBlob.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -2710,6 +2870,8 @@ l_pdf := PL_FPDF.OutputBlob;    -- prefira esta
 ### AddWatermark
 
 Registers a text watermark, drawn by OutputModifiedPDF() into the page content stream: every affected page gets a content object and a /Resources of its own, so a /Resources shared between pages is never contaminated. The mark is centred and rotated about the centre of the page, always in Helvetica.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -2769,6 +2931,8 @@ PL_FPDF.AddWatermark('APPROVED', 0.5, 0, '1', 'Helvetica', 72, 'green');
 
 Discards the loaded PDFs and frees the memory used by manipulation.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -2796,6 +2960,8 @@ PL_FPDF.ClearPDFCache();
 ### FlateDecode
 
 Decompresses a PDF /FlateDecode stream (zlib, RFC 1950). Implemented in pure PL/SQL, because UTL_COMPRESS will not do: it only accepts a gzip trailer with a correct CRC-32, and that CRC is of the DECOMPRESSED content — to know it you would have to decompress first. Useful in its own right, and it is what lets the copier read cross-reference streams and object streams.
+
+*Since version 3.3.0*
 
 #### Syntax
 
@@ -2839,6 +3005,8 @@ l_claro := PL_FPDF.FlateDecode(l_comprimido);
 
 Compresses data into a PDF /FlateDecode stream (zlib, RFC 1950). Written in pure PL/SQL: a single block with FIXED Huffman and greedy LZ77 — it compresses less than zlib's dynamic Huffman, and far more than nothing. When the data is incompressible it falls back to a stored block, so the output never exceeds the input plus the block overhead.
 
+*Since version 3.3.0*
+
 #### Syntax
 
 ```sql
@@ -2869,6 +3037,8 @@ l_comprimido := PL_FPDF.FlateEncode(l_claro);
 ### GetActivePageCount
 
 Returns how many pages will remain once the pending removals are applied.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -2906,6 +3076,8 @@ l_active := PL_FPDF.GetActivePageCount(); -- Ativas: 9
 
 Returns the total page count of the loaded PDF, including the pages marked for removal.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -2936,6 +3108,8 @@ DBMS_OUTPUT.PUT_LINE('Total pages:' || l_pages);
 ### GetPDFInfo
 
 Returns information about the loaded PDF: version, metadata and page count.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -2972,6 +3146,8 @@ END;
 ### GetWatermarks
 
 Lists every watermark applied to the loaded PDF.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3015,6 +3191,8 @@ END;
 
 Tells whether a page is marked for removal.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3048,6 +3226,8 @@ END IF;
 
 Tells whether there are pending changes — rotation, removal, watermark, overlay — on the loaded PDF.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3078,6 +3258,8 @@ END IF;
 
 Loads an existing PDF into session memory for reading and modification. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3100,6 +3282,7 @@ PROCEDURE PL_FPDF.LoadPDF(
 | `ORA-20802` | startxref not found |
 | `ORA-20803` | invalid xref table |
 | `ORA-20804` | Root object not found |
+| `ORA-20867` | Encrypted PDF: decrypt it with DecryptPDF first. LoadPDF reads the structure but does not decrypt the content, and the pages would come out blank |
 
 #### Example
 
@@ -3120,6 +3303,8 @@ END;
 ### OutputModifiedPDF
 
 Produces the PDF with the changes applied, copying the kept pages object by object: content, fonts, images and annotations arrive intact, with no re-rendering. It applies RemovePage and RotatePage, and draws watermarks and text and image overlays into the content stream: every affected page gets a content object and a /Resources of its own.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3182,6 +3367,8 @@ END;
 
 Marks a page of the loaded PDF for removal. The deletion is logical: it is only applied by OutputModifiedPDF.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3223,6 +3410,8 @@ PL_FPDF.RemovePage(5);  -- remove page 5
 ### RotatePage
 
 Rotates a page of the loaded PDF.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3269,6 +3458,8 @@ PL_FPDF.RotatePage(2, 180);   -- rotate page 2
 
 Removes every overlay, from one page or from the whole document.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3298,6 +3489,8 @@ PL_FPDF.ClearOverlays(1);
 ### GetOverlays
 
 Lists the overlays applied, optionally filtered by page.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3344,6 +3537,8 @@ END;
 ### OverlayImage
 
 Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. Neither format is decompressed: JPEG goes in whole as /DCTDecode, and a PNG's IDAT blocks are already zlib, which is the PDF's /FlateDecode. Not supported, and refused with -20823 rather than drawn wrong: PNG with an alpha channel, interlaced PNG (Adam7) and 16-bit depth.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3411,6 +3606,8 @@ END;
 
 Places text at an exact position on a page of the loaded PDF — stamps, protocol numbers, signatures. Coordinates are in PDF points, with Y growing upwards from the bottom. Drawn by OutputModifiedPDF() into the content stream. When width is given it defines the text BOX: lines wrap inside it and align is relative to [x, x+width]. Without width there is nothing to wrap, and align becomes relative to the point itself — 'center' centres the text on x, 'right' ends it at x.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3472,6 +3669,8 @@ END;
 
 Removes one specific overlay by its identifier.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3506,6 +3705,8 @@ PL_FPDF.RemoveOverlay('OVL_001');
 ### ExtractPages
 
 Creates a new PDF holding only the selected pages of a loaded document. The requested order is honoured and a page may repeat; only the objects reachable from the chosen pages are copied, so the result is smaller than the source.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3561,6 +3762,8 @@ END;
 
 Lists the documents currently loaded under an identifier.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3594,6 +3797,8 @@ END;
 
 Loads a PDF into memory under an identifier, so several documents can be held open at once to merge, split or extract pages.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3622,6 +3827,7 @@ At most 10 PDFs can be loaded at the same time
 | `ORA-20830` | identifier empty or too long |
 | `ORA-20800` | PDF is null or too small to be valid |
 | `ORA-20801` | %PDF-x.x header missing or malformed |
+| `ORA-20867` | Encrypted PDF: decrypt it with DecryptPDF first; the ID is not registered |
 
 #### Example
 
@@ -3640,6 +3846,8 @@ END;
 ### MergePDFs
 
 Merges several loaded PDFs into a single document, in the order given. The objects of each source — pages, fonts, images, annotations — are copied with their indirect references renumbered: nothing is re-rendered and the original content arrives intact. The same identifier may appear more than once.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3696,6 +3904,8 @@ END;
 ### SplitPDF
 
 Splits a loaded PDF into several documents, following the ranges given. Each part carries only the objects reachable from its own pages, which is why it ends up far smaller than the source. The ranges may not overlap.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3755,6 +3965,8 @@ END;
 
 Drops from memory a document loaded by LoadPDFWithID.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3789,6 +4001,8 @@ PL_FPDF.UnloadPDF('report_jan');
 ### DecryptPDF
 
 Removes the protection from an encrypted PDF, given the right password. It supports RC4-40, RC4-128, AES-128 (AESV2) and AES-256 (AESV3), with either the user or the owner password. The filter is read from the document's /CFM, not assumed. A PDF 1.5+ source is flattened, and object streams are decrypted before being decompressed.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3836,6 +4050,8 @@ l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
 ### EncryptPDF
 
 Encrypts an existing PDF, applying passwords and permissions. This is the recommended way to protect documents you generate or receive. A PDF 1.5+ source (cross-reference streams, object streams) is flattened: the objects inside object streams become top-level objects, and the output carries a classic cross-reference table.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3898,6 +4114,8 @@ l_encrypted := PL_FPDF.EncryptPDF(
 
 Returns the PDF version configured for the output.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3915,6 +4133,8 @@ VARCHAR2 — the version, e.g. '1.7'. **See also:** [SetPDFVersion](#setpdfversi
 ### GetSecurityInfo
 
 Returns the security details of an encrypted PDF.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -3948,6 +4168,8 @@ IF l_info.get_boolean('encrypted') THEN ...
 
 Checks whether a PDF is encrypted.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -3978,6 +4200,8 @@ IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
 ### SetEncryption
 
 Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -4024,6 +4248,8 @@ l_pdf := PL_FPDF.OutputBlob;
 
 Sets the version declared in the header of the generated PDF.
 
+*Since version 3.0.0*
+
 #### Syntax
 
 ```sql
@@ -4061,6 +4287,8 @@ PL_FPDF.SetPDFVersion('1.5');
 ### SetPermissions
 
 Sets the permissions of the document being built, applied together with the encryption defined in SetEncryption.
+
+*Since version 3.0.0*
 
 #### Syntax
 
@@ -4112,6 +4340,8 @@ PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE, p_modify => FALSE);
 
 Turns the debug messages off.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -4132,6 +4362,8 @@ PL_FPDF.DebugDisabled;
 
 Turns the package's debug messages on.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -4151,6 +4383,8 @@ PL_FPDF.DebugEnabled;
 ### Error
 
 Raises a standard PL_FPDF error. For internal use and for extensions.
+
+*Since version 0.9.4*
 
 #### Syntax
 
@@ -4183,6 +4417,8 @@ PL_FPDF.Error('could not assemble the document');
 
 Returns the configured log level.
 
+*Since version 2.0.0*
+
 #### Syntax
 
 ```sql
@@ -4207,6 +4443,8 @@ l_nivel := PL_FPDF.GetLogLevel;
 
 Returns the conversion factor between the document's unit and PDF points.
 
+*Since version 0.9.4*
+
 #### Syntax
 
 ```sql
@@ -4230,6 +4468,8 @@ l_pontos := 10 * PL_FPDF.GetScaleFactor;
 ### SetLogLevel
 
 Sets how detailed the package's log messages are.
+
+*Since version 2.0.0*
 
 #### Syntax
 

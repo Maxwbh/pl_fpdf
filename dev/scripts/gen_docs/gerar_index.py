@@ -99,15 +99,19 @@ def pagina(c, k, versao):
     ponto = '<span class="dot"></span>'
     partes['CHIPS'] = '\n        '.join(
         '<span class="chip">' + (ponto if i == 0 else '')
-        + esc(x[k].format(versao=versao)) + '</span>'
+        + esc(c.rotulo_chip(versao, k) if i == 0 else x[k].format(versao=versao))
+        + '</span>'
         for i, x in enumerate(c.HERO['chips']))
     partes['HERO_BOTOES'] = '\n        '.join(botao(b, k)
                                               for b in c.HERO['botoes'])
     partes['HERO_JANELA'] = janela(c.HERO['janela'], c.HERO['codigo'], k)
     partes['FORK'] = c.FORK[k]
+    stats = list(c.STATS)
+    if c.ULTIMA_CANDIDATA:          # o destaque mostra a ESTAVEL, nao o package
+        stats[0] = c.STAT_ESTAVEL
     partes['STATS'] = '\n    '.join(
-        f'<div class="stat"><b>{v.format(versao=versao)}</b>'
-        f'<span>{esc(r[k])}</span></div>' for v, r in c.STATS)
+        f'<div class="stat"><b>{v.format(versao=versao, release=c.ULTIMO_RELEASE)}</b>'
+        f'<span>{esc(r[k])}</span></div>' for v, r in stats)
 
     cards = []
     for x in c.RECURSOS['cards']:
@@ -144,20 +148,28 @@ def pagina(c, k, versao):
 
     passos = []
     for p in c.INSTALACAO['passos']:
+        txt = p['depois'][k] if p.get('depois') else ''
+        if txt and c.ULTIMA_CANDIDATA and p.get('depois_candidata'):
+            txt += ' ' + p['depois_candidata'][k].format(candidata=c.ULTIMA_CANDIDATA)
         depois = (f'\n        <p style="margin-top:.5rem;font-size:.85em;'
-                  f'opacity:.75">{esc(p["depois"][k])}</p>'
-                  if p.get('depois') else '')
+                  f'opacity:.75">{esc(txt)}</p>' if txt else '')
         passos.append('      <div class="step">\n'
                       f'        <h3>{esc(p["titulo"][k])}</h3>\n'
                       f'        <p>{p["texto"][k]}</p>\n'
                       '        <code class="block">'
-                      + p['codigo'].format(versao=versao)
+                      + p['codigo'].format(versao=versao,
+                                           release=c.ULTIMO_RELEASE)
                       + '</code>' + depois + '\n      </div>')
     partes['INSTALACAO'] = (
         f'    <p class="kicker">{esc(c.INSTALACAO["kicker"][k])}</p>\n'
         f'    <h2>{c.INSTALACAO["h2"][k]}</h2>\n'
         f'    <p class="lead">{c.INSTALACAO["lead"][k]}</p>\n\n'
-        '    <div class="steps">\n' + '\n'.join(passos) + '\n    </div>\n\n'
+        + (f'    <p class="note">'
+           + c.INSTALACAO['aviso'][k].format(release=c.ULTIMO_RELEASE,
+                                             versao=versao,
+                                             candidata=c.ULTIMA_CANDIDATA)
+           + '</p>\n\n' if c.ULTIMA_CANDIDATA else '')
+        + '    <div class="steps">\n' + '\n'.join(passos) + '\n    </div>\n\n'
         '    <p class="note" style="margin-top:26px">'
         + c.INSTALACAO['nota'][k] + '</p>\n\n'
         '    <code class="block">'
@@ -178,6 +190,7 @@ def pagina(c, k, versao):
             raise SystemExit(f'o molde de index.html perdeu o marcador '
                              f'{{{{{marca}}}}}')
         molde = molde.replace('{{%s}}' % marca, partes[marca])
-    saida = molde.replace('{{VERSAO}}', versao)
+    saida = (molde.replace('{{VERSAO}}', versao)
+                  .replace('{{VERSAO_ESTAVEL}}', c.ULTIMO_RELEASE))
     gerar_html.conferir_tags(saida, 'index.html')
     return saida

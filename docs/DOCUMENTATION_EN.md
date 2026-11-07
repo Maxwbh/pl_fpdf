@@ -24,7 +24,7 @@
 14. [Multi-PDF: merge, split and extraction](#14-multi-pdf-merge-split-and-extraction)
 15. [Security and encryption](#15-security-and-encryption)
 16. [Diagnostics and utilities](#16-diagnostics-and-utilities)
-17. [Migrating from v0.9.4](#17-migrating-from-v094)
+17. [Migrating between versions](#17-migrating-between-versions)
 18. [Error codes](#18-error-codes)
 
 ---
@@ -67,13 +67,18 @@ Conventions that recur throughout the library:
 
 ## 1. Installation and life cycle
 
-Download `dist/pl_fpdf_install.sql` and run it: a single file, with both packages
-in dependency order, and plain SQL only — it behaves the same in a PL/SQL
-Developer SQL Window and in SQL\*Plus.
+Installing, checking the installation, granting access to other schemas,
+upgrading and uninstalling: [INSTALLATION_EN.md](INSTALLATION_EN.md). In short,
+download `dist/pl_fpdf_install.sql` and run it — a single file, with both
+packages in dependency order, and plain SQL only.
 
 ```sql
--- Check
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.4.0
+-- Check: the version shows in the Output tab (in SQL*Plus, SET SERVEROUTPUT ON).
+-- Not in a SELECT: a package constant is only readable from PL/SQL (PLS-221)
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- 3.4.0
+END;
+/
 
 -- Both objects must come out VALID
 SELECT object_name, object_type, status FROM user_objects
@@ -444,13 +449,16 @@ browser may treat the response as HTML and show the **PDF source on screen** —
 `%PDF-1.3`, `3 0 obj`, `stream`. It looks like character corruption and it is
 not: the file is perfect, it just arrived labelled wrong.
 
-And the symptom misleads because **it depends on the browser**. Firefox and Edge
-sniff the `%PDF-` signature and fix it themselves; Chrome and Opera obey the
-declared type. The same report opens in one and breaks in the other, and it
-disappears once the server sends `X-Content-Type-Options: nosniff`.
+And the symptom misleads because **it may depend on the browser**: when the
+type is missing or wrong, some sniff the `%PDF-` signature and fix it
+themselves, others obey what was declared — and the behaviour changes from
+version to version. The same report may open in one and break in the other, and
+the `X-Content-Type-Options: nosniff` header turns sniffing off. Do not rely on
+it: send the right `Content-Type`.
 
 **Through the PL/SQL gateway (mod_plsql):**
 
+<!-- exemplo-ilustrativo: needs the OWA gateway and a built document -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -471,8 +479,7 @@ END;
 **Through ORDS:** declare the handler as a media resource and return
 `application/pdf` in the content type column.
 
-**Through APEX:** `apex_util.download`, or set the Content-Type in the process
-and finish with `apex_application.stop_apex_engine`.
+**Through Oracle APEX:** see [Oracle APEX integration](#oracle-apex-integration), right below.
 
 Two traps that produce exactly the same symptom:
 
@@ -483,6 +490,118 @@ Two traps that produce exactly the same symptom:
 
 To check in ten seconds: F12 → **Network** tab → reload → click the request →
 **Response Headers**. If `Content-Type` is not `application/pdf`, that is it.
+
+### Oracle APEX integration
+
+> **How these samples were checked.** They ran on an Oracle 26ai against
+> *stubs* with APEX's own signatures — the PDF, the HTTP headers and the
+> attachment came out right —, but **not** on an installed APEX. Test them on
+> your instance before taking them to production.
+
+Three patterns cover almost everything: open or download the PDF, send it by
+e-mail, and store it for later. One rule applies to all three:
+
+> **The whole document in a single request.** PL_FPDF state lives in the
+> database session, and APEX serves each request with a pooled session, which
+> may not be the same as the previous one. `Init`, the drawing, `OutputBlob` and
+> `Reset` in the same process — never a document started on one click and
+> finished on another (the symptom is `ORA-20005`).
+
+If PL_FPDF lives in another schema, the application's *parsing schema* needs
+`GRANT EXECUTE` and a synonym — see [Installation §6](INSTALLATION_EN.md#6-using-it-from-another-schema).
+
+**1. Open or download: an "On Demand" Application Process.** In *Shared
+Components → Application Processes*, create a `GENERATE_PDF` process, point
+*Ajax Callback*, with an application item `AI_ORDER_ID` for the parameter:
+
+<!-- exemplo-ilustrativo: needs an installed APEX -->
+```sql
+DECLARE
+  l_pdf      BLOB;
+  l_filename VARCHAR2(200);
+BEGIN
+  -- First the whole document. If anything fails here, no header has been
+  -- written yet, and APEX shows the error as usual.
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Helvetica', 'B', 14);
+  PL_FPDF.Cell(0, 10, 'Order ' || :AI_ORDER_ID);
+  l_pdf := PL_FPDF.OutputBlob;
+  PL_FPDF.Reset;
+
+  -- The file name does not come raw from the client
+  l_filename := 'order_' || REGEXP_REPLACE(:AI_ORDER_ID, '[^0-9A-Za-z_-]', '_') || '.pdf';
+
+  sys.htp.init;                                   -- drop whatever is in the buffer
+  sys.owa_util.mime_header('application/pdf', FALSE);
+  sys.htp.p('Content-Length: ' || DBMS_LOB.GETLENGTH(l_pdf));
+  sys.htp.p('Content-Disposition: inline; filename="' || l_filename || '"');
+  sys.owa_util.http_header_close;
+  sys.wpg_docload.download_file(l_pdf);
+
+  apex_application.stop_apex_engine;              -- APEX renders nothing else
+EXCEPTION
+  WHEN apex_application.e_stop_apex_engine THEN
+    NULL;   -- the normal ending: stop_apex_engine finishes by raising this
+  WHEN OTHERS THEN
+    PL_FPDF.Reset;
+    RAISE;
+END;
+```
+
+Call it by URL — from a button (*Redirect to URL*), a link, or an `<iframe>` to
+show it inside the page:
+
+```
+f?p=&APP_ID.:0:&APP_SESSION.:APPLICATION_PROCESS=GENERATE_PDF:::AI_ORDER_ID:123
+```
+
+`inline` opens it in the browser; `attachment` forces the download. An On
+Demand process does **not inherit** the authorization of the page that calls
+it: set the *Authorization Scheme* on the process itself.
+
+The same code works in a page process fired by a button; `stop_apex_engine`
+keeps the page from moving on to the *branch*.
+
+**2. Send it by e-mail.** In a page process — no HTTP header at all:
+
+<!-- exemplo-ilustrativo: needs an installed APEX -->
+```sql
+DECLARE
+  l_pdf     BLOB;
+  l_mail_id NUMBER;
+BEGIN
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Helvetica', '', 12);
+  PL_FPDF.Cell(0, 10, 'Your order ' || :P10_ORDER_ID);
+  l_pdf := PL_FPDF.OutputBlob;
+  PL_FPDF.Reset;
+
+  l_mail_id := apex_mail.send(
+    p_to   => :P10_EMAIL,
+    p_from => 'no-reply@company.com',
+    p_subj => 'Order ' || :P10_ORDER_ID,
+    p_body => 'Your order is attached.');
+
+  apex_mail.add_attachment(
+    p_mail_id    => l_mail_id,
+    p_attachment => l_pdf,
+    p_filename   => 'order.pdf',
+    p_mime_type  => 'application/pdf');
+END;
+```
+
+`apex_mail` puts the message in a queue, and it goes out after the page
+transaction commits — the process does not `COMMIT`; APEX does.
+
+**3. Store it for later.** Write the BLOB to a table of yours in the same
+process (`INSERT ... VALUES (..., l_pdf)`) and serve it with pattern 1, reading
+from the table instead of generating. That is the way for a document that must
+be reissued identically — an invoice, a contract signed elsewhere.
+
+> The APIs used are APEX's stable ones (`apex_application`, `apex_mail`) and the
+> gateway's (`owa_util`, `htp`, `wpg_docload`).
 
 ---
 
@@ -495,6 +614,7 @@ cross-reference is a compressed stream and the objects sit inside *object
 streams*. Page content is copied byte for byte, without re-rendering: fonts,
 images and annotations arrive intact.
 
+<!-- exemplo-ilustrativo: reads from a user's table (documentos) -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -594,8 +714,20 @@ l_list := PL_FPDF.GetLoadedPDFs;      -- JSON with the loaded IDs
 
 ```sql
 DECLARE
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+  l_pdf       BLOB;
+  l_protected BLOB;
+  l_perms     JSON_OBJECT_T := JSON_OBJECT_T();
 BEGIN
+  -- The input PDF: generated here; it may come from a table or from LoadPDF
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Helvetica', '', 12);
+  PL_FPDF.Cell(0, 10, 'Confidential contract');
+  l_pdf := PL_FPDF.OutputBlob;
+  PL_FPDF.Reset;
+
+  -- Accepted keys: print, modify, copy, annotate, fillForms, extract,
+  -- assemble, printHighQuality. Any key left out is DENIED.
   l_perms.put('print', TRUE);
   l_perms.put('copy',  FALSE);
   l_perms.put('modify',FALSE);
@@ -607,7 +739,15 @@ BEGIN
     p_permissions    => l_perms,
     p_encryption     => 'AES-256'         -- or 'AES-128', 'RC4-128', 'RC4-40'
   );
+
+  IF NOT PL_FPDF.IsEncrypted(l_protected) THEN
+    RAISE_APPLICATION_ERROR(-20000, 'the PDF should have come out protected');
+  END IF;
+  -- store l_protected wherever you need it, then free the temporaries
+  IF DBMS_LOB.ISTEMPORARY(l_pdf) = 1 THEN DBMS_LOB.FREETEMPORARY(l_pdf); END IF;
+  IF DBMS_LOB.ISTEMPORARY(l_protected) = 1 THEN DBMS_LOB.FREETEMPORARY(l_protected); END IF;
 END;
+/
 ```
 
 > **Prefer AES.** RC4 has been broken for years and PDF 2.0 dropped it from the
@@ -648,84 +788,11 @@ PL_FPDF.DebugDisabled;
 
 ---
 
-## 17. Migrating from v0.9.4
+## 17. Migrating between versions
 
-```sql
--- BEFORE (v0.9.4)                    -- NOW (v2.0+)
-PL_FPDF.fpdf('P','mm','A4');         PL_FPDF.Init('P','mm','A4');
-l_pdf := PL_FPDF.Output('S');        l_pdf := PL_FPDF.OutputBlob;
-PL_FPDF.Output('F', path);           PL_FPDF.OutputFile(name, directory);
-```
-
-| v0.9.4 | v2.0+ |
-|--------|-------|
-| `fpdf()` | `Init()` (`fpdf()` is still available for compatibility) |
-| `Output('S')` | `OutputBlob` |
-| Limited UTF-8 | Full UTF-8 + TrueType |
-| No encryption | AES-256, AES-128 and RC4 |
-
-### What actually breaks
-
-We took the public surface of all three versions and compared it name by name
-and signature by signature. In numbers:
-
-| | 0.9.4 | 2.0.0 | 3.4.0 |
-|---|---|---|---|
-| Public subprograms | 70 | 94 | 119 |
-
-**Seven names are gone from 0.9.4 to 3.4.0**, and all seven are the demo
-routines the package itself shipped — `helloworld`, `test`, `testImg`,
-`testheader`, `myRepetitiveHeader`, `myRepetitiveFooter` and `lpc_footer`. None
-is API: calling `helloworld` from a system meant running the bundled sample,
-not the library.
-
-**Two are gone from 2.0.0 to 3.4.0**, `SetUTF8Enabled` and `IsUTF8Enabled` —
-which did nothing. The flag was written by the setter and read by the getter,
-and no other point in the package consulted it. Accented text now comes out
-right always, with no switch.
-
-**Of the 133 shared signatures, one changed**, and not in 3.x: the `AddPage`
-parameter went from `orientation` to `p_orientation` in 2.0.0.
-
-```sql
-PL_FPDF.AddPage('L');                    -- positional: still valid
-PL_FPDF.AddPage(orientation   => 'L');   -- 0.9.4: no longer compiles
-PL_FPDF.AddPage(p_orientation => 'L');   -- today
-```
-
-The **positional** form — the one the 2017 examples use — goes through
-unchanged. Only the **named** form needs one word changed.
-
-> **Why not keep both names?** PL/SQL overload resolution goes by type and
-> position, never by parameter name, and a parameter can only have one name.
-> Two `AddPage` procedures whose first parameter is `VARCHAR2` are
-> indistinguishable: `AddPage('L')` would match both and Oracle rejects it with
-> `PLS-00307`.
-
-### The legacy entry points still stand
-
-The 2017 constructor and flow keep working, and there is a test that runs the
-original `helloworld` sequence call by call:
-
-```sql
-PL_FPDF.FPDF('P', 'cm', 'A4');   -- the legacy constructor leaves it ready
-PL_FPDF.openpdf;                 -- accepted; AddPage calls it on its own now
-PL_FPDF.AddPage();
-PL_FPDF.SetFont('Arial', 'B', 16);
-PL_FPDF.Cell(0, 1.2, 'Hello World', 0, 1, 'C');
-l_pdf := PL_FPDF.ReturnBlob;     -- from 0.9.4, still there
-```
-
-`SetHeaderProc` and `SetFooterProc`, the header/footer-by-procedure-name
-mechanism, are still there too.
-
-### What changed in behaviour, not in signature
-
-A character outside WinAnsi — an ideograph, an emoji — is now **rejected** with
-`ORA-20203` and its position, instead of being drawn wrong. With the standard
-PDF fonts that never worked: the glyph came out wrong and the file opened as if
-it were fine. For those scripts, embed a TrueType font with
-[AddTTFFont](API_REFERENCE_EN.md#addttffont).
+What changes from one version to the next — what stops compiling, what starts
+raising an error, and what changes in the PDF with no error at all, from 0.9.4
+to 3.4.0 — is in [MIGRATION_EN.md](MIGRATION_EN.md).
 
 ---
 
@@ -741,7 +808,7 @@ it were fine. For those scripts, embed a TrueType font with
 | -20821…-20825 | Overlays | invalid coordinates, opacity, image or dimensions |
 | -20831…-20844 | Multi-PDF | ID not found; invalid page specification |
 | -20843/-20847/-20848 | PDF 1.5+ | an xref stream, object stream or predictor that cannot be read |
-| -20850…-20865 | Security | password, encryption method, PDF already protected |
+| -20850…-20867 | Security | password, encryption method, PDF already protected, encrypted PDF passed to `LoadPDF` |
 | -20870…-20879 | QR Code | empty content, size, correction level, capacity |
 | -20880…-20889 | Barcode | empty code, dimensions, symbology, digits |
 | -20890…-20894 | `FlateDecode` | invalid stream, or output above the ceiling |

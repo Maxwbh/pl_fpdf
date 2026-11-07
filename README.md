@@ -1,7 +1,8 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-3.4.0-blue.svg" alt="Versão">
+  <img src="https://img.shields.io/badge/versão-3.4.0--rc2%20candidata-orange.svg" alt="Versão 3.4.0-rc2, candidata">
+  <img src="https://img.shields.io/badge/estável-3.3.0-blue.svg" alt="Versão estável 3.3.0">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licença-MIT-green.svg" alt="Licença"></a>
   <img src="https://img.shields.io/badge/segurança-AES--256-brightgreen.svg" alt="Segurança">
@@ -23,11 +24,11 @@
   <a href="README_EN.md">🇺🇸 English</a>
 </p>
 
-> **A 3.4.0 está em teste.** O último release publicado é a **3.3.0**, que
+> **A 3.4.0 está em teste.** O último release estável é a **3.3.0**, que
 > **não** tem a conversão de acentos para WinAnsi nem a fonte TrueType embutida
-> — as duas são da 3.4.0. O código desta branch roda a suíte contra um Oracle
-> **19c** a cada mudança; o ambiente **26ai** está sendo montado para a rodada
-> global, e o release sai depois dela.
+> — as duas são da 3.4.0, hoje publicada como candidata (**v3.4.0-rc2**). A
+> suíte roda contra um Oracle **19c** a cada mudança, e a rodada no **26ai**
+> (23.26) passou inteira.
 
 Uma biblioteca de PDF que roda **dentro do Oracle Database**: dois packages
 PL/SQL, sem Java, sem serviço externo, sem objeto de banco além deles. Gera e
@@ -39,7 +40,7 @@ A superfície pública está inteira em
 mantida por [@Maxwbh](https://github.com/Maxwbh) desde 2019: manipulação de PDF
 (v3.0), leitura de PDF 1.5+ com xref em stream e object streams,
 AES-256/AES-128/RC4, QR Code e códigos de barras, DEFLATE e INFLATE escritos em
-PL/SQL, UTF-8/TrueType e Oracle 19c/23c.
+PL/SQL, UTF-8/TrueType e Oracle 19c e 26ai.
 
 > **Linhagem.** A base de geração descende do porte PL/SQL de
 > [Pierre-Gilles Levallois](https://github.com/Pilooz), que trouxe para o Oracle
@@ -69,10 +70,18 @@ Gere e manipule PDFs **diretamente dentro do Oracle Database** — sem Java, sem
 
 ## Instalação
 
-**Um arquivo, sem clonar nada.** Baixe
-[`dist/pl_fpdf_install.sql`](dist/pl_fpdf_install.sql) — o link segue a branch
-que você está vendo; a versão estável publicada é a da
-[`master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql).
+**Um arquivo, sem clonar nada.** Qual arquivo depende do que você quer:
+
+| Para | Baixe |
+|------|-------|
+| **Produção** em Oracle 19c — a versão estável, 3.3.0 | o [`pl_fpdf_install.sql` do release v3.3.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Oracle 26ai** | **não há versão estável que funcione** (a 3.3.0 levanta `ORA-29275`). A única que roda é a candidata [v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) — ver a [política para o 26ai](SECURITY.md#oracle-26ai) |
+| **Testar a 3.4.0** — candidata, ainda em teste | o [`pl_fpdf_install.sql` do v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2), ou o [`dist/` da `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
+| **Exatamente o que esta página descreve** | o [`dist/pl_fpdf_install.sql`](dist/pl_fpdf_install.sql) da branch que você está vendo — o link segue a branch |
+
+A `master` acompanha o desenvolvimento e hoje já traz a 3.4.0; ela **não** é a
+versão estável. O que esta página descreve é a 3.4.0, e o que só existe nela
+está marcado no [CHANGELOG](CHANGELOG.md).
 Abra na SQL Window do PL/SQL Developer (F8) — ou rode com
 `@pl_fpdf_install.sql` no SQL\*Plus / SQLcl — e pronto. Ele traz os dois
 packages já na ordem certa, e é só SQL: nenhum comando de ferramenta, nada de
@@ -86,14 +95,23 @@ tabela, sequência ou diretório para criar antes.
 @src/PL_FPDF.pks
 @src/PL_FPDF.pkb
 
--- Verificar instalação
-SELECT PL_FPDF.co_version FROM DUAL;
--- Retorna: 3.4.0
+-- Verificar instalação (a versão sai na aba Output; no SQL*Plus, ligue antes
+-- o SET SERVEROUTPUT ON). Constante de package não se lê em SELECT: o
+-- SELECT PL_FPDF.co_version FROM DUAL dá ORA-06553 PLS-221
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- 3.4.0
+END;
+/
 ```
 
 **Requisitos:** Oracle 19c+, e `CREATE PROCEDURE` no schema onde os packages
 vão morar. Nada além disso — em particular, **não** é preciso
 `GRANT EXECUTE ON SYS.DBMS_CRYPTO`.
+
+A 3.4.0 passa a suíte inteira no 19c e no 26ai; o que foi medido em cada
+versão do Oracle e de charset está em [Compatibilidade](docs/COMPATIBILITY.md).
+Conferir a instalação, dar acesso a outros schemas, atualizar e desinstalar:
+[Instalação](docs/INSTALLATION.md).
 
 **Sem dependências externas, nem para criptografia.** `EncryptPDF`/`DecryptPDF` usam MD5 e SHA via `STANDARD_HASH` (função SQL nativa); o RC4 e o AES são implementados no próprio package.
 
@@ -101,6 +119,7 @@ vão morar. Nada além disso — em particular, **não** é preciso
 
 ## Início Rápido
 
+<!-- exemplo-ilustrativo: grava numa tabela do usuário (documentos) -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -270,10 +289,14 @@ pl_fpdf/
 │   └── ticket.sql                # ingresso: cor, QR + Code 39, várias páginas
 │
 ├── docs/
+│   ├── README.md                 # índice da documentação, PT e EN
+│   ├── INSTALLATION.md           # instalar, conferir, atualizar, desinstalar
+│   ├── COMPATIBILITY.md          # Oracle, charset e PDF: o que foi medido
 │   ├── DOCUMENTATION.md          # referência de uso, com exemplo por API
-│   ├── DOCUMENTATION_EN.md       # o mesmo guia em inglês
 │   ├── API_REFERENCE.md          # assinatura, parâmetros e erros (gerada)
-│   └── API_REFERENCE_EN.md       # a mesma referência em inglês (gerada)
+│   ├── MIGRATION.md              # o que muda entre versões
+│   ├── TROUBLESHOOTING.md        # problemas comuns, pelo sintoma
+│   └── *_EN.md                   # cada um dos guias acima, em inglês
 │
 ├── extensions/                   # opcional, instale só se usar
 │   └── brazilian-payments/       # PIX (QR EMV) e Boleto (FEBRABAN)
@@ -290,13 +313,16 @@ pl_fpdf/
 └── CONTRIBUTING.md  SECURITY.md  CODE_OF_CONDUCT.md
 ```
 
-Três arquivos são **gerados** e não se edita à mão — o CI recusa qualquer um
+Estes arquivos são **gerados** e não se editam à mão — o CI recusa qualquer um
 deles desatualizado:
 
-| Gerado | A partir de |
-|--------|-------------|
-| `dist/pl_fpdf_install.sql` | os quatro fontes de `src/` |
-| `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` |
+| Gerado | A partir de | Por |
+|--------|-------------|-----|
+| `dist/pl_fpdf_install.sql` | os quatro fontes de `src/` | `dev/scripts/build_release.py` |
+| `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` | `dev/scripts/build_run_all.py` |
+| `docs/API_REFERENCE*.md` e as páginas de `site/` | o Javadoc de `src/*.pks` | `dev/scripts/gen_docs/generate.py` |
+| o bloco de larguras das fontes em `src/PL_FPDF.pkb` | os AFM da Adobe | `dev/scripts/font_reference/gerar.py` |
+| `docs/TRACEABILITY.md` | as specs, os testes e as amostras | `dev/scripts/gen_docs/rastreabilidade.py` |
 
 ---
 
@@ -320,10 +346,17 @@ O que a biblioteca **não** faz, para você não descobrir tarde:
 
 **Para quem usa a biblioteca** — falam só de gerar e manipular PDF:
 
+O [índice da documentação](docs/README.md) lista tudo, em português e em
+inglês, por tarefa.
+
 | Documento | Descrição |
 |-----------|-----------|
-| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Referência completa de uso: todas as APIs com exemplos |
+| [docs/INSTALLATION.md](docs/INSTALLATION.md) | Instalar, conferir, dar acesso a outros schemas, atualizar, desinstalar |
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Referência completa de uso: todas as APIs com exemplos, inclusive APEX |
 | [docs/DOCUMENTATION_EN.md](docs/DOCUMENTATION_EN.md) | O mesmo guia em inglês |
+| [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | Versões do Oracle e charsets medidos, o PDF gerado e o lido |
+| [docs/MIGRATION.md](docs/MIGRATION.md) | O que muda de uma versão para outra, da 0.9.4 à 3.4.0 |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Problemas comuns, pela mensagem de erro ou pelo sintoma |
 | [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Assinatura, parâmetros e erros de cada API |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | A mesma referência em inglês (gerada) |
 | [Referência da API no site](https://maxwbh.github.io/pl_fpdf/reference.html) | A mesma referência, navegável |

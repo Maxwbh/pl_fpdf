@@ -161,6 +161,10 @@ ERROS = {
         "invalid xref table",
     ("20804", "Objeto Root não encontrado"):
         "Root object not found",
+    ("20867", "PDF cifrado: decifre com DecryptPDF antes. O LoadPDF lê a estrutura, mas não decifra o conteúdo, e as páginas sairiam em branco"):
+        "Encrypted PDF: decrypt it with DecryptPDF first. LoadPDF reads the structure but does not decrypt the content, and the pages would come out blank",
+    ("20867", "PDF cifrado: decifre com DecryptPDF antes; o ID não é registrado"):
+        "Encrypted PDF: decrypt it with DecryptPDF first; the ID is not registered",
     ("20809", "Nenhum PDF carregado"):
         "no PDF loaded",
     ("20809", "nenhum PDF carregado -- chame LoadPDF antes"):

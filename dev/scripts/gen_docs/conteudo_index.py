@@ -22,6 +22,49 @@ exemplo são os mesmos nas duas línguas -- o que muda neles é só o `alt`.
 # `co_version`: este anda na frente enquanto a versao nova esta em teste.
 ULTIMO_RELEASE = '3.3.0'
 
+# A candidata publicada da versao que a pagina descreve, ou None. Enquanto
+# houver uma, a instalacao avisa que o link instala a estavel, que a pagina e a
+# referencia ja descrevem a candidata, e que no Oracle 26ai a estavel nao roda.
+# Quando a 3.4.0 final sair: ULTIMO_RELEASE = '3.4.0' e isto volta a None.
+ULTIMA_CANDIDATA = 'v3.4.0-rc2'
+
+
+# Como o site ANUNCIA a versao -- um lugar so para o chip do topo, o destaque,
+# o cabecalho da API e da referencia e o dado estruturado. Antes, o chip e o
+# destaque mostravam o co_version como "versao atual": com a 3.4.0 ainda
+# candidata, o visitante entendia que ela ja era a estavel. Com candidata, o
+# chip diz que e pre-lancamento e o destaque mostra a estavel; sem candidata,
+# volta a ser o numero do package.
+CHIP_CANDIDATA = ("{candidata} · pré-lançamento", "{candidata} · pre-release")
+STAT_ESTAVEL = ("<em>{release}</em>", ("versão estável", "stable version"))
+KICKER_CANDIDATA = ("{candidata} · pré-lançamento · estável {release} · Oracle 19c+",
+                    "{candidata} · pre-release · stable {release} · Oracle 19c+")
+KICKER = "v{versao} · Oracle 19c+"
+
+
+def versao_do_package():
+    import io as _io
+    import os as _os
+    import re as _re
+    raiz = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.dirname(
+        _os.path.abspath(__file__)))))
+    t = _io.open(_os.path.join(raiz, 'src', 'PL_FPDF.pks'), encoding='utf-8').read()
+    return _re.search(r"co_version\s+CONSTANT\s+VARCHAR2\(\d+\)\s*:=\s*'([^']+)'",
+                      t, _re.I).group(1)
+
+
+def rotulo_chip(versao, k):
+    if ULTIMA_CANDIDATA:
+        return CHIP_CANDIDATA[k].format(candidata=ULTIMA_CANDIDATA)
+    return f'v{versao}'
+
+
+def kicker(versao, k):
+    if ULTIMA_CANDIDATA:
+        return KICKER_CANDIDATA[k].format(candidata=ULTIMA_CANDIDATA,
+                                          release=ULTIMO_RELEASE)
+    return KICKER.format(versao=versao)
+
 # O FORMATO do SHA256.txt mudou com o release, e o comando de conferencia tem
 # de acompanhar o release que a pagina CITA, nao o package. Ate a 3.3.0 o
 # workflow gravava so a soma, sem o nome do arquivo, e o `sha256sum -c` recusa
@@ -352,13 +395,20 @@ INSTALACAO = {
            "Three steps and it is running"),
     "lead": ("Compatível com Oracle 19c ou superior. Nenhum objeto além dos packages é criado.",
              "Works on Oracle 19c or later. No object other than the packages is created."),
+    'aviso': ("<b>Estável × candidata.</b> O link abaixo instala a <b>{release}</b>, a versão\nestável. Esta página e a <a href=\"reference.html\">referência</a> já descrevem a\n<b>{versao}</b>, publicada como candidata\n(<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/tag/{candidata}\">{candidata}</a>); o que só\nexiste nela vem marcado na referência. <b>No Oracle 26ai, a {release} não\nfunciona</b>: lá, só a candidata roda.",
+              "<b>Stable vs candidate.</b> The link below installs <b>{release}</b>, the stable\nversion. This page and the <a href=\"reference.html\">reference</a> already describe\n<b>{versao}</b>, published as a candidate\n(<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/tag/{candidata}\">{candidata}</a>); what exists\nonly there is marked in the reference. <b>On Oracle 26ai, {release} does not\nwork</b>: there, only the candidate runs."),
     'passos': [
         {
             'titulo': ("Baixe um arquivo", "Download one file"),
             'texto': ("Sem clone: o instalador completo em um <code>.sql</code>, com o SHA-256 ao lado.",
                       "No clone: the whole installer in a single <code>.sql</code>, with its SHA-256 beside it."),
             'codigo': "<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql\">pl_fpdf_install.sql</a>",
-            'depois': ("Sempre a última versão publicada.", "Always the latest published version."),
+            # O "latest" do GitHub nao inclui pre-lancamento: este link nunca
+            # entrega a candidata, e o texto tem de dizer isso.
+            'depois': ("A versão estável mais recente — o “latest” do GitHub não inclui pré-lançamentos.",
+                       "The latest stable version — GitHub's “latest” never includes pre-releases."),
+            'depois_candidata': ("Para testar a candidata {candidata}, baixe da página dela, no aviso acima.",
+                                 "To try the {candidata} candidate, download it from its page, in the notice above."),
         },
         {
             'titulo': ("Execute", "Run it"),
@@ -368,9 +418,14 @@ INSTALACAO = {
         },
         {
             'titulo': ("Confirme a versão", "Check the version"),
-            'texto': ("Pronto para gerar o primeiro PDF.",
-                      "Ready to produce the first PDF."),
-            'codigo': "SELECT PL_FPDF.co_version FROM DUAL;\n-- {versao}",
+            'texto': ("A versão sai na aba Output. Pronto para gerar o primeiro PDF.",
+                      "The version shows in the Output tab. Ready to produce the first PDF."),
+            # Bloco, e nao SELECT: constante de package nao e visivel em SQL, e
+            # `SELECT PL_FPDF.co_version FROM DUAL` da ORA-06553 PLS-221 em
+            # qualquer versao do Oracle. Quem seguia o passo achava que a
+            # instalacao tinha falhado.
+            # A versao que o passo 1 instala -- a do release, nao a do package.
+            'codigo': "BEGIN\n  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);\nEND;\n/\n-- {release}",
         },
     ],
     'nota': ("<b>Para produção, fixe a versão.</b>\nO link acima serve sempre a mais nova — bom para experimentar, ruim para um\nchamado de mudança. Cada versão tem URL própria e imutável na\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">página de releases</a>, com o\n<code>SHA256.txt</code> ao lado para conferir o que foi baixado:",

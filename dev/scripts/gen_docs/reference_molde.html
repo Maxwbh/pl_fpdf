@@ -117,6 +117,8 @@
   .api p.d{margin:0;color:var(--muted);font-size:14.5px}
   .api p.aviso{margin:10px 0 0;padding:10px 12px;font-size:14px;border-left:3px solid #c47f00;background:rgba(196,127,0,.08)}
   .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
+  .api p.since{margin:-2px 0 10px;font-size:12.5px;color:var(--faint)}
+  .api p.since .novo{color:var(--accent);font-weight:600}
   .api p.see a{color:var(--blue);text-decoration:none}
   .api p.see a:hover{text-decoration:underline}
 
@@ -158,9 +160,17 @@
     .side-group ul{display:flex;flex-wrap:wrap;gap:4px}
     .side-group li a{padding:3px 10px;border:1px solid var(--cardbd);border-radius:999px;font-size:12px}
   }
+  /* acessibilidade: o link de pular aparece so no foco; o foco e sempre visivel */
+  .skip{position:absolute;left:-9999px;top:8px;z-index:1000;padding:10px 14px;border-radius:10px;
+        background:var(--accent);color:#fff;font-weight:700;text-decoration:none}
+  .skip:focus{left:12px}
+  a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+  .filter-status{margin:6px 2px 0;font-size:12px;color:var(--faint);min-height:1em}
 </style>
 </head>
 <body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
 <nav><div class="nav-in">
   <a class="brand" href="index.html">
     <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
@@ -174,17 +184,18 @@
     <a href="index.html">Início</a>
     <a class="hide-s" href="api.html">Índice de uso</a>
     <a href="en/reference.html" hreflang="en" title="English version">EN</a>
+    <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/docs/README.md" title="Documentação: instalação, compatibilidade, migração, problemas comuns">Docs</a>
     <a href="https://github.com/Maxwbh/pl_fpdf">GitHub</a>
   </div>
 </div></nav>
 <div class="layout">
 
-<aside class="sidebar"><div class="side-in"><input class="filter" type="search" placeholder="Filtrar API…" aria-label="Filtrar API">
+<aside class="sidebar"><div class="side-in"><input class="filter" type="search" placeholder="Filtrar API…" aria-label="Filtrar API"><p class="filter-status" role="status" aria-live="polite"></p>
 {{LATERAL}}
 </div></aside>
-<main class="content">
+<main id="conteudo" class="content">
 <header class="page">
-      <p class="kicker">v3.4.0 · Oracle 19c+</p>
+      <p class="kicker">{{KICKER}}</p>
       <h1>Referência da API</h1>
       <p class="lead">Documentação detalhada de cada função e procedure pública do package <code>PL_FPDF</code>: sintaxe, parâmetros com valores possíveis, retorno, erros e exemplo.
       Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>.</p>
@@ -201,22 +212,33 @@
   <p>Mantido com o apoio de <a href="https://msbrasil.inf.br"><b>M&amp;S do Brasil LTDA</b></a>
   · Maxwell da Silva Oliveira (<a href="https://github.com/maxwbh">@maxwbh</a>) · MIT License</p>
   <p style="font-size:12px;opacity:.75">Referência mantida junto do código em <code>src/PL_FPDF.pks</code>.</p>
-</footer>
 <a class="top" href="#" aria-label="Voltar ao topo">↑</a>
+</footer>
 <script>
 (function(){
+  // Busca no nome E no texto de cada API -- descricao, parametros, erros --,
+  // sem diferenciar acento: 'acentuacao' acha 'acentuação'. O texto de cada
+  // artigo e lido uma vez, na carga.
   var f = document.querySelector('.filter');
+  var aviso = document.querySelector('.filter-status');
+  function norm(s){ return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase(); }
+  var texto = {};
+  document.querySelectorAll('article.api').forEach(function(a){ texto[a.id] = norm(a.textContent); });
   if (f) f.addEventListener('input', function(){
-    var q = this.value.toLowerCase();
+    var q = norm(this.value.trim()), total = 0;
     document.querySelectorAll('.side-group').forEach(function(g){
       var vis = 0;
       g.querySelectorAll('li').forEach(function(li){
-        var hit = li.textContent.toLowerCase().indexOf(q) !== -1;
+        var alvo = (li.querySelector('a').getAttribute('href') || '').slice(1);
+        var hit = !q || norm(li.textContent).indexOf(q) !== -1
+                  || (texto[alvo] || '').indexOf(q) !== -1;
         li.style.display = hit ? '' : 'none';
         if (hit) vis++;
       });
       g.style.display = vis ? '' : 'none';
+      total += vis;
     });
+    if (aviso) aviso.textContent = q ? (total === 1 ? '1 ' + 'API encontrada' : total + ' APIs encontradas') : '';
   });
   var links = [].slice.call(document.querySelectorAll('.side-group a'));
   var obs = new IntersectionObserver(function(es){
