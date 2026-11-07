@@ -49,7 +49,7 @@
     "url": "https://github.com/Maxwbh"
   },
   "isBasedOn": "https://github.com/Pilooz/pl_fpdf",
-  "softwareVersion": "3.3.0",
+  "softwareVersion": "3.4.0",
   "inLanguage": "en",
   "url": "https://maxwbh.github.io/pl_fpdf/en/"
 }
@@ -443,7 +443,7 @@
       <p class="sub fade d1">Generate, edit, merge and encrypt PDFs <b>without leaving the database</b> —
 no Java, no middleware, no external dependencies. Two files, one deploy.</p>
       <div class="chips fade d1">
-        <span class="chip"><span class="dot"></span>v3.4.0-rc2 · pre-release</span>
+        <span class="chip"><span class="dot"></span>v3.4.0</span>
         <span class="chip">Oracle 19c+</span>
         <span class="chip">MIT licence</span>
         <span class="chip">Automated CI</span>
@@ -517,7 +517,7 @@ encryption, DEFLATE and INFLATE written in PL/SQL, and the PIX/Boleto extension.
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><b><em>3.3.0</em></b><span>stable version</span></div>
+    <div class="stat"><b><em>3.4.0</em></b><span>current version</span></div>
     <div class="stat"><b>170</b><span>automated checks</span></div>
     <div class="stat"><b>2</b><span>files to deploy</span></div>
     <div class="stat"><b>0</b><span>external dependencies</span></div>
@@ -709,19 +709,12 @@ See the ticket example</a>
     <h2>Three steps and it is running</h2>
     <p class="lead">Works on Oracle 19c or later. No object other than the packages is created.</p>
 
-    <p class="note"><b>Stable vs candidate.</b> The link below installs <b>3.3.0</b>, the stable
-version. This page and the <a href="reference.html">reference</a> already describe
-<b>3.4.0</b>, published as a candidate
-(<a href="https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2">v3.4.0-rc2</a>); what exists
-only there is marked in the reference. <b>On Oracle 26ai, 3.3.0 does not
-work</b>: there, only the candidate runs.</p>
-
     <div class="steps">
       <div class="step">
         <h3>Download one file</h3>
         <p>No clone: the whole installer in a single <code>.sql</code>, with its SHA-256 beside it.</p>
         <code class="block"><a href="https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql">pl_fpdf_install.sql</a></code>
-        <p style="margin-top:.5rem;font-size:.85em;opacity:.75">The latest stable version — GitHub&#x27;s “latest” never includes pre-releases. To try the v3.4.0-rc2 candidate, download it from its page, in the notice above.</p>
+        <p style="margin-top:.5rem;font-size:.85em;opacity:.75">The latest stable version — GitHub&#x27;s “latest” never includes pre-releases.</p>
       </div>
       <div class="step">
         <h3>Run it</h3>
@@ -735,7 +728,7 @@ work</b>: there, only the candidate runs.</p>
   DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);
 END;
 /
--- 3.3.0</code>
+-- 3.4.0</code>
       </div>
     </div>
 
@@ -745,9 +738,9 @@ change ticket. Every version has its own immutable URL on the
 <a href="https://github.com/Maxwbh/pl_fpdf/releases">releases page</a>, with a
 <code>SHA256.txt</code> beside it to verify what you downloaded:</p>
 
-    <code class="block">curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql
-curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/SHA256.txt
-sha256sum -c &lt;(echo &quot;$(cat SHA256.txt)  pl_fpdf_install.sql&quot;)</code>
+    <code class="block">curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/pl_fpdf_install.sql
+curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/SHA256.txt
+sha256sum -c SHA256.txt</code>
   </section>
 
   <!-- FINAL CTA -->

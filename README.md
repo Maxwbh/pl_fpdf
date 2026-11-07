@@ -1,8 +1,7 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/versão-3.4.0--rc2%20candidata-orange.svg" alt="Versão 3.4.0-rc2, candidata">
-  <img src="https://img.shields.io/badge/estável-3.3.0-blue.svg" alt="Versão estável 3.3.0">
+  <img src="https://img.shields.io/badge/versão-3.4.0-blue.svg" alt="Versão 3.4.0">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <a href="LICENSE"><img src="https://img.shields.io/badge/licença-MIT-green.svg" alt="Licença"></a>
   <img src="https://img.shields.io/badge/segurança-AES--256-brightgreen.svg" alt="Segurança">
@@ -24,11 +23,10 @@
   <a href="README_EN.md">🇺🇸 English</a>
 </p>
 
-> **A 3.4.0 está em teste.** O último release estável é a **3.3.0**, que
-> **não** tem a conversão de acentos para WinAnsi nem a fonte TrueType embutida
-> — as duas são da 3.4.0, hoje publicada como candidata (**v3.4.0-rc2**). A
-> suíte roda contra um Oracle **19c** a cada mudança, e a rodada no **26ai**
-> (23.26) passou inteira.
+> **3.4.0: acento certo, TrueType embutida e Oracle 26ai.** A suíte inteira
+> passou no **19c** e no **26ai** (23.26). No 26ai, use a 3.4.0: a 3.3.0 não
+> funciona lá. O que muda para quem já usa está no
+> [guia de migração](docs/MIGRATION.md).
 
 Uma biblioteca de PDF que roda **dentro do Oracle Database**: dois packages
 PL/SQL, sem Java, sem serviço externo, sem objeto de banco além deles. Gera e
@@ -74,14 +72,12 @@ Gere e manipule PDFs **diretamente dentro do Oracle Database** — sem Java, sem
 
 | Para | Baixe |
 |------|-------|
-| **Produção** em Oracle 19c — a versão estável, 3.3.0 | o [`pl_fpdf_install.sql` do release v3.3.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
-| **Oracle 26ai** | **não há versão estável que funcione** (a 3.3.0 levanta `ORA-29275`). A única que roda é a candidata [v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) — ver a [política para o 26ai](SECURITY.md#oracle-26ai) |
-| **Testar a 3.4.0** — candidata, ainda em teste | o [`pl_fpdf_install.sql` do v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2), ou o [`dist/` da `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
+| **Produção** — a versão estável, 3.4.0, em 19c e 26ai | o [`pl_fpdf_install.sql` do release v3.4.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/pl_fpdf_install.sql) |
+| **Acompanhar o desenvolvimento** | o [`dist/` da `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
 | **Exatamente o que esta página descreve** | o [`dist/pl_fpdf_install.sql`](dist/pl_fpdf_install.sql) da branch que você está vendo — o link segue a branch |
 
-A `master` acompanha o desenvolvimento e hoje já traz a 3.4.0; ela **não** é a
-versão estável. O que esta página descreve é a 3.4.0, e o que só existe nela
-está marcado no [CHANGELOG](CHANGELOG.md).
+Para um chamado de mudança, fixe a versão: cada release tem URL própria e o
+`SHA256.txt` ao lado. A `master` muda a cada merge.
 Abra na SQL Window do PL/SQL Developer (F8) — ou rode com
 `@pl_fpdf_install.sql` no SQL\*Plus / SQLcl — e pronto. Ele traz os dois
 packages já na ordem certa, e é só SQL: nenhum comando de ferramenta, nada de

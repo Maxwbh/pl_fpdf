@@ -4,28 +4,17 @@
 
 | Version | Status | Security fixes |
 | ------- | ------ | -------------- |
-| 3.4.0-rc (pre-release) | Under test — not for production, except on Oracle 26ai (below) | Accepted; fixed before the final 3.4.0 |
-| 3.3.x   | Latest stable release | :white_check_mark: |
-| < 3.3   | Historical | :x: — upgrade to 3.3.x |
+| 3.4.x   | Latest stable release | :white_check_mark: |
+| < 3.4   | Historical | :x: — upgrade to 3.4.x |
 
 Only the latest stable line gets fixes. A pre-release (`-rc`) is published to be
-tested: report what you find in it, but do not run it in production — with the
-one exception below.
+tested: report what you find in it, but do not run it in production.
 
 ### Oracle 26ai
 
-On Oracle 26ai with AL32UTF8, **no stable release works**: 3.3.x raises
+On Oracle 26ai with AL32UTF8, use **3.4.0 or later**: 3.3.x raises
 `ORA-29275` on every standard-font `SetFont` (see
-[COMPATIBILITY](docs/COMPATIBILITY_EN.md#1-oracle-versions)). Until the final
-3.4.0 is out:
-
-- the latest 3.4.0 pre-release is the **only** version that runs on 26ai, and
-  it is the one that receives fixes for that environment;
-- running it in production on 26ai is a decision for whoever operates the
-  database, made knowing it is a candidate: pin the exact release
-  (`v3.4.0-rc2`, with its `SHA256.txt`), not `master`;
-- security reports against it are handled like reports against a stable
-  release, and the fix ships in the next pre-release or in the final 3.4.0.
+[COMPATIBILITY](docs/COMPATIBILITY_EN.md#1-oracle-versions)).
 
 ## Reporting a Vulnerability
 
@@ -100,7 +89,7 @@ parse input you may not control.
   **size** (`DBMS_LOB.GETLENGTH`) and that it **starts with `%PDF-`**; reject
   encrypted input up front with `IsEncrypted` unless you mean to call
   `DecryptPDF` — `LoadPDF` does not decrypt, and refuses encrypted input with
-  `ORA-20867` (up to 3.4.0-rc2 it accepted it and the pages came out blank).
+  `ORA-20867` (before 3.4.0 it accepted it and the pages came out blank).
   The same applies to images and fonts: bound their size before `ImageFromBlob`
   or `AddTTFFont`.
 - In scope: a crafted PDF that makes the parser loop forever, exhaust memory

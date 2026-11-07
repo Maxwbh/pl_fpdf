@@ -1,6 +1,6 @@
 # PL_FPDF Roadmap
 
-**Versao Atual:** 3.4.0 (candidata v3.4.0-rc2; estavel: 3.3.0) | **Atualizado:** 2026-11-07
+**Versao Atual:** 3.4.0 | **Atualizado:** 2026-11-07
 
 ### Como ler este documento
 
@@ -193,9 +193,9 @@ e **texto**, que e o que `pdf_obj_body` ja devolve.
 Instalador unico, `PL_FPDF_UTIL` separado, leitura de xref em stream e object
 streams, DEFLATE/INFLATE proprios e licenca MIT. Detalhe no `CHANGELOG.md`.
 
-### v3.4.0 - Acentuacao, TrueType embutida, Oracle 26ai — candidata (nov/2026)
+### v3.4.0 - Acentuacao, TrueType embutida, Oracle 26ai (nov/2026) ✅
 
-Publicada como **v3.4.0-rc2**. Acentuacao correta nas fontes padrao, TrueType de
+Candidatas v3.4.0-rc1 e rc2; final em 07/11/2026. Acentuacao correta nas fontes padrao, TrueType de
 fato embutida, `ImageFromBlob`, e a tabela de larguras sem `CHR(i)` — o que a
 faz funcionar no Oracle 26ai, onde a 3.3.0 levanta `ORA-29275`. A suite passou
 inteira no 19c e no 26ai; as evidencias estao em `docs/COMPATIBILITY.md`.

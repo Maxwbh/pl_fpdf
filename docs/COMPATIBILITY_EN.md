@@ -9,7 +9,7 @@ says "not tested", not "compatible".
 
 ## 1. Oracle versions
 
-| Oracle | 3.3.0 (stable) | 3.4.0 (candidate) |
+| Oracle | 3.3.0 | 3.4.0 |
 |--------|----------------|-------------------|
 | 19c, AL32UTF8 | works | the full suite passed (maintainer's run) |
 | 26ai (23.26), AL32UTF8 | **does not work**: every `SetFont` with a standard font raises `ORA-29275` | the full suite passed — see the evidence below |
@@ -23,17 +23,14 @@ character set, and on 26ai with AL32UTF8 the bytes that open a UTF-8 sequence
 `CHR` returns the raw byte without complaint. 3.4.0 indexes the table by byte,
 with no `CHR`. Measured on both databases, with each version's installer.
 
-**In short:** on 26ai there is **no stable version that works** today. The
-only one that runs there is the v3.4.0-rc2 candidate — use it knowing it is a
-candidate, or wait for the final 3.4.0. The policy for this case is in
-[SECURITY.md](../SECURITY.md#oracle-26ai).
+**In short:** on 26ai, use 3.4.0 or later.
 
 ### Evidence from the 26ai run
 
 | | |
 |---|---|
 | Database | Oracle AI Database 26ai Free 23.26.3.0.0, image `gvenzl/oracle-free:23.26.3-faststart`, PDB `FREEPDB1`, AL32UTF8 |
-| Code | the `melhorias` `src/` after `LoadPDF` started refusing encrypted PDFs (tag `v3.4.0-rc2`, commit `0b3ca59`, had passed 346 of 346 on the same database) |
+| Code | the 3.4.0 `src/` (the `v3.4.0-rc2` candidate, without the encrypted-PDF refusal in `LoadPDF`, had passed 346 of 346 on the same database) |
 | Command | `python dev/scripts/run_tests.py --full`, on the container's application schema |
 | Result | 351 checks passed, 0 failed, 2 skipped; the documentation's 12 runnable samples ran; 29 PDFs generated in the database and checked by MuPDF and zxing-cpp |
 | The 2 skipped | in `test_compat_legado`: the legacy `Output` writes to `DIRECTORY PDF_DIR`, which the test schema does not have; and the absence of the demo routines, checked another way |
@@ -98,7 +95,7 @@ Unicode map.
 
 ## 6. What exists only in 3.4.0
 
-If you are on the stable 3.3.0, this is not available yet:
+If you are still on 3.3.0, this is not available:
 
 | Feature | On 3.3.0 |
 |---------|----------|
