@@ -22,11 +22,11 @@
   <a href="README.md">🇧🇷 Português (principal)</a>
 </p>
 
-> **3.4.0 is under test.** The latest published release is **3.3.0**, which does
+> **3.4.0 is under test.** The latest stable release is **3.3.0**, which does
 > **not** carry the WinAnsi conversion for accented text nor embedded TrueType
-> fonts — both are 3.4.0. The code on this branch runs the suite against an
-> Oracle **19c** database on every change; the **26ai** environment is being set
-> up for the full round, and the release follows it.
+> fonts — both are 3.4.0, now published as a candidate (**v3.4.0-rc2**). The
+> suite runs against an Oracle **19c** database on every change, and the full
+> round on **26ai** (23.26) passed.
 
 A PDF library that runs **inside Oracle Database**: two PL/SQL packages, no
 Java, no external service, no database object beyond them. It generates and
@@ -85,9 +85,13 @@ directory to create first.
 @src/PL_FPDF.pks
 @src/PL_FPDF.pkb
 
--- Verify
-SELECT PL_FPDF.co_version FROM DUAL;
--- Returns: 3.4.0
+-- Verify (the version shows in the Output tab; in SQL*Plus, turn on
+-- SET SERVEROUTPUT ON first). A package constant cannot be read in a SELECT:
+-- SELECT PL_FPDF.co_version FROM DUAL raises ORA-06553 PLS-221
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- 3.4.0
+END;
+/
 ```
 
 **Requirements:** Oracle 19c+, and `CREATE PROCEDURE` in the schema where the

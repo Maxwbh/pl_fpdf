@@ -72,8 +72,12 @@ packages na ordem de dependência, e só SQL — roda igual na SQL Window do PL/
 Developer e no SQL\*Plus.
 
 ```sql
--- Verificar
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.4.0
+-- Verificar: a versão sai na aba Output (no SQL*Plus, SET SERVEROUTPUT ON).
+-- Em SELECT não dá: constante de package só se lê em PL/SQL (PLS-221)
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- 3.4.0
+END;
+/
 
 -- Os dois objetos precisam sair VALID
 SELECT object_name, object_type, status FROM user_objects

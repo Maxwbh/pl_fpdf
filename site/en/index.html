@@ -708,8 +708,11 @@ See the ticket example</a>
       </div>
       <div class="step">
         <h3>Check the version</h3>
-        <p>Ready to produce the first PDF.</p>
-        <code class="block">SELECT PL_FPDF.co_version FROM DUAL;
+        <p>The version shows in the Output tab. Ready to produce the first PDF.</p>
+        <code class="block">BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);
+END;
+/
 -- 3.4.0</code>
       </div>
     </div>

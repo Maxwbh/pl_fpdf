@@ -368,9 +368,13 @@ INSTALACAO = {
         },
         {
             'titulo': ("Confirme a versão", "Check the version"),
-            'texto': ("Pronto para gerar o primeiro PDF.",
-                      "Ready to produce the first PDF."),
-            'codigo': "SELECT PL_FPDF.co_version FROM DUAL;\n-- {versao}",
+            'texto': ("A versão sai na aba Output. Pronto para gerar o primeiro PDF.",
+                      "The version shows in the Output tab. Ready to produce the first PDF."),
+            # Bloco, e nao SELECT: constante de package nao e visivel em SQL, e
+            # `SELECT PL_FPDF.co_version FROM DUAL` da ORA-06553 PLS-221 em
+            # qualquer versao do Oracle. Quem seguia o passo achava que a
+            # instalacao tinha falhado.
+            'codigo': "BEGIN\n  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);\nEND;\n/\n-- {versao}",
         },
     ],
     'nota': ("<b>Para produção, fixe a versão.</b>\nO link acima serve sempre a mais nova — bom para experimentar, ruim para um\nchamado de mudança. Cada versão tem URL própria e imutável na\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">página de releases</a>, com o\n<code>SHA256.txt</code> ao lado para conferir o que foi baixado:",

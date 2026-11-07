@@ -708,8 +708,11 @@ Ver o exemplo do ingresso</a>
       </div>
       <div class="step">
         <h3>Confirme a versão</h3>
-        <p>Pronto para gerar o primeiro PDF.</p>
-        <code class="block">SELECT PL_FPDF.co_version FROM DUAL;
+        <p>A versão sai na aba Output. Pronto para gerar o primeiro PDF.</p>
+        <code class="block">BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);
+END;
+/
 -- 3.4.0</code>
       </div>
     </div>

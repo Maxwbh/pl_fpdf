@@ -23,11 +23,11 @@
   <a href="README_EN.md">🇺🇸 English</a>
 </p>
 
-> **A 3.4.0 está em teste.** O último release publicado é a **3.3.0**, que
+> **A 3.4.0 está em teste.** O último release estável é a **3.3.0**, que
 > **não** tem a conversão de acentos para WinAnsi nem a fonte TrueType embutida
-> — as duas são da 3.4.0. O código desta branch roda a suíte contra um Oracle
-> **19c** a cada mudança; o ambiente **26ai** está sendo montado para a rodada
-> global, e o release sai depois dela.
+> — as duas são da 3.4.0, hoje publicada como candidata (**v3.4.0-rc2**). A
+> suíte roda contra um Oracle **19c** a cada mudança, e a rodada no **26ai**
+> (23.26) passou inteira.
 
 Uma biblioteca de PDF que roda **dentro do Oracle Database**: dois packages
 PL/SQL, sem Java, sem serviço externo, sem objeto de banco além deles. Gera e
@@ -86,9 +86,13 @@ tabela, sequência ou diretório para criar antes.
 @src/PL_FPDF.pks
 @src/PL_FPDF.pkb
 
--- Verificar instalação
-SELECT PL_FPDF.co_version FROM DUAL;
--- Retorna: 3.4.0
+-- Verificar instalação (a versão sai na aba Output; no SQL*Plus, ligue antes
+-- o SET SERVEROUTPUT ON). Constante de package não se lê em SELECT: o
+-- SELECT PL_FPDF.co_version FROM DUAL dá ORA-06553 PLS-221
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- 3.4.0
+END;
+/
 ```
 
 **Requisitos:** Oracle 19c+, e `CREATE PROCEDURE` no schema onde os packages

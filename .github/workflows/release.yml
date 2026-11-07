@@ -91,10 +91,18 @@ jobs:
       - name: Montar as notas e o checksum
         run: |
           set -e
+          # O CHANGELOG separa as versoes com `---`, entao a secao termina nele
+          # -- e o bloco de instalacao abaixo abre com o seu. Saiam dois
+          # seguidos no corpo do release (visto no rc2). O END apara o fim da
+          # secao: linhas em branco e o separador.
           awk -v v="$VERSAO" '
             $0 ~ "^## \\["v"\\]" { dentro=1; next }
             dentro && /^## \[/    { exit }
-            dentro                { print }
+            dentro                { l[++n] = $0 }
+            END {
+              while (n > 0 && (l[n] ~ /^[[:space:]]*$/ || l[n] == "---")) n--
+              for (i = 1; i <= n; i++) print l[i]
+            }
           ' CHANGELOG.md > NOTAS.md
 
           # O corpo de um release para em 125.000 caracteres. Esta versao usa
@@ -134,8 +142,13 @@ jobs:
             echo 'Um arquivo, sem clone. Abra na SQL Window do PL/SQL Developer (F8)'
             echo 'ou rode no SQL*Plus — é só SQL, sem comando de ferramenta.'
             echo ""
+            echo 'Para conferir, a versão sai na aba Output (no SQL*Plus, `SET SERVEROUTPUT ON`):'
+            echo ""
             echo '```sql'
-            echo "SELECT PL_FPDF.co_version FROM DUAL;  -- $VERSAO"
+            echo 'BEGIN'
+            echo "  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- $VERSAO"
+            echo 'END;'
+            echo '/'
             echo '```'
             echo ""
             echo "| | |"

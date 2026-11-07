@@ -72,8 +72,12 @@ in dependency order, and plain SQL only — it behaves the same in a PL/SQL
 Developer SQL Window and in SQL\*Plus.
 
 ```sql
--- Check
-SELECT PL_FPDF.co_version FROM DUAL;  -- 3.4.0
+-- Check: the version shows in the Output tab (in SQL*Plus, SET SERVEROUTPUT ON).
+-- Not in a SELECT: a package constant is only readable from PL/SQL (PLS-221)
+BEGIN
+  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);  -- 3.4.0
+END;
+/
 
 -- Both objects must come out VALID
 SELECT object_name, object_type, status FROM user_objects

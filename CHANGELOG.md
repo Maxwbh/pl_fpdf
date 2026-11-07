@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [3.4.0] - EM TESTE (sem release publicado)
+## [3.4.0] - EM TESTE (candidata publicada: v3.4.0-rc2)
 
 ### Corrigido
 - Texto acentuado saía com dois glifos nas fontes padrão: o documento declarava
@@ -15,8 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `GetStringWidth` levantava `ORA-06502` com acento — logo, centralizar ou
   alinhar à direita quebrava
 - A tabela de larguras era montada com `chr(i)` e passa a ser indexada pelo
-  byte WinAnsi: em AL32UTF8 o `CHR` de 192 para cima levanta `ORA-29275` na
-  primeira chamada que carrega uma métrica. `MultiCell`, `Write` e o overlay
+  byte WinAnsi: no 26ai em AL32UTF8, o `CHR` dos bytes que abrem sequência UTF-8
+  (194 a 244) levanta `ORA-29275` na primeira chamada que carrega uma métrica. `MultiCell`, `Write` e o overlay
   ainda consultavam com o caractere cru, e mediam errado todo acentuado
 - `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
 - Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
