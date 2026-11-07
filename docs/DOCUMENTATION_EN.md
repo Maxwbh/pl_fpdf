@@ -598,8 +598,20 @@ l_list := PL_FPDF.GetLoadedPDFs;      -- JSON with the loaded IDs
 
 ```sql
 DECLARE
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+  l_pdf       BLOB;
+  l_protected BLOB;
+  l_perms     JSON_OBJECT_T := JSON_OBJECT_T();
 BEGIN
+  -- The input PDF: generated here; it may come from a table or from LoadPDF
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Helvetica', '', 12);
+  PL_FPDF.Cell(0, 10, 'Confidential contract');
+  l_pdf := PL_FPDF.OutputBlob;
+  PL_FPDF.Reset;
+
+  -- Accepted keys: print, modify, copy, annotate, fillForms, extract,
+  -- assemble, printHighQuality. Any key left out is DENIED.
   l_perms.put('print', TRUE);
   l_perms.put('copy',  FALSE);
   l_perms.put('modify',FALSE);
@@ -611,7 +623,15 @@ BEGIN
     p_permissions    => l_perms,
     p_encryption     => 'AES-256'         -- or 'AES-128', 'RC4-128', 'RC4-40'
   );
+
+  IF NOT PL_FPDF.IsEncrypted(l_protected) THEN
+    RAISE_APPLICATION_ERROR(-20000, 'the PDF should have come out protected');
+  END IF;
+  -- store l_protected wherever you need it, then free the temporaries
+  IF DBMS_LOB.ISTEMPORARY(l_pdf) = 1 THEN DBMS_LOB.FREETEMPORARY(l_pdf); END IF;
+  IF DBMS_LOB.ISTEMPORARY(l_protected) = 1 THEN DBMS_LOB.FREETEMPORARY(l_protected); END IF;
 END;
+/
 ```
 
 > **Prefer AES.** RC4 has been broken for years and PDF 2.0 dropped it from the

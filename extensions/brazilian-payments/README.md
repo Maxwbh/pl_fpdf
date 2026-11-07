@@ -1,20 +1,22 @@
 # Brazilian Payment Systems Extension for PL_FPDF
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
-![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
+![Oracle](https://img.shields.io/badge/Oracle-19c%2B-red.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 > **Optional extension for PL_FPDF - Brazilian PIX and Boleto Bancário support**
 
 > [!IMPORTANT]
-> **Out of scope for PL_FPDF, and not covered by its test suite.**
+> **Out of scope for PL_FPDF, and outside its CI.**
 > PL_FPDF is a **PDF drawing** library: it places text, shapes, QR codes and
 > barcodes. **Billing rules** — building the barcode from bank, due date,
 > amount and free field, check digits, due-date factor, each bank's own rules —
 > belong to a project of their own.
 >
-> This extension stays here and keeps working, but it is **neither installed
-> nor exercised by the PL_FPDF suite**, and should move to a separate project.
+> This extension stays here, but it is **neither installed nor exercised by the
+> PL_FPDF suite**, and should move to a separate project. It has its own three
+> suites in `tests/`, run by hand: they passed in full (58 tests) on Oracle 26ai
+> on 2026-11-07.
 > For the **layout** of a bank slip, which is what the library does, see
 > [`examples/boleto.sql`](../../examples/boleto.sql).
 
@@ -43,7 +45,7 @@ Generate PIX QR Codes compliant with Brazilian Central Bank standards:
 
 ### PL_FPDF_BOLETO Package
 Generate Boleto Bancário barcodes and payment slips:
-- Interbank 2 of 5 (ITF-14) barcode
+- Interleaved 2 of 5 (ITF) barcode, 44 digits
 - Linha digitável (47-digit formatted line)
 - Módulo 11 check digit
 - Fator de vencimento calculation
@@ -165,14 +167,16 @@ sqlplus user/pass@db @validate_boleto_package.sql
 sqlplus user/pass@db @validate_pdf_integration.sql
 ```
 
-### Test Coverage
+### What the tests cover
 
-| Package | Tests | Coverage |
-|---------|-------|----------|
-| PL_FPDF_PIX | 24 | >85% |
-| PL_FPDF_BOLETO | 24 | >85% |
-| Integration | 10 | >80% |
-| **Total** | **58** | **>83%** |
+| Suite | Tests | Last run |
+|-------|-------|----------|
+| `validate_pix_package.sql` | 24 | 24/24 — Oracle 26ai, 2026-11-07 |
+| `validate_boleto_package.sql` | 24 | 24/24 — Oracle 26ai, 2026-11-07 |
+| `validate_pdf_integration.sql` | 10 | 10/10 — Oracle 26ai, 2026-11-07 |
+
+Line coverage is not measured. The scripts use `SET` and `PROMPT`: run them in
+SQL\*Plus, SQLcl or the PL/SQL Developer Command Window.
 
 ---
 
@@ -181,49 +185,68 @@ sqlplus user/pass@db @validate_pdf_integration.sql
 ### PL_FPDF_PIX Functions
 
 ```sql
--- Generate PIX EMV payload string
-FUNCTION GetPixPayload(p_data JSON_OBJECT_T) RETURN VARCHAR2;
+-- Validate a PIX key format ('CPF', 'CNPJ', 'EMAIL', 'PHONE', 'RANDOM')
+FUNCTION ValidatePixKey(p_key VARCHAR2, p_type VARCHAR2) RETURN BOOLEAN;
 
--- Add PIX QR Code to current PDF page
-PROCEDURE AddQRCodePIX(
-  p_x NUMBER,
-  p_y NUMBER,
-  p_size NUMBER,
-  p_data JSON_OBJECT_T
-);
+-- CRC16-CCITT (0x1021) of a payload, as 4 hex digits
+FUNCTION CalculateCRC16(p_payload VARCHAR2) RETURN VARCHAR2;
 
--- Validate PIX key format
-FUNCTION ValidatePixKey(
-  p_key VARCHAR2,
-  p_type VARCHAR2
-) RETURN BOOLEAN;
+-- Build the PIX EMV payload (the "copia e cola" string)
+FUNCTION GetPixPayload(p_pix_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Format a key for display
+FUNCTION FormatPixKey(p_key VARCHAR2, p_type VARCHAR2) RETURN VARCHAR2;
+
+-- Draw the PIX QR Code on the current page
+PROCEDURE AddQRCodePIX(p_x NUMBER, p_y NUMBER, p_size NUMBER, p_pix_data JSON_OBJECT_T);
+
+-- Draw a QR Code from a JSON configuration
+PROCEDURE AddQRCodeJSON(p_x NUMBER, p_y NUMBER, p_size NUMBER, p_config JSON_OBJECT_T);
 ```
 
 ### PL_FPDF_BOLETO Functions
 
 ```sql
--- Generate linha digitável (47 digits)
-FUNCTION GetLinhaDigitavel(p_data JSON_OBJECT_T) RETURN VARCHAR2;
+-- Due-date factor, 4 digits: days since 1997-10-07, restarting at 1000 from
+-- 2025-02-22 on (FEBRABAN rule)
+FUNCTION CalculateFatorVencimento(p_data DATE) RETURN VARCHAR2;
 
--- Generate barcode numeric string
-FUNCTION GetCodigoBarras(p_data JSON_OBJECT_T) RETURN VARCHAR2;
+-- General check digit of the barcode (modulo 11)
+FUNCTION CalculateDVBoleto(p_codigo VARCHAR2) RETURN CHAR;
 
--- Add Boleto barcode to current PDF page
-PROCEDURE AddBarcodeBoleto(
-  p_x NUMBER,
-  p_y NUMBER,
-  p_width NUMBER,
-  p_height NUMBER,
-  p_data JSON_OBJECT_T
-);
+-- Check a 44-position barcode
+FUNCTION ValidateCodigoBarras(p_codigo VARCHAR2) RETURN BOOLEAN;
 
--- Calculate fator de vencimento
-FUNCTION CalcularFatorVencimento(p_date DATE) RETURN NUMBER;
+-- Build the barcode (44 positions)
+FUNCTION GetCodigoBarras(p_boleto_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Build the linha digitável (47 digits, formatted)
+FUNCTION GetLinhaDigitavel(p_boleto_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Linha digitável back to the barcode
+FUNCTION ParseLinhaDigitavel(p_linha VARCHAR2) RETURN VARCHAR2;
+
+-- Draw the boleto barcode on the current page
+PROCEDURE AddBarcodeBoleto(p_x NUMBER, p_y NUMBER, p_width NUMBER, p_height NUMBER,
+                           p_boleto_data JSON_OBJECT_T);
+
+-- Draw a barcode from a JSON configuration
+PROCEDURE AddBarcodeJSON(p_x NUMBER, p_y NUMBER, p_width NUMBER, p_height NUMBER,
+                         p_config JSON_OBJECT_T);
 ```
+
+The signatures above are the ones in `packages/*.pks`; the accepted JSON
+fields are documented there, function by function.
 
 ---
 
-## 🔍 Standards Compliance
+## 🔍 Standards implemented
+
+The extension **implements the algorithms** of these standards, and the tests
+check the arithmetic — the barcode, check digit and linha digitável were also
+recomputed independently and read back with an independent decoder. That is
+**not certification**: no bank and not the BCB has certified this extension.
+Before production, certify the boleto with your bank and PIX with your PSP.
 
 ### PIX (BCB Standards)
 - **EMV® QRCode Specification**: Merchant-Presented Mode
@@ -232,7 +255,8 @@ FUNCTION CalcularFatorVencimento(p_date DATE) RETURN NUMBER;
 
 ### Boleto Bancário (FEBRABAN)
 - **FEBRABAN**: Specs Layout Padrão Boleto
-- **Código de Barras**: ITF-14 (Interbank 2 of 5)
+- **Barcode**: Interleaved 2 of 5 (ITF), 44 digits — not to be confused with ITF-14, the 14-digit packaging code
+- **Due-date factor**: 4 digits, restarting at 1000 from 2025-02-22 on
 - **Linha Digitável**: 47-digit format with check digits
 - **Módulo 11**: Check digit calculation
 
@@ -264,9 +288,12 @@ FUNCTION CalcularFatorVencimento(p_date DATE) RETURN NUMBER;
 
 ## 📄 License
 
-This extension is distributed under the **GNU General Public License v2**, same as PL_FPDF core.
+**MIT** license, the same as the repository — see [`LICENSE`](../../LICENSE) at
+the root. (Older versions of this text said GPL v2: that was the license of the
+2017 port, before the project moved to MIT.)
 
-This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+The software is provided "as is", without warranty of any kind — the full terms
+are in `LICENSE`.
 
 ---
 

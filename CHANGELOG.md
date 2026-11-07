@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Link` numa página emitia `/Annots` com dicionário aberto nas páginas
   anteriores, que nunca pediram link, e estourava `ORA-06533` no segundo
   documento da sessão
+- Extensão de boleto recusava vencimento a partir de 22/02/2025: o fator passa
+  de 9999 a 1000, como manda a FEBRABAN. As suítes da extensão não compilavam
 
 ### Adicionado
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG

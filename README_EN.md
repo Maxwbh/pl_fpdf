@@ -37,7 +37,7 @@ The full public surface is in
 [`docs/API_REFERENCE_EN.md`](docs/API_REFERENCE_EN.md), maintained by
 [@Maxwbh](https://github.com/Maxwbh) since 2019: PDF manipulation (v3.0), PDF 1.5+ reading with cross-reference and
 object streams, AES-256/AES-128/RC4, QR codes and barcodes, DEFLATE and INFLATE
-written in PL/SQL, UTF-8/TrueType and Oracle 19c/23c.
+written in PL/SQL, UTF-8/TrueType and Oracle 19c and 26ai.
 
 > **Lineage.** The generation core descends from the PL/SQL port by
 > [Pierre-Gilles Levallois](https://github.com/Pilooz), who brought Olivier
@@ -68,10 +68,16 @@ Generate and manipulate PDFs **directly in Oracle Database** - no Java, no exter
 
 ## Installation
 
-**One file, no clone.** Download
-[`dist/pl_fpdf_install.sql`](dist/pl_fpdf_install.sql) — the link follows the
-branch you are looking at; the published stable version is the one on
-[`master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql).
+**One file, no clone.** Which file depends on what you want:
+
+| For | Download |
+|-----|----------|
+| **Production** — the stable version, 3.3.0 | the [v3.3.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Trying 3.4.0** — candidate, still under test | the [v3.4.0-rc2 `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2), or [`dist/` on `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
+
+`master` follows development and already carries 3.4.0; it is **not** the
+stable version. This page describes 3.4.0, and what exists only there is marked
+in the [CHANGELOG](CHANGELOG.md).
 Open it in the PL/SQL Developer SQL Window (F8) — or run `@pl_fpdf_install.sql`
 in SQL\*Plus / SQLcl — and you are done. It carries both packages in dependency
 order, and it is plain SQL: no tool-specific commands, no table, sequence or
@@ -97,6 +103,13 @@ END;
 **Requirements:** Oracle 19c+, and `CREATE PROCEDURE` in the schema where the
 packages will live. Nothing else — in particular, **no**
 `GRANT EXECUTE ON SYS.DBMS_CRYPTO` is needed.
+
+| Oracle | 3.4.0 status |
+|--------|--------------|
+| 19c | the full suite runs on every change |
+| 26ai (23.26) | the full suite passed: 346 tests, 0 failures (2026-11-07) |
+| 21c, 23ai releases before 26ai | not tested |
+| 18c and earlier | not supported |
 
 **No external dependencies, not even for encryption.** `EncryptPDF`/`DecryptPDF` use MD5 and SHA via `STANDARD_HASH` (native SQL functions); RC4 and AES are implemented in the package itself.
 
@@ -294,13 +307,15 @@ pl_fpdf/
 └── CONTRIBUTING.md  SECURITY.md  CODE_OF_CONDUCT.md
 ```
 
-Three files are **generated** and never edited by hand — CI rejects any of them
+These files are **generated** and never edited by hand — CI rejects any of them
 if it falls behind:
 
-| Generated | From |
-|-----------|------|
-| `dist/pl_fpdf_install.sql` | the four sources in `src/` |
-| `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` |
+| Generated | From | By |
+|-----------|------|----|
+| `dist/pl_fpdf_install.sql` | the four sources in `src/` | `dev/scripts/build_release.py` |
+| `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` | `dev/scripts/build_run_all.py` |
+| `docs/API_REFERENCE*.md` and the `site/` pages | the Javadoc in `src/*.pks` | `dev/scripts/gen_docs/generate.py` |
+| the font-width block in `src/PL_FPDF.pkb` | Adobe's AFM files | `dev/scripts/font_reference/gerar.py` |
 
 ---
 

@@ -1,20 +1,22 @@
 # Extensão de Sistemas de Pagamento Brasileiros para PL_FPDF
 
 ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-![Oracle](https://img.shields.io/badge/Oracle-19c%2F23c-red.svg)
-![License](https://img.shields.io/badge/license-GPL%20v2-green.svg)
+![Oracle](https://img.shields.io/badge/Oracle-19c%2B-red.svg)
+![License](https://img.shields.io/badge/license-MIT-green.svg)
 
 > **Extensão opcional para PL_FPDF - Suporte a PIX e Boleto Bancário**
 
 > [!IMPORTANT]
-> **Fora do escopo do PL_FPDF, e sem cobertura de testes aqui.**
+> **Fora do escopo do PL_FPDF, e fora do CI dele.**
 > O PL_FPDF é uma biblioteca de **desenho de PDF**: ela posiciona texto, formas,
 > QR Code e código de barras. **Regra de cobrança** — montar o código de barras
 > a partir de banco, vencimento, valor e campo livre, dígito verificador, fator
 > de vencimento, as regras de cada banco — é assunto de um projeto próprio.
 >
-> Esta extensão continua aqui e continua funcionando, mas **não é instalada nem
-> exercitada pela suíte** do PL_FPDF, e deve migrar para um projeto separado.
+> Esta extensão continua aqui, mas **não é instalada nem exercitada pela suíte**
+> do PL_FPDF, e deve migrar para um projeto separado. Ela tem as suas próprias
+> três suítes, em `tests/`, que se rodam à mão: passaram inteiras (58 testes) no
+> Oracle 26ai em 07/11/2026.
 > Para o **layout** de um boleto, que é o que a biblioteca faz, veja
 > [`examples/boleto.sql`](../../examples/boleto.sql).
 
@@ -43,7 +45,7 @@ Geração de QR Codes PIX em conformidade com os padrões do Banco Central do Br
 
 ### Pacote PL_FPDF_BOLETO
 Geração de códigos de barras e fichas de compensação de Boleto Bancário:
-- Código de barras Interbancário 2 de 5 (ITF-14)
+- Código de barras Interleaved 2 of 5 (ITF), 44 dígitos
 - Linha digitável (47 dígitos formatados)
 - Dígito verificador Módulo 11
 - Cálculo do fator de vencimento
@@ -165,14 +167,16 @@ sqlplus usuario/senha@banco @validate_boleto_package.sql
 sqlplus usuario/senha@banco @validate_pdf_integration.sql
 ```
 
-### Cobertura de Testes
+### O que os testes cobrem
 
-| Pacote | Testes | Cobertura |
-|---------|-------|----------|
-| PL_FPDF_PIX | 24 | >85% |
-| PL_FPDF_BOLETO | 24 | >85% |
-| Integração | 10 | >80% |
-| **Total** | **58** | **>83%** |
+| Suíte | Testes | Última rodada |
+|-------|--------|---------------|
+| `validate_pix_package.sql` | 24 | 24/24 — Oracle 26ai, 07/11/2026 |
+| `validate_boleto_package.sql` | 24 | 24/24 — Oracle 26ai, 07/11/2026 |
+| `validate_pdf_integration.sql` | 10 | 10/10 — Oracle 26ai, 07/11/2026 |
+
+Cobertura de linhas não é medida. Os scripts usam `SET` e `PROMPT`: rode no
+SQL\*Plus, no SQLcl ou na Command Window do PL/SQL Developer.
 
 ---
 
@@ -181,49 +185,68 @@ sqlplus usuario/senha@banco @validate_pdf_integration.sql
 ### Funções PL_FPDF_PIX
 
 ```sql
--- Gerar string de payload EMV do PIX
-FUNCTION GetPixPayload(p_data JSON_OBJECT_T) RETURN VARCHAR2;
+-- Validar o formato de uma chave PIX ('CPF', 'CNPJ', 'EMAIL', 'PHONE', 'RANDOM')
+FUNCTION ValidatePixKey(p_key VARCHAR2, p_type VARCHAR2) RETURN BOOLEAN;
 
--- Adicionar QR Code PIX à página atual do PDF
-PROCEDURE AddQRCodePIX(
-  p_x NUMBER,
-  p_y NUMBER,
-  p_size NUMBER,
-  p_data JSON_OBJECT_T
-);
+-- CRC16-CCITT (0x1021) de um payload, em 4 dígitos hexadecimais
+FUNCTION CalculateCRC16(p_payload VARCHAR2) RETURN VARCHAR2;
 
--- Validar formato da chave PIX
-FUNCTION ValidatePixKey(
-  p_key VARCHAR2,
-  p_type VARCHAR2
-) RETURN BOOLEAN;
+-- Montar o payload EMV do PIX (o "copia e cola")
+FUNCTION GetPixPayload(p_pix_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Formatar a chave para exibição
+FUNCTION FormatPixKey(p_key VARCHAR2, p_type VARCHAR2) RETURN VARCHAR2;
+
+-- Desenhar o QR Code PIX na página atual
+PROCEDURE AddQRCodePIX(p_x NUMBER, p_y NUMBER, p_size NUMBER, p_pix_data JSON_OBJECT_T);
+
+-- Desenhar QR Code a partir de uma configuração JSON
+PROCEDURE AddQRCodeJSON(p_x NUMBER, p_y NUMBER, p_size NUMBER, p_config JSON_OBJECT_T);
 ```
 
 ### Funções PL_FPDF_BOLETO
 
 ```sql
--- Gerar linha digitável (47 dígitos)
-FUNCTION GetLinhaDigitavel(p_data JSON_OBJECT_T) RETURN VARCHAR2;
+-- Fator de vencimento, em 4 dígitos: dias desde 07/10/1997, e de 22/02/2025
+-- em diante recomeçando em 1000 (regra da FEBRABAN)
+FUNCTION CalculateFatorVencimento(p_data DATE) RETURN VARCHAR2;
 
--- Gerar string numérica do código de barras
-FUNCTION GetCodigoBarras(p_data JSON_OBJECT_T) RETURN VARCHAR2;
+-- Dígito verificador geral do código de barras (módulo 11)
+FUNCTION CalculateDVBoleto(p_codigo VARCHAR2) RETURN CHAR;
 
--- Adicionar código de barras do Boleto à página atual do PDF
-PROCEDURE AddBarcodeBoleto(
-  p_x NUMBER,
-  p_y NUMBER,
-  p_width NUMBER,
-  p_height NUMBER,
-  p_data JSON_OBJECT_T
-);
+-- Conferir um código de barras de 44 posições
+FUNCTION ValidateCodigoBarras(p_codigo VARCHAR2) RETURN BOOLEAN;
 
--- Calcular fator de vencimento
-FUNCTION CalcularFatorVencimento(p_date DATE) RETURN NUMBER;
+-- Montar o código de barras (44 posições)
+FUNCTION GetCodigoBarras(p_boleto_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Montar a linha digitável (47 dígitos, formatada)
+FUNCTION GetLinhaDigitavel(p_boleto_data JSON_OBJECT_T) RETURN VARCHAR2;
+
+-- Linha digitável de volta para o código de barras
+FUNCTION ParseLinhaDigitavel(p_linha VARCHAR2) RETURN VARCHAR2;
+
+-- Desenhar o código de barras do boleto na página atual
+PROCEDURE AddBarcodeBoleto(p_x NUMBER, p_y NUMBER, p_width NUMBER, p_height NUMBER,
+                           p_boleto_data JSON_OBJECT_T);
+
+-- Desenhar código de barras a partir de uma configuração JSON
+PROCEDURE AddBarcodeJSON(p_x NUMBER, p_y NUMBER, p_width NUMBER, p_height NUMBER,
+                         p_config JSON_OBJECT_T);
 ```
+
+As assinaturas acima são as de `packages/*.pks`; os parâmetros JSON aceitos
+estão documentados lá, em cada função.
 
 ---
 
-## 🔍 Conformidade com Padrões
+## 🔍 Padrões implementados
+
+A extensão **implementa os algoritmos** destes padrões, e os testes conferem o
+cálculo — o código de barras, o DV e a linha digitável também foram refeitos
+por fora e lidos de volta com um decodificador independente. Isso **não é
+homologação**: nenhum banco nem o BCB certificou esta extensão. Antes de
+produção, homologue o boleto com o seu banco e o PIX com o seu PSP.
 
 ### PIX (Padrões BCB)
 - **Especificação EMV® QRCode**: Merchant-Presented Mode
@@ -232,7 +255,8 @@ FUNCTION CalcularFatorVencimento(p_date DATE) RETURN NUMBER;
 
 ### Boleto Bancário (FEBRABAN)
 - **FEBRABAN**: Especificações Layout Padrão Boleto
-- **Código de Barras**: ITF-14 (Interbancário 2 de 5)
+- **Código de Barras**: Interleaved 2 of 5 (ITF), 44 dígitos — não confundir com o ITF-14, que é o código de 14 dígitos de embalagens
+- **Fator de vencimento**: 4 dígitos, recomeçando em 1000 a partir de 22/02/2025
 - **Linha Digitável**: Formato de 47 dígitos com dígitos verificadores
 - **Módulo 11**: Cálculo do dígito verificador
 
@@ -264,9 +288,12 @@ FUNCTION CalcularFatorVencimento(p_date DATE) RETURN NUMBER;
 
 ## 📄 Licença
 
-Esta extensão é distribuída sob a **GNU General Public License v2**, a mesma do PL_FPDF core.
+Licença **MIT**, a mesma do repositório — veja o [`LICENSE`](../../LICENSE) na
+raiz. (Versões antigas deste texto diziam GPL v2: era a licença do porte de
+2017, antes de o projeto passar para MIT.)
 
-Este programa é distribuído na esperança de que seja útil, mas SEM QUALQUER GARANTIA; sem mesmo a garantia implícita de COMERCIALIZAÇÃO ou ADEQUAÇÃO A UM PROPÓSITO ESPECÍFICO.
+O software é fornecido "no estado em que se encontra", sem garantia de nenhum
+tipo — os termos completos estão no `LICENSE`.
 
 ---
 

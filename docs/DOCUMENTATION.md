@@ -599,8 +599,20 @@ l_lista := PL_FPDF.GetLoadedPDFs;     -- JSON com os IDs carregados
 
 ```sql
 DECLARE
-  l_perms JSON_OBJECT_T := JSON_OBJECT_T();
+  l_pdf    BLOB;
+  l_seguro BLOB;
+  l_perms  JSON_OBJECT_T := JSON_OBJECT_T();
 BEGIN
+  -- O PDF de entrada: aqui, gerado na hora; pode vir de uma tabela ou do LoadPDF
+  PL_FPDF.Init('P', 'mm', 'A4');
+  PL_FPDF.AddPage;
+  PL_FPDF.SetFont('Helvetica', '', 12);
+  PL_FPDF.Cell(0, 10, 'Contrato confidencial');
+  l_pdf := PL_FPDF.OutputBlob;
+  PL_FPDF.Reset;
+
+  -- Chaves aceitas: print, modify, copy, annotate, fillForms, extract,
+  -- assemble, printHighQuality. A que não for informada fica NEGADA.
   l_perms.put('print', TRUE);
   l_perms.put('copy',  FALSE);
   l_perms.put('modify',FALSE);
@@ -612,7 +624,15 @@ BEGIN
     p_permissions    => l_perms,
     p_encryption     => 'AES-256'         -- ou 'AES-128', 'RC4-128', 'RC4-40'
   );
+
+  IF NOT PL_FPDF.IsEncrypted(l_seguro) THEN
+    RAISE_APPLICATION_ERROR(-20000, 'o PDF devia ter saído protegido');
+  END IF;
+  -- grave l_seguro onde precisar (tabela, e-mail, download) e libere os temporários
+  IF DBMS_LOB.ISTEMPORARY(l_pdf) = 1 THEN DBMS_LOB.FREETEMPORARY(l_pdf); END IF;
+  IF DBMS_LOB.ISTEMPORARY(l_seguro) = 1 THEN DBMS_LOB.FREETEMPORARY(l_seguro); END IF;
 END;
+/
 ```
 
 > **Prefira AES.** O RC4 está quebrado há anos e o PDF 2.0 o removeu da

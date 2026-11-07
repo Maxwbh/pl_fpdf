@@ -419,7 +419,7 @@ END ParseLinhaDigitavel;
 
 /*******************************************************************************
 * Procedure: AddBarcodeBoleto
-* Description: Adds a Boleto barcode (ITF14) to the current PDF page
+* Description: Adds a Boleto barcode (Interleaved 2 of 5, 44 digits) to the current PDF page
 *******************************************************************************/
 PROCEDURE AddBarcodeBoleto(
   p_x NUMBER,
