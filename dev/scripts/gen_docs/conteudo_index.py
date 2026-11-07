@@ -20,13 +20,13 @@ exemplo são os mesmos nas duas línguas -- o que muda neles é só o `alt`.
 
 # A ULTIMA versao publicada como release, que nao e a mesma coisa que o
 # `co_version`: este anda na frente enquanto a versao nova esta em teste.
-ULTIMO_RELEASE = '3.3.0'
+ULTIMO_RELEASE = '3.4.0'
 
 # A candidata publicada da versao que a pagina descreve, ou None. Enquanto
 # houver uma, a instalacao avisa que o link instala a estavel, que a pagina e a
 # referencia ja descrevem a candidata, e que no Oracle 26ai a estavel nao roda.
 # Quando a 3.4.0 final sair: ULTIMO_RELEASE = '3.4.0' e isto volta a None.
-ULTIMA_CANDIDATA = 'v3.4.0-rc2'
+ULTIMA_CANDIDATA = None
 
 
 # Como o site ANUNCIA a versao -- um lugar so para o chip do topo, o destaque,

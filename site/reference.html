@@ -345,7 +345,7 @@
 </div></aside>
 <main id="conteudo" class="content">
 <header class="page">
-      <p class="kicker">v3.4.0-rc2 · pré-lançamento · estável 3.3.0 · Oracle 19c+</p>
+      <p class="kicker">v3.4.0 · Oracle 19c+</p>
       <h1>Referência da API</h1>
       <p class="lead">Documentação detalhada de cada função e procedure pública do package <code>PL_FPDF</code>: sintaxe, parâmetros com valores possíveis, retorno, erros e exemplo.
       Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>.</p>
@@ -1292,7 +1292,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabecalho&#x27;</span>, <span class="s
 <article class="api" id="imagefromblob">
 <h3>ImageFromBlob <span class="kind">Procedure</span><a class="anchor" href="#imagefromblob" aria-label="Link permanente para ImageFromBlob">#</a></h3>
 <p class="d">Coloca uma imagem que o chamador já tem em mãos, sem passar por URL. O Image() busca pela rede e exige ACL concedida ao schema; quando a imagem já está numa tabela ou numa variável, esta entrada dispensa a rede e a permissão. O formato é reconhecido pelos primeiros bytes do arquivo, não pela extensão: PNG e JPEG; qualquer outra coisa é recusada.</p>
-<p class="since">Desde a versão <b>3.4.0</b> <span class="novo">— só na 3.4.0, ainda candidata — não existe na 3.3.0, a estável</span></p>
+<p class="since">Desde a versão <b>3.4.0</b></p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ImageFromBlob(
     p_blob  <span class="k">blob</span>,

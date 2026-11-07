@@ -49,7 +49,7 @@
     "url": "https://github.com/Maxwbh"
   },
   "isBasedOn": "https://github.com/Pilooz/pl_fpdf",
-  "softwareVersion": "3.3.0",
+  "softwareVersion": "3.4.0",
   "inLanguage": "pt-BR",
   "url": "https://maxwbh.github.io/pl_fpdf/"
 }
@@ -443,7 +443,7 @@
       <p class="sub fade d1">Gere, modifique, mescle e criptografe PDFs <b>sem sair do banco</b> —
 sem Java, sem middleware, sem dependências externas. Dois arquivos, um deploy.</p>
       <div class="chips fade d1">
-        <span class="chip"><span class="dot"></span>v3.4.0-rc2 · pré-lançamento</span>
+        <span class="chip"><span class="dot"></span>v3.4.0</span>
         <span class="chip">Oracle 19c+</span>
         <span class="chip">Licença MIT</span>
         <span class="chip">CI automatizado</span>
@@ -517,7 +517,7 @@ AES-256, DEFLATE e INFLATE em PL/SQL e a extensão PIX/Boleto.</span>
 
   <!-- STATS -->
   <div class="stats">
-    <div class="stat"><b><em>3.3.0</em></b><span>versão estável</span></div>
+    <div class="stat"><b><em>3.4.0</em></b><span>versão atual</span></div>
     <div class="stat"><b>170</b><span>verificações automatizadas</span></div>
     <div class="stat"><b>2</b><span>arquivos para o deploy</span></div>
     <div class="stat"><b>0</b><span>dependências externas</span></div>
@@ -709,19 +709,12 @@ Ver o exemplo do ingresso</a>
     <h2>Três passos e está no ar</h2>
     <p class="lead">Compatível com Oracle 19c ou superior. Nenhum objeto além dos packages é criado.</p>
 
-    <p class="note"><b>Estável × candidata.</b> O link abaixo instala a <b>3.3.0</b>, a versão
-estável. Esta página e a <a href="reference.html">referência</a> já descrevem a
-<b>3.4.0</b>, publicada como candidata
-(<a href="https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2">v3.4.0-rc2</a>); o que só
-existe nela vem marcado na referência. <b>No Oracle 26ai, a 3.3.0 não
-funciona</b>: lá, só a candidata roda.</p>
-
     <div class="steps">
       <div class="step">
         <h3>Baixe um arquivo</h3>
         <p>Sem clone: o instalador completo em um <code>.sql</code>, com o SHA-256 ao lado.</p>
         <code class="block"><a href="https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql">pl_fpdf_install.sql</a></code>
-        <p style="margin-top:.5rem;font-size:.85em;opacity:.75">A versão estável mais recente — o “latest” do GitHub não inclui pré-lançamentos. Para testar a candidata v3.4.0-rc2, baixe da página dela, no aviso acima.</p>
+        <p style="margin-top:.5rem;font-size:.85em;opacity:.75">A versão estável mais recente — o “latest” do GitHub não inclui pré-lançamentos.</p>
       </div>
       <div class="step">
         <h3>Execute</h3>
@@ -735,7 +728,7 @@ funciona</b>: lá, só a candidata roda.</p>
   DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);
 END;
 /
--- 3.3.0</code>
+-- 3.4.0</code>
       </div>
     </div>
 
@@ -745,9 +738,9 @@ chamado de mudança. Cada versão tem URL própria e imutável na
 <a href="https://github.com/Maxwbh/pl_fpdf/releases">página de releases</a>, com o
 <code>SHA256.txt</code> ao lado para conferir o que foi baixado:</p>
 
-    <code class="block">curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql
-curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/SHA256.txt
-sha256sum -c &lt;(echo &quot;$(cat SHA256.txt)  pl_fpdf_install.sql&quot;)</code>
+    <code class="block">curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/pl_fpdf_install.sql
+curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/SHA256.txt
+sha256sum -c SHA256.txt</code>
   </section>
 
   <!-- FINAL CTA -->

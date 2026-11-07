@@ -12,6 +12,11 @@ on:
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
+  # Publicado um release, o site publica de novo: a validacao abaixo recusa
+  # anunciar como estavel uma versao cujo release ainda nao existe, entao o
+  # push que traz a versao nova chega antes da tag e so este passo a publica.
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:

@@ -25,7 +25,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | `ORA-06553: PLS-221: 'CO_VERSION' is not a procedure` | `SELECT PL_FPDF.co_version FROM DUAL` | a package constant cannot be read from SQL. Use the block at the top of this page |
 | `ORA-04068: existing state of packages has been discarded` (sometimes with `ORA-04061`, `ORA-04065` or `ORA-06508`) | the package was reinstalled or recompiled while the session was using it | expected after an upgrade, in every session that was using it — in a pool, in every connection. The document being built in that session is lost: redo the operation from `Init`. See [Installation §7](INSTALLATION_EN.md#7-upgrading) |
 | `PLS-00201: identifier 'PL_FPDF' must be declared` in another schema | missing grant or synonym | `GRANT EXECUTE ON PL_FPDF TO app` and a synonym — see [Installation §6](INSTALLATION_EN.md#6-using-it-from-another-schema) |
-| `ORA-29275: partial multibyte character` on the first `SetFont` | 3.3.0 (or 3.4.0-rc1) on an Oracle **26ai** with AL32UTF8 | install 3.4.0 (v3.4.0-rc2 or later) — see [Compatibility](COMPATIBILITY_EN.md#1-oracle-versions) |
+| `ORA-29275: partial multibyte character` on the first `SetFont` | 3.3.0 (or 3.4.0-rc1) on an Oracle **26ai** with AL32UTF8 | install 3.4.0 or later — see [Compatibility](COMPATIBILITY_EN.md#1-oracle-versions) |
 
 ## Building the document
 

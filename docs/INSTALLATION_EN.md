@@ -34,9 +34,7 @@ Optional, only if you use the feature:
 
 | For | File |
 |-----|------|
-| **Production** on Oracle 19c — the stable version, 3.3.0 | [v3.3.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
-| **Oracle 26ai** | **no stable version works**: 3.3.0 raises `ORA-29275`. The only one that runs is the [v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) candidate — see the [26ai policy](../SECURITY.md#oracle-26ai) |
-| **Trying 3.4.0** — candidate | [v3.4.0-rc2 `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) |
+| **Production** — the stable version, 3.4.0, on 19c and 26ai | [v3.4.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.4.0/pl_fpdf_install.sql) |
 | **Exactly what this documentation describes** | the [`dist/pl_fpdf_install.sql`](../dist/pl_fpdf_install.sql) of the branch you are reading — the link follows the branch |
 | **Following development** | [`dist/pl_fpdf_install.sql` on `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
 

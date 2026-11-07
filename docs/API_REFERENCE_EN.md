@@ -1915,7 +1915,7 @@ PL_FPDF.Image('https://example.com/logo.png', 10, 10, 40);
 
 Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. `Image` fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission.
 
-*Since version 3.4.0* — **only in 3.4.0, still a candidate — not in 3.3.0, the stable one**
+*Since version 3.4.0*
 
 #### Syntax
 

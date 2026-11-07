@@ -9,7 +9,7 @@ e não "compatível".
 
 ## 1. Versões do Oracle
 
-| Oracle | 3.3.0 (estável) | 3.4.0 (candidata) |
+| Oracle | 3.3.0 | 3.4.0 |
 |--------|-----------------|-------------------|
 | 19c, AL32UTF8 | funciona | a suíte inteira passou (rodada do mantenedor) |
 | 26ai (23.26), AL32UTF8 | **não funciona**: todo `SetFont` de fonte padrão levanta `ORA-29275` | a suíte inteira passou — ver as evidências abaixo |
@@ -23,17 +23,14 @@ UTF-8 (194 a 244) levantam `ORA-29275: partial multibyte character` — no 19c,
 o mesmo `CHR` devolve o byte cru e não reclama. A 3.4.0 indexa a tabela pelo
 byte, sem `CHR`. Medido nos dois bancos, com o instalador de cada versão.
 
-**Em resumo:** no 26ai, hoje **não há versão estável que funcione**. A única
-que roda lá é a candidata v3.4.0-rc2 — use-a sabendo que é candidata, ou
-aguarde a 3.4.0 final. A política para esse caso está no
-[SECURITY.md](../SECURITY.md#oracle-26ai).
+**Em resumo:** no 26ai, use a 3.4.0 ou mais nova.
 
 ### Evidências da rodada no 26ai
 
 | | |
 |---|---|
 | Banco | Oracle AI Database 26ai Free 23.26.3.0.0, imagem `gvenzl/oracle-free:23.26.3-faststart`, PDB `FREEPDB1`, charset AL32UTF8 |
-| Código | o `src/` da `melhorias` depois da recusa de PDF cifrado no `LoadPDF` (a tag `v3.4.0-rc2`, commit `0b3ca59`, tinha passado 346 de 346 no mesmo banco) |
+| Código | o `src/` da 3.4.0 (a candidata `v3.4.0-rc2`, sem a recusa de PDF cifrado no `LoadPDF`, tinha passado 346 de 346 no mesmo banco) |
 | Comando | `python dev/scripts/run_tests.py --full`, no schema de aplicação do container |
 | Resultado | 351 verificações passaram, 0 falharam, 2 puladas; os 12 exemplos executáveis da documentação rodaram; 29 PDFs gerados no banco e conferidos pelo MuPDF e pelo zxing-cpp |
 | As 2 puladas | em `test_compat_legado`: o `Output` legado grava no `DIRECTORY PDF_DIR`, que o schema de teste não tem; e a ausência das rotinas de demonstração, conferida por outro caminho |
@@ -98,7 +95,7 @@ Unicode.
 
 ## 6. O que só existe na 3.4.0
 
-Se você está na 3.3.0 estável, isto ainda não está disponível:
+Se você ainda está na 3.3.0, isto não está disponível:
 
 | Recurso | Na 3.3.0 |
 |---------|----------|

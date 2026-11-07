@@ -1915,7 +1915,7 @@ PL_FPDF.Image('https://example.com/logo.png', 10, 10, 40);
 
 Coloca uma imagem que o chamador já tem em mãos, sem passar por URL. O Image() busca pela rede e exige ACL concedida ao schema; quando a imagem já está numa tabela ou numa variável, esta entrada dispensa a rede e a permissão. O formato é reconhecido pelos primeiros bytes do arquivo, não pela extensão: PNG e JPEG; qualquer outra coisa é recusada.
 
-*Desde a versão 3.4.0* — **só na 3.4.0, ainda candidata — não existe na 3.3.0, a estável**
+*Desde a versão 3.4.0*
 
 #### Sintaxe
 
