@@ -458,6 +458,7 @@ O mesmo relatório pode abrir num e quebrar no outro, e o cabeçalho
 
 **Pelo gateway PL/SQL (mod_plsql):**
 
+<!-- exemplo-ilustrativo: precisa do gateway OWA e de um documento montado -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -514,6 +515,7 @@ Se o PL_FPDF está em outro schema, o *parsing schema* da aplicação precisa do
 Components → Application Processes* um processo `GERAR_PDF`, ponto *Ajax
 Callback*, com um item de aplicação `AI_PEDIDO_ID` para o parâmetro:
 
+<!-- exemplo-ilustrativo: precisa do APEX instalado -->
 ```sql
 DECLARE
   l_pdf     BLOB;
@@ -564,6 +566,7 @@ O mesmo código serve num processo de página disparado por um botão; o
 
 **2. Mandar por e-mail.** Num processo de página — sem cabeçalho HTTP nenhum:
 
+<!-- exemplo-ilustrativo: precisa do APEX instalado -->
 ```sql
 DECLARE
   l_pdf     BLOB;
@@ -612,6 +615,7 @@ cruzada é um stream comprimido e os objetos ficam dentro de *object streams*. O
 conteúdo das páginas é copiado byte a byte, sem re-renderizar: fontes, imagens e
 anotações chegam intactas.
 
+<!-- exemplo-ilustrativo: lê de uma tabela do usuário (documentos) -->
 ```sql
 DECLARE
   l_pdf BLOB;

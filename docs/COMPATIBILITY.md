@@ -128,5 +128,6 @@ independentes — não basta "não deu erro".
 | Metadados | `test_metadados_config` |
 | Regressões | `test_regressoes_revisao` |
 
-Como rodar: [MANUTENCAO.md](MANUTENCAO.md). A extensão de pagamentos tem as
+API a API, o que exercita cada uma está em [TRACEABILITY.md](TRACEABILITY.md),
+gerado dos fontes. Como rodar: [MANUTENCAO.md](MANUTENCAO.md). A extensão de pagamentos tem as
 suítes dela, à parte: ver o [README da extensão](../extensions/brazilian-payments/README_PT_BR.md).

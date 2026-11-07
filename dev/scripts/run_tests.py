@@ -35,6 +35,7 @@ Uso
     python dev/scripts/run_tests.py --compile          # só instala e checa erros
     python dev/scripts/run_tests.py --tests            # só roda a suíte
     python dev/scripts/run_tests.py --validate         # só valida os PDFs gerados
+    python dev/scripts/run_tests.py --docs             # só os exemplos da documentação
     python dev/scripts/run_tests.py --out dev/amostras # onde salvar os PDFs
 
 Progresso entre rodadas
@@ -242,6 +243,48 @@ def rodar_testes(con, arquivos, verboso=False):
             for l in marcadas:
                 print('         ' + l.strip())
     return total, falhas, situacao
+
+
+# ─────────────────── exemplos da documentação ────────────────────────────────
+def rodar_exemplos_doc(con, blocos, verboso=False):
+    """Executa cada exemplo da documentação e DESFAZ o que ele fez.
+
+    Os blocos vêm de `exemplos_doc.py`: os anônimos completos dos guias de quem
+    usa, menos os marcados como ilustrativos. Um exemplo que não compila, ou que
+    levanta, é falha — é o texto que alguém vai copiar. O ROLLBACK depois de
+    cada um mantém o schema de teste como estava, e o `Reset` depois de uma
+    falha impede que um documento pela metade vaze para o exemplo seguinte.
+    """
+    print('\n== Exemplos da documentação')
+    falhas, por_doc = [], {}
+    for b in blocos:
+        origem = f'{b["arquivo"]}:{b["linha"]}'
+        ok = True
+        with con.cursor() as cur:
+            cur.callproc('dbms_output.enable', (None,))
+            try:
+                cur.execute(b['codigo'])
+            except Exception as e:                       # noqa: BLE001
+                ok = False
+                msg = ' | '.join(str(e).splitlines()[:2])
+                falhas.append((f'exemplo {origem}', msg))
+                try:
+                    cur.execute('BEGIN PL_FPDF.Reset; END;')
+                except Exception:                        # noqa: BLE001
+                    pass
+            linhas = saida_do_servidor(con)
+        con.rollback()
+        if verboso:
+            print(f'   {"ok" if ok else "FALHA":<5} {origem}')
+            for l in linhas:
+                print('         ' + l)
+        n_ok, n = por_doc.get(b['arquivo'], (0, 0))
+        por_doc[b['arquivo']] = (n_ok + ok, n + 1)
+    for arq, (n_ok, n) in por_doc.items():
+        print(f"   {'ok' if n_ok == n else 'FALHA':<5} {arq:<34} {n_ok}/{n}")
+    for origem, msg in falhas:
+        print(f'         {origem}: {msg}')
+    return falhas, por_doc
 
 
 # ───────────────────── amostras: gerar no banco e validar ────────────────────
@@ -1813,6 +1856,8 @@ def main():
     ap.add_argument('--compile', action='store_true', dest='so_compilar')
     ap.add_argument('--tests', action='store_true', dest='so_testes')
     ap.add_argument('--validate', action='store_true', dest='so_validar')
+    ap.add_argument('--docs', action='store_true', dest='so_docs',
+                    help='só executa os exemplos PL/SQL da documentação')
     ap.add_argument('--reset', action='store_true',
                     help='zera o progresso e roda tudo do zero')
     ap.add_argument('--full', action='store_true',
@@ -1829,7 +1874,8 @@ def main():
     if not args.user or not args.dsn:
         ap.error('informe --user e --dsn (ou PLFPDF_USER e PLFPDF_DSN)')
 
-    tudo = not (args.so_compilar or args.so_testes or args.so_validar)
+    tudo = not (args.so_compilar or args.so_testes or args.so_validar
+                or args.so_docs)
     todas_falhas = []      # (origem, motivo) — consolidado no fim
     total = None
 
@@ -1893,6 +1939,26 @@ def main():
             print(f'   {"-" * 60}')
             print(f'   {total["PASS"]} passou | {total["FAIL"]} falhou'
                   f' | {total["SKIP"]} pulado')
+
+    # ── exemplos da documentação ─────────────────────────────────────────────
+    # A impressão inclui a do package: o mesmo exemplo pode quebrar porque o
+    # texto mudou OU porque a API que ele chama mudou.
+    if tudo or args.so_docs:
+        import exemplos_doc
+        pendentes = []
+        for rel in exemplos_doc.DOCS:
+            bl = [b for b in exemplos_doc.blocos(rel) if b['motivo'] is None]
+            imp = _sha(repr(prog.impressao) + repr([b['codigo'] for b in bl]))
+            if bl and not prog.pular('docs:' + rel, imp):
+                pendentes.append((rel, imp, bl))
+        if pendentes:
+            falhas, por_doc = rodar_exemplos_doc(
+                con, [b for _, _, bl in pendentes for b in bl], args.verboso)
+            for rel, imp, _ in pendentes:
+                n_ok, n = por_doc.get(rel, (0, 0))
+                prog.marcar('docs:' + rel, imp, n_ok == n)
+            todas_falhas += falhas
+            prog.salvar()
 
     # ── amostras ─────────────────────────────────────────────────────────────
     if tudo or args.so_validar:

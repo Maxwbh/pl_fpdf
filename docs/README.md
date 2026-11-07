@@ -34,5 +34,6 @@ Em português · In Portuguese:
 |---|---|
 | [MANUTENCAO.md](MANUTENCAO.md) | Como rodar os testes, o que o CI verifica, as referências validadas |
 | [ROADMAP.md](ROADMAP.md) | Planejamento, pendências conhecidas e o que cada verificação pega |
+| [TRACEABILITY.md](TRACEABILITY.md) | Cada API pública e o teste ou a amostra que a exercita (gerado, PT e EN) |
 | [HISTORIAS.md](HISTORIAS.md) | Uma história por lacuna priorizada: lógica, caso de uso e critério de pronto |
 | [CONTRIBUTING](../CONTRIBUTING.md) | Como contribuir |

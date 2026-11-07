@@ -117,6 +117,7 @@ uninstalling: [Installation](docs/INSTALLATION_EN.md).
 
 ## Quick Start
 
+<!-- exemplo-ilustrativo: writes to a user's table (documentos) -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -320,6 +321,7 @@ if it falls behind:
 | `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` | `dev/scripts/build_run_all.py` |
 | `docs/API_REFERENCE*.md` and the `site/` pages | the Javadoc in `src/*.pks` | `dev/scripts/gen_docs/generate.py` |
 | the font-width block in `src/PL_FPDF.pkb` | Adobe's AFM files | `dev/scripts/font_reference/gerar.py` |
+| `docs/TRACEABILITY.md` | the specs, the tests and the samples | `dev/scripts/gen_docs/rastreabilidade.py` |
 
 ---
 

@@ -1,0 +1,28 @@
+name: Links externos do projeto
+
+# Os links da documentação para os releases, o instalador e o site. Fora do
+# push de propósito: depender da rede a cada commit deixaria o CI instável por
+# motivo que não é do código. Roda toda semana, a cada release publicado — que
+# é quando um link para a tag nova passa a ter de existir — e à mão.
+
+on:
+  schedule:
+    - cron: '17 9 * * 1'     # segunda-feira, 09:17 UTC
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  links:
+    name: Os links do projeto respondem
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Releases, instalador e site
+        run: python dev/scripts/gen_docs/check_links_externos.py

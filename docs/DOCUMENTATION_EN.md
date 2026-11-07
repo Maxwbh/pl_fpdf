@@ -458,6 +458,7 @@ it: send the right `Content-Type`.
 
 **Through the PL/SQL gateway (mod_plsql):**
 
+<!-- exemplo-ilustrativo: needs the OWA gateway and a built document -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -513,6 +514,7 @@ If PL_FPDF lives in another schema, the application's *parsing schema* needs
 Components → Application Processes*, create a `GENERATE_PDF` process, point
 *Ajax Callback*, with an application item `AI_ORDER_ID` for the parameter:
 
+<!-- exemplo-ilustrativo: needs an installed APEX -->
 ```sql
 DECLARE
   l_pdf      BLOB;
@@ -563,6 +565,7 @@ keeps the page from moving on to the *branch*.
 
 **2. Send it by e-mail.** In a page process — no HTTP header at all:
 
+<!-- exemplo-ilustrativo: needs an installed APEX -->
 ```sql
 DECLARE
   l_pdf     BLOB;
@@ -611,6 +614,7 @@ cross-reference is a compressed stream and the objects sit inside *object
 streams*. Page content is copied byte for byte, without re-rendering: fonts,
 images and annotations arrive intact.
 
+<!-- exemplo-ilustrativo: reads from a user's table (documentos) -->
 ```sql
 DECLARE
   l_pdf BLOB;

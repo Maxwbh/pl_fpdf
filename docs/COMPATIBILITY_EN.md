@@ -128,5 +128,6 @@ Each set below is a file in `dev/tests/`, and all of them passed on 3.4.0, on
 | Metadata | `test_metadados_config` |
 | Regressions | `test_regressoes_revisao` |
 
-How to run them: [MANUTENCAO.md](MANUTENCAO.md). The payments extension has its
+API by API, what exercises each one is in [TRACEABILITY.md](TRACEABILITY.md),
+generated from the sources. How to run them: [MANUTENCAO.md](MANUTENCAO.md). The payments extension has its
 own suites, separately: see the [extension README](../extensions/brazilian-payments/README.md).

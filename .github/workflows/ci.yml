@@ -335,6 +335,14 @@ jobs:
       - name: A referência da extensão bate com a spec dela
         run: python dev/scripts/gen_docs/check_extensao_api.py
 
+      # Quem EXECUTA os exemplos e o run_tests.py, contra o Oracle. Aqui, sem
+      # banco, so o previsivel: bloco que nao tem como rodar sem a marca.
+      - name: Os exemplos da documentação estão prontos para o runner
+        run: python dev/scripts/gen_docs/check_exemplos_doc.py
+
+      - name: docs/TRACEABILITY.md em dia, e a tabela de cobertura completa
+        run: python dev/scripts/gen_docs/rastreabilidade.py --check
+
   package-sanity:
     name: Package version consistency
     runs-on: ubuntu-latest

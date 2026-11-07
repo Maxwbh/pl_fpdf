@@ -118,6 +118,7 @@ Conferir a instalação, dar acesso a outros schemas, atualizar e desinstalar:
 
 ## Início Rápido
 
+<!-- exemplo-ilustrativo: grava numa tabela do usuário (documentos) -->
 ```sql
 DECLARE
   l_pdf BLOB;
@@ -320,6 +321,7 @@ deles desatualizado:
 | `dev/tests/run_all_tests.sql` | `dev/tests/test_*.sql` | `dev/scripts/build_run_all.py` |
 | `docs/API_REFERENCE*.md` e as páginas de `site/` | o Javadoc de `src/*.pks` | `dev/scripts/gen_docs/generate.py` |
 | o bloco de larguras das fontes em `src/PL_FPDF.pkb` | os AFM da Adobe | `dev/scripts/font_reference/gerar.py` |
+| `docs/TRACEABILITY.md` | as specs, os testes e as amostras | `dev/scripts/gen_docs/rastreabilidade.py` |
 
 ---
 
