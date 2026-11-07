@@ -39,6 +39,14 @@ DECLARE
   l_um_byte  PLS_INTEGER := 0;
   l_dois     PLS_INTEGER := 0;
   l_outros   PLS_INTEGER := 0;
+  -- Na 26ai o CHR de 192 para cima LEVANTA, em vez de devolver o byte cru como
+  -- no 19c. Medido em 07/11/2026, Oracle AI Database 26ai Free 23.26.3: e o
+  -- ORA-29275 da issue 16 do projeto de origem, e a medicao precisa conta-lo
+  -- em vez de morrer nele -- morrer era o que este arquivo fazia ate entao.
+  l_levanta  PLS_INTEGER := 0;
+  l_de_onde  PLS_INTEGER;
+  e_parcial  EXCEPTION;
+  PRAGMA EXCEPTION_INIT(e_parcial, -29275);
   l_distintas PLS_INTEGER;
   l_larg     NUMBER;
   l_larg_ced NUMBER;
@@ -73,14 +81,27 @@ BEGIN
   -- Se devolver DOIS, a chave e o caractere do ponto de codigo i, que casa com
   -- texto mas nao com byte.
   FOR i IN 128 .. 255 LOOP
-    CASE LENGTHB(CHR(i))
-      WHEN 1 THEN l_um_byte := l_um_byte + 1;
-      WHEN 2 THEN l_dois := l_dois + 1;
-      ELSE l_outros := l_outros + 1;
-    END CASE;
+    BEGIN
+      CASE LENGTHB(CHR(i))
+        WHEN 1 THEN l_um_byte := l_um_byte + 1;
+        WHEN 2 THEN l_dois := l_dois + 1;
+        ELSE l_outros := l_outros + 1;
+      END CASE;
+    EXCEPTION
+      WHEN e_parcial THEN
+        l_levanta := l_levanta + 1;
+        l_de_onde := NVL(l_de_onde, i);
+    END;
   END LOOP;
   diz('um byte: ' || l_um_byte || ' | dois bytes: ' || l_dois
-      || ' | outros: ' || l_outros || '   (de 128 posicoes)');
+      || ' | levanta: ' || l_levanta || ' | outros: ' || l_outros
+      || '   (de 128 posicoes)');
+  IF l_levanta > 0 THEN
+    diz('-> neste banco o CHR LEVANTA ORA-29275 a partir de ' || l_de_onde
+        || '. Nenhuma');
+    diz('   tabela montada com CHR sobrevive aqui: e o erro da issue 16, e por');
+    diz('   isso a tabela de larguras do PL_FPDF e indexada pelo byte.');
+  END IF;
   diz('');
 
   ------------------------------------------------------------------------
@@ -89,13 +110,18 @@ BEGIN
   ------------------------------------------------------------------------
   -- Chave repetida significa posicao de largura perdida: a segunda sobrescreve
   -- a primeira, e as duas passam a devolver a mesma largura.
-  SELECT COUNT(DISTINCT CHR(LEVEL - 1)) INTO l_distintas
-    FROM dual CONNECT BY LEVEL <= 256;
-  diz('chaves distintas: ' || l_distintas || ' de 256');
-  IF l_distintas < 256 THEN
-    diz('-> ' || (256 - l_distintas) || ' posicao(oes) colidem: a tabela de '
-        || 'larguras tem menos entradas do que aparenta');
-  END IF;
+  BEGIN
+    SELECT COUNT(DISTINCT CHR(LEVEL - 1)) INTO l_distintas
+      FROM dual CONNECT BY LEVEL <= 256;
+    diz('chaves distintas: ' || l_distintas || ' de 256');
+    IF l_distintas < 256 THEN
+      diz('-> ' || (256 - l_distintas) || ' posicao(oes) colidem: a tabela de '
+          || 'larguras tem menos entradas do que aparenta');
+    END IF;
+  EXCEPTION
+    WHEN e_parcial THEN
+      diz('nao ha 256 chaves para contar: o CHR levanta ORA-29275 neste banco');
+  END;
   diz('');
 
   ------------------------------------------------------------------------
@@ -107,13 +133,24 @@ BEGIN
   -- como PROVA de que os dois nunca foram a mesma coisa em AL32UTF8 -- mas o
   -- package nao depende mais disso: a tabela e indexada pelo BYTE WinAnsi e
   -- quem consulta converte com p_winansi_byte antes de medir.
-  l_ced_chr := CHR(231);
+  BEGIN
+    l_ced_chr := CHR(231);
+  EXCEPTION
+    WHEN e_parcial THEN l_ced_chr := NULL;
+  END;
   l_ced_txt := SUBSTR('ç', 1, 1);
-  diz('CHR(231):          ' || LENGTHB(l_ced_chr) || ' byte(s), hex '
-      || RAWTOHEX(UTL_RAW.CAST_TO_RAW(l_ced_chr)));
+  IF l_ced_chr IS NULL THEN
+    diz('CHR(231):          levanta ORA-29275 neste banco');
+  ELSE
+    diz('CHR(231):          ' || LENGTHB(l_ced_chr) || ' byte(s), hex '
+        || RAWTOHEX(UTL_RAW.CAST_TO_RAW(l_ced_chr)));
+  END IF;
   diz('SUBSTR(''ç'',1,1):   ' || LENGTHB(l_ced_txt) || ' byte(s), hex '
       || RAWTOHEX(UTL_RAW.CAST_TO_RAW(l_ced_txt)));
-  IF l_ced_chr = l_ced_txt THEN
+  IF l_ced_chr IS NULL THEN
+    diz('-> nem ha o que comparar: a chave da tabela antiga nao chega a existir');
+    diz('   neste banco. Hoje ela e o byte WinAnsi, e a consulta converte.');
+  ELSIF l_ced_chr = l_ced_txt THEN
     diz('-> iguais: neste banco as duas formas coincidem');
   ELSE
     diz('-> DIFERENTES, e por isso a chave da tabela deixou de ser o');
