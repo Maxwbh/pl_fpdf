@@ -57,7 +57,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | Você vê | Causa | O que fazer |
 |---------|-------|-------------|
 | `ORA-20800`…`ORA-20810` no `LoadPDF` | o BLOB não é um PDF, ou tem cabeçalho, xref ou trailer corrompidos | confira o arquivo num leitor; se ele abre lá, abra uma issue com o PDF |
-| Páginas vazias depois do `LoadPDF` + `OutputModifiedPDF`, sem erro nenhum | o PDF de entrada estava cifrado: o `LoadPDF` aceita sem avisar e não decifra | confira com `IsEncrypted` e passe antes pelo `DecryptPDF`, com a senha |
+| `ORA-20867` no `LoadPDF` ou no `LoadPDFWithID` | o PDF de entrada está cifrado, e o `LoadPDF` não decifra | passe antes pelo `DecryptPDF`, com a senha. Até a 3.4.0-rc2 ele aceitava sem erro e as páginas saíam em branco |
 | `ORA-20893` | um stream descomprimido passou do teto (8 MB por stream) | é a defesa contra arquivo-bomba. No `FlateDecode` direto, o teto é o `p_max_bytes` |
 | `ORA-20858` | AES-128 pede PDF 1.5+, AES-256 pede 1.7+ | `SetPDFVersion('1.7')` antes do `SetEncryption` |
 

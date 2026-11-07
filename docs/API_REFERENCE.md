@@ -3100,6 +3100,7 @@ PROCEDURE PL_FPDF.LoadPDF(
 | `ORA-20802` | startxref não encontrado |
 | `ORA-20803` | Tabela xref inválida |
 | `ORA-20804` | Objeto Root não encontrado |
+| `ORA-20867` | PDF cifrado: decifre com DecryptPDF antes. O LoadPDF lê a estrutura, mas não decifra o conteúdo, e as páginas sairiam em branco |
 
 #### Exemplo
 
@@ -3622,6 +3623,7 @@ Máximo de 10 PDFs podem ser carregados simultaneamente
 | `ORA-20830` | identificador vazio ou longo demais |
 | `ORA-20800` | PDF nulo ou pequeno demais para ser válido |
 | `ORA-20801` | cabeçalho %PDF-x.x ausente ou malformado |
+| `ORA-20867` | PDF cifrado: decifre com DecryptPDF antes; o ID não é registrado |
 
 #### Exemplo
 

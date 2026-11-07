@@ -33,9 +33,9 @@ aguarde a 3.4.0 final. A política para esse caso está no
 | | |
 |---|---|
 | Banco | Oracle AI Database 26ai Free 23.26.3.0.0, imagem `gvenzl/oracle-free:23.26.3-faststart`, PDB `FREEPDB1`, charset AL32UTF8 |
-| Código | o `src/` da tag `v3.4.0-rc2` (commit `0b3ca59`) — idêntico ao `src/` atual |
+| Código | o `src/` da `melhorias` depois da recusa de PDF cifrado no `LoadPDF` (a tag `v3.4.0-rc2`, commit `0b3ca59`, tinha passado 346 de 346 no mesmo banco) |
 | Comando | `python dev/scripts/run_tests.py --full`, no schema de aplicação do container |
-| Resultado | 346 verificações passaram, 0 falharam, 2 puladas; 29 PDFs gerados no banco e conferidos pelo MuPDF e pelo zxing-cpp |
+| Resultado | 351 verificações passaram, 0 falharam, 2 puladas; os 12 exemplos executáveis da documentação rodaram; 29 PDFs gerados no banco e conferidos pelo MuPDF e pelo zxing-cpp |
 | As 2 puladas | em `test_compat_legado`: o `Output` legado grava no `DIRECTORY PDF_DIR`, que o schema de teste não tem; e a ausência das rotinas de demonstração, conferida por outro caminho |
 | Data | 07/11/2026 |
 
@@ -92,7 +92,7 @@ Unicode.
 |---------|----------|
 | xref clássica (PDF 1.0–1.4) | lê |
 | xref em stream e object streams (PDF 1.5+) | lê; na saída, os objetos são achatados e a xref volta a ser clássica |
-| PDF cifrado | o `LoadPDF` **aceita sem avisar e não decifra**: a saída tem a página vazia. Passe antes pelo `DecryptPDF`, que exige a senha |
+| PDF cifrado | recusado com `ORA-20867`: o `LoadPDF` não decifra. Passe antes pelo `DecryptPDF`, que exige a senha. Até a 3.4.0-rc2 ele aceitava sem avisar, e a saída saía com as páginas em branco |
 | Streams comprimidos | FlateDecode, com teto de 8 MB por stream |
 | Formulários (AcroForm), assinatura digital | não são tratados — ver as limitações no [README](../README.md#limitações) |
 

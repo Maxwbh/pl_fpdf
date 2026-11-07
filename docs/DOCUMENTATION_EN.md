@@ -808,7 +808,7 @@ to 3.4.0 — is in [MIGRATION_EN.md](MIGRATION_EN.md).
 | -20821…-20825 | Overlays | invalid coordinates, opacity, image or dimensions |
 | -20831…-20844 | Multi-PDF | ID not found; invalid page specification |
 | -20843/-20847/-20848 | PDF 1.5+ | an xref stream, object stream or predictor that cannot be read |
-| -20850…-20865 | Security | password, encryption method, PDF already protected |
+| -20850…-20867 | Security | password, encryption method, PDF already protected, encrypted PDF passed to `LoadPDF` |
 | -20870…-20879 | QR Code | empty content, size, correction level, capacity |
 | -20880…-20889 | Barcode | empty code, dimensions, symbology, digits |
 | -20890…-20894 | `FlateDecode` | invalid stream, or output above the ceiling |

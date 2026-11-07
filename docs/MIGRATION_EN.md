@@ -27,6 +27,7 @@ The public surface counts come from comparing each tag's `.pks`, name by name:
 | `SetUTF8Enabled`, `IsUTF8Enabled` | removed | delete the calls. They did nothing: the variable was written and read, and nothing else looked at it |
 | A character outside WinAnsi in a standard font (ideogram, Cyrillic, emoji) came out as `?` or a wrong glyph | `ORA-20203`, with the position | embed a TrueType font (`AddTTFFont`), or handle the `PL_FPDF.exc_fora_de_winansi` exception |
 | `AddLink`, `SetLink`, `Link` with a numeric target | `ORA-20601` (`PL_FPDF.exc_link_nao_suportado`) | use URL links only. Internal links never worked: the `/Dest` was not written and the file came out malformed |
+| `LoadPDF` / `LoadPDFWithID` with an encrypted PDF were accepted, and the output had blank pages | `ORA-20867` | decrypt first with `DecryptPDF`, which needs the password |
 
 ### Changes the result
 

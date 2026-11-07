@@ -3100,6 +3100,7 @@ PROCEDURE PL_FPDF.LoadPDF(
 | `ORA-20802` | startxref not found |
 | `ORA-20803` | invalid xref table |
 | `ORA-20804` | Root object not found |
+| `ORA-20867` | Encrypted PDF: decrypt it with DecryptPDF first. LoadPDF reads the structure but does not decrypt the content, and the pages would come out blank |
 
 #### Example
 
@@ -3622,6 +3623,7 @@ At most 10 PDFs can be loaded at the same time
 | `ORA-20830` | identifier empty or too long |
 | `ORA-20800` | PDF is null or too small to be valid |
 | `ORA-20801` | %PDF-x.x header missing or malformed |
+| `ORA-20867` | Encrypted PDF: decrypt it with DecryptPDF first; the ID is not registered |
 
 #### Example
 

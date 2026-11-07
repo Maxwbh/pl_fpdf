@@ -99,7 +99,8 @@ parse input you may not control.
 - Before parsing a file you did not produce, check **where it came from**, its
   **size** (`DBMS_LOB.GETLENGTH`) and that it **starts with `%PDF-`**; reject
   encrypted input up front with `IsEncrypted` unless you mean to call
-  `DecryptPDF` — `LoadPDF` does not decrypt, and silently yields blank pages.
+  `DecryptPDF` — `LoadPDF` does not decrypt, and refuses encrypted input with
+  `ORA-20867` (up to 3.4.0-rc2 it accepted it and the pages came out blank).
   The same applies to images and fonts: bound their size before `ImageFromBlob`
   or `AddTTFFont`.
 - In scope: a crafted PDF that makes the parser loop forever, exhaust memory

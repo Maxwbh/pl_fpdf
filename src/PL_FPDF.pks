@@ -1423,6 +1423,8 @@ procedure AddBarcode(
  * @raises -20802 startxref não encontrado
  * @raises -20803 Tabela xref inválida
  * @raises -20804 Objeto Root não encontrado
+ * @raises -20867 PDF cifrado: decifre com DecryptPDF antes. O LoadPDF lê a
+ *         estrutura, mas não decifra o conteúdo, e as páginas sairiam em branco
  * @example
  *   DECLARE
  *     l_pdf BLOB;
@@ -1891,6 +1893,7 @@ PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
  * @raises -20830 identificador vazio ou longo demais
  * @raises -20800 PDF nulo ou pequeno demais para ser válido
  * @raises -20801 cabeçalho %PDF-x.x ausente ou malformado
+ * @raises -20867 PDF cifrado: decifre com DecryptPDF antes; o ID não é registrado
  * @example
  *   BEGIN
  *     PL_FPDF.LoadPDFWithID('report_jan', l_jan_pdf);

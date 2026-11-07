@@ -33,9 +33,9 @@ candidate, or wait for the final 3.4.0. The policy for this case is in
 | | |
 |---|---|
 | Database | Oracle AI Database 26ai Free 23.26.3.0.0, image `gvenzl/oracle-free:23.26.3-faststart`, PDB `FREEPDB1`, AL32UTF8 |
-| Code | the `src/` of tag `v3.4.0-rc2` (commit `0b3ca59`) — identical to the current `src/` |
+| Code | the `melhorias` `src/` after `LoadPDF` started refusing encrypted PDFs (tag `v3.4.0-rc2`, commit `0b3ca59`, had passed 346 of 346 on the same database) |
 | Command | `python dev/scripts/run_tests.py --full`, on the container's application schema |
-| Result | 346 checks passed, 0 failed, 2 skipped; 29 PDFs generated in the database and checked by MuPDF and zxing-cpp |
+| Result | 351 checks passed, 0 failed, 2 skipped; the documentation's 12 runnable samples ran; 29 PDFs generated in the database and checked by MuPDF and zxing-cpp |
 | The 2 skipped | in `test_compat_legado`: the legacy `Output` writes to `DIRECTORY PDF_DIR`, which the test schema does not have; and the absence of the demo routines, checked another way |
 | Date | 2026-11-07 |
 
@@ -92,7 +92,7 @@ Unicode map.
 |-------|--------|
 | Classic xref (PDF 1.0–1.4) | reads it |
 | Cross-reference streams and object streams (PDF 1.5+) | reads them; on output, objects are flattened and the xref is classic again |
-| Encrypted PDF | `LoadPDF` **accepts it silently and does not decrypt**: the output has the page blank. Run it through `DecryptPDF` first, which needs the password |
+| Encrypted PDF | refused with `ORA-20867`: `LoadPDF` does not decrypt. Run it through `DecryptPDF` first, which needs the password. Up to 3.4.0-rc2 it was accepted silently, and the output came out with blank pages |
 | Compressed streams | FlateDecode, with an 8 MB ceiling per stream |
 | Forms (AcroForm), digital signatures | not handled — see the limitations in the [README](../README_EN.md#limitations) |
 

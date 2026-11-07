@@ -56,7 +56,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | You see | Cause | What to do |
 |---------|-------|------------|
 | `ORA-20800`…`ORA-20810` in `LoadPDF` | the BLOB is not a PDF, or its header, xref or trailer is corrupt | check the file in a viewer; if it opens there, open an issue with the PDF |
-| Blank pages after `LoadPDF` + `OutputModifiedPDF`, with no error at all | the input PDF was encrypted: `LoadPDF` accepts it silently and does not decrypt | check with `IsEncrypted` and run it through `DecryptPDF` first, with the password |
+| `ORA-20867` in `LoadPDF` or `LoadPDFWithID` | the input PDF is encrypted, and `LoadPDF` does not decrypt | run it through `DecryptPDF` first, with the password. Up to 3.4.0-rc2 it was accepted with no error and the pages came out blank |
 | `ORA-20893` | a decompressed stream went over the ceiling (8 MB per stream) | it is the defence against compression bombs. With `FlateDecode` called directly, the ceiling is `p_max_bytes` |
 | `ORA-20858` | AES-128 needs PDF 1.5+, AES-256 needs 1.7+ | `SetPDFVersion('1.7')` before `SetEncryption` |
 

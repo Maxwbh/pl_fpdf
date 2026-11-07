@@ -1868,6 +1868,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total de páginas:&#x27;</span> || l_
 <tr><td class="pname">ORA-20802</td><td>startxref não encontrado</td></tr>
 <tr><td class="pname">ORA-20803</td><td>Tabela xref inválida</td></tr>
 <tr><td class="pname">ORA-20804</td><td>Objeto Root não encontrado</td></tr>
+<tr><td class="pname">ORA-20867</td><td>PDF cifrado: decifre com DecryptPDF antes. O LoadPDF lê a estrutura, mas não decifra o conteúdo, e as páginas sairiam em branco</td></tr>
 </tbody></table></div>
 <h4>Exemplo</h4><div class="code"><pre><span class="k">DECLARE</span>
   l_pdf <span class="k">BLOB</span>;
@@ -2169,6 +2170,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <tr><td class="pname">ORA-20830</td><td>identificador vazio ou longo demais</td></tr>
 <tr><td class="pname">ORA-20800</td><td>PDF nulo ou pequeno demais para ser válido</td></tr>
 <tr><td class="pname">ORA-20801</td><td>cabeçalho %PDF-x.x ausente ou malformado</td></tr>
+<tr><td class="pname">ORA-20867</td><td>PDF cifrado: decifre com DecryptPDF antes; o ID não é registrado</td></tr>
 </tbody></table></div>
 <h4>Exemplo</h4><div class="code"><pre><span class="k">BEGIN</span>
   PL_FPDF.LoadPDFWithID(<span class="s">&#x27;report_jan&#x27;</span>, l_jan_pdf);

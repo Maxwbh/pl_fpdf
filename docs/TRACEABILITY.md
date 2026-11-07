@@ -112,8 +112,8 @@ tested; it proves the API is not **without** any test.
 | `GetPageInfo` | `test_leitura_paginas`, `test_manipulacao_completa` | — |
 | `AddQRCode` | `test_core` | `complexo`, `qrcode_pix`, `ticket` |
 | `AddBarcode` | `test_core` | `barcode_code128`, `barcode_ean13`, `boleto`, `complexo`, `ticket` |
-| `LoadPDF` | `diag_xrefstm`, `test_core`, `test_leitura_paginas`, `test_leitura_pdf`, `test_manipulacao_completa`, `test_marca_dagua`, `test_paginas_girar_remover`, `test_regressoes_revisao`, `test_saida_modificada`, `test_sobreposicao` | `marca_dagua`, `objstm`, `overlay_img`, `overlay_opcoes`, `png_alfa`, `png_entrelacado`, `png_grande` |
-| `GetPageCount` | `diag_xrefstm`, `test_core`, `test_leitura_paginas`, `test_leitura_pdf`, `test_manipulacao_completa`, `test_paginas_girar_remover` | — |
+| `LoadPDF` | `diag_xrefstm`, `test_core`, `test_leitura_paginas`, `test_leitura_pdf`, `test_manipulacao_completa`, `test_marca_dagua`, `test_paginas_girar_remover`, `test_regressoes_revisao`, `test_saida_modificada`, `test_seguranca`, `test_sobreposicao` | `marca_dagua`, `objstm`, `overlay_img`, `overlay_opcoes`, `png_alfa`, `png_entrelacado`, `png_grande` |
+| `GetPageCount` | `diag_xrefstm`, `test_core`, `test_leitura_paginas`, `test_leitura_pdf`, `test_manipulacao_completa`, `test_paginas_girar_remover`, `test_seguranca` | — |
 | `GetPDFInfo` | `test_leitura_pdf` | — |
 | `RotatePage` | `test_core`, `test_leitura_paginas`, `test_manipulacao_completa`, `test_paginas_girar_remover`, `test_saida_modificada` | — |
 | `RemovePage` | `test_core`, `test_manipulacao_completa`, `test_paginas_girar_remover`, `test_saida_modificada` | — |
@@ -123,7 +123,7 @@ tested; it proves the API is not **without** any test.
 | `AddWatermark` | `test_manipulacao_completa`, `test_marca_dagua`, `test_regressoes_revisao`, `test_saida_modificada` | `marca_dagua` |
 | `GetWatermarks` | `test_manipulacao_completa`, `test_marca_dagua` | — |
 | `OutputModifiedPDF` | `diag_xrefstm`, `test_core`, `test_manipulacao_completa`, `test_regressoes_revisao`, `test_saida_modificada` | `marca_dagua`, `objstm`, `overlay_img`, `overlay_opcoes`, `png_alfa`, `png_entrelacado`, `png_grande` |
-| `ClearPDFCache` | `diag_password`, `diag_xrefstm`, `test_core`, `test_leitura_paginas`, `test_manipulacao_completa`, `test_marca_dagua`, `test_mesclar_dividir`, `test_paginas_girar_remover`, `test_regressoes_revisao`, `test_saida_modificada`, `test_sobreposicao` | `acentos`, `boleto`, `comprimido`, `extract`, `formas`, `imagem_blob`, `marca_dagua`, `merge`, `objstm`, `objstm_cifrado`, `objstm_ida_volta`, `overlay_img`, `overlay_opcoes`, `png_alfa`, `png_entrelacado`, `png_grande`, `ticket`, `xref_predictor` |
+| `ClearPDFCache` | `diag_password`, `diag_xrefstm`, `test_core`, `test_leitura_paginas`, `test_manipulacao_completa`, `test_marca_dagua`, `test_mesclar_dividir`, `test_paginas_girar_remover`, `test_regressoes_revisao`, `test_saida_modificada`, `test_seguranca`, `test_sobreposicao` | `acentos`, `boleto`, `comprimido`, `extract`, `formas`, `imagem_blob`, `marca_dagua`, `merge`, `objstm`, `objstm_cifrado`, `objstm_ida_volta`, `overlay_img`, `overlay_opcoes`, `png_alfa`, `png_entrelacado`, `png_grande`, `ticket`, `xref_predictor` |
 | `FlateDecode` | `diag_inflate` | — |
 | `FlateEncode` | `diag_deflate` | — |
 | `OverlayText` | `diag_xrefstm`, `test_manipulacao_completa`, `test_sobreposicao` | `marca_dagua`, `objstm`, `overlay_opcoes` |
@@ -131,9 +131,9 @@ tested; it proves the API is not **without** any test.
 | `GetOverlays` | `test_manipulacao_completa`, `test_sobreposicao` | — |
 | `RemoveOverlay` | `test_manipulacao_completa`, `test_sobreposicao` | — |
 | `ClearOverlays` | `test_manipulacao_completa`, `test_sobreposicao` | — |
-| `LoadPDFWithID` | `diag_xrefstm`, `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir` | `extract`, `merge`, `xref_predictor` |
+| `LoadPDFWithID` | `diag_xrefstm`, `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir`, `test_seguranca` | `extract`, `merge`, `xref_predictor` |
 | `GetLoadedPDFs` | `test_manipulacao_completa`, `test_mesclar_dividir` | — |
-| `UnloadPDF` | `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir` | — |
+| `UnloadPDF` | `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir`, `test_seguranca` | — |
 | `MergePDFs` | `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir` | `merge` |
 | `SplitPDF` | `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir` | — |
 | `ExtractPages` | `diag_xrefstm`, `test_core`, `test_manipulacao_completa`, `test_mesclar_dividir` | `extract`, `xref_predictor` |

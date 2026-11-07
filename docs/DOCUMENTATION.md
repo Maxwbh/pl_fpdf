@@ -807,7 +807,7 @@ em [MIGRATION.md](MIGRATION.md).
 | -20821…-20825 | Overlays | coordenadas, opacidade, imagem ou dimensões inválidas |
 | -20831…-20844 | Multi-PDF | ID não encontrado; especificação de páginas inválida |
 | -20843/-20847/-20848 | PDF 1.5+ | xref em stream, object stream ou predictor que não dá para ler |
-| -20850…-20865 | Segurança | senha, método de criptografia, PDF já protegido |
+| -20850…-20867 | Segurança | senha, método de criptografia, PDF já protegido, PDF cifrado passado ao `LoadPDF` |
 | -20870…-20879 | QR Code | conteúdo vazio, tamanho, nível de correção, capacidade |
 | -20880…-20889 | Código de barras | código vazio, dimensões, simbologia, dígitos |
 | -20890…-20894 | `FlateDecode` | stream inválido ou saída acima do teto |

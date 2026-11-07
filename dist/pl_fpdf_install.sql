@@ -4489,6 +4489,8 @@ procedure AddBarcode(
  * @raises -20802 startxref não encontrado
  * @raises -20803 Tabela xref inválida
  * @raises -20804 Objeto Root não encontrado
+ * @raises -20867 PDF cifrado: decifre com DecryptPDF antes. O LoadPDF lê a
+ *         estrutura, mas não decifra o conteúdo, e as páginas sairiam em branco
  * @example
  *   DECLARE
  *     l_pdf BLOB;
@@ -4957,6 +4959,7 @@ PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
  * @raises -20830 identificador vazio ou longo demais
  * @raises -20800 PDF nulo ou pequeno demais para ser válido
  * @raises -20801 cabeçalho %PDF-x.x ausente ou malformado
+ * @raises -20867 PDF cifrado: decifre com DecryptPDF antes; o ID não é registrado
  * @example
  *   BEGIN
  *     PL_FPDF.LoadPDFWithID('report_jan', l_jan_pdf);
@@ -12155,6 +12158,19 @@ BEGIN
 
   g_root_obj_id := l_root_id;
 
+  -- PDF cifrado: este leitor interpreta a estrutura, mas nao decifra os
+  -- streams. Seguir adiante dava, no OutputModifiedPDF, paginas EM BRANCO e
+  -- nenhum erro -- medido no 26ai com AES-256 e RC4-128. A chave /Encrypt fica
+  -- no trailer, ou no dicionario da xref em stream, e os dois estao neste
+  -- trecho. O [^A-Za-z] separa a chave de /EncryptMetadata, que mora dentro do
+  -- dicionario de cifra e nao no trailer.
+  IF REGEXP_LIKE(l_trailer, '/Encrypt[^A-Za-z]') THEN
+    raise_application_error(-20867,
+      'PDF is encrypted: call DecryptPDF with the password before loading it. '
+      || 'LoadPDF reads the structure but does not decrypt the content, and the '
+      || 'pages would come out blank.');
+  END IF;
+
   log_message(3, 'Trailer parsed: Root=' || g_root_obj_id);
 END parse_trailer;
 
@@ -12237,6 +12253,12 @@ BEGIN
 EXCEPTION
   WHEN OTHERS THEN
     log_message(1, 'Error loading PDF: ' || SQLERRM);
+    -- Recusado por estar cifrado: nada fica meio carregado. Sem isto, o BLOB
+    -- recusado continuava em g_loaded_pdf, com a contagem de paginas do
+    -- documento ANTERIOR, e a chamada seguinte trabalhava sobre essa mistura.
+    IF SQLCODE = -20867 THEN
+      ClearPDFCache;
+    END IF;
     RAISE;
 END LoadPDF;
 
@@ -13235,27 +13257,35 @@ BEGIN
   l_doc.loaded_date := SYSTIMESTAMP;
 
   -- le o PDF para saber quantas paginas tem
+  DECLARE
+    -- guarda o estado corrente, para devolve-lo nos dois caminhos
+    l_saved_blob BLOB := g_loaded_pdf;
+    l_saved_count PLS_INTEGER := g_loaded_page_count;
   BEGIN
-    -- guarda o estado corrente
-    DECLARE
-      l_saved_blob BLOB := g_loaded_pdf;
-      l_saved_count PLS_INTEGER := g_loaded_page_count;
     BEGIN
       -- interpreta este PDF
       LoadPDF(p_pdf_blob);
       l_doc.page_count := g_loaded_page_count;
       l_doc.pdf_version := g_pdf_version;
-
-      -- devolve o estado anterior, se preciso
-      IF l_saved_blob IS NOT NULL THEN
-        g_loaded_pdf := l_saved_blob;
-        g_loaded_page_count := l_saved_count;
-      END IF;
+    EXCEPTION
+      WHEN OTHERS THEN
+        -- PDF cifrado nao e "nao consegui contar as paginas": e um documento
+        -- que entraria no merge com as paginas em branco. Recusa, como o
+        -- LoadPDF, e nao registra o ID.
+        IF SQLCODE = -20867 THEN
+          g_loaded_pdf := l_saved_blob;
+          g_loaded_page_count := l_saved_count;
+          RAISE;
+        END IF;
+        log_message(2, 'Warning: Could not parse PDF ' || p_pdf_id || ': ' || SQLERRM);
+        l_doc.page_count := 0;
     END;
-  EXCEPTION
-    WHEN OTHERS THEN
-      log_message(2, 'Warning: Could not parse PDF ' || p_pdf_id || ': ' || SQLERRM);
-      l_doc.page_count := 0;
+
+    -- devolve o estado anterior, se preciso
+    IF l_saved_blob IS NOT NULL THEN
+      g_loaded_pdf := l_saved_blob;
+      g_loaded_page_count := l_saved_count;
+    END IF;
   END;
 
   -- guarda o documento

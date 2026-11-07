@@ -21,6 +21,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `MultiCell`, `Write` e o overlay ainda consultavam com o caractere cru, e
   mediam errado todo acentuado
 - `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
+- `LoadPDF` aceitava PDF cifrado sem avisar, e o `OutputModifiedPDF` saía com as
+  páginas em branco; agora recusa com `ORA-20867` (o `LoadPDFWithID` também)
 - Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
   último byte
 - `Link` numa página emitia `/Annots` com dicionário aberto nas páginas

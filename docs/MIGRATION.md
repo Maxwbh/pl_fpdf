@@ -28,6 +28,7 @@ nome:
 | `SetUTF8Enabled`, `IsUTF8Enabled` | removidas | apague as chamadas. Elas não faziam nada: a variável era escrita e lida, e nenhum outro ponto a consultava |
 | Caractere fora do WinAnsi numa fonte padrão (ideograma, cirílico, emoji) saía como `?` ou glifo trocado | `ORA-20203`, com a posição | embuta uma fonte TrueType (`AddTTFFont`), ou trate a exceção `PL_FPDF.exc_fora_de_winansi` |
 | `AddLink`, `SetLink`, `Link` com destino numérico | `ORA-20601` (`PL_FPDF.exc_link_nao_suportado`) | use só link para URL. O link interno nunca funcionou: o `/Dest` não era escrito e o arquivo saía malformado |
+| `LoadPDF` / `LoadPDFWithID` com PDF cifrado eram aceitos, e a saída tinha as páginas em branco | `ORA-20867` | decifre antes com `DecryptPDF`, que exige a senha |
 
 ### Muda o resultado
 
