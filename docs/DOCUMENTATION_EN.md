@@ -449,10 +449,12 @@ browser may treat the response as HTML and show the **PDF source on screen** —
 `%PDF-1.3`, `3 0 obj`, `stream`. It looks like character corruption and it is
 not: the file is perfect, it just arrived labelled wrong.
 
-And the symptom misleads because **it depends on the browser**. Firefox and Edge
-sniff the `%PDF-` signature and fix it themselves; Chrome and Opera obey the
-declared type. The same report opens in one and breaks in the other, and it
-disappears once the server sends `X-Content-Type-Options: nosniff`.
+And the symptom misleads because **it may depend on the browser**: when the
+type is missing or wrong, some sniff the `%PDF-` signature and fix it
+themselves, others obey what was declared — and the behaviour changes from
+version to version. The same report may open in one and break in the other, and
+the `X-Content-Type-Options: nosniff` header turns sniffing off. Do not rely on
+it: send the right `Content-Type`.
 
 **Through the PL/SQL gateway (mod_plsql):**
 
@@ -489,6 +491,11 @@ To check in ten seconds: F12 → **Network** tab → reload → click the reques
 **Response Headers**. If `Content-Type` is not `application/pdf`, that is it.
 
 ### Oracle APEX integration
+
+> **How these samples were checked.** They ran on an Oracle 26ai against
+> *stubs* with APEX's own signatures — the PDF, the HTTP headers and the
+> attachment came out right —, but **not** on an installed APEX. Test them on
+> your instance before taking them to production.
 
 Three patterns cover almost everything: open or download the PDF, send it by
 e-mail, and store it for later. One rule applies to all three:
@@ -590,10 +597,8 @@ process (`INSERT ... VALUES (..., l_pdf)`) and serve it with pattern 1, reading
 from the table instead of generating. That is the way for a document that must
 be reissued identically — an invoice, a contract signed elsewhere.
 
-> These snippets use stable APEX APIs (`apex_application`, `apex_mail`) and the
-> gateway's (`owa_util`, `htp`, `wpg_docload`). They were run on an Oracle 26ai
-> against *stubs* with APEX's own signatures — the PDF, the HTTP headers and the
-> attachment came out right —, but not on an installed APEX.
+> The APIs used are APEX's stable ones (`apex_application`, `apex_mail`) and the
+> gateway's (`owa_util`, `htp`, `wpg_docload`).
 
 ---
 

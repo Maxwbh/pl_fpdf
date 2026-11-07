@@ -26,7 +26,15 @@
 
 ## ⚠️ Aviso Importante
 
-Esta é uma **extensão opcional** para PL_FPDF e **NÃO faz parte do projeto oficial PL_FPDF**.
+Esta é uma **extensão opcional**. Ela mora neste repositório e tem o mesmo
+autor, mas fica **fora do pacote principal** do PL_FPDF:
+
+| | Pacote principal (`PL_FPDF`, `PL_FPDF_UTIL`) | Esta extensão |
+|---|---|---|
+| Instalador | `dist/pl_fpdf_install.sql` | à parte: `deploy.sql` |
+| Testes | no CI e nas rodadas contra o Oracle | suítes próprias em `tests/`, rodadas à mão |
+| Suporte | o do [SECURITY.md](../../SECURITY.md) | melhor esforço; issues são bem-vindas |
+| Futuro | segue aqui | deve migrar para um projeto próprio |
 
 Estes pacotes fornecem funcionalidade específica para pagamentos brasileiros:
 - **QR Codes PIX** (EMV QR Code Merchant-Presented Mode)

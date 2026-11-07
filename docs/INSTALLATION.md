@@ -34,8 +34,10 @@ Opcionais, só se você usar o recurso:
 
 | Para | Arquivo |
 |------|---------|
-| **Produção** — a versão estável, 3.3.0 | [`pl_fpdf_install.sql` do release v3.3.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Produção** em Oracle 19c — a versão estável, 3.3.0 | [`pl_fpdf_install.sql` do release v3.3.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Oracle 26ai** | **não há versão estável que funcione**: a 3.3.0 levanta `ORA-29275`. A única que roda é a candidata [v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) — ver a [política para o 26ai](../SECURITY.md#oracle-26ai) |
 | **Testar a 3.4.0** — candidata | [`pl_fpdf_install.sql` do v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) |
+| **Exatamente o que esta documentação descreve** | o [`dist/pl_fpdf_install.sql`](../dist/pl_fpdf_install.sql) da branch que você está lendo — o link segue a branch |
 | **Acompanhar o desenvolvimento** | [`dist/pl_fpdf_install.sql` da `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
 
 Para um chamado de mudança, use sempre o arquivo de um **release**: a URL é
@@ -147,19 +149,62 @@ Três consequências práticas, todas conferidas num Oracle 26ai com dois schema
 ## 7. Atualizar
 
 Rode o instalador da versão nova por cima, no mesmo schema. Ele usa
-`CREATE OR REPLACE`: grants e sinônimos continuam valendo, e o código que chama
-o `PL_FPDF` recompila sozinho na próxima execução.
+`CREATE OR REPLACE`: grants e sinônimos continuam valendo. O roteiro abaixo é o
+que um chamado de mudança costuma pedir.
 
-Duas coisas para planejar:
+**1. A versão instalada hoje**
 
-- **Sessões abertas.** Toda sessão que já tinha usado o `PL_FPDF` recebe, na
-  primeira chamada depois da troca, `ORA-04068: existing state of packages has
-  been discarded` — uma vez só; a chamada seguinte funciona. Em pool de conexões
-  (APEX, ORDS, servidor de aplicação), isso acontece uma vez em cada conexão do
-  pool. Atualize numa janela, ou reinicie o pool depois.
-- **O que mudou entre as versões.** Leia o [guia de migração](MIGRATION.md)
-  antes — da 3.3 para a 3.4, por exemplo, caractere fora do WinAnsi passa a
-  ser recusado em vez de sair trocado.
+```sql
+BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
+/
+```
+
+**2. A versão do Oracle e o charset** — confira-os contra a
+[Compatibilidade](COMPATIBILITY.md) da versão nova:
+
+```sql
+SELECT version_full FROM product_component_version WHERE product LIKE 'Oracle%';
+SELECT value FROM nls_database_parameters WHERE parameter = 'NLS_CHARACTERSET';
+```
+
+**3. Quem depende do PL_FPDF** — o que vai recompilar, e o que testar depois.
+Conectado como o dono; com privilégio de DBA, troque `all_` por `dba_` para
+ver todos os schemas:
+
+```sql
+SELECT owner, name, type
+  FROM all_dependencies
+ WHERE referenced_owner = USER
+   AND referenced_name IN ('PL_FPDF', 'PL_FPDF_UTIL')
+ ORDER BY owner, name;
+```
+
+Leia também o [guia de migração](MIGRATION.md) para o salto que você vai dar —
+da 3.3 para a 3.4, por exemplo, caractere fora do WinAnsi passa a ser recusado
+em vez de sair trocado.
+
+**4. Rodar o instalador e conferir a compilação.** Guarde a saída da execução
+(no SQL\*Plus, `SPOOL`; no PL/SQL Developer, a aba de saída) e confira as
+consultas da [§5](#5-conferir). Os objetos que dependem do PL_FPDF podem ficar
+`INVALID` por um momento: recompilam sozinhos na próxima chamada, e uma
+consulta a `all_objects` com `status = 'INVALID'` mostra se algum não voltou.
+
+**5. Teste funcional.** O teste de fumaça da [§5](#5-conferir) e, sobretudo, um
+documento real da sua aplicação — o que ela mais emite.
+
+**6. Reversão preparada antes.** Baixe e confira o instalador da versão **atual**
+antes de trocar (ver [§8](#8-voltar-uma-versão)): se o passo 4 ou o 5 falhar,
+voltar é rodar esse arquivo.
+
+**Sessões abertas.** Reinstalar descarta o estado do package nas sessões que já
+o usavam. Na próxima chamada, essas sessões recebem `ORA-04068: existing state
+of packages has been discarded` — às vezes acompanhado de `ORA-04061`,
+`ORA-04065` ou `ORA-06508`. Em geral a chamada seguinte já funciona, mas o
+documento que estava sendo montado naquela sessão **se perdeu**: a aplicação
+deve tratar o erro refazendo a operação desde o `Init`, e não continuando de
+onde parou. Em pool de conexões (APEX, ORDS, servidor de aplicação), cada
+conexão do pool passa por isso. Atualize numa janela de manutenção, ou
+reinicie o pool depois.
 
 Vindo de uma versão **anterior à 3.3**, o `PL_FPDF_UTIL` ainda não existe: o
 instalador o cria.

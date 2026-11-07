@@ -449,10 +449,12 @@ navegador pode tratar a resposta como HTML e mostrar o **fonte do PDF na tela**
 — `%PDF-1.3`, `3 0 obj`, `stream`. Parece corrupção de caracteres e não é: o
 arquivo está perfeito, só chegou rotulado errado.
 
-E o sintoma engana porque **depende do navegador**. Firefox e Edge farejam a
-assinatura `%PDF-` e corrigem sozinhos; Chrome e Opera obedecem ao tipo
-declarado. O mesmo relatório abre num e quebra no outro, e some quando o
-servidor manda `X-Content-Type-Options: nosniff`.
+E o sintoma engana porque **pode depender do navegador**: quando o tipo falta
+ou está errado, alguns farejam a assinatura `%PDF-` e corrigem sozinhos, outros
+obedecem ao que foi declarado — e o comportamento muda de versão para versão.
+O mesmo relatório pode abrir num e quebrar no outro, e o cabeçalho
+`X-Content-Type-Options: nosniff` desliga o farejo. Não conte com ele: mande o
+`Content-Type` certo.
 
 **Pelo gateway PL/SQL (mod_plsql):**
 
@@ -490,6 +492,11 @@ requisição → **Response Headers**. Se o `Content-Type` não for
 `application/pdf`, é isso.
 
 ### Integração com o Oracle APEX
+
+> **Como estes exemplos foram conferidos.** Rodaram num Oracle 26ai contra
+> *stubs* com as mesmas assinaturas do APEX — o PDF, os cabeçalhos HTTP e o
+> anexo saíram certos —, mas **não** num APEX instalado. Teste na sua
+> instância antes de levar para produção.
 
 Três padrões cobrem quase tudo: abrir ou baixar o PDF, mandar por e-mail, e
 guardar para depois. Uma regra vale para os três:
@@ -591,10 +598,8 @@ página é confirmada — o processo não faz `COMMIT`; quem faz é o APEX.
 vez de gerar. É o caminho para documento que precisa ser reemitido igual —
 uma nota, um contrato assinado à parte.
 
-> Estes trechos usam APIs estáveis do APEX (`apex_application`, `apex_mail`) e
-> do gateway (`owa_util`, `htp`, `wpg_docload`). Foram executados num Oracle
-> 26ai contra *stubs* com as mesmas assinaturas do APEX — o PDF, os cabeçalhos
-> HTTP e o anexo saíram certos —, mas não num APEX instalado.
+> As APIs usadas são as estáveis do APEX (`apex_application`, `apex_mail`) e do
+> gateway (`owa_util`, `htp`, `wpg_docload`).
 
 ---
 

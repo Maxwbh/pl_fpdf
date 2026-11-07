@@ -23,7 +23,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | `INVALID` objects after installing | a compilation error | `SELECT * FROM user_errors WHERE name LIKE 'PL_FPDF%'`. Databases before 19c are not supported |
 | `PLS-00201: identifier 'PL_FPDF_UTIL' must be declared` | installing from the clone in the wrong order | compile `PL_FPDF_UTIL` before `PL_FPDF` — or use `dist/pl_fpdf_install.sql`, which comes in the right order |
 | `ORA-06553: PLS-221: 'CO_VERSION' is not a procedure` | `SELECT PL_FPDF.co_version FROM DUAL` | a package constant cannot be read from SQL. Use the block at the top of this page |
-| `ORA-04068: existing state of packages has been discarded` | the package was reinstalled while the session was using it | normal after an upgrade: it happens once per session (in a pool, once per connection). Repeat the call |
+| `ORA-04068: existing state of packages has been discarded` (sometimes with `ORA-04061`, `ORA-04065` or `ORA-06508`) | the package was reinstalled or recompiled while the session was using it | expected after an upgrade, in every session that was using it — in a pool, in every connection. The document being built in that session is lost: redo the operation from `Init`. See [Installation §7](INSTALLATION_EN.md#7-upgrading) |
 | `PLS-00201: identifier 'PL_FPDF' must be declared` in another schema | missing grant or synonym | `GRANT EXECUTE ON PL_FPDF TO app` and a synonym — see [Installation §6](INSTALLATION_EN.md#6-using-it-from-another-schema) |
 | `ORA-29275: partial multibyte character` on the first `SetFont` | 3.3.0 (or 3.4.0-rc1) on an Oracle **26ai** with AL32UTF8 | install 3.4.0 (v3.4.0-rc2 or later) — see [Compatibility](COMPATIBILITY_EN.md#1-oracle-versions) |
 
@@ -48,7 +48,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | You see | Cause | What to do |
 |---------|-------|------------|
 | The browser shows the PDF **source** (`%PDF-1.4`, `obj`, `stream`) | a response without `Content-Type: application/pdf` | send the header before the BLOB — see [Delivering the PDF to a browser](DOCUMENTATION_EN.md#delivering-the-pdf-to-a-browser) |
-| Opens in Firefox and Edge, breaks in Chrome | the same problem: Firefox and Edge guess the type, Chrome obeys the declared one | the same fix |
+| Opens in one browser and not in another | most likely the same problem: browsers differ in how much they guess the type when `Content-Type` is missing or wrong, and that changes from version to version | the same fix. Check the response headers (F12 → Network) before suspecting the PDF |
 | The downloaded file is corrupted | something was written to the HTTP buffer **before** the header (a debug `htp.p`, an exception message), or `Content-Length` does not match | build the whole PDF before writing any header; in APEX, finish with `apex_application.stop_apex_engine` |
 
 ## Reading and manipulating PDF

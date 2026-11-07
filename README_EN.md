@@ -72,8 +72,10 @@ Generate and manipulate PDFs **directly in Oracle Database** - no Java, no exter
 
 | For | Download |
 |-----|----------|
-| **Production** — the stable version, 3.3.0 | the [v3.3.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) — except on **Oracle 26ai**, where 3.3.0 does not work: there, use 3.4.0 |
+| **Production** on Oracle 19c — the stable version, 3.3.0 | the [v3.3.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Oracle 26ai** | **no stable version works** (3.3.0 raises `ORA-29275`). The only one that runs is the [v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2) candidate — see the [26ai policy](SECURITY.md#oracle-26ai) |
 | **Trying 3.4.0** — candidate, still under test | the [v3.4.0-rc2 `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2), or [`dist/` on `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
+| **Exactly what this page describes** | the [`dist/pl_fpdf_install.sql`](dist/pl_fpdf_install.sql) of the branch you are viewing — the link follows the branch |
 
 `master` follows development and already carries 3.4.0; it is **not** the
 stable version. This page describes 3.4.0, and what exists only there is marked
@@ -353,6 +355,7 @@ English, by task.
 | [docs/MIGRATION_EN.md](docs/MIGRATION_EN.md) | What changes from one version to the next, 0.9.4 to 3.4.0 |
 | [docs/TROUBLESHOOTING_EN.md](docs/TROUBLESHOOTING_EN.md) | Common problems, by error message or symptom |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | Signature, parameters and errors of each API |
+| [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | The same reference in Portuguese (generated) |
 | [API reference on the site](https://maxwbh.github.io/pl_fpdf/en/reference.html) | The same reference, browsable, in English |
 | [API index on the site](https://maxwbh.github.io/pl_fpdf/en/api.html) | Task-oriented index, in English |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |

@@ -4,12 +4,28 @@
 
 | Version | Status | Security fixes |
 | ------- | ------ | -------------- |
-| 3.4.0-rc (pre-release) | Under test — not for production | Accepted; fixed before the final 3.4.0 |
+| 3.4.0-rc (pre-release) | Under test — not for production, except on Oracle 26ai (below) | Accepted; fixed before the final 3.4.0 |
 | 3.3.x   | Latest stable release | :white_check_mark: |
 | < 3.3   | Historical | :x: — upgrade to 3.3.x |
 
 Only the latest stable line gets fixes. A pre-release (`-rc`) is published to be
-tested: report what you find in it, but do not run it in production.
+tested: report what you find in it, but do not run it in production — with the
+one exception below.
+
+### Oracle 26ai
+
+On Oracle 26ai with AL32UTF8, **no stable release works**: 3.3.x raises
+`ORA-29275` on every standard-font `SetFont` (see
+[COMPATIBILITY](docs/COMPATIBILITY_EN.md#1-oracle-versions)). Until the final
+3.4.0 is out:
+
+- the latest 3.4.0 pre-release is the **only** version that runs on 26ai, and
+  it is the one that receives fixes for that environment;
+- running it in production on 26ai is a decision for whoever operates the
+  database, made knowing it is a candidate: pin the exact release
+  (`v3.4.0-rc2`, with its `SHA256.txt`), not `master`;
+- security reports against it are handled like reports against a stable
+  release, and the fix ships in the next pre-release or in the final 3.4.0.
 
 ## Reporting a Vulnerability
 
@@ -22,11 +38,29 @@ tested: report what you find in it, but do not run it in production.
    - Steps to reproduce — for a parsing issue, the PDF that triggers it
    - Suggested fix (if any)
 
+The e-mail above is the **private channel**: nothing reported there is made
+public before a fix is available, unless you and the maintainer agree
+otherwise.
+
 ### What to Expect
 
 - **Response Time**: Within 48 hours
 - **Updates**: Regular updates on the status
 - **Credit**: Recognition in release notes (unless you prefer anonymity)
+
+### Severity
+
+Reports are triaged by what an attacker gains, in this order:
+
+| Severity | Examples |
+|----------|----------|
+| **Critical** | code or SQL execution through the library; reading data outside the BLOB or the session it was given |
+| **High** | an encrypted file that opens without the password; key material or passwords leaking into the output or the logs |
+| **Medium** | a crafted PDF that hangs the session or exhausts memory past the documented ceilings |
+| **Low** | a permission flag written differently from what was requested; hardening with no exploit shown |
+
+Fixes go to the supported versions in the table above, highest severity first,
+and are announced in the release notes with the affected versions.
 
 ## Scope
 
@@ -43,7 +77,10 @@ promise:
   parameter default for the same reason. Pass `p_encryption => 'AES-256'`.
 - Permissions (print, copy, modify…) are flags that **viewers are expected to
   honour**. Anyone with the owner password — or a non-compliant tool — can
-  ignore them. This is how the PDF standard works, not a defect.
+  ignore them. This is how the PDF standard works, not a defect. They are
+  **not** a data-loss-prevention control: someone who can open a document can
+  photograph, retype or re-render it. If the content must not leave, do not
+  hand out the document.
 - In scope: wrong key derivation, a file that opens without the user password,
   a permission flag written differently from what was requested, password
   material leaking into the output or into log messages.
@@ -59,6 +96,12 @@ parse input you may not control.
   compression bombs.
 - The document as a whole is processed in session memory (PGA and temporary
   LOBs). Limit the size of what you accept **before** calling `LoadPDF`.
+- Before parsing a file you did not produce, check **where it came from**, its
+  **size** (`DBMS_LOB.GETLENGTH`) and that it **starts with `%PDF-`**; reject
+  encrypted input up front with `IsEncrypted` unless you mean to call
+  `DecryptPDF` — `LoadPDF` does not decrypt, and silently yields blank pages.
+  The same applies to images and fonts: bound their size before `ImageFromBlob`
+  or `AddTTFFont`.
 - In scope: a crafted PDF that makes the parser loop forever, exhaust memory
   past those ceilings, read outside the BLOB, or execute anything.
 

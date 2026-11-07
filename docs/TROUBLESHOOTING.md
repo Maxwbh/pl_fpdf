@@ -24,7 +24,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | Objetos `INVALID` depois de instalar | erro de compilação | `SELECT * FROM user_errors WHERE name LIKE 'PL_FPDF%'`. Banco anterior ao 19c não é suportado |
 | `PLS-00201: identifier 'PL_FPDF_UTIL' must be declared` | instalação pelo clone na ordem errada | compile o `PL_FPDF_UTIL` antes do `PL_FPDF` — ou use o `dist/pl_fpdf_install.sql`, que já vem na ordem |
 | `ORA-06553: PLS-221: 'CO_VERSION' is not a procedure` | `SELECT PL_FPDF.co_version FROM DUAL` | constante de package não se lê em SQL. Use o bloco do topo desta página |
-| `ORA-04068: existing state of packages has been discarded` | o package foi reinstalado enquanto a sessão o usava | normal depois de atualizar: acontece uma vez por sessão (em pool, uma vez por conexão). Repita a chamada |
+| `ORA-04068: existing state of packages has been discarded` (às vezes com `ORA-04061`, `ORA-04065` ou `ORA-06508`) | o package foi reinstalado ou recompilado enquanto a sessão o usava | esperado depois de atualizar, em cada sessão que já o usava — em pool, em cada conexão. O documento em montagem naquela sessão se perdeu: refaça a operação desde o `Init`. Ver [Instalação §7](INSTALLATION.md#7-atualizar) |
 | `PLS-00201: identifier 'PL_FPDF' must be declared` em outro schema | falta grant ou sinônimo | `GRANT EXECUTE ON PL_FPDF TO app` e um sinônimo — ver [Instalação §6](INSTALLATION.md#6-usar-a-partir-de-outro-schema) |
 | `ORA-29275: partial multibyte character` no primeiro `SetFont` | 3.3.0 (ou 3.4.0-rc1) num Oracle **26ai** com AL32UTF8 | instale a 3.4.0 (v3.4.0-rc2 ou mais nova) — ver [Compatibilidade](COMPATIBILITY.md#1-versões-do-oracle) |
 
@@ -49,7 +49,7 @@ BEGIN DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version); END;
 | Você vê | Causa | O que fazer |
 |---------|-------|-------------|
 | O navegador mostra o **fonte** do PDF (`%PDF-1.4`, `obj`, `stream`) | resposta sem `Content-Type: application/pdf` | mande o cabeçalho antes do BLOB — ver [Entregar o PDF a um navegador](DOCUMENTATION.md#entregar-o-pdf-a-um-navegador) |
-| Abre no Firefox e no Edge, quebra no Chrome | o mesmo problema: Firefox e Edge adivinham o tipo, Chrome obedece ao declarado | o mesmo conserto |
+| Abre num navegador e não em outro | provavelmente o mesmo problema: navegadores diferem em quanto adivinham o tipo quando o `Content-Type` falta ou está errado, e isso muda de versão para versão | o mesmo conserto. Confira os cabeçalhos da resposta (F12 → Network) antes de suspeitar do PDF |
 | Arquivo baixado vem corrompido | algo foi escrito no buffer HTTP **antes** do cabeçalho (`htp.p` de depuração, mensagem de exceção), ou o `Content-Length` não bate | gere o PDF inteiro antes de escrever qualquer cabeçalho; no APEX, encerre com `apex_application.stop_apex_engine` |
 
 ## Lendo e manipulando PDF

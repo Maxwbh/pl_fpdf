@@ -11,8 +11,8 @@ says "not tested", not "compatible".
 
 | Oracle | 3.3.0 (stable) | 3.4.0 (candidate) |
 |--------|----------------|-------------------|
-| 19c, AL32UTF8 | works | the full suite runs on every change |
-| 26ai (23.26), AL32UTF8 | **does not work**: every `SetFont` with a standard font raises `ORA-29275` | the full suite passed: 346 tests, 0 failures (2026-11-07, v3.4.0-rc2) |
+| 19c, AL32UTF8 | works | the full suite passed (maintainer's run) |
+| 26ai (23.26), AL32UTF8 | **does not work**: every `SetFont` with a standard font raises `ORA-29275` | the full suite passed — see the evidence below |
 | 21c; 23ai releases before 26ai | not tested | not tested |
 | 18c and earlier | not supported | not supported |
 
@@ -23,7 +23,24 @@ character set, and on 26ai with AL32UTF8 the bytes that open a UTF-8 sequence
 `CHR` returns the raw byte without complaint. 3.4.0 indexes the table by byte,
 with no `CHR`. Measured on both databases, with each version's installer.
 
-**In short:** on 26ai, use 3.4.0 (today, v3.4.0-rc2).
+**In short:** on 26ai there is **no stable version that works** today. The
+only one that runs there is the v3.4.0-rc2 candidate — use it knowing it is a
+candidate, or wait for the final 3.4.0. The policy for this case is in
+[SECURITY.md](../SECURITY.md#oracle-26ai).
+
+### Evidence from the 26ai run
+
+| | |
+|---|---|
+| Database | Oracle AI Database 26ai Free 23.26.3.0.0, image `gvenzl/oracle-free:23.26.3-faststart`, PDB `FREEPDB1`, AL32UTF8 |
+| Code | the `src/` of tag `v3.4.0-rc2` (commit `0b3ca59`) — identical to the current `src/` |
+| Command | `python dev/scripts/run_tests.py --full`, on the container's application schema |
+| Result | 346 checks passed, 0 failed, 2 skipped; 29 PDFs generated in the database and checked by MuPDF and zxing-cpp |
+| The 2 skipped | in `test_compat_legado`: the legacy `Output` writes to `DIRECTORY PDF_DIR`, which the test schema does not have; and the absence of the demo routines, checked another way |
+| Date | 2026-11-07 |
+
+The 19c run is the maintainer's, on their environment; the number of checks
+changes with every test added, so the table does not pin it.
 
 ## 2. Database character set
 
@@ -32,19 +49,32 @@ with no `CHR`. Measured on both databases, with each version's installer.
 | AL32UTF8 | tested on 19c and 26ai |
 | Single-byte (WE8MSWIN1252, WE8ISO8859P1…) | outside the regular runs: not tested on 3.4.0 |
 
-The database character set does not limit what goes into the PDF: text is
-converted to the font's encoding when it is written.
+On AL32UTF8, text is converted to the font's encoding when it is written, and
+the limit is the font's (section 3). On another character set there is a limit
+before that one: only what the database can hold in a `VARCHAR2` reaches
+PL_FPDF — and that path is not covered by the tests.
 
 ## 3. Text and fonts
 
-| Font | What it writes |
-|------|----------------|
-| The 14 standard PDF fonts (Helvetica, Times, Courier, Symbol, ZapfDingbats) | the WinAnsi (cp1252) repertoire: Portuguese, Spanish, French, German and the other Western European languages |
-| Embedded TrueType (`AddTTFFont`, `LoadTTFFromFile`) | whatever the font has |
+| Font | Encoding | What it writes |
+|------|----------|----------------|
+| Helvetica, Times, Courier, in all four styles (Arial is Helvetica) | WinAnsi (cp1252), declared in the PDF | Portuguese, Spanish, French, German and the other Western European languages |
+| Symbol | the font's own — the PDF does **not** declare WinAnsi | Greek letters and math symbols, picked **by code** |
+| ZapfDingbats | the font's own — the PDF does **not** declare WinAnsi | ornaments and bullets, picked **by code** |
+| Embedded TrueType (`AddTTFFont`, `LoadTTFFromFile`) | per the font's Unicode mapping (`cmap`) | whatever the font has |
 
 A character outside WinAnsi in a standard font — an ideogram, Cyrillic, an
 emoji — is **refused** with `ORA-20203` and its position (3.4.0). For those
 scripts, embed a TrueType font.
+
+**Symbol and ZapfDingbats pick the glyph by code, not by character.** Text goes
+through the same conversion as the other fonts, and the resulting byte indexes
+the font's own encoding. Measured on 26ai: in Symbol, `'abgp'` comes out as
+`αβγπ`; but `'α'`, passed as a Greek letter, raises `ORA-20203`, because it
+does not exist in WinAnsi. In ZapfDingbats, `'3'` draws the check mark; `'✓'`
+raises `ORA-20203`. Look up the font's code table, and keep in mind that text
+copied from the PDF does not carry the symbol — these fonts go out with no
+Unicode map.
 
 ## 4. The generated PDF
 

@@ -12,12 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Corrigido
 - Texto acentuado saía com dois glifos nas fontes padrão: o documento declarava
   WinAnsi e recebia UTF-8 cru. `Cell`, `MultiCell`, `Write`, `Text` e overlays
+  passam a converter o texto para WinAnsi antes de escrever
 - `GetStringWidth` levantava `ORA-06502` com acento — logo, centralizar ou
   alinhar à direita quebrava
 - A tabela de larguras era montada com `chr(i)` e passa a ser indexada pelo
   byte WinAnsi: no 26ai em AL32UTF8, o `CHR` dos bytes que abrem sequência UTF-8
-  (194 a 244) levanta `ORA-29275` na primeira chamada que carrega uma métrica. `MultiCell`, `Write` e o overlay
-  ainda consultavam com o caractere cru, e mediam errado todo acentuado
+  (194 a 244) levanta `ORA-29275` na primeira chamada que carrega uma métrica.
+  `MultiCell`, `Write` e o overlay ainda consultavam com o caractere cru, e
+  mediam errado todo acentuado
 - `Image` recusava todo PNG com "Not a PNG file" em banco AL32UTF8
 - Stream de imagem saía em hexadecimal sem filtro declarado, e o laço perdia o
   último byte
@@ -75,20 +77,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased] - Planned 📋
+## [Não lançado]
 
-### 🎯 Advanced Page Operations
-
-**Status:** Planned - Q2 2026
-
-### Planned Features
-
-- `InsertPagesFrom()` - Insert pages from another PDF at specific position
-- `PrependPages()` / `AppendPages()` - Insert pages at beginning/end
-- `ReorderPages()` - Reorder pages by new sequence
-- `ReplacePage()` - Replace page content from another PDF
-- `DuplicatePage()` - Copy page within or across documents
-- `BatchProcess()` - Apply same operations to multiple PDFs
+O que está planejado, e em que ordem, fica no [ROADMAP](docs/ROADMAP.md). As
+"operações avançadas de página" que este espaço anunciava para o 2º trimestre
+de 2026 não saíram, e foram para o backlog de lá, sem data.
 
 ---
 

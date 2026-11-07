@@ -26,7 +26,15 @@
 
 ## ⚠️ Important Notice
 
-This is an **optional extension** for PL_FPDF and is **NOT part of the official PL_FPDF project**.
+This is an **optional extension**. It lives in this repository and has the
+same author, but sits **outside the PL_FPDF core package**:
+
+| | Core package (`PL_FPDF`, `PL_FPDF_UTIL`) | This extension |
+|---|---|---|
+| Installer | `dist/pl_fpdf_install.sql` | separate: `deploy.sql` |
+| Tests | in CI and in the runs against Oracle | its own suites in `tests/`, run by hand |
+| Support | per [SECURITY.md](../../SECURITY.md) | best effort; issues are welcome |
+| Future | stays here | should move to a project of its own |
 
 These packages provide Brazilian-specific payment functionality:
 - **PIX QR Codes** (EMV QR Code Merchant-Presented Mode)
