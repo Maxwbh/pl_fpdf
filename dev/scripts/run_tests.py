@@ -198,6 +198,15 @@ def rodar_testes(con, arquivos, verboso=False):
                     do_arq['FAIL'] += 1
                     falhas.append((nome, f'bloco {i} não executou: {msg}'))
                     linhas_arq.append(f'*** bloco {i} não executou: {msg}')
+                    # O que o bloco imprimiu ANTES de levantar continua no
+                    # buffer do DBMS_OUTPUT da sessão. Sem esvaziá-lo aqui, o
+                    # próximo arquivo lia essas linhas como se fossem dele, e
+                    # um [FAIL] daqui virava falha de lá: na rodada da 26ai o
+                    # diag_winansi quebrou e o diag_xrefstm, que tinha passado
+                    # inteiro, apareceu com 12/13. As linhas ficam com o
+                    # arquivo dono, para mostrar onde parou, mas não se contam
+                    # de novo: a falha já foi contada uma vez, logo acima.
+                    linhas_arq.extend(saida_do_servidor(con))
                     continue
             linhas = saida_do_servidor(con)
             linhas_arq.extend(linhas)
