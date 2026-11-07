@@ -49,7 +49,7 @@
     "url": "https://github.com/Maxwbh"
   },
   "isBasedOn": "https://github.com/Pilooz/pl_fpdf",
-  "softwareVersion": "3.4.0",
+  "softwareVersion": "{{VERSAO_ESTAVEL}}",
   "inLanguage": "pt-BR",
   "url": "https://maxwbh.github.io/pl_fpdf/"
 }
@@ -254,7 +254,8 @@
   .stat{background:var(--cardbg);padding:24px 18px;text-align:center}
   .stat b{display:block;font-size:28px;font-weight:900;letter-spacing:-.6px}
   .stat b em{color:var(--accent);font-style:normal}
-  .stat span{font-size:13px;color:var(--faint)}
+  /* --muted, e nao --faint: no tema escuro o --faint sobre o cartao dava 4,28:1 */
+  .stat span{font-size:13px;color:var(--muted)}
 
   /* ============ seções ============ */
   section{padding:80px 0 6px;scroll-margin-top:78px}
@@ -382,11 +383,24 @@
   @media (max-width: 620px){
     .grid{grid-template-columns:1fr}
     .nav-links a.hide-m{display:none}
+    .nav-links{gap:12px}
+    .nav-links a{font-size:13.5px}
+    .gh-btn .txt{display:none}
+  }
+  @media (max-width: 440px){
+    .gh-btn{display:none}
     .pdf-sheet{width:110px;top:-24px}
   }
+  /* acessibilidade: o link de pular aparece so no foco; o foco e sempre visivel */
+  .skip{position:absolute;left:-9999px;top:8px;z-index:1000;padding:10px 14px;border-radius:10px;
+        background:var(--accent);color:#fff;font-weight:700;text-decoration:none}
+  .skip:focus{left:12px}
+  a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible,[tabindex]:focus-visible{
+    outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
 </style>
 </head>
 <body>
+<a class="skip" href="#conteudo">Pular para o conteúdo</a>
 
 <div class="backdrop" aria-hidden="true">
   <div class="orb a"></div><div class="orb b"></div><div class="orb c"></div>
@@ -409,17 +423,18 @@
       <a class="hide-m" href="#instalacao">Instalação</a>
       <a href="api.html">API</a>
       <a href="reference.html">Referência</a>
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/docs/README.md" title="Documentação: instalação, compatibilidade, migração, problemas comuns">Docs</a>
       <a href="en/index.html" hreflang="en" title="English version">EN</a>
-      <a class="gh-btn" href="https://github.com/Maxwbh/pl_fpdf">
+      <a class="gh-btn" href="https://github.com/Maxwbh/pl_fpdf" aria-label="GitHub">
         <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
-        GitHub
+        <span class="txt">GitHub</span>
       </a>
     </div>
   </div>
 </nav>
 
 <div class="wrap">
-<main>
+<main id="conteudo">
 
   <!-- HERO -->
   <div class="hero">

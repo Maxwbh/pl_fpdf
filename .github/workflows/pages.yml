@@ -34,6 +34,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # Antes de publicar, fecha o ciclo spec -> documentacao gerada -> release
+      # -> site: o HTML esta em dia com a spec, todo link interno existe, a
+      # versao anunciada bate com o codigo e com os releases do GitHub, e os
+      # links de download respondem. Falhou, nao publica.
+      - name: O site em dia com a spec
+        run: python dev/scripts/gen_docs/generate.py --check
+      - name: Links internos
+        run: python dev/scripts/gen_docs/check_links.py
+      - name: Versão anunciada x código x releases publicados
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python dev/scripts/gen_docs/check_publicacao.py --online
+      - name: Links de release, instalador e site respondem
+        run: python dev/scripts/gen_docs/check_links_externos.py
+
       - uses: actions/configure-pages@v5
 
       - uses: actions/upload-pages-artifact@v3

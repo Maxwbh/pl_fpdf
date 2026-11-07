@@ -28,6 +28,43 @@ ULTIMO_RELEASE = '3.3.0'
 # Quando a 3.4.0 final sair: ULTIMO_RELEASE = '3.4.0' e isto volta a None.
 ULTIMA_CANDIDATA = 'v3.4.0-rc2'
 
+
+# Como o site ANUNCIA a versao -- um lugar so para o chip do topo, o destaque,
+# o cabecalho da API e da referencia e o dado estruturado. Antes, o chip e o
+# destaque mostravam o co_version como "versao atual": com a 3.4.0 ainda
+# candidata, o visitante entendia que ela ja era a estavel. Com candidata, o
+# chip diz que e pre-lancamento e o destaque mostra a estavel; sem candidata,
+# volta a ser o numero do package.
+CHIP_CANDIDATA = ("{candidata} · pré-lançamento", "{candidata} · pre-release")
+STAT_ESTAVEL = ("<em>{release}</em>", ("versão estável", "stable version"))
+KICKER_CANDIDATA = ("{candidata} · pré-lançamento · estável {release} · Oracle 19c+",
+                    "{candidata} · pre-release · stable {release} · Oracle 19c+")
+KICKER = "v{versao} · Oracle 19c+"
+
+
+def versao_do_package():
+    import io as _io
+    import os as _os
+    import re as _re
+    raiz = _os.path.dirname(_os.path.dirname(_os.path.dirname(_os.path.dirname(
+        _os.path.abspath(__file__)))))
+    t = _io.open(_os.path.join(raiz, 'src', 'PL_FPDF.pks'), encoding='utf-8').read()
+    return _re.search(r"co_version\s+CONSTANT\s+VARCHAR2\(\d+\)\s*:=\s*'([^']+)'",
+                      t, _re.I).group(1)
+
+
+def rotulo_chip(versao, k):
+    if ULTIMA_CANDIDATA:
+        return CHIP_CANDIDATA[k].format(candidata=ULTIMA_CANDIDATA)
+    return f'v{versao}'
+
+
+def kicker(versao, k):
+    if ULTIMA_CANDIDATA:
+        return KICKER_CANDIDATA[k].format(candidata=ULTIMA_CANDIDATA,
+                                          release=ULTIMO_RELEASE)
+    return KICKER.format(versao=versao)
+
 # O FORMATO do SHA256.txt mudou com o release, e o comando de conferencia tem
 # de acompanhar o release que a pagina CITA, nao o package. Ate a 3.3.0 o
 # workflow gravava so a soma, sem o nome do arquivo, e o `sha256sum -c` recusa
@@ -366,7 +403,12 @@ INSTALACAO = {
             'texto': ("Sem clone: o instalador completo em um <code>.sql</code>, com o SHA-256 ao lado.",
                       "No clone: the whole installer in a single <code>.sql</code>, with its SHA-256 beside it."),
             'codigo': "<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql\">pl_fpdf_install.sql</a>",
-            'depois': ("Sempre a última versão publicada.", "Always the latest published version."),
+            # O "latest" do GitHub nao inclui pre-lancamento: este link nunca
+            # entrega a candidata, e o texto tem de dizer isso.
+            'depois': ("A versão estável mais recente — o “latest” do GitHub não inclui pré-lançamentos.",
+                       "The latest stable version — GitHub's “latest” never includes pre-releases."),
+            'depois_candidata': ("Para testar a candidata {candidata}, baixe da página dela, no aviso acima.",
+                                 "To try the {candidata} candidate, download it from its page, in the notice above."),
         },
         {
             'titulo': ("Execute", "Run it"),

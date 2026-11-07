@@ -98,6 +98,7 @@ ROTULOS_PT = {
     'sobrecarga_outra': ('A sobrecarga acima tem assinatura própria; o bloco '
                          'de documentação é o da primeira.'),
     'desde': 'Desde a versão',
+    'link_perm': 'Link permanente para',
     'so_na': 'só na {v}, ainda candidata — não existe na {estavel}, a estável',
 }
 
@@ -113,6 +114,7 @@ ROTULOS_EN = {
     'sobrecarga_outra': ('The overload above has a signature of its own; the '
                          'documentation block is the first one’s.'),
     'desde': 'Since version',
+    'link_perm': 'Permanent link to',
     'so_na': 'only in {v}, still a candidate — not in {estavel}, the stable one',
 }
 
@@ -155,7 +157,7 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
     alvo = nome.lower()
     o = [f'<article class="api" id="{alvo}">',
          f'<h3>{esc(nome)} <span class="kind">{tipo}</span>'
-         f'<a class="anchor" href="#{alvo}" aria-label="link">#</a></h3>',
+         f'<a class="anchor" href="#{alvo}" aria-label="{rot["link_perm"]} {esc(nome)}">#</a></h3>',
          f'<p class="d">{esc(a["descricao"])}</p>']
     v, aviso = desde(a, rot)
     if v:
@@ -264,8 +266,12 @@ def pagina(api, categorias, veja_tambem, sintaxe, compativel=None,
         if marca not in molde:
             raise SystemExit(f'{os.path.basename(molde_arq or MOLDE)} perdeu '
                              f'o marcador {marca}')
+    import conteudo_index
+    k = 1 if rot is ROTULOS_EN else 0
     pagina = (molde.replace('{{LATERAL}}', '\n'.join(lateral))
-                   .replace('{{ARTIGOS}}', '\n'.join(artigos)))
+                   .replace('{{ARTIGOS}}', '\n'.join(artigos))
+                   .replace('{{KICKER}}', esc(conteudo_index.kicker(
+                       conteudo_index.versao_do_package(), k))))
     conferir_estrutura(pagina, n_artigos, len(categorias))
     return pagina
 

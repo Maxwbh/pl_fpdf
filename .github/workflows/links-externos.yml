@@ -26,3 +26,7 @@ jobs:
           python-version: "3.11"
       - name: Releases, instalador e site
         run: python dev/scripts/gen_docs/check_links_externos.py
+      - name: Versão anunciada x releases publicados
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python dev/scripts/gen_docs/check_publicacao.py --online

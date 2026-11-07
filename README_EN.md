@@ -1,7 +1,8 @@
 # PL_FPDF
 
 <p align="center">
-  <img src="https://img.shields.io/badge/version-3.4.0-blue.svg" alt="Version">
+  <img src="https://img.shields.io/badge/version-3.4.0--rc2%20candidate-orange.svg" alt="Version 3.4.0-rc2, candidate">
+  <img src="https://img.shields.io/badge/stable-3.3.0-blue.svg" alt="Stable version 3.3.0">
   <img src="https://img.shields.io/badge/oracle-19c%2B-red.svg" alt="Oracle">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-green.svg" alt="License"></a>
   <img src="https://img.shields.io/badge/security-AES--256-brightgreen.svg" alt="Security">

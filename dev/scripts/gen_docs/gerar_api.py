@@ -17,6 +17,7 @@ import io
 import os
 import re
 
+import conteudo_index  # noqa: E402
 import gerar_html
 from gerar_html import esc
 
@@ -136,7 +137,9 @@ def pagina(secoes, nota_topo, k):
             raise SystemExit(f'o molde de api.html perdeu o marcador {marca}')
     saida = (molde.replace('{{INDICE}}', '\n'.join(indice))
                   .replace('{{NOTA}}', f'<p class="note">{nota_topo[k]}</p>')
-                  .replace('{{SECOES}}', corpo))
+                  .replace('{{SECOES}}', corpo)
+                  .replace('{{KICKER}}', esc(conteudo_index.kicker(
+                      conteudo_index.versao_do_package(), k))))
     gerar_html.conferir_tags(saida, 'api.html')
     n = len(re.findall(r'<section id="', saida))
     if n != len(secoes):
