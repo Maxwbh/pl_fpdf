@@ -72,7 +72,7 @@ Generate and manipulate PDFs **directly in Oracle Database** - no Java, no exter
 
 | For | Download |
 |-----|----------|
-| **Production** — the stable version, 3.3.0 | the [v3.3.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Production** — the stable version, 3.3.0 | the [v3.3.0 release `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) — except on **Oracle 26ai**, where 3.3.0 does not work: there, use 3.4.0 |
 | **Trying 3.4.0** — candidate, still under test | the [v3.4.0-rc2 `pl_fpdf_install.sql`](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2), or [`dist/` on `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
 
 `master` follows development and already carries 3.4.0; it is **not** the
@@ -104,12 +104,10 @@ END;
 packages will live. Nothing else — in particular, **no**
 `GRANT EXECUTE ON SYS.DBMS_CRYPTO` is needed.
 
-| Oracle | 3.4.0 status |
-|--------|--------------|
-| 19c | the full suite runs on every change |
-| 26ai (23.26) | the full suite passed: 346 tests, 0 failures (2026-11-07) |
-| 21c, 23ai releases before 26ai | not tested |
-| 18c and earlier | not supported |
+3.4.0 passes the full suite on 19c and 26ai; what was measured on each Oracle
+version and character set is in [Compatibility](docs/COMPATIBILITY_EN.md).
+Checking the installation, granting access to other schemas, upgrading and
+uninstalling: [Installation](docs/INSTALLATION_EN.md).
 
 **No external dependencies, not even for encryption.** `EncryptPDF`/`DecryptPDF` use MD5 and SHA via `STANDARD_HASH` (native SQL functions); RC4 and AES are implemented in the package itself.
 
@@ -287,10 +285,14 @@ pl_fpdf/
 │   └── ticket.sql                # event ticket: colour, QR + Code 39, multi-page
 │
 ├── docs/
-│   ├── DOCUMENTATION.md          # usage reference, one example per API (PT)
-│   ├── DOCUMENTATION_EN.md       # the same guide in English
-│   ├── API_REFERENCE.md          # signature, parameters and errors (generated)
-│   └── API_REFERENCE_EN.md       # the same reference in English (generated)
+│   ├── README.md                 # documentation index, PT and EN
+│   ├── INSTALLATION_EN.md        # install, check, upgrade, uninstall
+│   ├── COMPATIBILITY_EN.md       # Oracle, character set and PDF: what was measured
+│   ├── DOCUMENTATION_EN.md       # usage reference, one example per API
+│   ├── API_REFERENCE_EN.md       # signature, parameters and errors (generated)
+│   ├── MIGRATION_EN.md           # what changes between versions
+│   ├── TROUBLESHOOTING_EN.md     # common problems, by symptom
+│   └── *.md (no _EN)             # each guide above, in Portuguese
 │
 ├── extensions/                   # optional, install only if you use it
 │   └── brazilian-payments/       # PIX (EMV QR) and Boleto (FEBRABAN)
@@ -319,14 +321,37 @@ if it falls behind:
 
 ---
 
+## Limitations
+
+What the library does **not** do, so you do not find out late:
+
+| | |
+|---|---|
+| **Digital signature** | there is none. Password and AES-256 **protect** the document; signing with a certificate (PAdES, ICP-Brasil) is something else and out of scope |
+| **JavaScript in the PDF** | neither generated nor preserved |
+| **Forms (AcroForm)** | neither filled nor created |
+| **Per-session state** | the package keeps the document in session memory. Two simultaneous generations in the **same** session trample each other; use `Reset` between documents, and remember that `ORA-04068` drops the state after a recompile |
+| **Very large documents** | everything is built in memory and the cost is database CPU. Thousands of pages with images weigh; measure before promising |
+| **Reprocessed images** | a PNG that needs its pixels redone has a 4-megapixel ceiling and comes out **uncompressed** |
+| **Business rules** | boleto, PIX and the like: the library **draws**; computing check digits, due-date factors or payloads belongs to a billing project |
+
+---
+
 ## Documentation
 
 **For people using the library** — these cover only generating and manipulating PDFs:
 
+The [documentation index](docs/README.md) lists everything, in Portuguese and
+English, by task.
+
 | Document | Description |
 |----------|-------------|
-| [docs/DOCUMENTATION_EN.md](docs/DOCUMENTATION_EN.md) | Full usage reference: every API with examples |
+| [docs/INSTALLATION_EN.md](docs/INSTALLATION_EN.md) | Install, check, grant access to other schemas, upgrade, uninstall |
+| [docs/DOCUMENTATION_EN.md](docs/DOCUMENTATION_EN.md) | Full usage reference: every API with examples, APEX included |
 | [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | The same guide in Portuguese |
+| [docs/COMPATIBILITY_EN.md](docs/COMPATIBILITY_EN.md) | Oracle versions and character sets measured, the PDF written and read |
+| [docs/MIGRATION_EN.md](docs/MIGRATION_EN.md) | What changes from one version to the next, 0.9.4 to 3.4.0 |
+| [docs/TROUBLESHOOTING_EN.md](docs/TROUBLESHOOTING_EN.md) | Common problems, by error message or symptom |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | Signature, parameters and errors of each API |
 | [API reference on the site](https://maxwbh.github.io/pl_fpdf/en/reference.html) | The same reference, browsable, in English |
 | [API index on the site](https://maxwbh.github.io/pl_fpdf/en/api.html) | Task-oriented index, in English |

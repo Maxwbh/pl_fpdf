@@ -73,7 +73,7 @@ Gere e manipule PDFs **diretamente dentro do Oracle Database** — sem Java, sem
 
 | Para | Baixe |
 |------|-------|
-| **Produção** — a versão estável, 3.3.0 | o [`pl_fpdf_install.sql` do release v3.3.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) |
+| **Produção** — a versão estável, 3.3.0 | o [`pl_fpdf_install.sql` do release v3.3.0](https://github.com/Maxwbh/pl_fpdf/releases/download/v3.3.0/pl_fpdf_install.sql) — exceto no **Oracle 26ai**, onde a 3.3.0 não funciona: lá, use a 3.4.0 |
 | **Testar a 3.4.0** — candidata, ainda em teste | o [`pl_fpdf_install.sql` do v3.4.0-rc2](https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2), ou o [`dist/` da `master`](https://raw.githubusercontent.com/Maxwbh/pl_fpdf/master/dist/pl_fpdf_install.sql) |
 
 A `master` acompanha o desenvolvimento e hoje já traz a 3.4.0; ela **não** é a
@@ -105,12 +105,10 @@ END;
 vão morar. Nada além disso — em particular, **não** é preciso
 `GRANT EXECUTE ON SYS.DBMS_CRYPTO`.
 
-| Oracle | Situação da 3.4.0 |
-|--------|-------------------|
-| 19c | a suíte inteira roda a cada mudança |
-| 26ai (23.26) | a suíte inteira passou: 346 testes, 0 falhas (07/11/2026) |
-| 21c, 23ai anteriores ao 26ai | não testado |
-| 18c e anteriores | não suportado |
+A 3.4.0 passa a suíte inteira no 19c e no 26ai; o que foi medido em cada
+versão do Oracle e de charset está em [Compatibilidade](docs/COMPATIBILITY.md).
+Conferir a instalação, dar acesso a outros schemas, atualizar e desinstalar:
+[Instalação](docs/INSTALLATION.md).
 
 **Sem dependências externas, nem para criptografia.** `EncryptPDF`/`DecryptPDF` usam MD5 e SHA via `STANDARD_HASH` (função SQL nativa); o RC4 e o AES são implementados no próprio package.
 
@@ -287,10 +285,14 @@ pl_fpdf/
 │   └── ticket.sql                # ingresso: cor, QR + Code 39, várias páginas
 │
 ├── docs/
+│   ├── README.md                 # índice da documentação, PT e EN
+│   ├── INSTALLATION.md           # instalar, conferir, atualizar, desinstalar
+│   ├── COMPATIBILITY.md          # Oracle, charset e PDF: o que foi medido
 │   ├── DOCUMENTATION.md          # referência de uso, com exemplo por API
-│   ├── DOCUMENTATION_EN.md       # o mesmo guia em inglês
 │   ├── API_REFERENCE.md          # assinatura, parâmetros e erros (gerada)
-│   └── API_REFERENCE_EN.md       # a mesma referência em inglês (gerada)
+│   ├── MIGRATION.md              # o que muda entre versões
+│   ├── TROUBLESHOOTING.md        # problemas comuns, pelo sintoma
+│   └── *_EN.md                   # cada um dos guias acima, em inglês
 │
 ├── extensions/                   # opcional, instale só se usar
 │   └── brazilian-payments/       # PIX (QR EMV) e Boleto (FEBRABAN)
@@ -339,10 +341,17 @@ O que a biblioteca **não** faz, para você não descobrir tarde:
 
 **Para quem usa a biblioteca** — falam só de gerar e manipular PDF:
 
+O [índice da documentação](docs/README.md) lista tudo, em português e em
+inglês, por tarefa.
+
 | Documento | Descrição |
 |-----------|-----------|
-| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Referência completa de uso: todas as APIs com exemplos |
+| [docs/INSTALLATION.md](docs/INSTALLATION.md) | Instalar, conferir, dar acesso a outros schemas, atualizar, desinstalar |
+| [docs/DOCUMENTATION.md](docs/DOCUMENTATION.md) | Referência completa de uso: todas as APIs com exemplos, inclusive APEX |
 | [docs/DOCUMENTATION_EN.md](docs/DOCUMENTATION_EN.md) | O mesmo guia em inglês |
+| [docs/COMPATIBILITY.md](docs/COMPATIBILITY.md) | Versões do Oracle e charsets medidos, o PDF gerado e o lido |
+| [docs/MIGRATION.md](docs/MIGRATION.md) | O que muda de uma versão para outra, da 0.9.4 à 3.4.0 |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Problemas comuns, pela mensagem de erro ou pelo sintoma |
 | [docs/API_REFERENCE.md](docs/API_REFERENCE.md) | Assinatura, parâmetros e erros de cada API |
 | [docs/API_REFERENCE_EN.md](docs/API_REFERENCE_EN.md) | A mesma referência em inglês (gerada) |
 | [Referência da API no site](https://maxwbh.github.io/pl_fpdf/reference.html) | A mesma referência, navegável |

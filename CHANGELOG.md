@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ImageFromBlob`: imagem a partir de um BLOB, sem ACL de rede. PNG e JPEG
 - Fonte TrueType embutida de verdade: o `SetFont` passa a usar a fonte
   registrada, as métricas saem do arquivo e o `/FontFile2` vai para o PDF
+- Guias de instalação, compatibilidade, migração e problemas comuns, em
+  português e inglês, e a integração com o Oracle APEX no guia de uso
 
 
 ### Removido

@@ -25,10 +25,20 @@ subprocess.run([sys.executable, do_repo('dev', 'scripts', 'gen_docs', 'parse_spe
 apis = {a['name'].lower() for a in json.load(open(do_repo('dev', 'scripts', 'gen_docs', 'parsed.json'), encoding='utf-8'))}
 apis |= {'co_version', 'tv4000a', 'noparam', 'tab_points', 'recttffont', 'recimageblob'}
 apis |= {'pks', 'pkb'}  # nomes de arquivo (PL_FPDF.pks / PL_FPDF.pkb)
+# As excecoes declaradas na spec tambem sao API: quem chama trata
+# PL_FPDF.exc_fora_de_winansi pelo nome. Lidas da spec, e nao listadas aqui,
+# para uma excecao removida de la passar a ser acusada nos guias.
+with open(do_repo('src', 'PL_FPDF.pks'), encoding='utf-8') as _spec:
+    apis |= {m.lower() for m in re.findall(r'(?im)^\s*(\w+)\s+EXCEPTION\s*;', _spec.read())}
 
 DOCS = ['README.md', 'README_EN.md', do_repo('site', 'index.html'), do_repo('site', 'api.html'),
         do_repo('site', 'reference.html'),
         do_repo('docs', 'DOCUMENTATION.md'), do_repo('docs', 'API_REFERENCE.md')]
+# Os guias de quem usa, nos dois idiomas: um nome de API errado num guia de
+# instalacao ou de migracao engana do mesmo jeito que na referencia.
+DOCS += [do_repo('docs', f'{nome}{sufixo}.md')
+         for nome in ('DOCUMENTATION', 'INSTALLATION', 'COMPATIBILITY', 'MIGRATION', 'TROUBLESHOOTING')
+         for sufixo in ('', '_EN') if f'{nome}{sufixo}' != 'DOCUMENTATION']
 TESTS = sorted(glob.glob(do_repo('dev', 'tests', '*.sql')))
 
 
