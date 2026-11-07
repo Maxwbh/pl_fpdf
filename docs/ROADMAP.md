@@ -84,7 +84,13 @@ concluidas.
 > recusava gerar com `ORA-20845`. Marca-las como prontas em fevereiro foi erro
 > do roadmap, nao do codigo — o codigo era honesto ao recusar.
 
-### v3.2.0 - Security RC4 (Mar 2026)
+### Criptografia — API desde a v3.0.0, cifragem de fato desde a v3.3.0
+
+> **Correcao (nov/2026).** Esta secao se chamava "v3.2.0 - Security RC4 (Mar
+> 2026)". As tags dizem outra coisa: a API abaixo ja estava na 3.0.0, e entre a
+> 3.0.0 e a 3.2.0 o codigo so mudou o numero de versao — a 3.2.0 (jul/2026)
+> trouxe apenas o gerador `docx_to_plfpdf`. E "pronto" so passou a ser verdade
+> na 3.3.0, como diz a correcao no fim da tabela.
 
 | Feature | Status |
 |---------|--------|

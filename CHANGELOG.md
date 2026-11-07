@@ -60,6 +60,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `PL_FPDF_UTIL` — o package foi separado em dois; 3.147 linhas sem relação com PDF saíram do principal
 - Documentação e site em inglês
 - Exemplos completos, sem imagem: boleto (FEBRABAN) e ingresso de evento
+- Cifragem de verdade: `EncryptPDF` e `SetEncryption` passam a cifrar os fluxos
+  e as strings, em RC4 e em AES-128/AES-256 implementados no package, sem
+  `DBMS_CRYPTO`. Até a 3.2.0 o PDF saía marcado como protegido e com o
+  conteúdo em claro
 
 ### Corrigido
 - `AddWatermark` não desenhava: a marca pedia uma fonte que nenhuma página declara
@@ -89,18 +93,16 @@ de 2026 não saíram, e foram para o backlog de lá, sem data.
 
 ## [3.2.0] - 2026-07-17 ✅
 
-### 🔐 Security & Tooling
+### 🧰 Tooling
 
 **Status:** Released
 **Author:** @maxwbh
 
-### Security (RC4 Encryption)
-- `EncryptPDF()` - Encrypt PDF with owner/user passwords and permissions
-- `DecryptPDF()` - Decrypt protected PDF
-- `IsEncrypted()` - Check if PDF is encrypted
-- `GetSecurityInfo()` - Security metadata as JSON
-- `SetEncryption()` / `SetPermissions()` - Configure protection for generated PDFs
-- `SetPDFVersion()` / `GetPDFVersion()` - Control output PDF version
+> **Correção (nov/2026).** Esta entrada dava a criptografia — `EncryptPDF`,
+> `DecryptPDF`, `IsEncrypted`, `GetSecurityInfo`, `SetEncryption`,
+> `SetPermissions`, `SetPDFVersion`, `GetPDFVersion` — como novidade da 3.2.0.
+> Ela já estava na tag 3.0.0: entre as duas tags, o código só mudou o número
+> de versão no cabeçalho. A lista foi para a entrada da 3.0.0, abaixo.
 
 ### Tooling
 - `scripts/docx_to_plfpdf/` - Python generator that converts `.docx` files
@@ -156,6 +158,20 @@ Major release with full PDF reading and manipulation capabilities.
 - `MergePDFs()` - Merge multiple PDFs into single document
 - `SplitPDF()` - Split PDF by page ranges
 - `ExtractPages()` - Extract specific pages to new PDF
+
+### Security (encryption API)
+- `EncryptPDF()` - Encrypt PDF with owner/user passwords and permissions
+- `DecryptPDF()` - Decrypt protected PDF
+- `IsEncrypted()` - Check if PDF is encrypted
+- `GetSecurityInfo()` - Security metadata as JSON
+- `SetEncryption()` / `SetPermissions()` - Configure protection for generated PDFs
+- `SetPDFVersion()` / `GetPDFVersion()` - Control output PDF version
+
+> **Protegia só no rótulo, até a 3.2.0.** O dicionário `/Encrypt`, as senhas e
+> as permissões saíam corretos, mas os fluxos de conteúdo iam **em claro**, e o
+> `DecryptPDF` apenas apagava o `/Encrypt`. A cifragem de fato — RC4 e AES nos
+> fluxos e nas strings, sem `DBMS_CRYPTO` — chegou na 3.3.0. Esta lista
+> constava, por engano, da entrada da 3.2.0.
 
 ### Technical Improvements
 - Removed APEX dependencies (pure PL/SQL)
