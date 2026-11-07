@@ -26,6 +26,17 @@ DECLARE
   v_tests_failed PLS_INTEGER := 0;
   v_test_name VARCHAR2(200);
 
+  -- As variaveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
+  -- declarado depois de subprograma e PLS-00103. Estavam depois, e o bloco
+  -- nao compilava em versao nenhuma do Oracle -- os testes nunca rodaram.
+  -- Test variables
+  l_boleto_data JSON_OBJECT_T;
+  l_codigo_barras VARCHAR2(44);
+  l_linha_digitavel VARCHAR2(54);
+  l_dv CHAR(1);
+  l_fator VARCHAR2(4);
+  l_is_valid BOOLEAN;
+
   -- Test helper procedures
   PROCEDURE start_test(p_name VARCHAR2) IS
   BEGIN
@@ -48,13 +59,6 @@ DECLARE
     END IF;
   END;
 
-  -- Test variables
-  l_boleto_data JSON_OBJECT_T;
-  l_codigo_barras VARCHAR2(44);
-  l_linha_digitavel VARCHAR2(54);
-  l_dv CHAR(1);
-  l_fator VARCHAR2(4);
-  l_is_valid BOOLEAN;
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('=== PL_FPDF_BOLETO Package Tests ===');
@@ -68,15 +72,21 @@ BEGIN
   -- Test 1: Calculate fator for known date
   BEGIN
     start_test('CalculateFatorVencimento calculates correct factor');
-    -- Fator base: 07/10/1997 = fator 0
-    -- Test with a known date: 01/01/2025
-    l_fator := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-01-01', 'YYYY-MM-DD'));
-
-    -- 2025-01-01 is approximately 9948 days from 1997-10-07
-    IF l_fator IS NOT NULL AND LENGTH(l_fator) = 4 THEN
+    -- Pontos de referencia da FEBRABAN: 03/07/2000 = 1000, 21/02/2025 = 9999,
+    -- 22/02/2025 = 1000 (o fator recomeca), 23/02/2025 = 1001. Antes este
+    -- teste so olhava o tamanho, e o valor podia estar errado.
+    IF PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2000-07-03') = '1000'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-01-01') = '9948'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-02-21') = '9999'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-02-22') = '1000'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-02-23') = '1001'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-12-31') = '1312'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2049-10-13') = '9999'
+       AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2049-10-14') = '1000' THEN
       pass_test;
     ELSE
-      fail_test('Invalid fator format: ' || l_fator);
+      fail_test('fator fora da regra FEBRABAN: 22/02/2025 deu '
+        || PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-02-22'));
     END IF;
   EXCEPTION
     WHEN OTHERS THEN
@@ -112,7 +122,8 @@ BEGIN
       l_fator1 VARCHAR2(4);
       l_fator2 VARCHAR2(4);
     BEGIN
-      l_fator1 := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-01-01', 'YYYY-MM-DD'));
+      -- dentro do mesmo ciclo: na virada de 22/02/2025 o fator cai de 9999 para 1000
+      l_fator1 := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-03-01', 'YYYY-MM-DD'));
       l_fator2 := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-12-31', 'YYYY-MM-DD'));
 
       IF TO_NUMBER(l_fator2) > TO_NUMBER(l_fator1) THEN

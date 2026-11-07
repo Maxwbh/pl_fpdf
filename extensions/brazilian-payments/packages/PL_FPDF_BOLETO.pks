@@ -12,15 +12,17 @@ CREATE OR REPLACE PACKAGE PL_FPDF_BOLETO AS
 
 /*******************************************************************************
 * Function: CalculateFatorVencimento
-* Description: Calculates due date factor for Boleto (days since 1997-10-07)
+* Description: Calculates due date factor for Boleto: days since 1997-10-07,
+*   wrapping from 9999 back to 1000 (FEBRABAN). 21/02/2025 is 9999 and
+*   22/02/2025 is 1000; the count then cycles through 1000-9999 every 9000 days.
 * Parameters:
 *   p_data - Due date
-* Returns: 4-digit factor string (0000-9999)
+* Returns: 4-digit factor string
 * Raises:
-*   -20802: Invalid date (NULL, before 1997-10-07, or too far in future)
+*   -20802: Invalid date (NULL or before 1997-10-07)
 * Example:
-*   -- Returns: '9948' (approximate)
-*   l_fator := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-01-01','YYYY-MM-DD'));
+*   -- Returns: '1312'
+*   l_fator := PL_FPDF_BOLETO.CalculateFatorVencimento(TO_DATE('2025-12-31','YYYY-MM-DD'));
 *******************************************************************************/
 FUNCTION CalculateFatorVencimento(
   p_data DATE

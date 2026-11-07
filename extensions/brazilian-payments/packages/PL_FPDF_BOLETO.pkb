@@ -9,7 +9,8 @@ CREATE OR REPLACE PACKAGE BODY PL_FPDF_BOLETO AS
 
 /*******************************************************************************
 * Function: CalculateFatorVencimento
-* Description: Calculates due date factor for Boleto (days since 1997-10-07)
+* Description: Calculates due date factor for Boleto (days since 1997-10-07,
+*   wrapping from 9999 back to 1000 as FEBRABAN defines)
 *******************************************************************************/
 FUNCTION CalculateFatorVencimento(
   p_data DATE
@@ -29,9 +30,13 @@ BEGIN
       'Due date cannot be before 1997-10-07');
   END IF;
 
+  -- O fator tem 4 digitos e chegou a 9999 em 21/02/2025. Pela regra da
+  -- FEBRABAN, a partir de 22/02/2025 ele recomeca em 1000, e assim a cada
+  -- volta: gira de 1000 a 9999, em ciclos de 9000 dias. Aqui havia um teto
+  -- que levantava ORA-20802 acima de 9999 -- ou seja, desde 22/02/2025 a
+  -- extensao recusava todo boleto com vencimento atual.
   IF l_days > 9999 THEN
-    RAISE_APPLICATION_ERROR(-20802,
-      'Due date too far in future (max factor 9999)');
+    l_days := 1000 + MOD(l_days - 10000, 9000);
   END IF;
 
   RETURN LPAD(TO_CHAR(l_days), 4, '0');

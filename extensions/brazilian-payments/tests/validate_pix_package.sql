@@ -26,6 +26,16 @@ DECLARE
   v_tests_failed PLS_INTEGER := 0;
   v_test_name VARCHAR2(200);
 
+  -- As variaveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
+  -- declarado depois de subprograma e PLS-00103. Estavam depois, e o bloco
+  -- nao compilava em versao nenhuma do Oracle -- os testes nunca rodaram.
+  -- Test variables
+  l_pix_data JSON_OBJECT_T;
+  l_payload VARCHAR2(32767);
+  l_is_valid BOOLEAN;
+  l_crc VARCHAR2(4);
+  l_formatted_key VARCHAR2(100);
+
   -- Test helper procedures
   PROCEDURE start_test(p_name VARCHAR2) IS
   BEGIN
@@ -48,12 +58,6 @@ DECLARE
     END IF;
   END;
 
-  -- Test variables
-  l_pix_data JSON_OBJECT_T;
-  l_payload VARCHAR2(32767);
-  l_is_valid BOOLEAN;
-  l_crc VARCHAR2(4);
-  l_formatted_key VARCHAR2(100);
 
 BEGIN
   DBMS_OUTPUT.PUT_LINE('=== PL_FPDF_PIX Package Tests ===');
