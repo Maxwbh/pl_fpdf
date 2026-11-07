@@ -29,6 +29,7 @@ noParam tv4000a;
  * @raises -20001 orientação inválida
  * @raises -20002 unidade de medida inválida
  * @raises -20003 codificação não suportada
+ * @since 2.0.0
  * @example
  *   PL_FPDF.Init('P', 'mm', 'A4');
  */
@@ -46,6 +47,7 @@ procedure Init(
  * precisa chamar isto entre um e outro — sem isso, a configuração de um vaza
  * para o seguinte.
  *
+ * @since 2.0.0
  * @example
  *   PL_FPDF.Reset;
  */
@@ -55,6 +57,7 @@ procedure Reset;
  * Diz se Init (ou fpdf) já foi chamado nesta sessão.
  *
  * @return BOOLEAN - TRUE se inicializado
+ * @since 2.0.0
  * @example
  *   IF NOT PL_FPDF.IsInitialized THEN PL_FPDF.Init; END IF;
  */
@@ -114,6 +117,7 @@ type tTTFFonts is table of recTTFFont index by varchar2(100);
  * @param p_embed embutir no PDF
  * @raises -20210 nome da fonte vazio
  * @raises -20211 BLOB da fonte nulo
+ * @since 2.0.0
  * @example
  *   SELECT arquivo INTO l_ttf FROM fontes WHERE nome = 'Roboto';
  *   PL_FPDF.AddTTFFont('Roboto', l_ttf);
@@ -137,6 +141,7 @@ procedure AddTTFFont(
  * @raises -20202 arquivo de fonte inválido
  * @raises -20401 diretório inválido
  * @raises -20402 sem permissão de leitura
+ * @since 2.0.0
  * @example
  *   PL_FPDF.LoadTTFFromFile('Roboto', 'Roboto-Regular.ttf', 'FONTS_DIR');
  */
@@ -153,6 +158,7 @@ procedure LoadTTFFromFile(
  *
  * @param p_font_name nome da fonte
  * @return BOOLEAN - TRUE se carregada
+ * @since 2.0.0
  * @example
  *   IF NOT PL_FPDF.IsTTFFontLoaded('Roboto') THEN ... END IF;
  */
@@ -167,6 +173,7 @@ function IsTTFFontLoaded(p_font_name varchar2) return boolean;
  * @param p_font_name nome da fonte
  * @return recTTFFont - as métricas da fonte
  * @raises -20206 fonte não carregada
+ * @since 2.0.0
  * @example
  *   l_fonte := PL_FPDF.GetTTFFontInfo('Roboto');
  */
@@ -177,6 +184,7 @@ function GetTTFFontInfo(p_font_name varchar2) return recTTFFont;
  * chamar ao fim de um lote: cada fonte embutida ocupa centenas de KB na
  * sessão.
  *
+ * @since 2.0.0
  * @example
  *   PL_FPDF.ClearTTFFontCache;
  */
@@ -191,6 +199,7 @@ procedure ClearTTFFontCache;
  * @param p_text o texto
  * @param p_escape escapar os caracteres reservados
  * @return VARCHAR2 - o texto pronto para ir entre parênteses num objeto PDF
+ * @since 2.0.0
  * @example
  *   l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido)');
  */
@@ -245,6 +254,7 @@ PRAGMA EXCEPTION_INIT(exc_general_error, -20100);
  * Devolve o corpo da fonte em uso, em pontos.
  *
  * @return NUMBER - o tamanho em pontos
+ * @since 0.9.4
  * @example
  *   l_corpo := PL_FPDF.GetCurrentFontSize;
  */
@@ -256,6 +266,7 @@ function GetCurrentFontSize return number;
  * o SetFont normaliza, então 'b' entra e 'B' volta.
  *
  * @return VARCHAR2 - o estilo corrente
+ * @since 0.9.4
  * @example
  *   l_estilo := PL_FPDF.GetCurrentFontStyle;
  */
@@ -267,6 +278,7 @@ function GetCurrentFontStyle return varchar2;
  * LOWER() dos dois lados.
  *
  * @return VARCHAR2 - a família corrente
+ * @since 0.9.4
  * @example
  *   l_familia := PL_FPDF.GetCurrentFontFamily;
  */
@@ -279,6 +291,7 @@ function GetCurrentFontFamily return varchar2;
  *
  * @param pblack comprimento do traço
  * @param pwhite comprimento do intervalo
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetDash(2, 2);          -- tracejado
  *   PL_FPDF.Line(10, 50, 200, 50);
@@ -291,6 +304,7 @@ procedure SetDash(pblack in number default 0, pwhite in number default 0);
  * branco.
  *
  * @return NUMBER - a entrelinha, na unidade corrente
+ * @since 0.9.4
  * @example
  *   l_entre := PL_FPDF.GetLineSpacing;
  */
@@ -301,6 +315,7 @@ function GetLineSpacing return number;
  * informada.
  *
  * @param pls a entrelinha, na unidade corrente
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetLineSpacing(5);
  */
@@ -314,6 +329,7 @@ Procedure SetLineSpacing (pls in number);
  * @param pclose fechar o contorno
  * @param pstyle '' desenha o contorno (padrão), 'F' preenche (Fill), 'FD' ou
  *        'DF' preenche e contorna (Fill and Draw)
+ * @since 0.9.4
  * @example
  *   l_pontos(0).x := 10; l_pontos(0).y := 10;
  *   l_pontos(1).x := 50; l_pontos(1).y := 10;
@@ -334,6 +350,7 @@ procedure Poly(points in tab_points, pclose in boolean, pstyle in varchar2 defau
  *        'right'/'R'
  * @param pstyle '' contorna, 'F' preenche (Fill), 'FD'/'DF' os dois
  * @raises -20821 orientação inválida
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Triangle(20, 20, 5, 'right', 'F');
  */
@@ -346,6 +363,7 @@ procedure Triangle(px in number, py in number, psize in number,
  * malformado só aparece no leitor. Prefira SetDash.
  *
  * @param pdash o padrão, na sintaxe do PDF ('[] 0' = linha cheia)
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetLineDashPattern('[3 2] 0');
  */
@@ -356,6 +374,7 @@ procedure SetLineDashPattern(pdash in varchar2 default '[] 0');
  * Sem altura, desce o da última célula escrita.
  *
  * @param h quanto descer, na unidade corrente
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Cell(40, 10, 'Primeira');
  *   PL_FPDF.Ln;
@@ -366,6 +385,7 @@ procedure Ln(h number default null);
  * Devolve a abscissa corrente, na unidade em uso.
  *
  * @return NUMBER - o x corrente
+ * @since 0.9.4
  * @example
  *   l_x := PL_FPDF.GetX;
  */
@@ -376,6 +396,7 @@ function  GetX return number;
  * põe o cursor a 30 da direita.
  *
  * @param px a nova abscissa
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetX(-40);
  */
@@ -385,6 +406,7 @@ procedure SetX(px in number);
  * Devolve a ordenada corrente, contada do topo da página.
  *
  * @return NUMBER - o y corrente
+ * @since 0.9.4
  * @example
  *   l_y := PL_FPDF.GetY;
  */
@@ -396,6 +418,7 @@ function  GetY return number;
  * negativo conta a partir do pé da página.
  *
  * @param py a nova ordenada
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetY(-20);   -- 20 acima do pé
  */
@@ -407,6 +430,7 @@ procedure SetY(py in number);
  *
  * @param x a abscissa
  * @param y a ordenada
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetXY(20, 50);
  */
@@ -421,6 +445,7 @@ procedure SetXY(x in number,y in number);
  *
  * @param headerprocname nome da rotina (NULL desliga)
  * @param paramTable parâmetros nomeados
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetHeaderProc('MEU_PKG.CABECALHO');
  */
@@ -432,6 +457,7 @@ procedure SetHeaderProc(headerprocname in varchar2, paramTable tv4000a default n
  *
  * @param footerprocname nome da rotina (NULL desliga)
  * @param paramTable parâmetros nomeados
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetFooterProc('MEU_PKG.RODAPE');
  */
@@ -444,6 +470,7 @@ procedure SetFooterProc(footerprocname in varchar2, paramTable tv4000a default n
  * @param left margem esquerda
  * @param top margem superior
  * @param right margem direita (-1 = igual à esquerda)
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetMargins(20, 15);
  */
@@ -454,6 +481,7 @@ procedure SetMargins(left in number, top in number, right in number default -1);
  * margem nova, o cursor é trazido para ela.
  *
  * @param pMargin a margem, na unidade corrente
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetLeftMargin(25);
  */
@@ -463,6 +491,7 @@ procedure SetLeftMargin(pMargin in number);
  * Define a margem superior, usada pelas páginas seguintes.
  *
  * @param pMargin a margem, na unidade corrente
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetTopMargin(15);
  */
@@ -473,6 +502,7 @@ procedure SetTopMargin(pMargin in number);
  * com largura 0.
  *
  * @param pMargin a margem, na unidade corrente
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetRightMargin(20);
  */
@@ -485,6 +515,7 @@ procedure SetRightMargin(pMargin in number);
  *
  * @param pauto ligar a quebra automática
  * @param pMargin margem de rodapé que dispara
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetAutoPageBreak(TRUE, 20);
  */
@@ -500,6 +531,7 @@ procedure SetAutoPageBreak(pauto in boolean, pMargin in number default 0);
  * @param layout 'single' (uma página), 'continuous' (contínuo), 'two' (duas
  *        colunas), 'default' (padrão do leitor)
  * @raises -20100 modo de zoom ou de layout desconhecido
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetDisplayMode('fullwidth', 'continuous');
  */
@@ -512,6 +544,7 @@ procedure SetDisplayMode(zoom in varchar2, layout in varchar2 default 'continuou
  * e a opção vale.
  *
  * @param p_compress comprimir os fluxos
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetCompression(TRUE);
  */
@@ -522,6 +555,7 @@ procedure SetCompression(p_compress in boolean default false);
  * título e o que o buscador indexa.
  *
  * @param ptitle o título
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetTitle('Relatório de Produção');
  */
@@ -531,6 +565,7 @@ procedure SetTitle(ptitle in varchar2);
  * Grava o assunto nos metadados do PDF.
  *
  * @param psubject o assunto
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetSubject('Fechamento mensal');
  */
@@ -540,6 +575,7 @@ procedure SetSubject(psubject in varchar2);
  * Grava o autor nos metadados do PDF.
  *
  * @param pauthor o autor
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetAuthor('Departamento Financeiro');
  */
@@ -549,6 +585,7 @@ procedure SetAuthor(pauthor in varchar2);
  * Grava as palavras-chave nos metadados do PDF, separadas por espaço.
  *
  * @param pkeywords as palavras-chave
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetKeywords('relatorio producao 2026');
  */
@@ -558,6 +595,7 @@ procedure SetKeywords(pkeywords in varchar2);
  * Grava, nos metadados, o nome do sistema que gerou o documento.
  *
  * @param pcreator o sistema gerador
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetCreator('ERP - modulo de faturamento');
  */
@@ -569,6 +607,7 @@ procedure SetCreator(pcreator in varchar2);
  * escreve a página 3.
  *
  * @param palias o marcador
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetAliasNbPages;
  *   PL_FPDF.Cell(0, 10, 'Pagina ' || PL_FPDF.PageNo || ' de {nb}');
@@ -579,6 +618,7 @@ procedure SetAliasNbPages(palias in varchar2 default '{nb}');
  * Executa a rotina registrada em SetHeaderProc. É chamada sozinha ao abrir
  * cada página; não se chama à mão.
  *
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetHeaderProc('MEU_PKG.CABECALHO');   -- e o resto é automático
  */
@@ -588,6 +628,7 @@ procedure Header;
  * Executa a rotina registrada em SetFooterProc. É chamada sozinha ao fechar
  * cada página; não se chama à mão.
  *
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetFooterProc('MEU_PKG.RODAPE');      -- e o resto é automático
  */
@@ -597,6 +638,7 @@ procedure Footer;
  * Devolve o número da página que está sendo escrita, começando em 1.
  *
  * @return NUMBER - a página corrente
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Cell(0, 10, 'Pagina ' || PL_FPDF.PageNo);
  */
@@ -611,6 +653,7 @@ function  PageNo return number;
  * @param g verde (0..255)
  * @param b azul (0..255)
  * @raises -20501 componente fora de 0..255
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetDrawColor(200);            -- cinza claro
  *   PL_FPDF.SetDrawColor(0, 90, 160);     -- azul
@@ -625,6 +668,7 @@ procedure SetDrawColor(r in number, g in number default -1, b in number default 
  * @param g verde (0..255)
  * @param b azul (0..255)
  * @raises -20501 componente fora de 0..255
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetFillColor(230, 230, 230);
  *   PL_FPDF.Cell(40, 8, 'Cabecalho', '1', 0, 'C', 1);
@@ -638,6 +682,7 @@ procedure SetFillColor (r in number, g in number default -1, b in number default
  * @param g verde (0..255)
  * @param b azul (0..255)
  * @raises -20501 componente fora de 0..255
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetTextColor(180, 0, 0);
  */
@@ -648,6 +693,7 @@ procedure SetTextColor (r in number, g in number default -1, b in number default
  *
  * @param width a espessura, maior que zero
  * @raises -20502 espessura zero ou negativa
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetLineWidth(0.5);
  */
@@ -661,6 +707,7 @@ procedure SetLineWidth(width in number);
  * @param y1 ponto inicial
  * @param x2 ponto final
  * @param y2 ponto final
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Line(20, 60, 190, 60);
  */
@@ -675,6 +722,7 @@ procedure Line(x1 in number, y1 in number, x2 in number, y2 in number);
  * @param ph altura
  * @param pstyle '' contorna (padrão), 'F' preenche (Fill), 'FD' ou 'DF'
  *        preenche e contorna (Fill and Draw)
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Rect(20, 40, 60, 25, 'FD');
  */
@@ -691,6 +739,7 @@ procedure Rect(px in number, py in number, pw in number, ph in number, pstyle in
  *
  * @return NUMBER - nunca devolve: levanta antes
  * @raises -20601 link interno não implementado
+ * @since 0.9.4
  * @example
  *   -- Use URL:
  *   PL_FPDF.Cell(60, 8, 'Site', plink => 'https://example.com');
@@ -706,6 +755,7 @@ function  AddLink return number;
  * @param py ordenada de chegada (-1 = a posição corrente)
  * @param ppage página de chegada (-1 = a página corrente)
  * @raises -20601 link interno não implementado
+ * @since 0.9.4
  * @example
  *   -- Use URL:
  *   PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
@@ -729,6 +779,7 @@ procedure SetLink(plink in number, py in number default 0, ppage in number defau
  *             dicionário aberto, isto é, arquivo malformado. Desde
  *             setembro/2026 a chamada levanta erro em vez de gravar o arquivo
  *             quebrado. Use URL.
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
  * @raises -20601 destino não é URL -- link interno ou NULL
@@ -743,6 +794,7 @@ procedure Link(px in number, py in number, pw in number, ph in number, plink in 
  * @param py a linha de base
  * @param ptxt o texto
  * @raises -20203 caractere fora do WinAnsi
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Text(20, 50, 'Endereço de cobrança');
  */
@@ -753,6 +805,7 @@ procedure Text(px in number, py in number, ptxt in varchar2);
  * decidir abrir página nova.
  *
  * @return BOOLEAN - TRUE se a quebra automática está ligada
+ * @since 0.9.4
  * @example
  *   IF PL_FPDF.AcceptPageBreak THEN ... END IF;
  */
@@ -767,6 +820,7 @@ function  AcceptPageBreak return boolean;
  * @param style '' normal, 'B' negrito (Bold), 'I' itálico (Italic), 'BI' os
  *        dois
  * @param filename arquivo de métricas da fonte
+ * @since 0.9.4
  * @example
  *   PL_FPDF.AddFont('Arial', 'B');
  */
@@ -787,6 +841,7 @@ procedure AddFont (family in varchar2, style in varchar2 default '', filename in
  * @raises -20201 fonte não encontrada -- nem entre as padrão, nem no registro
  *         de TrueType
  * @raises -20100 estilo inválido
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetFont('Helvetica', 'B', 12);
  */
@@ -801,6 +856,7 @@ procedure SetFont(pfamily in varchar2,pstyle in varchar2 default '', psize in nu
  * @param pstr o texto a medir
  * @return NUMBER - a largura, na unidade corrente
  * @raises -20203 caractere fora do WinAnsi
+ * @since 0.9.4
  * @example
  *   l_larg := PL_FPDF.GetStringWidth('São Paulo');
  */
@@ -810,6 +866,7 @@ function GetStringWidth(pstr in varchar2) return number;
  * Troca só o corpo, mantendo família e estilo.
  *
  * @param psize corpo em pontos
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetFontSize(8);
  */
@@ -840,6 +897,7 @@ procedure SetFontSize(psize in number);
  *         original neste código, mas preserva a pilha (keeperrorstack), de
  *         modo que a causa -- um ORA-20203 de caractere fora do WinAnsi, por
  *         exemplo -- continua visível no rastro.
+ * @since 0.9.4
  * @example
  *   -- moldura inteira em volta da célula
  *   PL_FPDF.Cell(40, 8, 'Total', '1', 0, 'L');
@@ -887,6 +945,7 @@ procedure Cell
  * @param phMax altura máxima do bloco; 0 sem limite
  * @return NUMBER - quantas linhas foram escritas
  * @raises -20100 qualquer falha na escrita, com a pilha original preservada
+ * @since 0.9.4
  * @example
  *   -- parágrafo justificado, com moldura inteira
  *   l_linhas := PL_FPDF.MultiCell(120, 5, l_texto_longo, '1', 'J');
@@ -925,6 +984,7 @@ procedure MultiCell
  * @param ptxt o texto
  * @param plink URL ou identificador de link interno
  * @raises -20100 qualquer falha na escrita, com a pilha original preservada
+ * @since 0.9.4
  * @example
  *   PL_FPDF.SetFont('Helvetica', '', 10);
  *   PL_FPDF.Write(5, 'Consulte o ');
@@ -952,6 +1012,7 @@ procedure Write(pH in varchar2, ptxt in varchar2, plink in varchar2 default null
  * @param p_link URL ou link interno
  * @param p_rotation giro do texto em graus (0, 90, 180, 270)
  * @raises -20110 giro inválido
+ * @since 2.0.0
  * @example
  *   PL_FPDF.CellRotated(10, 40, 'Janeiro', '1', 0, 'C', 0, '', 90);
  */
@@ -976,6 +1037,7 @@ procedure CellRotated(
  * @param p_rotation giro em graus (0, 90, 180, 270)
  * @raises -20110 giro inválido
  * @raises -20111 só o giro de 0 grau é suportado; use CellRotated
+ * @since 2.0.0
  * @example
  *   PL_FPDF.WriteRotated(5, 'CONFIDENCIAL', NULL, 90);
  */
@@ -1002,6 +1064,7 @@ procedure WriteRotated(
  * @param pLink URL ou identificador de link interno sobre a imagem
  * @raises -20100 falha ao buscar ou interpretar a imagem, com a pilha original
  *         preservada
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Image('https://example.com/logo.png', 10, 10, 40);
  */
@@ -1031,6 +1094,7 @@ procedure image ( pFile   in varchar2,
  * @param pLink link opcional sobre a área da imagem
  * @raises -20301 cabeçalho inválido, BLOB vazio ou nome ausente
  * @raises -20303 formato não suportado
+ * @since 3.4.0
  * @example
  *   SELECT logo INTO l_logo FROM empresa WHERE id = 1;
  *   PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);
@@ -1054,6 +1118,7 @@ procedure ImageFromBlob( p_blob  in blob,
  * @raises -20100 destino desconhecido, ou falha na gravação
  * @raises -20306 modo de entrega ao navegador não é mais suportado; a mensagem
  *         aponta OutputBlob e o cabeçalho Content-Type
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Output('relatorio.pdf', 'F');
  */
@@ -1069,6 +1134,7 @@ procedure Output(pname in varchar2 default null, pdest in varchar2 default null)
  * @return BLOB - o PDF
  * @raises -20100 falha ao fechar ou montar o documento, com a pilha original
  *         preservada
+ * @since 0.9.4
  * @example
  *   l_pdf := PL_FPDF.OutputBlob;    -- prefira esta
  */
@@ -1082,6 +1148,7 @@ function ReturnBlob(pname in varchar2 default null, pdest in varchar2 default nu
  * @return BLOB - o PDF pronto
  * @raises -20005 Init ainda não foi chamado. Antes de agosto/2026 esta chamada
  *         seguia em frente e devolvia um PDF vazio, sem apontar a causa.
+ * @since 2.0.0
  * @example
  *   l_pdf := PL_FPDF.OutputBlob;
  *   INSERT INTO documentos (id, arquivo) VALUES (1, l_pdf);
@@ -1097,6 +1164,7 @@ function OutputBlob return blob;
  * @raises -20401 diretório inválido
  * @raises -20402 sem permissão de escrita
  * @raises -20403 falha ao gravar
+ * @since 2.0.0
  * @example
  *   PL_FPDF.OutputFile('relatorio.pdf', 'PDF_DIR');
  */
@@ -1106,6 +1174,7 @@ procedure OutputFile(p_filename varchar2, p_directory varchar2 default 'PDF_DIR'
  * Marca o documento como aberto. O AddPage já faz isto quando preciso; chamar
  * à mão é raro.
  *
+ * @since 0.9.4
  * @example
  *   PL_FPDF.OpenPDF;
  */
@@ -1116,6 +1185,7 @@ procedure OpenPDF;
  * arquivo e troca o marcador do total de páginas. Sem nenhuma página, uma é
  * criada em branco. As rotinas de saída chamam isto sozinhas.
  *
+ * @since 0.9.4
  * @example
  *   PL_FPDF.ClosePDF;
  */
@@ -1143,6 +1213,7 @@ procedure ClosePDF;
  *       aceitar os dois: sobrecargas que diferem só pelo nome do parâmetro
  *       deixam a chamada ambígua, e o Oracle recusa com PLS-00307. Quem chama
  *       por posição não é afetado.
+ * @since 0.9.4
  * @example
  *   PL_FPDF.AddPage;
  *   PL_FPDF.AddPage('L');
@@ -1161,6 +1232,7 @@ procedure AddPage(
  * @param p_page_number a página, que precisa existir
  * @raises -20005 Init ainda não foi chamado
  * @raises -20106 a página não existe
+ * @since 2.0.0
  * @example
  *   PL_FPDF.SetPage(1);
  */
@@ -1170,6 +1242,7 @@ procedure SetPage(p_page_number pls_integer);
  * Devolve o número da página em que se está escrevendo.
  *
  * @return PLS_INTEGER - a página corrente
+ * @since 2.0.0
  * @example
  *   l_pagina := PL_FPDF.GetCurrentPage;
  */
@@ -1185,6 +1258,7 @@ function GetCurrentPage return pls_integer
  * @param orientation 'P' (Portrait, retrato) ou 'L' (Landscape, paisagem)
  * @param unit unidade de medida ('mm','cm','in','pt')
  * @param format formato da página ('A4', 'Letter'...)
+ * @since 0.9.4
  * @example
  *   PL_FPDF.fpdf('L', 'mm', 'A4');
  */
@@ -1198,6 +1272,7 @@ procedure fpdf  (orientation in varchar2 default 'P', unit in varchar2 default '
  *
  * @param pmsg a mensagem
  * @raises -20100 sempre; é o que esta rotina faz
+ * @since 0.9.4
  * @example
  *   PL_FPDF.Error('nao foi possivel montar o documento');
  */
@@ -1207,6 +1282,7 @@ procedure Error(pmsg in varchar2);
  * Liga a saída de diagnóstico do tratamento de erro. Serve para depuração; num
  * processo em produção deixa o erro mais verboso.
  *
+ * @since 0.9.4
  * @example
  *   PL_FPDF.DebugEnabled;
  */
@@ -1215,6 +1291,7 @@ procedure DebugEnabled;
 /**
  * Desliga a saída de diagnóstico. É o estado padrão.
  *
+ * @since 0.9.4
  * @example
  *   PL_FPDF.DebugDisabled;
  */
@@ -1226,6 +1303,7 @@ procedure DebugDisabled;
  * e a do arquivo.
  *
  * @return NUMBER - pontos por unidade
+ * @since 0.9.4
  * @example
  *   l_pontos := 10 * PL_FPDF.GetScaleFactor;
  */
@@ -1243,6 +1321,7 @@ function GetScaleFactor return number;
  * @raises -20301 cabeçalho de imagem inválido
  * @raises -20302 não foi possível buscar a imagem
  * @raises -20303 formato não suportado
+ * @since 0.9.4
  * @example
  *   l_img := PL_FPDF.getImageFromUrl('https://example.com/logo.png');
  */
@@ -1254,6 +1333,7 @@ function getImageFromUrl(p_Url in varchar2) return recImageBlob;
  * @param p_level 0 desligado (OFF), 1 erro (ERROR), 2 aviso (WARN), 3
  *        informação (INFO), 4 depuração (DEBUG)
  * @raises -20100 nível fora da faixa 0..4
+ * @since 2.0.0
  * @example
  *   PL_FPDF.SetLogLevel(3);
  */
@@ -1263,6 +1343,7 @@ procedure SetLogLevel(p_level pls_integer);
  * Devolve o nível de registro em uso.
  *
  * @return PLS_INTEGER - o nível corrente (0-4)
+ * @since 2.0.0
  * @example
  *   l_nivel := PL_FPDF.GetLogLevel;
  */
@@ -1283,6 +1364,7 @@ function GetLogLevel return pls_integer
  *   - leftMargin, topMargin, rightMargin (margens, na unidade corrente)
  * @raises -20001 orientação inválida; só P ou L
  * @raises -20002 unidade inválida; só mm, cm, in ou pt
+ * @since 2.0.0
  * @example
  *   DECLARE
  *     l_config JSON_OBJECT_T := JSON_OBJECT_T();
@@ -1313,6 +1395,7 @@ procedure SetDocumentConfig(p_config JSON_OBJECT_T);
  *     "unit": "<string>",
  *     "initialized": <boolean>
  *   }
+ * @since 2.0.0
  * @example
  *   DECLARE
  *     l_meta JSON_OBJECT_T;
@@ -1340,6 +1423,7 @@ function GetDocumentMetadata return JSON_OBJECT_T;
  *   }
  * @raises -20106 a página não existe
  * @raises -20812 número de página fora da faixa
+ * @since 2.0.0
  * @example
  *   DECLARE
  *     l_page_info JSON_OBJECT_T;
@@ -1367,6 +1451,7 @@ function GetPageInfo(p_page_number pls_integer default null) return JSON_OBJECT_
  * @raises -20872 nível de correção inválido
  * @raises -20871 tamanho não positivo
  * @raises -20873 conteúdo além da capacidade do QR Code
+ * @since 2.0.0
  * @example
  *   PL_FPDF.AddQRCode(50, 50, 40, 'https://example.com', 'URL', 'M');
  */
@@ -1401,6 +1486,7 @@ procedure AddQRCode(
  * @raises -20886 EAN com dígito verificador inválido
  * @raises -20887 ITF14 exige 13 dígitos (verificador calculado) ou 14
  * @raises -20888 ITF sem nenhum dígito no conteúdo
+ * @since 2.0.0
  * @example
  *   PL_FPDF.AddBarcode(30, 50, 150, 20, 'ABC123456', 'CODE128', TRUE);
  */
@@ -1425,6 +1511,7 @@ procedure AddBarcode(
  * @raises -20804 Objeto Root não encontrado
  * @raises -20867 PDF cifrado: decifre com DecryptPDF antes. O LoadPDF lê a
  *         estrutura, mas não decifra o conteúdo, e as páginas sairiam em branco
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_pdf BLOB;
@@ -1441,6 +1528,7 @@ PROCEDURE LoadPDF(p_pdf_blob BLOB);
  *
  * @return Número de páginas
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @since 3.0.0
  * @example
  *   l_pages := PL_FPDF.GetPageCount();
  *   DBMS_OUTPUT.PUT_LINE('Total de páginas:' || l_pages);
@@ -1458,6 +1546,7 @@ FUNCTION GetPageCount RETURN PLS_INTEGER;
  *   - objectCount: Número de objetos na xref
  *   - rootObjectId: ID do objeto Catalog
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_info JSON_OBJECT_T;
@@ -1479,6 +1568,7 @@ FUNCTION GetPDFInfo RETURN JSON_OBJECT_T;
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
  * @raises -20813 giro inválido; só 0, 90, 180 ou 270
  * @raises -20810 /Pages não encontrado no catálogo do PDF
+ * @since 3.0.0
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   PL_FPDF.RotatePage(1, 90);    -- Rotacionar página 1
@@ -1496,6 +1586,7 @@ PROCEDURE RotatePage(p_page_number PLS_INTEGER, p_rotation NUMBER);
  * @raises -20812 número de página fora da faixa
  * @raises -20814 a página já estava marcada para remoção
  * @raises -20810 /Pages não encontrado no catálogo do PDF
+ * @since 3.0.0
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   PL_FPDF.RemovePage(2);  -- Remover página 2
@@ -1509,6 +1600,7 @@ PROCEDURE RemovePage(p_page_number PLS_INTEGER);
  * @return Número de páginas ativas
  * @note Difere de GetPageCount() que retorna a contagem original
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @since 3.0.0
  * @example
  *   l_total := PL_FPDF.GetPageCount();        -- Original: 10
  *   PL_FPDF.RemovePage(2);
@@ -1521,6 +1613,7 @@ FUNCTION GetActivePageCount RETURN PLS_INTEGER;
  *
  * @param p_page_number Número da página para verificar
  * @return caso contrário
+ * @since 3.0.0
  * @example
  *   IF PL_FPDF.IsPageRemoved(2) THEN
  *     DBMS_OUTPUT.PUT_LINE('Página 2 removida');
@@ -1533,6 +1626,7 @@ FUNCTION IsPageRemoved(p_page_number PLS_INTEGER) RETURN BOOLEAN;
  *
  * @return TRUE se modificado, FALSE caso contrário
  * @note Use para determinar se OutputModifiedPDF() precisa ser chamado
+ * @since 3.0.0
  * @example
  *   IF PL_FPDF.IsPDFModified() THEN
  *     l_modified_pdf := PL_FPDF.OutputModifiedPDF();
@@ -1560,6 +1654,7 @@ FUNCTION IsPDFModified RETURN BOOLEAN;
  * @raises -20816 texto da marca vazio
  * @raises -20817 opacidade fora de 0..1
  * @raises -20818 rotação fora de 0, 45, 90, 135, 180, 225, 270, 315
+ * @since 3.0.0
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   -- Todas as páginas
@@ -1593,6 +1688,7 @@ PROCEDURE AddWatermark(
  *     - fontSize: Tamanho da fonte em pontos
  *     - color: Nome da cor
  * @raises -20809 nenhum PDF carregado -- chame LoadPDF antes
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_watermarks JSON_ARRAY_T;
@@ -1640,6 +1736,7 @@ FUNCTION GetWatermarks RETURN JSON_ARRAY_T;
  *         megapixels no caminho que reprocessa pixels
  * @raises -20846 o /Resources da página não pode ser sobreposto
  *         (subdicionário indireto compartilhado)
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_pdf BLOB;
@@ -1666,6 +1763,7 @@ FUNCTION OutputModifiedPDF RETURN BLOB;
  * @note Sempre chame isso após processar um PDF para liberar recursos de
  *       memória. Limpa: PDF carregado, info páginas, rotações, páginas
  *       removidas, marcas d'água.
+ * @since 3.0.0
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
  *   -- Processar PDF
@@ -1690,6 +1788,7 @@ PROCEDURE ClearPDFCache;
  * @raises -20891 Dados DEFLATE malformados
  * @raises -20892 Cabeçalho zlib inválido
  * @raises -20893 Saída passou de p_max_bytes
+ * @since 3.3.0
  * @example
  *     l_claro := PL_FPDF.FlateDecode(l_comprimido);
  */
@@ -1706,6 +1805,7 @@ FUNCTION FlateDecode(
  *
  * @param p_data conteúdo a comprimir (BLOB)
  * @return BLOB - stream zlib: cabeçalho, DEFLATE e Adler-32
+ * @since 3.3.0
  * @example
  *     l_comprimido := PL_FPDF.FlateEncode(l_claro);
  */
@@ -1743,6 +1843,7 @@ FUNCTION FlateEncode(
  * @raises -20810 Número de página inválido
  * @raises -20821 Coordenadas de posição inválidas, ou opacidade fora de
  *         0.0..1.0
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_options JSON_OBJECT_T := JSON_OBJECT_T();
@@ -1801,6 +1902,7 @@ PROCEDURE OverlayText(
  * @raises -20821 Coordenadas de posição inválidas
  * @raises -20823 formato de imagem inválido -- só JPEG ou PNG
  * @raises -20824 Dimensões da imagem inválidas
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_logo BLOB;
@@ -1844,6 +1946,7 @@ PROCEDURE OverlayImage(
  *       "zOrder": 100
  *     }, ...]
  * @raises -20809 Nenhum PDF carregado
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_overlays JSON_ARRAY_T;
@@ -1864,6 +1967,7 @@ FUNCTION GetOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL)
  *
  * @param p_overlay_id ID da sobreposição ()
  * @raises -20825 Sobreposição não encontrada
+ * @since 3.0.0
  * @example
  *   PL_FPDF.RemoveOverlay('OVL_001');
  */
@@ -1873,6 +1977,7 @@ PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2);
  * Limpar todas as sobreposições de todas ou de página específica
  *
  * @param p_page_number limpar da página (NULL = todas)
+ * @since 3.0.0
  * @example
  *   -- Limpar todas as sobreposições
  *   PL_FPDF.ClearOverlays();
@@ -1894,6 +1999,7 @@ PROCEDURE ClearOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL);
  * @raises -20800 PDF nulo ou pequeno demais para ser válido
  * @raises -20801 cabeçalho %PDF-x.x ausente ou malformado
  * @raises -20867 PDF cifrado: decifre com DecryptPDF antes; o ID não é registrado
+ * @since 3.0.0
  * @example
  *   BEGIN
  *     PL_FPDF.LoadPDFWithID('report_jan', l_jan_pdf);
@@ -1917,6 +2023,7 @@ PROCEDURE LoadPDFWithID(
  *       "fileSize": 125678,
  *       "loadedDate": "2026-01-25T10:30:00"
  *     }, ...]
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_pdfs JSON_ARRAY_T;
@@ -1936,6 +2043,7 @@ FUNCTION GetLoadedPDFs RETURN JSON_ARRAY_T;
  *
  * @param p_pdf_id Identificador do PDF
  * @raises -20831 ID do PDF não encontrado
+ * @since 3.0.0
  * @example
  *   PL_FPDF.UnloadPDF('report_jan');
  */
@@ -1959,6 +2067,7 @@ PROCEDURE UnloadPDF(p_pdf_id IN VARCHAR2);
  * @raises -20843 xref em stream malformada
  * @raises -20847 object stream malformado
  * @raises -20848 predictor não suportado na xref em stream
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_merged BLOB;
@@ -1995,6 +2104,7 @@ FUNCTION MergePDFs(
  * @raises -20843 xref em stream malformada
  * @raises -20847 object stream malformado
  * @raises -20848 predictor não suportado na xref em stream
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_split_pdfs JSON_ARRAY_T;
@@ -2032,6 +2142,7 @@ FUNCTION SplitPDF(
  * @raises -20843 xref em stream malformada
  * @raises -20847 object stream malformado
  * @raises -20848 predictor não suportado na xref em stream
+ * @since 3.0.0
  * @example
  *   DECLARE
  *     l_extracted BLOB;
@@ -2068,6 +2179,7 @@ FUNCTION ExtractPages(
  * @raises -20860 PDF inválido: /Root não encontrado no trailer
  * @raises -20863 chave RC4 vazia
  * @raises -20864 conteúdo acima do limite que o RC4 desta base trata
+ * @since 3.0.0
  * @example
  *   l_encrypted := PL_FPDF.EncryptPDF(
  *     p_pdf => l_pdf,
@@ -2098,6 +2210,7 @@ FUNCTION EncryptPDF(
  *       antes de descomprimidos.
  * @raises -20861 dicionário /Encrypt não encontrado no PDF
  * @raises -20857 versão de PDF inválida
+ * @since 3.0.0
  * @example
  *   l_decrypted := PL_FPDF.DecryptPDF(l_encrypted_pdf, 'password123');
  */
@@ -2111,6 +2224,7 @@ FUNCTION DecryptPDF(
  *
  * @param p_pdf PDF blob para verificar
  * @return TRUE se criptografado
+ * @since 3.0.0
  * @example
  *   IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
  */
@@ -2127,6 +2241,7 @@ FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN;
  *     - permissions: object with print, copy, modify, etc.
  *     - hasUserPassword: boolean
  *     - hasOwnerPassword: boolean
+ * @since 3.0.0
  * @example
  *   l_info := PL_FPDF.GetSecurityInfo(l_pdf);
  *   IF l_info.get_boolean('encrypted') THEN ...
@@ -2141,6 +2256,7 @@ FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T;
  * @param p_owner_password Senha acesso total
  * @raises -20850 método de cifragem não suportado
  * @raises -20851 senha inválida
+ * @since 3.0.0
  * @example
  *   PL_FPDF.Init;
  *   PL_FPDF.SetEncryption('AES-128', 'user123', 'owner456');
@@ -2169,6 +2285,7 @@ PROCEDURE SetEncryption(
  *   2.0: só AES de 256 bits, sem RC4
  * @raises -20857 versão de PDF inválida; só 1.4, 1.5, 1.6, 1.7 ou 2.0
  * @raises -20858 AES-128 exige PDF 1.5 ou maior, e AES-256 exige 1.7
+ * @since 3.0.0
  * @example
  *   PL_FPDF.SetPDFVersion('1.5');
  */
@@ -2178,6 +2295,7 @@ PROCEDURE SetPDFVersion(p_version IN VARCHAR2);
  * Obter a configuração atual de versão do PDF
  *
  * @return VARCHAR2 - a versão de PDF corrente (por exemplo '1.4')
+ * @since 3.0.0
  */
 FUNCTION GetPDFVersion RETURN VARCHAR2;
 
@@ -2193,6 +2311,7 @@ FUNCTION GetPDFVersion RETURN VARCHAR2;
  * @param p_assemble Permitir montagem de documento
  * @param p_print_high Permitir impressão alta qualidade
  * @raises -20856 SetEncryption tem de ser chamada antes
+ * @since 3.0.0
  * @example
  *   PL_FPDF.SetEncryption('AES-128', 'user', 'owner');
  *   PL_FPDF.SetPermissions(p_print => TRUE, p_copy => FALSE, p_modify => FALSE);

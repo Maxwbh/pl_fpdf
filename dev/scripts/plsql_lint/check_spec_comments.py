@@ -99,7 +99,12 @@ O que se confere
    PL/SQL Developer, muitas vezes sem o repositório à mão: mandá-lo abrir
    `docs/ROADMAP.md` troca a explicação por um endereço que ele não pode
    seguir. O que se cita é o que não se pode embutir — a norma, o formato, o
-   decodificador contra o qual se validou.
+   decodificador contra o qual se validou;
+8. **todo bloco diz `@since X.Y.Z`** — a versão em que a API apareceu. A
+   referência gerada mostra isso, e é o que separa, para quem está na versão
+   estável, o que existe do que só vem na próxima. Os valores foram tirados
+   das tags do git, comparando a spec de cada uma; uma API nova não entra sem
+   dizer de quando é.
 
 O que NÃO se confere, de propósito: se o texto está certo. Isso é revisão
 humana. Aqui só se garante que existe, que está no formato, que é português e
@@ -124,7 +129,7 @@ def do_repo(*partes):
 PADRAO = ['src/PL_FPDF.pks', 'src/PL_FPDF_UTIL.pks']
 
 TAGS = {'@param', '@return', '@raises', '@note', '@example', '@limitation',
-        '@process', '@options'}
+        '@process', '@options', '@since'}
 
 # tag errada -> a certa. Sao os enganos que a mao comete sozinha.
 ENGANOS = {'@returns': '@return', '@throws': '@raises', '@throw': '@raises',
@@ -356,6 +361,13 @@ def conferir(caminho):
 
         if tipo == 'function' and '@return' not in achadas:
             falha('function sem "@return"')
+
+        desde = [b for b in bloco if re.match(r'^\s*\*\s*@since\b', b)]
+        if len(desde) != 1:
+            falha(f'{len(desde)} "@since" — precisa de exatamente um, com a '
+                  f'versão em que a API apareceu')
+        elif not re.match(r'^\s*\*\s*@since\s+\d+\.\d+\.\d+\s*$', desde[0]):
+            falha('"@since" sem versão no formato X.Y.Z: ' + desde[0].strip())
 
         esperados = parametros(linhas, n)
         documentados = [re.match(r'^\s*\*\s*@param\s+(\S+)', b).group(1)

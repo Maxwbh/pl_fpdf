@@ -22,6 +22,12 @@ exemplo são os mesmos nas duas línguas -- o que muda neles é só o `alt`.
 # `co_version`: este anda na frente enquanto a versao nova esta em teste.
 ULTIMO_RELEASE = '3.3.0'
 
+# A candidata publicada da versao que a pagina descreve, ou None. Enquanto
+# houver uma, a instalacao avisa que o link instala a estavel, que a pagina e a
+# referencia ja descrevem a candidata, e que no Oracle 26ai a estavel nao roda.
+# Quando a 3.4.0 final sair: ULTIMO_RELEASE = '3.4.0' e isto volta a None.
+ULTIMA_CANDIDATA = 'v3.4.0-rc2'
+
 # O FORMATO do SHA256.txt mudou com o release, e o comando de conferencia tem
 # de acompanhar o release que a pagina CITA, nao o package. Ate a 3.3.0 o
 # workflow gravava so a soma, sem o nome do arquivo, e o `sha256sum -c` recusa
@@ -352,6 +358,8 @@ INSTALACAO = {
            "Three steps and it is running"),
     "lead": ("Compatível com Oracle 19c ou superior. Nenhum objeto além dos packages é criado.",
              "Works on Oracle 19c or later. No object other than the packages is created."),
+    'aviso': ("<b>Estável × candidata.</b> O link abaixo instala a <b>{release}</b>, a versão\nestável. Esta página e a <a href=\"reference.html\">referência</a> já descrevem a\n<b>{versao}</b>, publicada como candidata\n(<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/tag/{candidata}\">{candidata}</a>); o que só\nexiste nela vem marcado na referência. <b>No Oracle 26ai, a {release} não\nfunciona</b>: lá, só a candidata roda.",
+              "<b>Stable vs candidate.</b> The link below installs <b>{release}</b>, the stable\nversion. This page and the <a href=\"reference.html\">reference</a> already describe\n<b>{versao}</b>, published as a candidate\n(<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/tag/{candidata}\">{candidata}</a>); what exists\nonly there is marked in the reference. <b>On Oracle 26ai, {release} does not\nwork</b>: there, only the candidate runs."),
     'passos': [
         {
             'titulo': ("Baixe um arquivo", "Download one file"),
@@ -374,7 +382,8 @@ INSTALACAO = {
             # `SELECT PL_FPDF.co_version FROM DUAL` da ORA-06553 PLS-221 em
             # qualquer versao do Oracle. Quem seguia o passo achava que a
             # instalacao tinha falhado.
-            'codigo': "BEGIN\n  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);\nEND;\n/\n-- {versao}",
+            # A versao que o passo 1 instala -- a do release, nao a do package.
+            'codigo': "BEGIN\n  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);\nEND;\n/\n-- {release}",
         },
     ],
     'nota': ("<b>Para produção, fixe a versão.</b>\nO link acima serve sempre a mais nova — bom para experimentar, ruim para um\nchamado de mudança. Cada versão tem URL própria e imutável na\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">página de releases</a>, com o\n<code>SHA256.txt</code> ao lado para conferir o que foi baixado:",

@@ -117,6 +117,8 @@
   .api p.d{margin:0;color:var(--muted);font-size:14.5px}
   .api p.aviso{margin:10px 0 0;padding:10px 12px;font-size:14px;border-left:3px solid #c47f00;background:rgba(196,127,0,.08)}
   .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
+  .api p.since{margin:-2px 0 10px;font-size:12.5px;color:var(--faint)}
+  .api p.since .novo{color:var(--accent);font-weight:600}
   .api p.see a{color:var(--blue);text-decoration:none}
   .api p.see a:hover{text-decoration:underline}
 
@@ -343,6 +345,7 @@
 <article class="api" id="fpdf">
 <h3>fpdf <span class="kind">Procedure</span><a class="anchor" href="#fpdf" aria-label="link">#</a></h3>
 <p class="d">Initialises the document in the classic FPDF style. Kept for compatibility with v0.9.4; use Init in new code.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.fpdf(
     orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;P&#x27;</span>,
@@ -359,6 +362,7 @@
 <article class="api" id="init">
 <h3>Init <span class="kind">Procedure</span><a class="anchor" href="#init" aria-label="link">#</a></h3>
 <p class="d">Initialises a new PDF document. This must be the first call of any generation; it sets the orientation, unit of measurement, page format and encoding used by every other API.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Init(
     p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;P&#x27;</span>,
@@ -382,6 +386,7 @@
 <article class="api" id="isinitialized">
 <h3>IsInitialized <span class="kind">Function</span><a class="anchor" href="#isinitialized" aria-label="link">#</a></h3>
 <p class="d">Tells whether a document is currently being built in this session.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsInitialized <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
 <h4>Returns</h4><p class="d">BOOLEAN — TRUE if Init has been called and the document has not been finalised.</p>
@@ -391,6 +396,7 @@
 <article class="api" id="reset">
 <h3>Reset <span class="kind">Procedure</span><a class="anchor" href="#reset" aria-label="link">#</a></h3>
 <p class="d">Returns the PDF engine to its initial state, freeing temporary CLOBs and clearing every internal array. Use it between documents generated in the same job, or at the end of long routines.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Reset;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.Reset;</pre></div>
@@ -400,6 +406,7 @@
 <article class="api" id="acceptpagebreak">
 <h3>AcceptPageBreak <span class="kind">Function</span><a class="anchor" href="#acceptpagebreak" aria-label="link">#</a></h3>
 <p class="d">Reports whether an automatic page break should happen at the current point. The engine calls it internally; you can read it for your own pagination logic.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AcceptPageBreak <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
 <h4>Returns</h4><p class="d">BOOLEAN — TRUE if the automatic page break is enabled. **See also:** [SetAutoPageBreak](#setautopagebreak)</p>
@@ -409,6 +416,7 @@
 <article class="api" id="addpage">
 <h3>AddPage <span class="kind">Procedure</span><a class="anchor" href="#addpage" aria-label="link">#</a></h3>
 <p class="d">Adds a new page to the document and makes it the current one. NULL parameters inherit the values set in Init, which lets you mix orientations and formats within the same PDF.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddPage(
     p_orientation <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
@@ -435,6 +443,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <article class="api" id="getcurrentpage">
 <h3>GetCurrentPage <span class="kind">Function</span><a class="anchor" href="#getcurrentpage" aria-label="link">#</a></h3>
 <p class="d">Returns the number of the current page — the one receiving content.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentPage <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
 <h4>Returns</h4><p class="d">PLS_INTEGER — number of the active page. **See also:** [SetPage](#setpage), [PageNo](#pageno)</p>
@@ -444,6 +453,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <article class="api" id="getx">
 <h3>GetX <span class="kind">Function</span><a class="anchor" href="#getx" aria-label="link">#</a></h3>
 <p class="d">Returns the current X position of the cursor.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetX <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — X coordinate. **See also:** [SetX](#setx), [SetXY](#setxy)</p>
@@ -453,6 +463,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <article class="api" id="gety">
 <h3>GetY <span class="kind">Function</span><a class="anchor" href="#gety" aria-label="link">#</a></h3>
 <p class="d">Returns the current Y position of the cursor.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetY <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — Y coordinate. **See also:** [SetY](#sety)</p>
@@ -462,6 +473,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <article class="api" id="ln">
 <h3>Ln <span class="kind">Procedure</span><a class="anchor" href="#ln" aria-label="link">#</a></h3>
 <p class="d">Moves the cursor to the next line, back at the left margin.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Ln(
     h <span class="k">number</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
@@ -475,6 +487,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="pageno">
 <h3>PageNo <span class="kind">Function</span><a class="anchor" href="#pageno" aria-label="link">#</a></h3>
 <p class="d">Returns the current page number during generation; typically used in footers.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.PageNo <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — number of the current page.</p>
@@ -484,6 +497,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setautopagebreak">
 <h3>SetAutoPageBreak <span class="kind">Procedure</span><a class="anchor" href="#setautopagebreak" aria-label="link">#</a></h3>
 <p class="d">Turns the automatic page break on or off and sets how far from the bottom edge it happens.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAutoPageBreak(
     pauto   <span class="k">boolean</span>,
@@ -498,6 +512,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setleftmargin">
 <h3>SetLeftMargin <span class="kind">Procedure</span><a class="anchor" href="#setleftmargin" aria-label="link">#</a></h3>
 <p class="d">Sets the left margin only.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLeftMargin(
     pMargin <span class="k">number</span>);</pre></div>
@@ -510,6 +525,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setmargins">
 <h3>SetMargins <span class="kind">Procedure</span><a class="anchor" href="#setmargins" aria-label="link">#</a></h3>
 <p class="d">Sets the left, top and right margins of the document. The bottom margin is controlled by SetAutoPageBreak.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetMargins(
     left  <span class="k">number</span>,
@@ -526,6 +542,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setpage">
 <h3>SetPage <span class="kind">Procedure</span><a class="anchor" href="#setpage" aria-label="link">#</a></h3>
 <p class="d">Chooses which existing page receives the content of the next calls, so you can go back to an earlier page — to fill in a table of contents once the final page numbers are known, for instance.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPage(
     p_page_number <span class="k">pls_integer</span>);</pre></div>
@@ -542,6 +559,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setrightmargin">
 <h3>SetRightMargin <span class="kind">Procedure</span><a class="anchor" href="#setrightmargin" aria-label="link">#</a></h3>
 <p class="d">Sets the right margin only.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetRightMargin(
     pMargin <span class="k">number</span>);</pre></div>
@@ -554,6 +572,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="settopmargin">
 <h3>SetTopMargin <span class="kind">Procedure</span><a class="anchor" href="#settopmargin" aria-label="link">#</a></h3>
 <p class="d">Sets the top margin only.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTopMargin(
     pMargin <span class="k">number</span>);</pre></div>
@@ -566,6 +585,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setx">
 <h3>SetX <span class="kind">Procedure</span><a class="anchor" href="#setx" aria-label="link">#</a></h3>
 <p class="d">Sets the X position of the cursor.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetX(
     px <span class="k">number</span>);</pre></div>
@@ -578,6 +598,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="setxy">
 <h3>SetXY <span class="kind">Procedure</span><a class="anchor" href="#setxy" aria-label="link">#</a></h3>
 <p class="d">Sets both X and Y of the cursor in a single call.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetXY(
     x <span class="k">number</span>,
@@ -592,6 +613,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="sety">
 <h3>SetY <span class="kind">Procedure</span><a class="anchor" href="#sety" aria-label="link">#</a></h3>
 <p class="d">Sets the Y position of the cursor, and moves X back to the left margin.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetY(
     py <span class="k">number</span>);</pre></div>
@@ -605,6 +627,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="addfont">
 <h3>AddFont <span class="kind">Procedure</span><a class="anchor" href="#addfont" aria-label="link">#</a></h3>
 <p class="d">Registers an additional font (FPDF compatibility). For TrueType with UTF-8, prefer AddTTFFont.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddFont(
     family   <span class="k">varchar2</span>,
@@ -621,6 +644,7 @@ PL_FPDF.Ln;</pre></div>
 <article class="api" id="addttffont">
 <h3>AddTTFFont <span class="kind">Procedure</span><a class="anchor" href="#addttffont" aria-label="link">#</a></h3>
 <p class="d">Registers a TrueType font from a BLOB and makes it available to `SetFont`. The file&#x27;s tables are really parsed, and the font is embedded in the PDF as `/FontFile2`.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddTTFFont(
     p_font_name <span class="k">varchar2</span>,
@@ -644,6 +668,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="clearttffontcache">
 <h3>ClearTTFFontCache <span class="kind">Procedure</span><a class="anchor" href="#clearttffontcache" aria-label="link">#</a></h3>
 <p class="d">Discards every loaded TrueType font, freeing session memory.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearTTFFontCache;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.ClearTTFFontCache;</pre></div>
@@ -652,6 +677,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="getttffontinfo">
 <h3>GetTTFFontInfo <span class="kind">Function</span><a class="anchor" href="#getttffontinfo" aria-label="link">#</a></h3>
 <p class="d">Returns a TrueType font&#x27;s record: the stored bytes and the metrics parsed from the file, rescaled to the PDF&#x27;s 1000 units per em.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetTTFFontInfo(
     p_font_name <span class="k">varchar2</span>) <span class="k">RETURN</span> RECTTFFONT;</pre></div>
@@ -668,6 +694,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="isttffontloaded">
 <h3>IsTTFFontLoaded <span class="kind">Function</span><a class="anchor" href="#isttffontloaded" aria-label="link">#</a></h3>
 <p class="d">Checks whether a TrueType font has already been loaded in this session.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsTTFFontLoaded(
     p_font_name <span class="k">varchar2</span>) <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
@@ -681,6 +708,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="loadttffromfile">
 <h3>LoadTTFFromFile <span class="kind">Procedure</span><a class="anchor" href="#loadttffromfile" aria-label="link">#</a></h3>
 <p class="d">Loads a TrueType font from a file inside an Oracle DIRECTORY.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadTTFFromFile(
     p_font_name <span class="k">varchar2</span>,
@@ -704,6 +732,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="setfont">
 <h3>SetFont <span class="kind">Procedure</span><a class="anchor" href="#setfont" aria-label="link">#</a></h3>
 <p class="d">Sets the font family, style and size used by the next text writes.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFont(
     pfamily <span class="k">varchar2</span>,
@@ -726,6 +755,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="setfontsize">
 <h3>SetFontSize <span class="kind">Procedure</span><a class="anchor" href="#setfontsize" aria-label="link">#</a></h3>
 <p class="d">Changes only the size of the current font.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFontSize(
     psize <span class="k">number</span>);</pre></div>
@@ -738,6 +768,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="utf8topdfstring">
 <h3>UTF8ToPDFString <span class="kind">Function</span><a class="anchor" href="#utf8topdfstring" aria-label="link">#</a></h3>
 <p class="d">Converts UTF-8 text to the PDF&#x27;s internal representation. Called internally; useful when debugging accented characters.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.UTF8ToPDFString(
     p_text   <span class="k">varchar2</span>,
@@ -753,6 +784,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <article class="api" id="cell">
 <h3>Cell <span class="kind">Procedure</span><a class="anchor" href="#cell" aria-label="link">#</a></h3>
 <p class="d">Writes a rectangular block of text, with optional borders, alignment, fill and link. It is the API most used to build reports and tables.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Cell(
     pw      <span class="k">number</span>,
@@ -796,6 +828,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="cellrotated">
 <h3>CellRotated <span class="kind">Procedure</span><a class="anchor" href="#cellrotated" aria-label="link">#</a></h3>
 <p class="d">Cell with the text rotated — useful for vertical table headers and labels.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.CellRotated(
     p_width    <span class="k">number</span>,
@@ -827,6 +860,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="getcurrentfontfamily">
 <h3>GetCurrentFontFamily <span class="kind">Function</span><a class="anchor" href="#getcurrentfontfamily" aria-label="link">#</a></h3>
 <p class="d">Returns the family of the current font.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontFamily <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
 <h4>Returns</h4><p class="d">VARCHAR2 — the family name. **See also:** [SetFont](#setfont)</p>
@@ -836,6 +870,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="getcurrentfontsize">
 <h3>GetCurrentFontSize <span class="kind">Function</span><a class="anchor" href="#getcurrentfontsize" aria-label="link">#</a></h3>
 <p class="d">Returns the size of the current font.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontSize <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — size in points. **See also:** [SetFont](#setfont)</p>
@@ -845,6 +880,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="getcurrentfontstyle">
 <h3>GetCurrentFontStyle <span class="kind">Function</span><a class="anchor" href="#getcurrentfontstyle" aria-label="link">#</a></h3>
 <p class="d">Returns the style of the current font.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontStyle <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
 <h4>Returns</h4><p class="d">VARCHAR2 — &#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27;, &#x27;BI&#x27; or &#x27;U&#x27;, always **uppercase**. &gt; `SetFont` normalises it: `&#x27;b&#x27;` goes in and `&#x27;B&#x27;` comes back. **See also:** [SetFont](#setfont)</p>
@@ -854,6 +890,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="getlinespacing">
 <h3>GetLineSpacing <span class="kind">Function</span><a class="anchor" href="#getlinespacing" aria-label="link">#</a></h3>
 <p class="d">Returns the current line spacing.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLineSpacing <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — the configured spacing. **See also:** [SetLineSpacing](#setlinespacing)</p>
@@ -863,6 +900,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="getstringwidth">
 <h3>GetStringWidth <span class="kind">Function</span><a class="anchor" href="#getstringwidth" aria-label="link">#</a></h3>
 <p class="d">Measures how wide a piece of text will be in the current font and size — use it to centre by hand, size columns, or decide where to break.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetStringWidth(
     pstr <span class="k">varchar2</span>) <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
@@ -879,6 +917,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <article class="api" id="multicell">
 <h3>MultiCell <span class="kind">Function</span><a class="anchor" href="#multicell" aria-label="link">#</a></h3>
 <p class="d">Writes a paragraph with automatic line breaking inside a given width. It exists as a function, returning the number of lines, and as a procedure.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.MultiCell(
     pw      <span class="k">number</span>,
@@ -923,6 +962,7 @@ l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, <span class="s">&#x27;LR&#x2
 <article class="api" id="setlinespacing">
 <h3>SetLineSpacing <span class="kind">Procedure</span><a class="anchor" href="#setlinespacing" aria-label="link">#</a></h3>
 <p class="d">Sets the line spacing used by Write and MultiCell.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineSpacing(
     pls <span class="k">number</span>);</pre></div>
@@ -935,6 +975,7 @@ l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, <span class="s">&#x27;LR&#x2
 <article class="api" id="text">
 <h3>Text <span class="kind">Procedure</span><a class="anchor" href="#text" aria-label="link">#</a></h3>
 <p class="d">Writes text at absolute coordinates, without moving the cursor or breaking lines.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Text(
     px   <span class="k">number</span>,
@@ -954,6 +995,7 @@ l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, <span class="s">&#x27;LR&#x2
 <article class="api" id="write">
 <h3>Write <span class="kind">Procedure</span><a class="anchor" href="#write" aria-label="link">#</a></h3>
 <p class="d">Writes text as a flow, continuing where the previous one stopped and breaking lines automatically — which lets you switch fonts and styles in the middle of a sentence.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Write(
     pH    <span class="k">varchar2</span>,
@@ -976,6 +1018,7 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 <article class="api" id="writerotated">
 <h3>WriteRotated <span class="kind">Procedure</span><a class="anchor" href="#writerotated" aria-label="link">#</a></h3>
 <p class="d">Write with the text rotated.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.WriteRotated(
     p_height   <span class="k">number</span>,
@@ -999,6 +1042,7 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 <article class="api" id="line">
 <h3>Line <span class="kind">Procedure</span><a class="anchor" href="#line" aria-label="link">#</a></h3>
 <p class="d">Draws a straight line between two points.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Line(
     x1 <span class="k">number</span>,
@@ -1017,6 +1061,7 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 <article class="api" id="poly">
 <h3>Poly <span class="kind">Procedure</span><a class="anchor" href="#poly" aria-label="link">#</a></h3>
 <p class="d">Draws a polygon from a collection of points.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Poly(
     points tab_points,
@@ -1036,6 +1081,7 @@ PL_FPDF.Poly(l_pontos, <span class="k">TRUE</span>, <span class="s">&#x27;F&#x27
 <article class="api" id="rect">
 <h3>Rect <span class="kind">Procedure</span><a class="anchor" href="#rect" aria-label="link">#</a></h3>
 <p class="d">Draws a rectangle: outlined, filled, or both.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Rect(
     px     <span class="k">number</span>,
@@ -1056,6 +1102,7 @@ PL_FPDF.Poly(l_pontos, <span class="k">TRUE</span>, <span class="s">&#x27;F&#x27
 <article class="api" id="setdash">
 <h3>SetDash <span class="kind">Procedure</span><a class="anchor" href="#setdash" aria-label="link">#</a></h3>
 <p class="d">Sets a simple dashed-line pattern.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDash(
     pblack <span class="k">number</span> <span class="k">DEFAULT</span> 0,
@@ -1072,6 +1119,7 @@ PL_FPDF.SetDash;                <span class="c">-- back to the solid line</span>
 <article class="api" id="setdrawcolor">
 <h3>SetDrawColor <span class="kind">Procedure</span><a class="anchor" href="#setdrawcolor" aria-label="link">#</a></h3>
 <p class="d">Sets the colour of the lines and outlines drawn next.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDrawColor(
     r <span class="k">number</span>,
@@ -1092,6 +1140,7 @@ PL_FPDF.SetDrawColor(0, 90, 160);     <span class="c">-- azul</span></pre></div>
 <article class="api" id="setfillcolor">
 <h3>SetFillColor <span class="kind">Procedure</span><a class="anchor" href="#setfillcolor" aria-label="link">#</a></h3>
 <p class="d">Sets the fill colour of cells (pfill = 1), rectangles and shapes.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFillColor(
     r <span class="k">number</span>,
@@ -1112,6 +1161,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="setlinedashpattern">
 <h3>SetLineDashPattern <span class="kind">Procedure</span><a class="anchor" href="#setlinedashpattern" aria-label="link">#</a></h3>
 <p class="d">Sets the dash pattern using the PDF&#x27;s own syntax, for fine control.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineDashPattern(
     pdash <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;[] 0&#x27;</span>);</pre></div>
@@ -1124,6 +1174,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="setlinewidth">
 <h3>SetLineWidth <span class="kind">Procedure</span><a class="anchor" href="#setlinewidth" aria-label="link">#</a></h3>
 <p class="d">Sets the thickness of the lines drawn next.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLineWidth(
     width <span class="k">number</span>);</pre></div>
@@ -1139,6 +1190,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="settextcolor">
 <h3>SetTextColor <span class="kind">Procedure</span><a class="anchor" href="#settextcolor" aria-label="link">#</a></h3>
 <p class="d">Sets the colour of the text written next.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTextColor(
     r <span class="k">number</span>,
@@ -1158,6 +1210,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="triangle">
 <h3>Triangle <span class="kind">Procedure</span><a class="anchor" href="#triangle" aria-label="link">#</a></h3>
 <p class="d">Draws an isosceles triangle with a base of 2xpsize and a height of psize, pointing in the direction given.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Triangle(
     px           <span class="k">number</span>,
@@ -1182,6 +1235,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="getimagefromurl">
 <h3>getImageFromUrl <span class="kind">Function</span><a class="anchor" href="#getimagefromurl" aria-label="link">#</a></h3>
 <p class="d">Downloads an image from a URL through UTL_HTTP for use in the document. The database needs a network ACL for this.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.getImageFromUrl(
     p_Url <span class="k">varchar2</span>) <span class="k">RETURN</span> RECIMAGEBLOB;</pre></div>
@@ -1201,6 +1255,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="image">
 <h3>image <span class="kind">Procedure</span><a class="anchor" href="#image" aria-label="link">#</a></h3>
 <p class="d">Places a PNG or JPEG image on the current page, with optional proportional scaling.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.image(
     pFile   <span class="k">varchar2</span>,
@@ -1228,6 +1283,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <article class="api" id="imagefromblob">
 <h3>ImageFromBlob <span class="kind">Procedure</span><a class="anchor" href="#imagefromblob" aria-label="link">#</a></h3>
 <p class="d">Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. `Image` fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission.</p>
+<p class="since">Since version <b>3.4.0</b> <span class="novo">— only in 3.4.0, still a candidate — not in 3.3.0, the stable one</span></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ImageFromBlob(
     p_blob  <span class="k">blob</span>,
@@ -1258,6 +1314,7 @@ PL_FPDF.ImageFromBlob(l_logo, <span class="s">&#x27;LOGO&#x27;</span>, 10, 10, 4
 <article class="api" id="addlink">
 <h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="link">#</a></h3>
 <p class="d">Creates an internal link, still without a destination, and returns its identifier.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AddLink <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — the link identifier.</p>
@@ -1271,6 +1328,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <article class="api" id="link">
 <h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="link">#</a></h3>
 <p class="d">Creates a clickable rectangle anywhere on the page.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
     px    <span class="k">number</span>,
@@ -1295,6 +1353,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <article class="api" id="setlink">
 <h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="link">#</a></h3>
 <p class="d">Sets the destination of an internal link created by AddLink.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLink(
     plink <span class="k">number</span>,
@@ -1316,6 +1375,7 @@ PL_FPDF.Link(20, 40, 60, 10, <span class="s">&#x27;https://example.com&#x27;</sp
 <article class="api" id="footer">
 <h3>Footer <span class="kind">Procedure</span><a class="anchor" href="#footer" aria-label="link">#</a></h3>
 <p class="d">Footer extension point, called internally as each page is closed.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Footer;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.SetFooterProc(<span class="s">&#x27;MY_PKG.FOOTER&#x27;</span>);       <span class="c">-- the rest is automatic</span></pre></div>
@@ -1324,6 +1384,7 @@ PL_FPDF.Link(20, 40, 60, 10, <span class="s">&#x27;https://example.com&#x27;</sp
 <article class="api" id="header">
 <h3>Header <span class="kind">Procedure</span><a class="anchor" href="#header" aria-label="link">#</a></h3>
 <p class="d">Header extension point, called internally on every new page.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Header;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.SetHeaderProc(<span class="s">&#x27;MY_PKG.HEADER&#x27;</span>);       <span class="c">-- the rest is automatic</span></pre></div>
@@ -1332,6 +1393,7 @@ PL_FPDF.Link(20, 40, 60, 10, <span class="s">&#x27;https://example.com&#x27;</sp
 <article class="api" id="setaliasnbpages">
 <h3>SetAliasNbPages <span class="kind">Procedure</span><a class="anchor" href="#setaliasnbpages" aria-label="link">#</a></h3>
 <p class="d">Sets the placeholder that will be replaced by the total page count when the document is finalised — so you can write &#x27;Page 2 of 10&#x27; without knowing the total in advance.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAliasNbPages(
     palias <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="s">&#x27;{nb}&#x27;</span>);</pre></div>
@@ -1345,6 +1407,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setfooterproc">
 <h3>SetFooterProc <span class="kind">Procedure</span><a class="anchor" href="#setfooterproc" aria-label="link">#</a></h3>
 <p class="d">Registers a procedure of yours to run automatically in the footer of every page.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetFooterProc(
     footerprocname <span class="k">varchar2</span>,
@@ -1359,6 +1422,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setheaderproc">
 <h3>SetHeaderProc <span class="kind">Procedure</span><a class="anchor" href="#setheaderproc" aria-label="link">#</a></h3>
 <p class="d">Registers a procedure of yours to run automatically at the top of every page.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetHeaderProc(
     headerprocname <span class="k">varchar2</span>,
@@ -1374,6 +1438,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="addbarcode">
 <h3>AddBarcode <span class="kind">Procedure</span><a class="anchor" href="#addbarcode" aria-label="link">#</a></h3>
 <p class="d">Draws a linear barcode on the current page, with an optional human-readable caption.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddBarcode(
     p_x         <span class="k">number</span>,
@@ -1409,6 +1474,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="addqrcode">
 <h3>AddQRCode <span class="kind">Procedure</span><a class="anchor" href="#addqrcode" aria-label="link">#</a></h3>
 <p class="d">Draws a QR code on the current page, with a configurable content format and error-correction level.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddQRCode(
     p_x                <span class="k">number</span>,
@@ -1438,6 +1504,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="getdocumentmetadata">
 <h3>GetDocumentMetadata <span class="kind">Function</span><a class="anchor" href="#getdocumentmetadata" aria-label="link">#</a></h3>
 <p class="d">Returns the metadata currently set on the document.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetDocumentMetadata <span class="k">RETURN</span> JSON_OBJECT_T;</pre></div>
 <h4>Returns</h4><p class="d">JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options. **See also:** [SetDocumentConfig](#setdocumentconfig)</p>
@@ -1453,6 +1520,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="getpageinfo">
 <h3>GetPageInfo <span class="kind">Function</span><a class="anchor" href="#getpageinfo" aria-label="link">#</a></h3>
 <p class="d">Returns information about a page of the document being built.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPageInfo(
     p_page_number <span class="k">pls_integer</span> <span class="k">DEFAULT</span> <span class="k">null</span>) <span class="k">RETURN</span> JSON_OBJECT_T;</pre></div>
@@ -1476,6 +1544,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setauthor">
 <h3>SetAuthor <span class="kind">Procedure</span><a class="anchor" href="#setauthor" aria-label="link">#</a></h3>
 <p class="d">Sets the document author in the metadata.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetAuthor(
     pauthor <span class="k">varchar2</span>);</pre></div>
@@ -1488,6 +1557,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setcompression">
 <h3>SetCompression <span class="kind">Procedure</span><a class="anchor" href="#setcompression" aria-label="link">#</a></h3>
 <p class="d">Turns compression of the page content stream on or off. When on, each page comes out with /Filter [/ASCIIHexDecode /FlateDecode] — a deflate written inside the package itself, in hexadecimal because the document is assembled as text. Hexadecimal doubles the compressed size, so compression is only applied when the stream still ends up smaller than the original; a page that does not benefit comes out unfiltered. Text usually drops below a fifth.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetCompression(
     p_compress <span class="k">boolean</span> <span class="k">DEFAULT</span> <span class="k">false</span>);</pre></div>
@@ -1500,6 +1570,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setcreator">
 <h3>SetCreator <span class="kind">Procedure</span><a class="anchor" href="#setcreator" aria-label="link">#</a></h3>
 <p class="d">Sets the creating application in the document metadata.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetCreator(
     pcreator <span class="k">varchar2</span>);</pre></div>
@@ -1512,6 +1583,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setdisplaymode">
 <h3>SetDisplayMode <span class="kind">Procedure</span><a class="anchor" href="#setdisplaymode" aria-label="link">#</a></h3>
 <p class="d">Tells the PDF reader how to display the document when it opens.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDisplayMode(
     zoom   <span class="k">varchar2</span>,
@@ -1528,6 +1600,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setdocumentconfig">
 <h3>SetDocumentConfig <span class="kind">Procedure</span><a class="anchor" href="#setdocumentconfig" aria-label="link">#</a></h3>
 <p class="d">Sets several document metadata fields and options at once, from a JSON object.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetDocumentConfig(
     p_config JSON_OBJECT_T);</pre></div>
@@ -1553,6 +1626,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setkeywords">
 <h3>SetKeywords <span class="kind">Procedure</span><a class="anchor" href="#setkeywords" aria-label="link">#</a></h3>
 <p class="d">Sets the document keywords, which help search and indexing.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetKeywords(
     pkeywords <span class="k">varchar2</span>);</pre></div>
@@ -1565,6 +1639,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="setsubject">
 <h3>SetSubject <span class="kind">Procedure</span><a class="anchor" href="#setsubject" aria-label="link">#</a></h3>
 <p class="d">Sets the document subject in the metadata.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetSubject(
     psubject <span class="k">varchar2</span>);</pre></div>
@@ -1577,6 +1652,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="settitle">
 <h3>SetTitle <span class="kind">Procedure</span><a class="anchor" href="#settitle" aria-label="link">#</a></h3>
 <p class="d">Sets the document title, shown in the PDF reader&#x27;s title bar.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetTitle(
     ptitle <span class="k">varchar2</span>);</pre></div>
@@ -1590,6 +1666,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="closepdf">
 <h3>ClosePDF <span class="kind">Procedure</span><a class="anchor" href="#closepdf" aria-label="link">#</a></h3>
 <p class="d">Closes the document structure (advanced use; the output APIs already do it).</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClosePDF;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.ClosePDF;</pre></div>
@@ -1598,6 +1675,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="openpdf">
 <h3>OpenPDF <span class="kind">Procedure</span><a class="anchor" href="#openpdf" aria-label="link">#</a></h3>
 <p class="d">Explicitly opens the document structure (advanced use; Init already does it).</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OpenPDF;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.OpenPDF;</pre></div>
@@ -1606,6 +1684,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="output">
 <h3>Output <span class="kind">Procedure</span><a class="anchor" href="#output" aria-label="link">#</a></h3>
 <p class="d">Classic FPDF-style output (compatibility). Prefer OutputBlob or OutputFile.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Output(
     pname <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
@@ -1624,6 +1703,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <article class="api" id="outputblob">
 <h3>OutputBlob <span class="kind">Function</span><a class="anchor" href="#outputblob" aria-label="link">#</a></h3>
 <p class="d">Synonym of OutputBlob: finalises the document and returns the PDF as a BLOB.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputBlob <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
 <h4>Returns</h4><p class="d">BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)</p>
@@ -1637,6 +1717,7 @@ INSERT <span class="k">INTO</span> documentos (id, arquivo) VALUES (1, l_pdf);</
 <article class="api" id="outputfile">
 <h3>OutputFile <span class="kind">Procedure</span><a class="anchor" href="#outputfile" aria-label="link">#</a></h3>
 <p class="d">Finalises the document and writes the PDF straight to a file on the database server.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OutputFile(
     p_filename  <span class="k">varchar2</span>,
@@ -1656,6 +1737,7 @@ INSERT <span class="k">INTO</span> documentos (id, arquivo) VALUES (1, l_pdf);</
 <article class="api" id="returnblob">
 <h3>ReturnBlob <span class="kind">Function</span><a class="anchor" href="#returnblob" aria-label="link">#</a></h3>
 <p class="d">Returns the PDF as a BLOB (legacy compatibility). Prefer OutputBlob.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.ReturnBlob(
     pname <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
@@ -1675,6 +1757,7 @@ INSERT <span class="k">INTO</span> documentos (id, arquivo) VALUES (1, l_pdf);</
 <article class="api" id="addwatermark">
 <h3>AddWatermark <span class="kind">Procedure</span><a class="anchor" href="#addwatermark" aria-label="link">#</a></h3>
 <p class="d">Registers a text watermark, drawn by OutputModifiedPDF() into the page content stream: every affected page gets a content object and a /Resources of its own, so a /Resources shared between pages is never contaminated. The mark is centred and rotated about the centre of the page, always in Helvetica.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddWatermark(
     p_text     <span class="k">VARCHAR2</span>,
@@ -1712,6 +1795,7 @@ PL_FPDF.AddWatermark(<span class="s">&#x27;APPROVED&#x27;</span>, 0.5, 0, <span 
 <article class="api" id="clearpdfcache">
 <h3>ClearPDFCache <span class="kind">Procedure</span><a class="anchor" href="#clearpdfcache" aria-label="link">#</a></h3>
 <p class="d">Discards the loaded PDFs and frees the memory used by manipulation.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearPDFCache;</pre></div>
 <h4>Note</h4><p class="d">Always call it after processing a PDF to release memory. It clears: the loaded PDF, page info, rotations, removed pages and watermarks.</p>
@@ -1725,6 +1809,7 @@ PL_FPDF.ClearPDFCache();</pre></div>
 <article class="api" id="flatedecode">
 <h3>FlateDecode <span class="kind">Function</span><a class="anchor" href="#flatedecode" aria-label="link">#</a></h3>
 <p class="d">Decompresses a PDF /FlateDecode stream (zlib, RFC 1950). Implemented in pure PL/SQL, because UTL_COMPRESS will not do: it only accepts a gzip trailer with a correct CRC-32, and that CRC is of the DECOMPRESSED content — to know it you would have to decompress first. Useful in its own right, and it is what lets the copier read cross-reference streams and object streams.</p>
+<p class="since">Since version <b>3.3.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.FlateDecode(
     p_stream    <span class="k">BLOB</span>,
@@ -1746,6 +1831,7 @@ PL_FPDF.ClearPDFCache();</pre></div>
 <article class="api" id="flateencode">
 <h3>FlateEncode <span class="kind">Function</span><a class="anchor" href="#flateencode" aria-label="link">#</a></h3>
 <p class="d">Compresses data into a PDF /FlateDecode stream (zlib, RFC 1950). Written in pure PL/SQL: a single block with FIXED Huffman and greedy LZ77 — it compresses less than zlib&#x27;s dynamic Huffman, and far more than nothing. When the data is incompressible it falls back to a stored block, so the output never exceeds the input plus the block overhead.</p>
+<p class="since">Since version <b>3.3.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.FlateEncode(
     p_data <span class="k">BLOB</span>) <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
@@ -1759,6 +1845,7 @@ PL_FPDF.ClearPDFCache();</pre></div>
 <article class="api" id="getactivepagecount">
 <h3>GetActivePageCount <span class="kind">Function</span><a class="anchor" href="#getactivepagecount" aria-label="link">#</a></h3>
 <p class="d">Returns how many pages will remain once the pending removals are applied.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetActivePageCount <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
 <h4>Returns</h4><p class="d">PLS_INTEGER — pages not marked for removal. **See also:** [RemovePage](#removepage), [GetPageCount](#getpagecount)</p>
@@ -1774,6 +1861,7 @@ l_active := PL_FPDF.GetActivePageCount(); <span class="c">-- Ativas: 9</span></p
 <article class="api" id="getpagecount">
 <h3>GetPageCount <span class="kind">Function</span><a class="anchor" href="#getpagecount" aria-label="link">#</a></h3>
 <p class="d">Returns the total page count of the loaded PDF, including the pages marked for removal.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPageCount <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
 <h4>Returns</h4><p class="d">PLS_INTEGER — number of pages.</p>
@@ -1787,6 +1875,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="getpdfinfo">
 <h3>GetPDFInfo <span class="kind">Function</span><a class="anchor" href="#getpdfinfo" aria-label="link">#</a></h3>
 <p class="d">Returns information about the loaded PDF: version, metadata and page count.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFInfo <span class="k">RETURN</span> JSON_OBJECT_T;</pre></div>
 <h4>Returns</h4><p class="d">JSON_OBJECT_T — PDF version, title, author, page count and the remaining metadata.</p>
@@ -1805,6 +1894,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="getwatermarks">
 <h3>GetWatermarks <span class="kind">Function</span><a class="anchor" href="#getwatermarks" aria-label="link">#</a></h3>
 <p class="d">Lists every watermark applied to the loaded PDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetWatermarks <span class="k">RETURN</span> JSON_ARRAY_T;</pre></div>
 <h4>Returns</h4><p class="d">JSON_ARRAY_T — objects with id, text, opacity, rotation, pageRange, font, fontSize and color.</p>
@@ -1829,6 +1919,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="ispageremoved">
 <h3>IsPageRemoved <span class="kind">Function</span><a class="anchor" href="#ispageremoved" aria-label="link">#</a></h3>
 <p class="d">Tells whether a page is marked for removal.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPageRemoved(
     p_page_number <span class="k">PLS_INTEGER</span>) <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
@@ -1844,6 +1935,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="ispdfmodified">
 <h3>IsPDFModified <span class="kind">Function</span><a class="anchor" href="#ispdfmodified" aria-label="link">#</a></h3>
 <p class="d">Tells whether there are pending changes — rotation, removal, watermark, overlay — on the loaded PDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPDFModified <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
 <h4>Returns</h4><p class="d">BOOLEAN — TRUE if there are changes not yet applied. **See also:** [OutputModifiedPDF](#outputmodifiedpdf)</p>
@@ -1856,6 +1948,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="loadpdf">
 <h3>LoadPDF <span class="kind">Procedure</span><a class="anchor" href="#loadpdf" aria-label="link">#</a></h3>
 <p class="d">Loads an existing PDF into session memory for reading and modification. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDF(
     p_pdf_blob <span class="k">BLOB</span>);</pre></div>
@@ -1882,6 +1975,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="outputmodifiedpdf">
 <h3>OutputModifiedPDF <span class="kind">Function</span><a class="anchor" href="#outputmodifiedpdf" aria-label="link">#</a></h3>
 <p class="d">Produces the PDF with the changes applied, copying the kept pages object by object: content, fonts, images and annotations arrive intact, with no re-rendering. It applies RemovePage and RotatePage, and draws watermarks and text and image overlays into the content stream: every affected page gets a content object and a /Resources of its own.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputModifiedPDF <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
 <h4>Returns</h4><p class="d">BLOB — the modified PDF.</p>
@@ -1919,6 +2013,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <article class="api" id="removepage">
 <h3>RemovePage <span class="kind">Procedure</span><a class="anchor" href="#removepage" aria-label="link">#</a></h3>
 <p class="d">Marks a page of the loaded PDF for removal. The deletion is logical: it is only applied by OutputModifiedPDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemovePage(
     p_page_number <span class="k">PLS_INTEGER</span>);</pre></div>
@@ -1940,6 +2035,7 @@ PL_FPDF.RemovePage(5);  <span class="c">-- remove page 5</span></pre></div>
 <article class="api" id="rotatepage">
 <h3>RotatePage <span class="kind">Procedure</span><a class="anchor" href="#rotatepage" aria-label="link">#</a></h3>
 <p class="d">Rotates a page of the loaded PDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RotatePage(
     p_page_number <span class="k">PLS_INTEGER</span>,
@@ -1963,6 +2059,7 @@ PL_FPDF.RotatePage(2, 180);   <span class="c">-- rotate page 2</span></pre></div
 <article class="api" id="clearoverlays">
 <h3>ClearOverlays <span class="kind">Procedure</span><a class="anchor" href="#clearoverlays" aria-label="link">#</a></h3>
 <p class="d">Removes every overlay, from one page or from the whole document.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearOverlays(
     p_page_number <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
@@ -1978,6 +2075,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="getoverlays">
 <h3>GetOverlays <span class="kind">Function</span><a class="anchor" href="#getoverlays" aria-label="link">#</a></h3>
 <p class="d">Lists the overlays applied, optionally filtered by page.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetOverlays(
     p_page_number <span class="k">PLS_INTEGER</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>) <span class="k">RETURN</span> JSON_ARRAY_T;</pre></div>
@@ -2003,6 +2101,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="overlayimage">
 <h3>OverlayImage <span class="kind">Procedure</span><a class="anchor" href="#overlayimage" aria-label="link">#</a></h3>
 <p class="d">Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. Neither format is decompressed: JPEG goes in whole as /DCTDecode, and a PNG&#x27;s IDAT blocks are already zlib, which is the PDF&#x27;s /FlateDecode. Not supported, and refused with -20823 rather than drawn wrong: PNG with an alpha channel, interlaced PNG (Adam7) and 16-bit depth.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OverlayImage(
     p_page_number <span class="k">PLS_INTEGER</span>,
@@ -2048,6 +2147,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="overlaytext">
 <h3>OverlayText <span class="kind">Procedure</span><a class="anchor" href="#overlaytext" aria-label="link">#</a></h3>
 <p class="d">Places text at an exact position on a page of the loaded PDF — stamps, protocol numbers, signatures. Coordinates are in PDF points, with Y growing upwards from the bottom. Drawn by OutputModifiedPDF() into the content stream. When width is given it defines the text BOX: lines wrap inside it and align is relative to [x, x+width]. Without width there is nothing to wrap, and align becomes relative to the point itself — &#x27;center&#x27; centres the text on x, &#x27;right&#x27; ends it at x.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.OverlayText(
     p_page_number <span class="k">PLS_INTEGER</span>,
@@ -2088,6 +2188,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="removeoverlay">
 <h3>RemoveOverlay <span class="kind">Procedure</span><a class="anchor" href="#removeoverlay" aria-label="link">#</a></h3>
 <p class="d">Removes one specific overlay by its identifier.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemoveOverlay(
     p_overlay_id <span class="k">VARCHAR2</span>);</pre></div>
@@ -2104,6 +2205,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="extractpages">
 <h3>ExtractPages <span class="kind">Function</span><a class="anchor" href="#extractpages" aria-label="link">#</a></h3>
 <p class="d">Creates a new PDF holding only the selected pages of a loaded document. The requested order is honoured and a page may repeat; only the objects reachable from the chosen pages are copied, so the result is smaller than the source.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.ExtractPages(
     p_pdf_id  <span class="k">VARCHAR2</span>,
@@ -2137,6 +2239,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="getloadedpdfs">
 <h3>GetLoadedPDFs <span class="kind">Function</span><a class="anchor" href="#getloadedpdfs" aria-label="link">#</a></h3>
 <p class="d">Lists the documents currently loaded under an identifier.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLoadedPDFs <span class="k">RETURN</span> JSON_ARRAY_T;</pre></div>
 <h4>Returns</h4><p class="d">JSON_ARRAY_T — objects with the id and the information of each loaded PDF. **See also:** [LoadPDFWithID](#loadpdfwithid), [UnloadPDF](#unloadpdf)</p>
@@ -2155,6 +2258,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="loadpdfwithid">
 <h3>LoadPDFWithID <span class="kind">Procedure</span><a class="anchor" href="#loadpdfwithid" aria-label="link">#</a></h3>
 <p class="d">Loads a PDF into memory under an identifier, so several documents can be held open at once to merge, split or extract pages.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDFWithID(
     p_pdf_id   <span class="k">VARCHAR2</span>,
@@ -2182,6 +2286,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="mergepdfs">
 <h3>MergePDFs <span class="kind">Function</span><a class="anchor" href="#mergepdfs" aria-label="link">#</a></h3>
 <p class="d">Merges several loaded PDFs into a single document, in the order given. The objects of each source — pages, fonts, images, annotations — are copied with their indirect references renumbered: nothing is re-rendered and the original content arrives intact. The same identifier may appear more than once.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.MergePDFs(
     p_pdf_ids JSON_ARRAY_T,
@@ -2217,6 +2322,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="splitpdf">
 <h3>SplitPDF <span class="kind">Function</span><a class="anchor" href="#splitpdf" aria-label="link">#</a></h3>
 <p class="d">Splits a loaded PDF into several documents, following the ranges given. Each part carries only the objects reachable from its own pages, which is why it ends up far smaller than the source. The ranges may not overlap.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.SplitPDF(
     p_pdf_id      <span class="k">VARCHAR2</span>,
@@ -2254,6 +2360,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="unloadpdf">
 <h3>UnloadPDF <span class="kind">Procedure</span><a class="anchor" href="#unloadpdf" aria-label="link">#</a></h3>
 <p class="d">Drops from memory a document loaded by LoadPDFWithID.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.UnloadPDF(
     p_pdf_id <span class="k">VARCHAR2</span>);</pre></div>
@@ -2270,6 +2377,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="decryptpdf">
 <h3>DecryptPDF <span class="kind">Function</span><a class="anchor" href="#decryptpdf" aria-label="link">#</a></h3>
 <p class="d">Removes the protection from an encrypted PDF, given the right password. It supports RC4-40, RC4-128, AES-128 (AESV2) and AES-256 (AESV3), with either the user or the owner password. The filter is read from the document&#x27;s /CFM, not assumed. A PDF 1.5+ source is flattened, and object streams are decrypted before being decompressed.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.DecryptPDF(
     p_pdf      <span class="k">BLOB</span>,
@@ -2293,6 +2401,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="encryptpdf">
 <h3>EncryptPDF <span class="kind">Function</span><a class="anchor" href="#encryptpdf" aria-label="link">#</a></h3>
 <p class="d">Encrypts an existing PDF, applying passwords and permissions. This is the recommended way to protect documents you generate or receive. A PDF 1.5+ source (cross-reference streams, object streams) is flattened: the objects inside object streams become top-level objects, and the output carries a classic cross-reference table.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.EncryptPDF(
     p_pdf            <span class="k">BLOB</span>,
@@ -2330,6 +2439,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="getpdfversion">
 <h3>GetPDFVersion <span class="kind">Function</span><a class="anchor" href="#getpdfversion" aria-label="link">#</a></h3>
 <p class="d">Returns the PDF version configured for the output.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFVersion <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
 <h4>Returns</h4><p class="d">VARCHAR2 — the version, e.g. &#x27;1.7&#x27;. **See also:** [SetPDFVersion](#setpdfversion)</p>
@@ -2338,6 +2448,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="getsecurityinfo">
 <h3>GetSecurityInfo <span class="kind">Function</span><a class="anchor" href="#getsecurityinfo" aria-label="link">#</a></h3>
 <p class="d">Returns the security details of an encrypted PDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetSecurityInfo(
     p_pdf <span class="k">BLOB</span>) <span class="k">RETURN</span> JSON_OBJECT_T;</pre></div>
@@ -2352,6 +2463,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="isencrypted">
 <h3>IsEncrypted <span class="kind">Function</span><a class="anchor" href="#isencrypted" aria-label="link">#</a></h3>
 <p class="d">Checks whether a PDF is encrypted.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsEncrypted(
     p_pdf <span class="k">BLOB</span>) <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
@@ -2365,6 +2477,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <article class="api" id="setencryption">
 <h3>SetEncryption <span class="kind">Procedure</span><a class="anchor" href="#setencryption" aria-label="link">#</a></h3>
 <p class="d">Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetEncryption(
     p_encryption     <span class="k">VARCHAR2</span>,
@@ -2389,6 +2502,7 @@ l_pdf := PL_FPDF.OutputBlob;</pre></div>
 <article class="api" id="setpdfversion">
 <h3>SetPDFVersion <span class="kind">Procedure</span><a class="anchor" href="#setpdfversion" aria-label="link">#</a></h3>
 <p class="d">Sets the version declared in the header of the generated PDF.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPDFVersion(
     p_version <span class="k">VARCHAR2</span>);</pre></div>
@@ -2406,6 +2520,7 @@ l_pdf := PL_FPDF.OutputBlob;</pre></div>
 <article class="api" id="setpermissions">
 <h3>SetPermissions <span class="kind">Procedure</span><a class="anchor" href="#setpermissions" aria-label="link">#</a></h3>
 <p class="d">Sets the permissions of the document being built, applied together with the encryption defined in SetEncryption.</p>
+<p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetPermissions(
     p_print      <span class="k">BOOLEAN</span> <span class="k">DEFAULT</span> <span class="k">TRUE</span>,
@@ -2437,6 +2552,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <article class="api" id="debugdisabled">
 <h3>DebugDisabled <span class="kind">Procedure</span><a class="anchor" href="#debugdisabled" aria-label="link">#</a></h3>
 <p class="d">Turns the debug messages off.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.DebugDisabled;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.DebugDisabled;</pre></div>
@@ -2445,6 +2561,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <article class="api" id="debugenabled">
 <h3>DebugEnabled <span class="kind">Procedure</span><a class="anchor" href="#debugenabled" aria-label="link">#</a></h3>
 <p class="d">Turns the package&#x27;s debug messages on.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.DebugEnabled;</pre></div>
 <h4>Example</h4><div class="code"><pre>PL_FPDF.DebugEnabled;</pre></div>
@@ -2453,6 +2570,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <article class="api" id="error">
 <h3>Error <span class="kind">Procedure</span><a class="anchor" href="#error" aria-label="link">#</a></h3>
 <p class="d">Raises a standard PL_FPDF error. For internal use and for extensions.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Error(
     pmsg <span class="k">varchar2</span>);</pre></div>
@@ -2467,6 +2585,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <article class="api" id="getloglevel">
 <h3>GetLogLevel <span class="kind">Function</span><a class="anchor" href="#getloglevel" aria-label="link">#</a></h3>
 <p class="d">Returns the configured log level.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLogLevel <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
 <h4>Returns</h4><p class="d">PLS_INTEGER — the current level (0 to 4). **See also:** [SetLogLevel](#setloglevel)</p>
@@ -2476,6 +2595,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <article class="api" id="getscalefactor">
 <h3>GetScaleFactor <span class="kind">Function</span><a class="anchor" href="#getscalefactor" aria-label="link">#</a></h3>
 <p class="d">Returns the conversion factor between the document&#x27;s unit and PDF points.</p>
+<p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetScaleFactor <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
 <h4>Returns</h4><p class="d">NUMBER — the scale factor, e.g. 2.8346 for millimetres. **See also:** [Init](#init)</p>
@@ -2485,6 +2605,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <article class="api" id="setloglevel">
 <h3>SetLogLevel <span class="kind">Procedure</span><a class="anchor" href="#setloglevel" aria-label="link">#</a></h3>
 <p class="d">Sets how detailed the package&#x27;s log messages are.</p>
+<p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLogLevel(
     p_level <span class="k">pls_integer</span>);</pre></div>

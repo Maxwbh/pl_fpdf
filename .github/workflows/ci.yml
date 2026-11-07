@@ -343,6 +343,10 @@ jobs:
       - name: docs/TRACEABILITY.md em dia, e a tabela de cobertura completa
         run: python dev/scripts/gen_docs/rastreabilidade.py --check
 
+      # Versoes antigas do README da extensao se declaravam GPL v2, com selo.
+      - name: Toda declaração de licença diz MIT
+        run: python dev/scripts/plsql_lint/check_licencas.py
+
   package-sanity:
     name: Package version consistency
     runs-on: ubuntu-latest

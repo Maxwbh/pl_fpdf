@@ -18,6 +18,7 @@ TYPE tqr IS TABLE OF PLS_INTEGER INDEX BY PLS_INTEGER;
  * @param o_mascara a máscara escolhida (0..7)
  * @raises -20870 conteúdo vazio
  * @raises -20872 nível de correção inválido
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.qr_matriz('https://example.com', 'M',
  *                          l_mat, l_lado, l_versao, l_mascara);
@@ -40,6 +41,7 @@ PROCEDURE qr_matriz(p_dados   IN  VARCHAR2,
  * @return VARCHAR2 - o padrão de módulos
  * @raises -20880 código vazio
  * @raises -20882 simbologia não suportada
+ * @since 3.3.0
  * @example
  *   l_padrao := PL_FPDF_UTIL.bc_padrao('ABC123456', 'CODE128');
  */
@@ -60,6 +62,7 @@ FUNCTION bc_padrao(p_codigo IN VARCHAR2,
  * @raises -20892 cabeçalho zlib inválido
  * @raises -20893 a saída passou do teto
  * @raises -20894 tabela interna inconsistente
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.inflate(l_comprimido, l_claro);
  */
@@ -74,6 +77,7 @@ PROCEDURE inflate(p_src IN            BLOB,
  *
  * @param p_src o conteúdo a comprimir
  * @param o_dst o fluxo zlib
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.deflate(l_claro, l_comprimido);
  */
@@ -86,6 +90,7 @@ PROCEDURE deflate(p_src IN BLOB, o_dst IN OUT NOCOPY BLOB);
  *
  * @param p_b o byte (0..255)
  * @return VARCHAR2 - os dois dígitos
+ * @since 3.3.0
  * @example
  *   l_hex := PL_FPDF_UTIL.hex_do_byte(231);      -- 'E7'
  */
@@ -97,6 +102,7 @@ FUNCTION hex_do_byte(p_b IN PLS_INTEGER) RETURN VARCHAR2;
  *
  * @param p_src a entrada
  * @return RAW - os 16 bytes do resumo
+ * @since 3.3.0
  * @example
  *   l_md5 := PL_FPDF_UTIL.crypto_md5(UTL_RAW.CAST_TO_RAW('abc'));
  */
@@ -109,6 +115,7 @@ FUNCTION  crypto_md5(p_src IN RAW) RETURN RAW;
  * @param p_src os dados
  * @param p_key a chave
  * @return RAW - o resultado
+ * @since 3.3.0
  * @example
  *   l_cifrado := PL_FPDF_UTIL.crypto_rc4(l_claro, l_chave);
  */
@@ -120,6 +127,7 @@ FUNCTION  crypto_rc4(p_src IN RAW, p_key IN RAW) RETURN RAW;
  * @param p_src os dados
  * @param p_key a chave
  * @param o_dst o resultado
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.crypto_rc4_blob(l_claro, l_chave, l_cifrado);
  */
@@ -131,6 +139,7 @@ PROCEDURE crypto_rc4_blob(p_src IN BLOB, p_key IN RAW,
  * depois de instalar: uma tabela transcrita errada compila e só aparece no
  * arquivo que o leitor recusa.
  *
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.crypto_autoteste;
  */
@@ -144,6 +153,7 @@ PROCEDURE crypto_autoteste;
  * @param p_dados o conteúdo
  * @param o_saida o resultado, com o IV na frente
  * @param p_iv o IV; em branco, um aleatório; empty means random
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.aes_cbc_cifrar(l_chave, l_claro, l_cifrado);
  */
@@ -158,6 +168,7 @@ PROCEDURE aes_cbc_cifrar(p_chave IN            RAW,
  * @param p_chave a chave
  * @param p_dados o conteúdo
  * @return RAW - o resultado, com o IV na frente
+ * @since 3.3.0
  * @example
  *   l_cifrado := PL_FPDF_UTIL.aes_cbc_cifrar_raw(l_chave, l_claro);
  */
@@ -170,6 +181,7 @@ FUNCTION  aes_cbc_cifrar_raw(p_chave IN RAW, p_dados IN RAW) RETURN RAW;
  * @param p_chave a chave
  * @param p_dados o conteúdo cifrado
  * @param o_saida o conteúdo claro
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.aes_cbc_decifrar(l_chave, l_cifrado, l_claro);
  */
@@ -183,6 +195,7 @@ PROCEDURE aes_cbc_decifrar(p_chave IN            RAW,
  * @param p_chave a chave
  * @param p_dados o conteúdo cifrado
  * @return RAW - o conteúdo claro
+ * @since 3.3.0
  * @example
  *   l_claro := PL_FPDF_UTIL.aes_cbc_decifrar_raw(l_chave, l_cifrado);
  */
@@ -197,6 +210,7 @@ FUNCTION  aes_cbc_decifrar_raw(p_chave IN RAW, p_dados IN RAW) RETURN RAW;
  * @param p_obj_num o número do objeto
  * @param p_gen_num o número de geração
  * @return RAW - a chave do objeto
+ * @since 3.3.0
  * @example
  *   l_chave_obj := PL_FPDF_UTIL.aes_chave_objeto(l_chave, 12);
  */
@@ -208,6 +222,7 @@ FUNCTION  aes_chave_objeto(p_chave   IN RAW,
  * Devolve 16 bytes aleatórios para servir de IV.
  *
  * @return RAW - os 16 bytes
+ * @since 3.3.0
  * @example
  *   l_iv := PL_FPDF_UTIL.aes_iv;
  */
@@ -227,6 +242,7 @@ FUNCTION  aes_iv RETURN RAW;
  * @param o_o entradas /O e /OE
  * @param o_oe entradas /O e /OE
  * @param o_perms a entrada /Perms
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.aes_valores_r6('usuario', 'dono', l_chave, -4,
  *                               l_u, l_ue, l_o, l_oe, l_perms);
@@ -253,6 +269,7 @@ PROCEDURE aes_valores_r6(p_senha_usr  IN  VARCHAR2,
  * @param o_chave a chave do documento, quando confere
  * @param o_dono TRUE se era a senha de dono
  * @return BOOLEAN - TRUE se a senha confere
+ * @since 3.3.0
  * @example
  *   IF PL_FPDF_UTIL.aes_verificar_r6(l_senha, l_u, l_ue, l_o, l_oe,
  *                                    l_chave, l_dono) THEN ...
@@ -268,6 +285,7 @@ FUNCTION  aes_verificar_r6(p_senha IN  VARCHAR2,
 /**
  * Confere o AES contra os vetores do FIPS-197 e levanta se divergir.
  *
+ * @since 3.3.0
  * @example
  *   PL_FPDF_UTIL.aes_autoteste;
  */

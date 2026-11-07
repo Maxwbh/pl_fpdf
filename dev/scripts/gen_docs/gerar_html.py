@@ -97,6 +97,8 @@ ROTULOS_PT = {
                          'mesma ordem, com outros nomes: '),
     'sobrecarga_outra': ('A sobrecarga acima tem assinatura própria; o bloco '
                          'de documentação é o da primeira.'),
+    'desde': 'Desde a versão',
+    'so_na': 'só na {v}, ainda candidata — não existe na {estavel}, a estável',
 }
 
 ROTULOS_EN = {
@@ -110,7 +112,31 @@ ROTULOS_EN = {
                          'in the same order, under other names: '),
     'sobrecarga_outra': ('The overload above has a signature of its own; the '
                          'documentation block is the first one’s.'),
+    'desde': 'Since version',
+    'so_na': 'only in {v}, still a candidate — not in {estavel}, the stable one',
 }
+
+
+def _versao(v):
+    return tuple(int(x) for x in v.split('.'))
+
+
+def desde(a, rot):
+    """(versão, aviso) do `@since`; o aviso só quando a API é mais nova que a
+    versão estável que o site manda baixar.
+
+    Existe porque a referência é gerada da spec em desenvolvimento, e o link de
+    download aponta para o release estável: sem a marca, quem lê a página vê
+    `ImageFromBlob` e procura em vão na 3.3.0 que instalou.
+    """
+    import conteudo_index
+    v = a.get('desde') or ''
+    if not v:
+        return '', ''
+    estavel = conteudo_index.ULTIMO_RELEASE
+    if _versao(v) > _versao(estavel):
+        return v, rot['so_na'].format(v=v, estavel=estavel)
+    return v, ''
 
 
 def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
@@ -130,8 +156,13 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
     o = [f'<article class="api" id="{alvo}">',
          f'<h3>{esc(nome)} <span class="kind">{tipo}</span>'
          f'<a class="anchor" href="#{alvo}" aria-label="link">#</a></h3>',
-         f'<p class="d">{esc(a["descricao"])}</p>',
-         f'<h4>{rot["sintaxe"]}</h4>',
+         f'<p class="d">{esc(a["descricao"])}</p>']
+    v, aviso = desde(a, rot)
+    if v:
+        o.append(f'<p class="since">{rot["desde"]} <b>{esc(v)}</b>'
+                 + (f' <span class="novo">— {esc(aviso)}</span>' if aviso else '')
+                 + '</p>')
+    o += [f'<h4>{rot["sintaxe"]}</h4>',
          '<div class="code"><pre>' + realcar(sintaxe(a)) + '</pre></div>']
     for s in sobrecargas:
         o.append('<div class="code"><pre>' + realcar(sintaxe(s))

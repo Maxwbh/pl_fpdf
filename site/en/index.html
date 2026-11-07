@@ -694,6 +694,13 @@ See the ticket example</a>
     <h2>Three steps and it is running</h2>
     <p class="lead">Works on Oracle 19c or later. No object other than the packages is created.</p>
 
+    <p class="note"><b>Stable vs candidate.</b> The link below installs <b>3.3.0</b>, the stable
+version. This page and the <a href="reference.html">reference</a> already describe
+<b>3.4.0</b>, published as a candidate
+(<a href="https://github.com/Maxwbh/pl_fpdf/releases/tag/v3.4.0-rc2">v3.4.0-rc2</a>); what exists
+only there is marked in the reference. <b>On Oracle 26ai, 3.3.0 does not
+work</b>: there, only the candidate runs.</p>
+
     <div class="steps">
       <div class="step">
         <h3>Download one file</h3>
@@ -713,7 +720,7 @@ See the ticket example</a>
   DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);
 END;
 /
--- 3.4.0</code>
+-- 3.3.0</code>
       </div>
     </div>
 

@@ -171,6 +171,10 @@ def secao_md(a, sobrecargas=(), rot=gerar_html.ROTULOS_PT):
     fora = []
     fora.append(f'### {a["nome"]}\n')
     fora.append(a['descricao'] + '\n')
+    v, aviso = gerar_html.desde(a, rot)
+    if v:
+        fora.append(f'*{rot["desde"]} {v}*' + (f' — **{aviso}**' if aviso else '')
+                    + '\n')
     fora.append(f'#### {rot["sintaxe"]}\n')
     fora.append('```sql\n' + sintaxe(a) + '\n```\n')
     for s in sobrecargas:

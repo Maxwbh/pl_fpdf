@@ -151,13 +151,19 @@ def pagina(c, k, versao):
                       f'        <h3>{esc(p["titulo"][k])}</h3>\n'
                       f'        <p>{p["texto"][k]}</p>\n'
                       '        <code class="block">'
-                      + p['codigo'].format(versao=versao)
+                      + p['codigo'].format(versao=versao,
+                                           release=c.ULTIMO_RELEASE)
                       + '</code>' + depois + '\n      </div>')
     partes['INSTALACAO'] = (
         f'    <p class="kicker">{esc(c.INSTALACAO["kicker"][k])}</p>\n'
         f'    <h2>{c.INSTALACAO["h2"][k]}</h2>\n'
         f'    <p class="lead">{c.INSTALACAO["lead"][k]}</p>\n\n'
-        '    <div class="steps">\n' + '\n'.join(passos) + '\n    </div>\n\n'
+        + (f'    <p class="note">'
+           + c.INSTALACAO['aviso'][k].format(release=c.ULTIMO_RELEASE,
+                                             versao=versao,
+                                             candidata=c.ULTIMA_CANDIDATA)
+           + '</p>\n\n' if c.ULTIMA_CANDIDATA else '')
+        + '    <div class="steps">\n' + '\n'.join(passos) + '\n    </div>\n\n'
         '    <p class="note" style="margin-top:26px">'
         + c.INSTALACAO['nota'][k] + '</p>\n\n'
         '    <code class="block">'

@@ -257,6 +257,7 @@ python dev/scripts/gen_docs/check_paridade_md.py
 python dev/scripts/gen_docs/check_extensao_api.py
 python dev/scripts/gen_docs/check_exemplos_doc.py
 python dev/scripts/gen_docs/rastreabilidade.py --check
+python dev/scripts/plsql_lint/check_licencas.py
 ```
 
 Fora do push, num workflow próprio (`links-externos.yml`, semanal e a cada
