@@ -26,6 +26,7 @@ on:
 
 permissions:
   contents: write        # necessário para criar o release
+  actions: write         # para disparar a publicação do site, no fim
 
 jobs:
   publicar:
@@ -172,3 +173,14 @@ jobs:
             --notes-file NOTAS.md \
             dist/pl_fpdf_install.sql \
             SHA256.txt
+
+      # O site publica de novo agora que o release existe. Nao basta o
+      # `release: published` do pages.yml: evento gerado pelo token do proprio
+      # Actions nao dispara outro workflow -- a excecao e o workflow_dispatch.
+      # Release estavel publica a partir da master; pre-lancamento nao mexe no
+      # site, que continua anunciando a estavel.
+      - name: Publicar o site
+        if: env.PRE == ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run pages.yml --ref master

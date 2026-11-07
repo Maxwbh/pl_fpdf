@@ -12,11 +12,12 @@ on:
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
-  # Publicado um release, o site publica de novo: a validacao abaixo recusa
-  # anunciar como estavel uma versao cujo release ainda nao existe, entao o
-  # push que traz a versao nova chega antes da tag e so este passo a publica.
-  release:
-    types: [published]
+  # Publicado um release estavel, o release.yml dispara este workflow por
+  # workflow_dispatch: a validacao abaixo recusa anunciar como estavel uma
+  # versao cujo release ainda nao existe, entao o push que traz a versao nova
+  # chega antes da tag e so o release a publica. (Um `release: published`
+  # aqui nao serviria: o release e criado com o token do Actions, e evento
+  # desse token nao dispara outro workflow.)
   workflow_dispatch:
 
 permissions:
