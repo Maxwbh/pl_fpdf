@@ -426,7 +426,7 @@
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AcceptPageBreak <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
-<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the automatic page break is enabled. **See also:** [SetAutoPageBreak](#setautopagebreak)</p>
+<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the automatic page break is enabled.</p>
 <h4>Example</h4><div class="code"><pre><span class="k">IF</span> PL_FPDF.AcceptPageBreak <span class="k">THEN</span> ... <span class="k">END</span> <span class="k">IF</span>;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setautopagebreak">SetAutoPageBreak</a></p>
 </article>
@@ -463,7 +463,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentPage <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
-<h4>Returns</h4><p class="d">PLS_INTEGER — number of the active page. **See also:** [SetPage](#setpage), [PageNo](#pageno)</p>
+<h4>Returns</h4><p class="d">PLS_INTEGER — number of the active page.</p>
 <h4>Example</h4><div class="code"><pre>l_pagina := PL_FPDF.GetCurrentPage;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setpage">SetPage</a>, <a href="#pageno">PageNo</a></p>
 </article>
@@ -473,7 +473,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetX <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
-<h4>Returns</h4><p class="d">NUMBER — X coordinate. **See also:** [SetX](#setx), [SetXY](#setxy)</p>
+<h4>Returns</h4><p class="d">NUMBER — X coordinate.</p>
 <h4>Example</h4><div class="code"><pre>l_x := PL_FPDF.GetX;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setx">SetX</a>, <a href="#setxy">SetXY</a></p>
 </article>
@@ -483,7 +483,7 @@ PL_FPDF.AddPage(<span class="s">&#x27;P&#x27;</span>, <span class="s">&#x27;210,
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetY <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
-<h4>Returns</h4><p class="d">NUMBER — Y coordinate. **See also:** [SetY](#sety)</p>
+<h4>Returns</h4><p class="d">NUMBER — Y coordinate.</p>
 <h4>Example</h4><div class="code"><pre>l_y := PL_FPDF.GetY;</pre></div>
 <p class="see"><b>See also:</b> <a href="#sety">SetY</a></p>
 </article>
@@ -660,7 +660,7 @@ PL_FPDF.Ln;</pre></div>
 </article>
 <article class="api" id="addttffont">
 <h3>AddTTFFont <span class="kind">Procedure</span><a class="anchor" href="#addttffont" aria-label="Permanent link to AddTTFFont">#</a></h3>
-<p class="d">Registers a TrueType font from a BLOB and makes it available to `SetFont`. The file&#x27;s tables are really parsed, and the font is embedded in the PDF as `/FontFile2`.</p>
+<p class="d">Registers a TrueType font from a BLOB and makes it available to SetFont. The file&#x27;s tables are really parsed, and the font is embedded in the PDF as /FontFile2.</p>
 <p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.AddTTFFont(
@@ -701,7 +701,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>—</td><td>Font name. The same one used when loading</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">recTTFFont — record with the font&#x27;s metrics and information. **See also:** [AddTTFFont](#addttffont)</p>
+<h4>Returns</h4><p class="d">recTTFFont — record with the font&#x27;s metrics and information.</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20206</td><td>font not loaded</td></tr>
 </tbody></table></div>
@@ -718,7 +718,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_font_name</td><td class="ptype">VARCHAR2</td><td>—</td><td>Font name. The same one used when loading</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the font is in the cache. **See also:** [AddTTFFont](#addttffont), [ClearTTFFontCache](#clearttffontcache)</p>
+<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the font is in the cache.</p>
 <h4>Example</h4><div class="code"><pre><span class="k">IF</span> NOT PL_FPDF.IsTTFFontLoaded(<span class="s">&#x27;Roboto&#x27;</span>) <span class="k">THEN</span> ... <span class="k">END</span> <span class="k">IF</span>;</pre></div>
 <p class="see"><b>See also:</b> <a href="#addttffont">AddTTFFont</a>, <a href="#clearttffontcache">ClearTTFFontCache</a></p>
 </article>
@@ -880,7 +880,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontFamily <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
-<h4>Returns</h4><p class="d">VARCHAR2 — the family name. **See also:** [SetFont](#setfont)</p>
+<h4>Returns</h4><p class="d">VARCHAR2 — the family name.</p>
 <h4>Example</h4><div class="code"><pre>l_familia := PL_FPDF.GetCurrentFontFamily;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
 </article>
@@ -890,7 +890,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontSize <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
-<h4>Returns</h4><p class="d">NUMBER — size in points. **See also:** [SetFont](#setfont)</p>
+<h4>Returns</h4><p class="d">NUMBER — size in points.</p>
 <h4>Example</h4><div class="code"><pre>l_corpo := PL_FPDF.GetCurrentFontSize;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
 </article>
@@ -900,7 +900,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetCurrentFontStyle <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
-<h4>Returns</h4><p class="d">VARCHAR2 — &#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27;, &#x27;BI&#x27; or &#x27;U&#x27;, always **uppercase**. &gt; `SetFont` normalises it: `&#x27;b&#x27;` goes in and `&#x27;B&#x27;` comes back. **See also:** [SetFont](#setfont)</p>
+<h4>Returns</h4><p class="d">VARCHAR2 — &#x27;&#x27;, &#x27;B&#x27;, &#x27;I&#x27;, &#x27;BI&#x27; or &#x27;U&#x27;, always UPPERCASE. &gt; SetFont normalises it: &#x27;b&#x27; goes in and &#x27;B&#x27; comes back.</p>
 <h4>Example</h4><div class="code"><pre>l_estilo := PL_FPDF.GetCurrentFontStyle;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setfont">SetFont</a></p>
 </article>
@@ -910,7 +910,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLineSpacing <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
-<h4>Returns</h4><p class="d">NUMBER — the configured spacing. **See also:** [SetLineSpacing](#setlinespacing)</p>
+<h4>Returns</h4><p class="d">NUMBER — the configured spacing.</p>
 <h4>Example</h4><div class="code"><pre>l_entre := PL_FPDF.GetLineSpacing;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setlinespacing">SetLineSpacing</a></p>
 </article>
@@ -1260,7 +1260,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_Url</td><td class="ptype">VARCHAR2</td><td>—</td><td>Address of the image. http:// or https:// URL reachable from the database</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">recImageBlob — record with the image&#x27;s content and metadata. **See also:** [Image](#image)</p>
+<h4>Returns</h4><p class="d">recImageBlob — record with the image&#x27;s content and metadata.</p>
 <h4>Note</h4><p class="d">Accepted formats: PNG, JPEG/JPG</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20301</td><td>invalid image header</td></tr>
@@ -1301,7 +1301,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 </article>
 <article class="api" id="imagefromblob">
 <h3>ImageFromBlob <span class="kind">Procedure</span><a class="anchor" href="#imagefromblob" aria-label="Permanent link to ImageFromBlob">#</a></h3>
-<p class="d">Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. `Image` fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission.</p>
+<p class="d">Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. Image fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission. The format is recognised by the first bytes of the file, not by its extension: PNG and JPEG; anything else is refused.</p>
 <p class="since">Since version <b>3.4.0</b></p>
 <p class="limit"><b>Limitation:</b> PNG with an alpha channel, interlaced PNG and 16-bit PNG are refused with -20100 on this path -- for those, re-save the image without alpha and without interlacing, or draw it over a finished PDF with OverlayImage, which accepts them.</p>
 <h4>Syntax</h4>
@@ -1333,11 +1333,11 @@ PL_FPDF.ImageFromBlob(l_logo, <span class="s">&#x27;LOGO&#x27;</span>, 10, 10, 4
 <h2 class="grp" id="grp-links">Links</h2>
 <article class="api" id="addlink">
 <h3>AddLink <span class="kind">Function</span> <span class="unsup">not supported</span><a class="anchor" href="#addlink" aria-label="Permanent link to AddLink">#</a></h3>
-<p class="d">Creates an internal link, still without a destination, and returns its identifier.</p>
+<p class="d">Not supported: always raises -20601. It would create an internal link, and internal links are not implemented: the /Dest was never written to the file, so the identifier this function would return would lead nowhere -- and Link refuses it. Until September 2026 the call raised ORA-06531, &quot;reference to uninitialized collection&quot;, because the internal collection was never initialised: it never worked, in any version. It now refuses with a message that says what to use instead. Use a URL.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.AddLink <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
-<h4>Returns</h4><p class="d">NUMBER — the link identifier.</p>
+<h4>Returns</h4><p class="d">NUMBER — never returns: it raises first.</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20601</td><td>internal link is not implemented</td></tr>
 </tbody></table></div>
@@ -1372,7 +1372,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 </article>
 <article class="api" id="setlink">
 <h3>SetLink <span class="kind">Procedure</span> <span class="unsup">not supported</span><a class="anchor" href="#setlink" aria-label="Permanent link to SetLink">#</a></h3>
-<p class="d">Sets the destination of an internal link created by AddLink.</p>
+<p class="d">Not supported: always raises -20601, for the same reason as AddLink: storing the destination would achieve nothing, because the /Dest is not emitted and nothing reads it. Until September 2026 it raised ORA-06531. Use a URL.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetLink(
@@ -1380,8 +1380,8 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
     py    <span class="k">number</span> <span class="k">DEFAULT</span> 0,
     ppage <span class="k">number</span> <span class="k">DEFAULT</span> -1);</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
-<tr><td class="pname">plink</td><td class="ptype">NUMBER</td><td>—</td><td>Link identifier. The value returned by AddLink</td></tr>
-<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Vertical destination on the page. Number in the unit set by Init (mm, cm, pt or in); 0 (default) = top of the page</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">NUMBER</td><td>—</td><td>The identifier AddLink would return (AddLink always raises -20601)</td></tr>
+<tr><td class="pname">py</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Vertical destination on the page; -<br>1 = the current position</td></tr>
 <tr><td class="pname">ppage</td><td class="ptype">NUMBER</td><td><code>-1</code></td><td>Destination page. Page number; -1 (default) = the current page</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
@@ -1527,7 +1527,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetDocumentMetadata <span class="k">RETURN</span> JSON_OBJECT_T;</pre></div>
-<h4>Returns</h4><p class="d">JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options. **See also:** [SetDocumentConfig](#setdocumentconfig)</p>
+<h4>Returns</h4><p class="d">JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options.</p>
 <h4>Note</h4><p class="d">JSON structure: { &quot;pageCount&quot;: &lt;number&gt;, &quot;title&quot;: &quot;&lt;string&gt;&quot;, &quot;author&quot;: &quot;&lt;string&gt;&quot;, &quot;subject&quot;: &quot;&lt;string&gt;&quot;, &quot;keywords&quot;: &quot;&lt;string&gt;&quot;, &quot;format&quot;: &quot;&lt;string&gt;&quot;, &quot;orientation&quot;: &quot;&lt;string&gt;&quot;, &quot;unit&quot;: &quot;&lt;string&gt;&quot;, &quot;initialized&quot;: &lt;boolean&gt; }</p>
 <h4>Example</h4><div class="code"><pre><span class="k">DECLARE</span>
   l_meta JSON_OBJECT_T;
@@ -1547,7 +1547,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td><code>null</code></td><td>Page to query. Integer &gt;= 1, up to GetPageCount; NULL (default) = the current page</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">JSON_OBJECT_T — width, height, orientation and rotation of the page. **See also:** [GetCurrentPage](#getcurrentpage), [GetPDFInfo](#getpdfinfo)</p>
+<h4>Returns</h4><p class="d">JSON_OBJECT_T — width, height, orientation and rotation of the page.</p>
 <h4>Note</h4><p class="d">JSON structure: { &quot;number&quot;: &lt;number&gt;, &quot;format&quot;: &quot;&lt;string&gt;&quot;, &quot;orientation&quot;: &quot;&lt;string&gt;&quot;, &quot;width&quot;: &lt;number&gt;, &quot;height&quot;: &lt;number&gt;, &quot;unit&quot;: &quot;&lt;string&gt;&quot; }</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20106</td><td>the page does not exist</td></tr>
@@ -1703,7 +1703,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 </article>
 <article class="api" id="output">
 <h3>Output <span class="kind">Procedure</span><a class="anchor" href="#output" aria-label="Permanent link to Output">#</a></h3>
-<p class="d">Classic FPDF-style output (compatibility). Prefer OutputBlob or OutputFile.</p>
+<p class="d">Closes the document and writes it to a file, in the PDF_DIR DIRECTORY. It is the legacy form: the browser delivery modes (&#x27;I&#x27;, &#x27;D&#x27;, &#x27;S&#x27;) left together with OWA/HTP and now refuse with -20306, saying what to use instead. To get the bytes, use OutputBlob.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Output(
@@ -1711,7 +1711,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
     pdest <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>File or document name. Any VARCHAR2</td></tr>
-<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Destination. &#x27;S&#x27;, &#x27;D&#x27;, &#x27;I&#x27; or &#x27;F&#x27;</td></tr>
+<tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Destination: &#x27;F&#x27; (File) is the only one supported</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>unknown destination, or a failure while writing</td></tr>
@@ -1726,7 +1726,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Page &#x27;</span> || PL_FPDF.PageNo |
 <p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputBlob <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
-<h4>Returns</h4><p class="d">BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)</p>
+<h4>Returns</h4><p class="d">BLOB — the PDF content.</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20005</td><td>Init has not been called yet. Before August 2026 this call carried on and returned an empty PDF, without pointing to the cause.</td></tr>
 </tbody></table></div>
@@ -1766,7 +1766,7 @@ INSERT <span class="k">INTO</span> documentos (id, arquivo) VALUES (1, l_pdf);</
 <tr><td class="pname">pname</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Logical name of the document. Any VARCHAR2<br>NULL = no name</td></tr>
 <tr><td class="pname">pdest</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>FPDF-style destination. &#x27;S&#x27; (string/BLOB), &#x27;D&#x27; (download), &#x27;I&#x27; (inline), &#x27;F&#x27; (file)</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)</p>
+<h4>Returns</h4><p class="d">BLOB — the PDF content.</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>failure closing or assembling the document, with the original stack preserved</td></tr>
 </tbody></table></div>
@@ -1858,7 +1858,7 @@ PL_FPDF.ClearPDFCache();</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_data</td><td class="ptype">BLOB</td><td>—</td><td>Content to compress. BLOB of any size; NULL is treated as empty</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">BLOB — zlib stream: header, DEFLATE and Adler-32. **See also:** [FlateDecode](#flatedecode), [SetCompression](#setcompression)</p>
+<h4>Returns</h4><p class="d">BLOB — zlib stream: header, DEFLATE and Adler-32.</p>
 <h4>Example</h4><div class="code"><pre>l_comprimido := PL_FPDF.FlateEncode(l_claro);</pre></div>
 <p class="see"><b>See also:</b> <a href="#flatedecode">FlateDecode</a>, <a href="#setcompression">SetCompression</a></p>
 </article>
@@ -1868,7 +1868,7 @@ PL_FPDF.ClearPDFCache();</pre></div>
 <p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetActivePageCount <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
-<h4>Returns</h4><p class="d">PLS_INTEGER — pages not marked for removal. **See also:** [RemovePage](#removepage), [GetPageCount](#getpagecount)</p>
+<h4>Returns</h4><p class="d">PLS_INTEGER — pages not marked for removal.</p>
 <h4>Note</h4><p class="d">Differs from GetPageCount(), which returns the original count</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20809</td><td>no PDF loaded -- call LoadPDF first</td></tr>
@@ -1946,7 +1946,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_page_number</td><td class="ptype">PLS_INTEGER</td><td>—</td><td>Page to query. Integer &gt;= 1, up to GetPageCount</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the page will be removed from the output. **See also:** [RemovePage](#removepage)</p>
+<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the page will be removed from the output.</p>
 <h4>Example</h4><div class="code"><pre><span class="k">IF</span> PL_FPDF.IsPageRemoved(2) <span class="k">THEN</span>
   DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Page 2 removed&#x27;</span>);
 <span class="k">END</span> <span class="k">IF</span>;</pre></div>
@@ -1958,7 +1958,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.IsPDFModified <span class="k">RETURN</span> <span class="k">BOOLEAN</span>;</pre></div>
-<h4>Returns</h4><p class="d">BOOLEAN — TRUE if there are changes not yet applied. **See also:** [OutputModifiedPDF](#outputmodifiedpdf)</p>
+<h4>Returns</h4><p class="d">BOOLEAN — TRUE if there are changes not yet applied.</p>
 <h4>Note</h4><p class="d">Use it to decide whether OutputModifiedPDF() has to be called</p>
 <h4>Example</h4><div class="code"><pre><span class="k">IF</span> PL_FPDF.IsPDFModified() <span class="k">THEN</span>
   l_modified_pdf := PL_FPDF.OutputModifiedPDF();
@@ -2263,7 +2263,7 @@ PL_FPDF.RemoveOverlay(l_id);</pre></div>
 <p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLoadedPDFs <span class="k">RETURN</span> JSON_ARRAY_T;</pre></div>
-<h4>Returns</h4><p class="d">JSON_ARRAY_T — objects with the id and the information of each loaded PDF. **See also:** [LoadPDFWithID](#loadpdfwithid), [UnloadPDF](#unloadpdf)</p>
+<h4>Returns</h4><p class="d">JSON_ARRAY_T — objects with the id and the information of each loaded PDF.</p>
 <h4>Example</h4><div class="code"><pre><span class="k">DECLARE</span>
   l_pdfs JSON_ARRAY_T;
   l_pdf JSON_OBJECT_T;
@@ -2463,7 +2463,8 @@ PL_FPDF.RemoveOverlay(l_id);</pre></div>
 <p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetPDFVersion <span class="k">RETURN</span> <span class="k">VARCHAR2</span>;</pre></div>
-<h4>Returns</h4><p class="d">VARCHAR2 — the version, e.g. &#x27;1.7&#x27;. **See also:** [SetPDFVersion](#setpdfversion)</p>
+<h4>Returns</h4><p class="d">VARCHAR2 — the version, e.g. &#x27;1.7&#x27;.</p>
+<h4>Example</h4><div class="code"><pre>DBMS_OUTPUT.PUT_LINE(PL_FPDF.GetPDFVersion);</pre></div>
 <p class="see"><b>See also:</b> <a href="#setpdfversion">SetPDFVersion</a></p>
 </article>
 <article class="api" id="getsecurityinfo">
@@ -2476,7 +2477,7 @@ PL_FPDF.RemoveOverlay(l_id);</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>—</td><td>Document to inspect. BLOB with a valid PDF</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">JSON_OBJECT_T — algorithm, key length and the permissions granted. **See also:** [IsEncrypted](#isencrypted), [EncryptPDF](#encryptpdf)</p>
+<h4>Returns</h4><p class="d">JSON_OBJECT_T — algorithm, key length and the permissions granted.</p>
 <h4>Example</h4><div class="code"><pre>l_info := PL_FPDF.GetSecurityInfo(l_pdf);
 <span class="k">IF</span> l_info.get_boolean(<span class="s">&#x27;encrypted&#x27;</span>) <span class="k">THEN</span>
   DBMS_OUTPUT.PUT_LINE(l_info.to_string);
@@ -2493,7 +2494,7 @@ PL_FPDF.RemoveOverlay(l_id);</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>—</td><td>Document to check. BLOB with a valid PDF</td></tr>
 </tbody></table></div>
-<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the document carries encryption. **See also:** [GetSecurityInfo](#getsecurityinfo), [DecryptPDF](#decryptpdf)</p>
+<h4>Returns</h4><p class="d">BOOLEAN — TRUE if the document carries encryption.</p>
 <h4>Example</h4><div class="code"><pre><span class="k">IF</span> PL_FPDF.IsEncrypted(l_pdf) <span class="k">THEN</span>
   l_pdf := PL_FPDF.DecryptPDF(l_pdf, <span class="s">&#x27;senha&#x27;</span>);
 <span class="k">END</span> <span class="k">IF</span>;</pre></div>
@@ -2594,7 +2595,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 </article>
 <article class="api" id="error">
 <h3>Error <span class="kind">Procedure</span><a class="anchor" href="#error" aria-label="Permanent link to Error">#</a></h3>
-<p class="d">Raises a standard PL_FPDF error. For internal use and for extensions.</p>
+<p class="d">Raises ORA-20100 with the given message, adding the trace of its origin and keeping the original stack (keeperrorstack) -- that is what keeps the real error behind the -20100 traceable. It is the library&#x27;s internal error path; it is public by inheritance.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Error(
@@ -2613,7 +2614,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetLogLevel <span class="k">RETURN</span> <span class="k">PLS_INTEGER</span>;</pre></div>
-<h4>Returns</h4><p class="d">PLS_INTEGER — the current level (0 to 4). **See also:** [SetLogLevel](#setloglevel)</p>
+<h4>Returns</h4><p class="d">PLS_INTEGER — the current level (0 to 4).</p>
 <h4>Example</h4><div class="code"><pre>l_nivel := PL_FPDF.GetLogLevel;</pre></div>
 <p class="see"><b>See also:</b> <a href="#setloglevel">SetLogLevel</a></p>
 </article>
@@ -2623,7 +2624,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.GetScaleFactor <span class="k">RETURN</span> <span class="k">NUMBER</span>;</pre></div>
-<h4>Returns</h4><p class="d">NUMBER — the scale factor, e.g. 2.8346 for millimetres. **See also:** [Init](#init)</p>
+<h4>Returns</h4><p class="d">NUMBER — the scale factor, e.g. 2.8346 for millimetres.</p>
 <h4>Example</h4><div class="code"><pre>l_pontos := 10 * PL_FPDF.GetScaleFactor;</pre></div>
 <p class="see"><b>See also:</b> <a href="#init">Init</a></p>
 </article>

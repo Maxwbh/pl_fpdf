@@ -335,7 +335,7 @@ TEXTOS = {
     },
     "AddTTFFont": {
         "descricao": ("Registra uma fonte TrueType a partir de um BLOB e a deixa disponível para o SetFont, pelo nome dado aqui. As tabelas do arquivo são lidas de verdade -- head, hhea, hmtx, cmap, OS/2 e post --, e a fonte vai embutida no PDF como /FontFile2. O arquivo cresce: o programa da fonte sai em hexadecimal, então ocupa o DOBRO do tamanho dela, e ainda não há subset — a fonte inteira vai embutida, mesmo que o documento use dez glifos. Para texto em português com acento não é preciso embutir nada: as fontes padrão escrevem acentuado desde a 3.4.0.",
-                      "Registers a TrueType font from a BLOB and makes it available to `SetFont`. The file's tables are really parsed, and the font is embedded in the PDF as `/FontFile2`."),
+                      "Registers a TrueType font from a BLOB and makes it available to SetFont. The file's tables are really parsed, and the font is embedded in the PDF as /FontFile2."),
         "params": {
             "p_font_name": ("nome pelo qual SetFont a chamará",
                            "Name by which the font will be referenced in SetFont. Free text, e.g. 'Roboto'"),
@@ -369,7 +369,7 @@ TEXTOS = {
                            "Font name. The same one used when loading"),
         },
         "retorno": ("BOOLEAN - TRUE se carregada",
-                    "BOOLEAN — TRUE if the font is in the cache. **See also:** [AddTTFFont](#addttffont), [ClearTTFFontCache](#clearttffontcache)"),
+                    "BOOLEAN — TRUE if the font is in the cache."),
     },
     "GetTTFFontInfo": {
         "descricao": ("Devolve o registro da fonte: os bytes guardados e as métricas lidas do arquivo -- unidades por em, ascendente, descendente, altura de caixa alta, a caixa e o ângulo do itálico. Tudo já reescalado para as 1000 unidades por em do PDF, menos o units_per_em, que é o do arquivo.",
@@ -379,7 +379,7 @@ TEXTOS = {
                            "Font name. The same one used when loading"),
         },
         "retorno": ("recTTFFont - as métricas da fonte",
-                    "recTTFFont — record with the font's metrics and information. **See also:** [AddTTFFont](#addttffont)"),
+                    "recTTFFont — record with the font's metrics and information."),
     },
     "ClearTTFFontCache": {
         "descricao": ("Descarrega as fontes TrueType e libera os LOBs temporários delas. Vale chamar ao fim de um lote: cada fonte embutida ocupa centenas de KB na sessão.",
@@ -401,19 +401,19 @@ TEXTOS = {
         "descricao": ("Devolve o corpo da fonte em uso, em pontos.",
                       "Returns the size of the current font."),
         "retorno": ("NUMBER - o tamanho em pontos",
-                    "NUMBER — size in points. **See also:** [SetFont](#setfont)"),
+                    "NUMBER — size in points."),
     },
     "GetCurrentFontStyle": {
         "descricao": ("Devolve o estilo em uso: '' (normal), 'B' (Bold, negrito), 'I' (Italic, itálico), 'U' (Underline, sublinhado) ou a combinação. Sempre em MAIÚSCULA: o SetFont normaliza, então 'b' entra e 'B' volta.",
                       "Returns the style of the current font."),
         "retorno": ("VARCHAR2 - o estilo corrente",
-                    "VARCHAR2 — '', 'B', 'I', 'BI' or 'U', always **uppercase**. > `SetFont` normalises it: `'b'` goes in and `'B'` comes back. **See also:** [SetFont](#setfont)"),
+                    "VARCHAR2 — '', 'B', 'I', 'BI' or 'U', always UPPERCASE. > SetFont normalises it: 'b' goes in and 'B' comes back."),
     },
     "GetCurrentFontFamily": {
         "descricao": ("Devolve o nome da família em uso. Sempre em MINÚSCULA: o SetFont normaliza, então 'Times' entra e 'times' volta. Comparar com 'Times' nunca casa -- use LOWER() dos dois lados.",
                       "Returns the family of the current font."),
         "retorno": ("VARCHAR2 - a família corrente",
-                    "VARCHAR2 — the family name. **See also:** [SetFont](#setfont)"),
+                    "VARCHAR2 — the family name."),
     },
     "SetDash": {
         "descricao": ("Passa a desenhar linha tracejada, com o comprimento do traço e o do intervalo na unidade corrente. Os dois em zero voltam à linha cheia. Vale para tudo o que for desenhado depois, até ser trocado.",
@@ -429,7 +429,7 @@ TEXTOS = {
         "descricao": ("Devolve a entrelinha usada pelo MultiCell quando a altura da linha vai em branco.",
                       "Returns the current line spacing."),
         "retorno": ("NUMBER - a entrelinha, na unidade corrente",
-                    "NUMBER — the configured spacing. **See also:** [SetLineSpacing](#setlinespacing)"),
+                    "NUMBER — the configured spacing."),
     },
     "SetLineSpacing": {
         "descricao": ("Define a entrelinha do MultiCell para quando a altura da linha não for informada.",
@@ -487,7 +487,7 @@ TEXTOS = {
         "descricao": ("Devolve a abscissa corrente, na unidade em uso.",
                       "Returns the current X position of the cursor."),
         "retorno": ("NUMBER - o x corrente",
-                    "NUMBER — X coordinate. **See also:** [SetX](#setx), [SetXY](#setxy)"),
+                    "NUMBER — X coordinate."),
     },
     "SetX": {
         "descricao": ("Move a abscissa. Valor negativo conta a partir da borda direita: SetX(-30) põe o cursor a 30 da direita.",
@@ -501,7 +501,7 @@ TEXTOS = {
         "descricao": ("Devolve a ordenada corrente, contada do topo da página.",
                       "Returns the current Y position of the cursor."),
         "retorno": ("NUMBER - o y corrente",
-                    "NUMBER — Y coordinate. **See also:** [SetY](#sety)"),
+                    "NUMBER — Y coordinate."),
     },
     "SetY": {
         "descricao": ("Move a ordenada E devolve o x à margem esquerda -- é o efeito que surpreende quem só queria descer. Para mover os dois sem esse efeito, use SetXY. Valor negativo conta a partir do pé da página.",
@@ -743,18 +743,18 @@ TEXTOS = {
     },
     "AddLink": {
         "descricao": ("RECUSA com -20601. Criaria um link interno, e link interno não está implementado: o /Dest nunca chegou a ser escrito no arquivo, então o identificador que esta função devolveria não levaria a lugar nenhum -- e o Link o recusa. Até setembro/2026 a chamada levantava ORA-06531, \"reference to uninitialized collection\", porque a coleção interna nunca foi inicializada: nunca funcionou, em nenhuma versão. Passa a recusar com mensagem que diz o que usar no lugar.",
-                      "Creates an internal link, still without a destination, and returns its identifier."),
+                      "Not supported: always raises -20601. It would create an internal link, and internal links are not implemented: the /Dest was never written to the file, so the identifier this function would return would lead nowhere -- and Link refuses it. Until September 2026 the call raised ORA-06531, \"reference to uninitialized collection\", because the internal collection was never initialised: it never worked, in any version. It now refuses with a message that says what to use instead. Use a URL."),
         "retorno": ("NUMBER - nunca devolve: levanta antes",
-                    "NUMBER — the link identifier."),
+                    "NUMBER — never returns: it raises first."),
     },
     "SetLink": {
         "descricao": ("RECUSA com -20601, pelo mesmo motivo do AddLink: guardar o destino não adiantaria, porque o /Dest não é emitido e ninguém o lê. Até setembro/2026 levantava ORA-06531.",
-                      "Sets the destination of an internal link created by AddLink."),
+                      "Not supported: always raises -20601, for the same reason as AddLink: storing the destination would achieve nothing, because the /Dest is not emitted and nothing reads it. Until September 2026 it raised ORA-06531. Use a URL."),
         "params": {
             "plink": ("identificador devolvido por AddLink",
-                     "Link identifier. The value returned by AddLink"),
+                     "The identifier AddLink would return (AddLink always raises -20601)"),
             "py": ("ordenada de chegada (- 1 = a posição corrente)",
-                  "Vertical destination on the page. Number in the unit set by Init (mm, cm, pt or in); 0 (default) = top of the page"),
+                  "Vertical destination on the page; -1 = the current position"),
             "ppage": ("página de chegada (- 1 = a página corrente)",
                      "Destination page. Page number; -1 (default) = the current page"),
         },
@@ -795,7 +795,7 @@ TEXTOS = {
         "descricao": ("Diz se a quebra automática está ligada. É consultada pelo Cell antes de decidir abrir página nova.",
                       "Reports whether an automatic page break should happen at the current point. The engine calls it internally; you can read it for your own pagination logic."),
         "retorno": ("BOOLEAN - TRUE se a quebra automática está ligada",
-                    "BOOLEAN — TRUE if the automatic page break is enabled. **See also:** [SetAutoPageBreak](#setautopagebreak)"),
+                    "BOOLEAN — TRUE if the automatic page break is enabled."),
     },
     "AddFont": {
         "descricao": ("Registra uma fonte para uso pelo SetFont. Para as 14 fontes padrão do PDF não é preciso chamar isto -- elas já estão disponíveis, e escrevem acentuado desde a 3.4.0.",
@@ -963,7 +963,7 @@ TEXTOS = {
     },
     "ImageFromBlob": {
         "descricao": ("Coloca uma imagem que o chamador já tem em mãos, sem passar por URL. O Image() busca pela rede e exige ACL concedida ao schema; quando a imagem já está numa tabela ou numa variável, esta entrada dispensa a rede e a permissão. O formato é reconhecido pelos primeiros bytes do arquivo, não pela extensão: PNG e JPEG; qualquer outra coisa é recusada.",
-                      "Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. `Image` fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission."),
+                      "Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. Image fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission. The format is recognised by the first bytes of the file, not by its extension: PNG and JPEG; anything else is refused."),
         "params": {
             "p_blob": ("bytes da imagem (PNG ou JPEG)",
                       "Image bytes. PNG or JPEG"),
@@ -987,12 +987,12 @@ TEXTOS = {
     },
     "Output": {
         "descricao": ("Fecha o documento e grava em arquivo, no DIRECTORY PDF_DIR. É a forma legada: os modos de entrega ao navegador ('I', 'D', 'S') saíram junto com o OWA/HTP e hoje recusam com -20306, dizendo o que usar no lugar. Para receber os bytes, use OutputBlob.",
-                      "Classic FPDF-style output (compatibility). Prefer OutputBlob or OutputFile."),
+                      "Closes the document and writes it to a file, in the PDF_DIR DIRECTORY. It is the legacy form: the browser delivery modes ('I', 'D', 'S') left together with OWA/HTP and now refuse with -20306, saying what to use instead. To get the bytes, use OutputBlob."),
         "params": {
             "pname": ("nome do arquivo (NULL grava 'doc.pdf')",
                      "File or document name. Any VARCHAR2"),
             "pdest": ("destino: 'F' (File, arquivo) é o único suportado",
-                     "Destination. 'S', 'D', 'I' or 'F'"),
+                     "Destination: 'F' (File) is the only one supported"),
         },
     },
     "ReturnBlob": {
@@ -1005,13 +1005,13 @@ TEXTOS = {
                      "FPDF-style destination. 'S' (string/BLOB), 'D' (download), 'I' (inline), 'F' (file)"),
         },
         "retorno": ("BLOB - o PDF",
-                    "BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)"),
+                    "BLOB — the PDF content."),
     },
     "OutputBlob": {
         "descricao": ("Fecha o documento e devolve os bytes do PDF. É a saída principal da biblioteca: quem grava em tabela, quem anexa a e-mail e quem entrega por HTTP começa aqui.",
                       "Synonym of OutputBlob: finalises the document and returns the PDF as a BLOB."),
         "retorno": ("BLOB - o PDF pronto",
-                    "BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)"),
+                    "BLOB — the PDF content."),
     },
     "OutputFile": {
         "descricao": ("Fecha o documento e grava num DIRECTORY do banco. Exige WRITE no diretório concedido ao schema.",
@@ -1059,7 +1059,7 @@ TEXTOS = {
         "descricao": ("Devolve o número da página em que se está escrevendo.",
                       "Returns the number of the current page — the one receiving content."),
         "retorno": ("PLS_INTEGER - a página corrente",
-                    "PLS_INTEGER — number of the active page. **See also:** [SetPage](#setpage), [PageNo](#pageno)"),
+                    "PLS_INTEGER — number of the active page."),
     },
     "fpdf": {
         "descricao": ("Construtor herdado do FPDF original. Continua valendo, e o código escrito para as versões 0.9.4 e 2.0.0 segue rodando com ele. Em código novo prefira Init, que valida os argumentos e levanta erro nomeado em vez de seguir com um valor inesperado.",
@@ -1075,7 +1075,7 @@ TEXTOS = {
     },
     "Error": {
         "descricao": ("Levanta ORA-20100 com a mensagem dada, acrescentando o rastro da origem e preservando a pilha original (keeperrorstack) -- é isso que mantém rastreável o erro de verdade por trás do -20100. É o caminho interno de erro da biblioteca; está público por herança.",
-                      "Raises a standard PL_FPDF error. For internal use and for extensions."),
+                      "Raises ORA-20100 with the given message, adding the trace of its origin and keeping the original stack (keeperrorstack) -- that is what keeps the real error behind the -20100 traceable. It is the library's internal error path; it is public by inheritance."),
         "params": {
             "pmsg": ("a mensagem",
                     "Error message. Any VARCHAR2"),
@@ -1093,7 +1093,7 @@ TEXTOS = {
         "descricao": ("Devolve quantos pontos PDF valem uma unidade corrente -- 2,8346 para milímetro, 1 para ponto. É o número que converte entre a unidade do chamador e a do arquivo.",
                       "Returns the conversion factor between the document's unit and PDF points."),
         "retorno": ("NUMBER - pontos por unidade",
-                    "NUMBER — the scale factor, e.g. 2.8346 for millimetres. **See also:** [Init](#init)"),
+                    "NUMBER — the scale factor, e.g. 2.8346 for millimetres."),
     },
     "getImageFromUrl": {
         "descricao": ("Busca uma imagem pela rede e devolve os bytes com o cabeçalho já interpretado. Exige ACL de rede concedida ao schema. Substitui a implementação sobre OrdImage, que saiu de linha.",
@@ -1103,7 +1103,7 @@ TEXTOS = {
                      "Address of the image. http:// or https:// URL reachable from the database"),
         },
         "retorno": ("recImageBlob - os bytes e os metadados",
-                    "recImageBlob — record with the image's content and metadata. **See also:** [Image](#image)"),
+                    "recImageBlob — record with the image's content and metadata."),
         "notas": [
             ("Formatos aceitos: PNG, JPEG/JPG",
              "Accepted formats: PNG, JPEG/JPG"),
@@ -1121,7 +1121,7 @@ TEXTOS = {
         "descricao": ("Devolve o nível de registro em uso.",
                       "Returns the configured log level."),
         "retorno": ("PLS_INTEGER - o nível corrente (0-4)",
-                    "PLS_INTEGER — the current level (0 to 4). **See also:** [SetLogLevel](#setloglevel)"),
+                    "PLS_INTEGER — the current level (0 to 4)."),
     },
     "SetDocumentConfig": {
         "descricao": ("Configura o documento inteiro a partir de um objeto JSON -- metadados, orientação, formato, fonte e margens numa chamada só. Serve a quem recebe a configuração de fora, de uma tabela ou de um serviço.",
@@ -1139,7 +1139,7 @@ TEXTOS = {
         "descricao": ("Devolve, em JSON, o que está configurado no documento em andamento e quantas páginas ele já tem.",
                       "Returns the metadata currently set on the document."),
         "retorno": ("JSON_OBJECT_T - os metadados",
-                    "JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options. **See also:** [SetDocumentConfig](#setdocumentconfig)"),
+                    "JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options."),
         "notas": [
             ("Estrutura do JSON: { \"pageCount\": <number>, \"title\": \"<string>\", \"author\": \"<string>\", \"subject\": \"<string>\", \"keywords\": \"<string>\", \"format\": \"<string>\", \"orientation\": \"<string>\", \"unit\": \"<string>\", \"initialized\": <boolean> }",
              "JSON structure: { \"pageCount\": <number>, \"title\": \"<string>\", \"author\": \"<string>\", \"subject\": \"<string>\", \"keywords\": \"<string>\", \"format\": \"<string>\", \"orientation\": \"<string>\", \"unit\": \"<string>\", \"initialized\": <boolean> }"),
@@ -1153,7 +1153,7 @@ TEXTOS = {
                              "Page to query. Integer >= 1, up to GetPageCount; NULL (default) = the current page"),
         },
         "retorno": ("JSON_OBJECT_T - os dados da página",
-                    "JSON_OBJECT_T — width, height, orientation and rotation of the page. **See also:** [GetCurrentPage](#getcurrentpage), [GetPDFInfo](#getpdfinfo)"),
+                    "JSON_OBJECT_T — width, height, orientation and rotation of the page."),
         "notas": [
             ("Estrutura do JSON: { \"number\": <number>, \"format\": \"<string>\", \"orientation\": \"<string>\", \"width\": <number>, \"height\": <number>, \"unit\": \"<string>\" }",
              "JSON structure: { \"number\": <number>, \"format\": \"<string>\", \"orientation\": \"<string>\", \"width\": <number>, \"height\": <number>, \"unit\": \"<string>\" }"),
@@ -1247,7 +1247,7 @@ TEXTOS = {
         "descricao": ("Obter contagem de páginas não marcadas para remoção",
                       "Returns how many pages will remain once the pending removals are applied."),
         "retorno": ("Número de páginas ativas",
-                    "PLS_INTEGER — pages not marked for removal. **See also:** [RemovePage](#removepage), [GetPageCount](#getpagecount)"),
+                    "PLS_INTEGER — pages not marked for removal."),
         "notas": [
             ("Difere de GetPageCount() que retorna a contagem original",
              "Differs from GetPageCount(), which returns the original count"),
@@ -1261,13 +1261,13 @@ TEXTOS = {
                              "Page to query. Integer >= 1, up to GetPageCount"),
         },
         "retorno": ("caso contrário",
-                    "BOOLEAN — TRUE if the page will be removed from the output. **See also:** [RemovePage](#removepage)"),
+                    "BOOLEAN — TRUE if the page will be removed from the output."),
     },
     "IsPDFModified": {
         "descricao": ("Verificar se o PDF carregado foi modificado",
                       "Tells whether there are pending changes — rotation, removal, watermark, overlay — on the loaded PDF."),
         "retorno": ("TRUE se modificado, FALSE caso contrário",
-                    "BOOLEAN — TRUE if there are changes not yet applied. **See also:** [OutputModifiedPDF](#outputmodifiedpdf)"),
+                    "BOOLEAN — TRUE if there are changes not yet applied."),
         "notas": [
             ("Use para determinar se OutputModifiedPDF() precisa ser chamado",
              "Use it to decide whether OutputModifiedPDF() has to be called"),
@@ -1343,7 +1343,7 @@ TEXTOS = {
                       "Content to compress. BLOB of any size; NULL is treated as empty"),
         },
         "retorno": ("BLOB - stream zlib: cabeçalho, DEFLATE e Adler-32",
-                    "BLOB — zlib stream: header, DEFLATE and Adler-32. **See also:** [FlateDecode](#flatedecode), [SetCompression](#setcompression)"),
+                    "BLOB — zlib stream: header, DEFLATE and Adler-32."),
     },
     "OverlayText": {
         "descricao": ("Adicionar sobreposição de texto em posição específica com controle completo de formatação Desenhada por OutputModifiedPDF() no fluxo de conteúdo. x e y vão em pontos PDF, a partir do canto inferior esquerdo. Quando width é informado ele define a CAIXA do texto: as linhas quebram dentro dela e o align é relativo a [x, x+width]. Sem width não há o que quebrar, e o align passa a ser relativo ao próprio ponto — 'center' centraliza o texto em x, 'right' o termina em x.",
@@ -1433,7 +1433,7 @@ TEXTOS = {
         "descricao": ("Obter lista de todos os IDs de PDF carregados e seus metadados",
                       "Lists the documents currently loaded under an identifier."),
         "retorno": ("JSON_ARRAY_T - Array de objetos PDF [{ \"pdfId\": \"report_jan\", \"pageCount\": 5, \"fileSize\": 125678, \"loadedDate\": \"2026-01-25T10:30:00\" }, ...]",
-                    "JSON_ARRAY_T — objects with the id and the information of each loaded PDF. **See also:** [LoadPDFWithID](#loadpdfwithid), [UnloadPDF](#unloadpdf)"),
+                    "JSON_ARRAY_T — objects with the id and the information of each loaded PDF."),
     },
     "UnloadPDF": {
         "descricao": ("Remover PDF específico da memória para liberar recursos",
@@ -1527,7 +1527,7 @@ TEXTOS = {
                      "Document to check. BLOB with a valid PDF"),
         },
         "retorno": ("TRUE se criptografado",
-                    "BOOLEAN — TRUE if the document carries encryption. **See also:** [GetSecurityInfo](#getsecurityinfo), [DecryptPDF](#decryptpdf)"),
+                    "BOOLEAN — TRUE if the document carries encryption."),
     },
     "GetSecurityInfo": {
         "descricao": ("Obter informações de segurança do PDF",
@@ -1537,7 +1537,7 @@ TEXTOS = {
                      "Document to inspect. BLOB with a valid PDF"),
         },
         "retorno": ("JSON_OBJECT_T - Security info including: - encrypted: boolean - method: string (RC4-40, RC4-128, AES-128, AES-256) - permissions: object with print, copy, modify, etc. - hasUserPassword: boolean - hasOwnerPassword: boolean",
-                    "JSON_OBJECT_T — algorithm, key length and the permissions granted. **See also:** [IsEncrypted](#isencrypted), [EncryptPDF](#encryptpdf)"),
+                    "JSON_OBJECT_T — algorithm, key length and the permissions granted."),
     },
     "SetEncryption": {
         "descricao": ("Definir criptografia para PDF em geração (usar antes do Output). Prefira 'AES-256': o RC4 fica só por compatibilidade com leitores antigos.",
@@ -1571,7 +1571,7 @@ TEXTOS = {
         "descricao": ("Obter a configuração atual de versão do PDF",
                       "Returns the PDF version configured for the output."),
         "retorno": ("VARCHAR2 - a versão de PDF corrente (por exemplo '1.4')",
-                    "VARCHAR2 — the version, e.g. '1.7'. **See also:** [SetPDFVersion](#setpdfversion)"),
+                    "VARCHAR2 — the version, e.g. '1.7'."),
     },
     "SetPermissions": {
         "descricao": ("Definir permissões do documento (requer SetEncryption antes)",
