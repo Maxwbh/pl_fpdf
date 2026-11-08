@@ -999,7 +999,7 @@ PROCEDURE PL_FPDF.Cell(
 | `pln` | NUMBER | `0` | para onde vai o cursor: 0 = à direita da célula; 1 = próxima linha, na margem esquerda; 2 = abaixo, mantendo o x |
 | `palign` | VARCHAR2 | `''` | 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) |
 | `pfill` | NUMBER | `0` | 1 pinta o fundo com a cor de SetFillColor, 0 não |
-| `plink` | VARCHAR2 | `''` | URL ou identificador de link interno |
+| `plink` | VARCHAR2 | `''` | URL do link (opcional). Link interno não é suportado: veja AddLink |
 
 #### Erros
 
@@ -1063,7 +1063,7 @@ PROCEDURE PL_FPDF.CellRotated(
 | `p_ln` | NUMBER | `0` | 0 à direita, 1 próxima linha na margem esquerda, 2 abaixo mantendo o x |
 | `p_align` | VARCHAR2 | `''` | 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right, direita) |
 | `p_fill` | NUMBER | `0` | 1 pinta o fundo, 0 não |
-| `p_link` | VARCHAR2 | `''` | URL ou link interno |
+| `p_link` | VARCHAR2 | `''` | URL do link (opcional). Link interno não é suportado: veja AddLink |
 | `p_rotation` | PLS_INTEGER | `0` | giro do texto em graus (0, 90, 180, 270) |
 
 #### Erros
@@ -1385,7 +1385,7 @@ PROCEDURE PL_FPDF.Write(
 |-----------|------|--------|-----------|
 | `pH` | VARCHAR2 | — | altura da linha, na unidade corrente |
 | `ptxt` | VARCHAR2 | — | o texto |
-| `plink` | VARCHAR2 | `null` | URL ou identificador de link interno |
+| `plink` | VARCHAR2 | `null` | URL do link (opcional). Link interno não é suportado: veja AddLink |
 
 #### Erros
 
@@ -1408,7 +1408,7 @@ PL_FPDF.Write(5, 'manual', 'https://example.com/manual');
 
 ### WriteRotated
 
-O mesmo que Write, com o texto girado.
+O mesmo que Write, com um parâmetro de giro -- mas só o giro de 0 grau é aceito: qualquer outro levanta -20111. Para texto girado, use CellRotated.
 
 *Desde a versão 2.0.0*
 
@@ -1428,8 +1428,8 @@ PROCEDURE PL_FPDF.WriteRotated(
 |-----------|------|--------|-----------|
 | `p_height` | NUMBER | — | altura da linha |
 | `p_text` | VARCHAR2 | — | o texto |
-| `p_link` | VARCHAR2 | `null` | URL ou link interno |
-| `p_rotation` | PLS_INTEGER | `0` | giro em graus (0, 90, 180, 270) |
+| `p_link` | VARCHAR2 | `null` | URL do link (opcional). Link interno não é suportado: veja AddLink |
+| `p_rotation` | PLS_INTEGER | `0` | giro em graus; só 0 é aceito |
 
 #### Erros
 
@@ -1441,7 +1441,8 @@ PROCEDURE PL_FPDF.WriteRotated(
 #### Exemplo
 
 ```sql
-PL_FPDF.WriteRotated(5, 'CONFIDENCIAL', NULL, 90);
+PL_FPDF.WriteRotated(5, 'Texto na linha', NULL, 0);
+-- girado: PL_FPDF.CellRotated(10, 40, 'CONFIDENCIAL', '0', 0, 'C', 0, '', 90);
 ```
 
 **Veja também:** [Write](#write) · [CellRotated](#cellrotated)
@@ -1887,13 +1888,13 @@ PROCEDURE PL_FPDF.image(
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `pFile` | VARCHAR2 | — | URL da imagem |
+| `pFile` | VARCHAR2 | — | URL da imagem (http/https), buscada pela rede: exige ACL concedida ao schema. Não é caminho de arquivo local |
 | `pX` | NUMBER | — | canto superior esquerdo |
 | `pY` | NUMBER | — | canto superior esquerdo |
 | `pWidth` | NUMBER | `0` | largura ( 0 = derivada) |
 | `pHeight` | NUMBER | `0` | altura ( 0 = derivada) |
 | `pType` | VARCHAR2 | `null` | formato, quando não se quer deduzir do arquivo |
-| `pLink` | VARCHAR2 | `null` | URL ou identificador de link interno sobre a imagem |
+| `pLink` | VARCHAR2 | `null` | URL do link sobre a imagem (opcional). Link interno não é suportado: veja AddLink |
 
 #### Erros
 
@@ -3256,7 +3257,7 @@ END IF;
 
 ### LoadPDF
 
-Carregar documento PDF existente na memória para leitura e modificação
+Carregar documento PDF existente na memória para leitura e modificação. PDF cifrado é recusado (-20867): decifre antes com DecryptPDF.
 
 *Desde a versão 3.0.0*
 
@@ -4072,7 +4073,7 @@ FUNCTION PL_FPDF.EncryptPDF(
 | `p_user_password` | VARCHAR2 | — | Senha para abrir documento |
 | `p_owner_password` | VARCHAR2 | `NULL` | senha de acesso total (opcional) |
 | `p_permissions` | JSON_OBJECT_T | `NULL` | JSON com flags de permissão |
-| `p_encryption` | VARCHAR2 | `'RC4-128'` | Encryption method: 'RC4-40','RC4-128','AES-128','AES-256' |
+| `p_encryption` | VARCHAR2 | `'RC4-128'` | Encryption method: 'RC4-40','RC4-128','AES-128','AES-256'. O padrão é o RC4-128, legado: informe 'AES-256' |
 
 #### Retorno
 
@@ -4199,7 +4200,7 @@ IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
 
 ### SetEncryption
 
-Definir criptografia para PDF em geração (usar antes do Output)
+Definir criptografia para PDF em geração (usar antes do Output). Prefira 'AES-256': o RC4 fica só por compatibilidade com leitores antigos.
 
 *Desde a versão 3.0.0*
 

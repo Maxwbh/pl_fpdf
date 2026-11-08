@@ -119,6 +119,11 @@
   .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
   .api p.since{margin:-2px 0 10px;font-size:12.5px;color:var(--faint)}
   .api p.since .novo{color:var(--accent);font-weight:600}
+  .unsup{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;
+         text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);
+         border-radius:999px;padding:2px 10px}
+  .api p.limit{margin:10px 0 0;padding:10px 12px;font-size:14px;color:var(--muted);
+               border-left:3px solid var(--accent);background:var(--chipbg)}
   .api p.see a{color:var(--blue);text-decoration:none}
   .api p.see a:hover{text-decoration:underline}
 
@@ -348,7 +353,10 @@
       <p class="kicker">v3.4.0 · Oracle 19c+</p>
       <h1>API Reference</h1>
       <p class="lead">Detailed documentation of every public function and procedure of the <code>PL_FPDF</code> package: syntax, parameters with accepted values, return, errors and an example.
-      For a task-oriented guide, see the <a href="api.html">usage index</a>.</p>
+      For a task-oriented guide, see the <a href="api.html">usage index</a>. Installation, compatibility and common problems are in the
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/docs/README.md">guides</a>; the 18 APIs of <code>PL_FPDF_UTIL</code> (QR, barcodes,
+      compression and encryption, used from inside <code>PL_FPDF</code>) are documented in its own
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/src/PL_FPDF_UTIL.pks">spec</a>.</p>
     </header>
 <h2 class="grp" id="grp-lifecycle">Lifecycle</h2>
 <article class="api" id="fpdf">
@@ -812,7 +820,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <tr><td class="pname">pln</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Where the cursor goes afterwards.<br>0 = to the right of the cell (default)<br>1 = start of the next line<br>2 = below the cell</td></tr>
 <tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>Text alignment. &#x27;L&#x27; (left), &#x27;C&#x27; (centre), &#x27;R&#x27; (right) or &#x27;&#x27; (default, left)</td></tr>
 <tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Fills the background with the SetFillColor colour.<br>0 = transparent (default)<br>1 = filled</td></tr>
-<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>Makes the cell clickable. URL (&#x27;https://...&#x27;); an AddLink identifier is refused with ORA-20601</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>Optional link URL (&#x27;https://...&#x27;) that makes the cell clickable. Internal links are not supported: see AddLink</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>any failure while writing the cell. Cell wraps the original error in this code, but keeps the stack (keeperrorstack), so the cause -- an ORA-20203 for a character outside WinAnsi, for instance -- stays visible in the trace.</td></tr>
@@ -857,7 +865,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <tr><td class="pname">p_ln</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Cursor position afterwards.<br>0 = to the right<br>1 = next line<br>2 = below</td></tr>
 <tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>Alignment. &#x27;L&#x27;, &#x27;C&#x27; or &#x27;R&#x27;</td></tr>
 <tr><td class="pname">p_fill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Fill. 0 or 1</td></tr>
-<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>Optional link. URL; an AddLink identifier is refused with ORA-20601</td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>Optional link URL. Internal links are not supported: see AddLink</td></tr>
 <tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td><code>0</code></td><td>Rotation angle of the text. 0 (default), 90, 180 or 270 — any other value raises an error</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
@@ -1013,7 +1021,7 @@ l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, <span class="s">&#x27;LR&#x2
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">pH</td><td class="ptype">VARCHAR2</td><td>—</td><td>Line height. Number in the unit set by Init (mm, cm, pt or in)</td></tr>
 <tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>—</td><td>Text to write. Any VARCHAR2</td></tr>
-<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Optional link applied to the text. URL; NULL (default) = no link. An AddLink identifier is refused with ORA-20601</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Optional link URL applied to the text; NULL (default) = no link. Internal links are not supported: see AddLink</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>any failure while writing, with the original stack preserved</td></tr>
@@ -1026,7 +1034,7 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 </article>
 <article class="api" id="writerotated">
 <h3>WriteRotated <span class="kind">Procedure</span><a class="anchor" href="#writerotated" aria-label="Permanent link to WriteRotated">#</a></h3>
-<p class="d">Write with the text rotated.</p>
+<p class="d">The same as Write, with a rotation parameter -- but only a rotation of 0 degrees is accepted: any other raises -20111. For rotated text, use CellRotated.</p>
 <p class="since">Since version <b>2.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.WriteRotated(
@@ -1037,14 +1045,15 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
 <tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>—</td><td>Line height. Number in the unit set by Init (mm, cm, pt or in)</td></tr>
 <tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>—</td><td>Text to write. Any VARCHAR2</td></tr>
-<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Optional link. URL<br>NULL = no link. An AddLink identifier is refused with ORA-20601</td></tr>
-<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td><code>0</code></td><td>Rotation angle. 0 (default), 90, 180 or 270</td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Optional link URL<br>NULL = no link. Internal links are not supported: see AddLink</td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td><code>0</code></td><td>Rotation angle in degrees; only 0 is accepted</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20110</td><td>invalid rotation</td></tr>
 <tr><td class="pname">ORA-20111</td><td>only 0-degree rotation is supported; use CellRotated</td></tr>
 </tbody></table></div>
-<h4>Example</h4><div class="code"><pre>PL_FPDF.WriteRotated(5, <span class="s">&#x27;CONFIDENTIAL&#x27;</span>, <span class="k">NULL</span>, 90);</pre></div>
+<h4>Example</h4><div class="code"><pre>PL_FPDF.WriteRotated(5, <span class="s">&#x27;Text on the line&#x27;</span>, <span class="k">NULL</span>, 0);
+<span class="c">-- rotated: PL_FPDF.CellRotated(10, 40, &#x27;CONFIDENTIAL&#x27;, &#x27;0&#x27;, 0, &#x27;C&#x27;, 0, &#x27;&#x27;, 90);</span></pre></div>
 <p class="see"><b>See also:</b> <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a></p>
 </article>
 <h2 class="grp" id="grp-draw">Colours and drawing</h2>
@@ -1263,7 +1272,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
 </article>
 <article class="api" id="image">
 <h3>image <span class="kind">Procedure</span><a class="anchor" href="#image" aria-label="Permanent link to image">#</a></h3>
-<p class="d">Places a PNG or JPEG image on the current page, with optional proportional scaling.</p>
+<p class="d">Places an image fetched by URL. The fetch goes over the network and needs an ACL granted to the schema -- when the image is already in a table or a variable, ImageFromBlob does the same with no network and no permission. Width and height of zero come from the image itself, at 72 dpi; with only one of them zero, it is derived from the other, keeping the aspect ratio.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.image(
@@ -1275,13 +1284,13 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Heading&#x27;</span>, <span class="s">
     pType   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
     pLink   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
-<tr><td class="pname">pFile</td><td class="ptype">VARCHAR2</td><td>—</td><td>Source of the image. File name in an Oracle DIRECTORY, or the identifier returned by getImageFromUrl</td></tr>
+<tr><td class="pname">pFile</td><td class="ptype">VARCHAR2</td><td>—</td><td>Image URL (http/https), fetched over the network: needs an ACL granted to the schema. Not a local file path</td></tr>
 <tr><td class="pname">pX</td><td class="ptype">NUMBER</td><td>—</td><td>X of the top-left corner. Number in the unit set by Init (mm, cm, pt or in)</td></tr>
 <tr><td class="pname">pY</td><td class="ptype">NUMBER</td><td>—</td><td>Y of the top-left corner. Number in the unit set by Init (mm, cm, pt or in)</td></tr>
 <tr><td class="pname">pWidth</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Desired width. Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the height</td></tr>
 <tr><td class="pname">pHeight</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>Desired height. Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the width, keeping the aspect ratio</td></tr>
 <tr><td class="pname">pType</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Image format. &#x27;PNG&#x27;, &#x27;JPG&#x27;/&#x27;JPEG&#x27;, or NULL (default) to detect it automatically</td></tr>
-<tr><td class="pname">pLink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Makes the image clickable. URL<br>NULL = no link. An AddLink identifier is refused with ORA-20601</td></tr>
+<tr><td class="pname">pLink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>Optional link URL over the image<br>NULL = no link. Internal links are not supported: see AddLink</td></tr>
 </tbody></table></div>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>failure fetching or parsing the image, with the original stack preserved</td></tr>
@@ -1321,7 +1330,7 @@ PL_FPDF.ImageFromBlob(l_logo, <span class="s">&#x27;LOGO&#x27;</span>, 10, 10, 4
 </article>
 <h2 class="grp" id="grp-links">Links</h2>
 <article class="api" id="addlink">
-<h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="Permanent link to AddLink">#</a></h3>
+<h3>AddLink <span class="kind">Function</span> <span class="unsup">not supported</span><a class="anchor" href="#addlink" aria-label="Permanent link to AddLink">#</a></h3>
 <p class="d">Creates an internal link, still without a destination, and returns its identifier.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
@@ -1338,6 +1347,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="Permanent link to Link">#</a></h3>
 <p class="d">Creates a clickable rectangle anywhere on the page.</p>
 <p class="since">Since version <b>0.9.4</b></p>
+<p class="limit"><b>Limitation:</b> 1. One area per page. A second call on the same page silently replaces the first -- the structure keeps one record per page. Documented because that is how it behaves, not because it is desirable. 2. Internal links are not supported, and are REFUSED with -20601. The branch that would write the /Dest was left commented out in the original port and never came back; emitting it as it stood produced an /Annot with an open dictionary, that is, a malformed file. Since September 2026 the call raises an error instead of writing the broken file. Use a URL.</p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
     px    <span class="k">number</span>,
@@ -1352,7 +1362,6 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>—</td><td>Height of the area. Number in the unit set by Init (mm, cm, pt or in)</td></tr>
 <tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>—</td><td>Destination. URL (&#x27;https://...&#x27;); an AddLink identifier is refused with ORA-20601</td></tr>
 </tbody></table></div>
-<h4>Limitation</h4><p class="d">1. One area per page. A second call on the same page silently replaces the first -- the structure keeps one record per page. Documented because that is how it behaves, not because it is desirable. 2. Internal links are not supported, and are REFUSED with -20601. The branch that would write the /Dest was left commented out in the original port and never came back; emitting it as it stood produced an /Annot with an open dictionary, that is, a malformed file. Since September 2026 the call raises an error instead of writing the broken file. Use a URL.</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20601</td><td>destination is not a URL -- internal link or NULL</td></tr>
 </tbody></table></div>
@@ -1360,7 +1369,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <p class="see"><b>See also:</b> <a href="#addlink">AddLink</a>, <a href="#setlink">SetLink</a></p>
 </article>
 <article class="api" id="setlink">
-<h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="Permanent link to SetLink">#</a></h3>
+<h3>SetLink <span class="kind">Procedure</span> <span class="unsup">not supported</span><a class="anchor" href="#setlink" aria-label="Permanent link to SetLink">#</a></h3>
 <p class="d">Sets the destination of an internal link created by AddLink.</p>
 <p class="since">Since version <b>0.9.4</b></p>
 <h4>Syntax</h4>
@@ -1956,7 +1965,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 </article>
 <article class="api" id="loadpdf">
 <h3>LoadPDF <span class="kind">Procedure</span><a class="anchor" href="#loadpdf" aria-label="Permanent link to LoadPDF">#</a></h3>
-<p class="d">Loads an existing PDF into session memory for reading and modification. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.</p>
+<p class="d">Loads an existing PDF into session memory for reading and modification. An encrypted PDF is refused (-20867): decrypt it first with DecryptPDF. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.</p>
 <p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDF(
@@ -1985,11 +1994,11 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total pages:&#x27;</span> || l_pages)
 <h3>OutputModifiedPDF <span class="kind">Function</span><a class="anchor" href="#outputmodifiedpdf" aria-label="Permanent link to OutputModifiedPDF">#</a></h3>
 <p class="d">Produces the PDF with the changes applied, copying the kept pages object by object: content, fonts, images and annotations arrive intact, with no re-rendering. It applies RemovePage and RotatePage, and draws watermarks and text and image overlays into the content stream: every affected page gets a content object and a /Resources of its own.</p>
 <p class="since">Since version <b>3.0.0</b></p>
+<p class="limit"><b>Limitation:</b> Watermarks and both text and image overlays are all drawn. Cross-reference streams and object streams (PDF 1.5+) are read, including with the PNG predictor; a malformed one raises -20843/-20847/-20848.</p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputModifiedPDF <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
 <h4>Returns</h4><p class="d">BLOB — the modified PDF.</p>
 <h4>Process</h4><p class="d">1. Checks that a PDF is loaded and modified 2. Indexes the source (xref chain + flattened page tree) 3. Selects the pages not marked by RemovePage, in the original order 4. Copies every object reachable from those pages, renumbering the indirect references; stream payloads are copied byte for byte 5. Emits a new Catalog, a new /Pages node, xref and trailer</p>
-<h4>Limitation</h4><p class="d">Watermarks and both text and image overlays are all drawn. Cross-reference streams and object streams (PDF 1.5+) are read, including with the PNG predictor; a malformed one raises -20843/-20847/-20848.</p>
 <h4>Errors</h4><div class="tbl"><table><thead><tr><th>Code</th><th>When</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20809</td><td>no PDF loaded -- call LoadPDF first</td></tr>
 <tr><td class="pname">ORA-20819</td><td>the PDF has not been modified (no changes to apply)</td></tr>
@@ -2423,7 +2432,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>—</td><td>Password asked for when opening the document. Text; empty allows opening without a password while keeping the restrictions</td></tr>
 <tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td><code>NULL</code></td><td>Owner password, which allows changing permissions. Text; NULL (default) reuses the user password</td></tr>
 <tr><td class="pname">p_permissions</td><td class="ptype">JSON_OBJECT_T</td><td><code>NULL</code></td><td>Permissions granted to the reader. JSON_OBJECT_T with the boolean keys: print, modify, copy, annotate, fill_forms, extract, assemble, print_high. Missing keys take the restrictive default</td></tr>
-<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td><code>&#x27;RC4-128&#x27;</code></td><td>Encryption algorithm. &#x27;AES-256&#x27; and &#x27;AES-128&#x27; (recommended), &#x27;RC4-128&#x27; (the default, kept for compatibility) or &#x27;RC4-40&#x27; (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it</td></tr>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td><code>&#x27;RC4-128&#x27;</code></td><td>Encryption algorithm. &#x27;AES-256&#x27; and &#x27;AES-128&#x27; (recommended), &#x27;RC4-128&#x27; (the default, legacy: pass &#x27;AES-256&#x27;) or &#x27;RC4-40&#x27; (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it</td></tr>
 </tbody></table></div>
 <h4>Returns</h4><p class="d">BLOB — the encrypted PDF.</p>
 <h4>Note</h4><p class="d">A PDF 1.5+ source (cross-reference streams, object streams) is flattened: the objects inside the object streams become top-level objects and the output carries a classic xref.</p>
@@ -2485,7 +2494,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 </article>
 <article class="api" id="setencryption">
 <h3>SetEncryption <span class="kind">Procedure</span><a class="anchor" href="#setencryption" aria-label="Permanent link to SetEncryption">#</a></h3>
-<p class="d">Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob.</p>
+<p class="d">Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob. Prefer &#x27;AES-256&#x27;: RC4 stays only for compatibility with old readers.</p>
 <p class="since">Since version <b>3.0.0</b></p>
 <h4>Syntax</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetEncryption(
@@ -2493,7 +2502,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
     p_user_password  <span class="k">VARCHAR2</span>,
     p_owner_password <span class="k">VARCHAR2</span> <span class="k">DEFAULT</span> <span class="k">NULL</span>);</pre></div>
 <h4>Parameters</h4><div class="tbl"><table><thead><tr><th>Parameter</th><th>Type</th><th>Default</th><th>Description</th></tr></thead><tbody>
-<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td>—</td><td>Encryption algorithm. &#x27;RC4-128&#x27; or &#x27;RC4-40&#x27;</td></tr>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td>—</td><td>Encryption algorithm: &#x27;RC4-40&#x27;, &#x27;RC4-128&#x27;, &#x27;AES-128&#x27; or &#x27;AES-256&#x27; (recommended)</td></tr>
 <tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>—</td><td>Opening password. Text</td></tr>
 <tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td><code>NULL</code></td><td>Owner password. Text; NULL (default) = same as the user password</td></tr>
 </tbody></table></div>
@@ -2676,6 +2685,22 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
     });
   }, {rootMargin: '-70px 0px -75% 0px'});
   document.querySelectorAll('article.api').forEach(function(a){ obs.observe(a); });
+})();
+</script>
+<script>
+/* Bloco de código ou tabela mais largo que a tela rola na horizontal, e
+   quem usa só o teclado precisa poder focá-lo para rolar (WCAG 2.1.1; axe
+   scrollable-region-focusable). Só os que de fato rolam ganham tabindex:
+   pôr em todos encheria a navegação por Tab de paradas inúteis. */
+(function () {
+  function marcar() {
+    document.querySelectorAll('pre, .tbl').forEach(function (e) {
+      if (e.scrollWidth > e.clientWidth + 1) e.tabIndex = 0;
+      else e.removeAttribute('tabindex');
+    });
+  }
+  marcar();
+  window.addEventListener('resize', marcar);
 })();
 </script>
 </body>

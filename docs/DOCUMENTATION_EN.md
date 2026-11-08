@@ -609,10 +609,13 @@ be reissued identically — an invoice, a contract signed elsewhere.
 
 The flow: `LoadPDF` → inspect/modify → `OutputModifiedPDF`.
 
-It works with a PDF from any producer, including **PDF 1.5+** — where the
+It works with PDF 1.0 to 1.4 and also with **PDF 1.5+** — where the
 cross-reference is a compressed stream and the objects sit inside *object
 streams*. Page content is copied byte for byte, without re-rendering: fonts,
-images and annotations arrive intact.
+images and annotations arrive intact. There are limits: an encrypted PDF is
+refused (`ORA-20867`), and forms and digital signatures are not handled — the
+full list is in the
+[compatibility guide](COMPATIBILITY_EN.md#5-the-pdf-read-loadpdf-and-manipulation).
 
 <!-- exemplo-ilustrativo: reads from a user's table (documentos) -->
 ```sql

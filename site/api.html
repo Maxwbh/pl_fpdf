@@ -202,16 +202,19 @@
   (<code>Cell(pw =&gt; 0, ph =&gt; 10, ptxt =&gt; 'Olá', palign =&gt; 'C')</code>) — a nomeada é a
   recomendada. Parâmetros com <i>default</i> podem ser omitidos; medidas usam a unidade do
   <code>Init</code>; cores são RGB 0–255; faixas de páginas aceitam <code>'ALL'</code> ou
-  <code>'1,3-5,21-'</code>; opções extras viajam em <code>JSON_OBJECT_T</code>.</p>
+  <code>'1,3-5,21-'</code>; opções extras viajam em <code>JSON_OBJECT_T</code>.
+  <b>Os exemplos são trechos:</b> rodam dentro de um bloco PL/SQL, depois do <code>Init</code> e do
+  <code>AddPage</code>, com as variáveis <code>l_</code> declaradas; o que depende de objeto seu (tabela,
+  procedure de cabeçalho) diz isso no comentário. O nome de cada API leva à referência completa.</p>
 </header>
 
 <section id="init">
   <h2><span class="n">01</span> Ciclo de vida</h2>
   <p class="desc">Todo documento começa com <code>Init</code>; o estado vive na sessão (package-only).</p>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>Init(orient, unit, format, encoding)</td><td>Inicia documento: 'P'/'L' · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
-    <tr><td>Reset</td><td>Zera o estado e libera CLOBs temporários</td></tr>
-    <tr><td>IsInitialized</td><td>TRUE se há documento em andamento</td></tr>
+    <tr><td><a href="reference.html#init">Init</a>(orient, unit, format, encoding)</td><td>Inicia documento: 'P'/'L' · mm/cm/pt/in · A3/A4/A5/Letter/Legal · UTF-8</td></tr>
+    <tr><td><a href="reference.html#reset">Reset</a></td><td>Zera o estado e libera CLOBs temporários</td></tr>
+    <tr><td><a href="reference.html#isinitialized">IsInitialized</a></td><td>TRUE se há documento em andamento</td></tr>
     <tr><td>co_version</td><td>Constante com a versão instalada</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">hello.sql</span></div>
@@ -231,11 +234,11 @@
 <section id="paginas">
   <h2><span class="n">02</span> Páginas e posicionamento</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>AddPage(orient, format, rotation)</td><td>Nova página; NULL herda do Init; rotação 0/90/180/270</td></tr>
-    <tr><td>SetPage(n) · GetCurrentPage · PageNo</td><td>Voltar a uma página existente · página ativa · nº corrente</td></tr>
-    <tr><td>SetMargins(l,t,r) e variantes</td><td>Margens (SetLeftMargin / SetTopMargin / SetRightMargin)</td></tr>
-    <tr><td>SetAutoPageBreak(auto, margem)</td><td>Quebra automática ao atingir a margem inferior</td></tr>
-    <tr><td>Ln(h) · GetX/SetX · GetY/SetY · SetXY</td><td>Controle do cursor de escrita</td></tr>
+    <tr><td><a href="reference.html#addpage">AddPage</a>(orient, format, rotation)</td><td>Nova página; NULL herda do Init; rotação 0/90/180/270</td></tr>
+    <tr><td><a href="reference.html#setpage">SetPage</a>(n) · <a href="reference.html#getcurrentpage">GetCurrentPage</a> · <a href="reference.html#pageno">PageNo</a></td><td>Voltar a uma página existente · página ativa · nº corrente</td></tr>
+    <tr><td><a href="reference.html#setmargins">SetMargins</a>(l,t,r) e variantes</td><td>Margens (SetLeftMargin / SetTopMargin / SetRightMargin)</td></tr>
+    <tr><td><a href="reference.html#setautopagebreak">SetAutoPageBreak</a>(auto, margem)</td><td>Quebra automática ao atingir a margem inferior</td></tr>
+    <tr><td><a href="reference.html#ln">Ln</a>(h) · <a href="reference.html#getx">GetX</a>/<a href="reference.html#setx">SetX</a> · <a href="reference.html#gety">GetY</a>/<a href="reference.html#sety">SetY</a> · <a href="reference.html#setxy">SetXY</a></td><td>Controle do cursor de escrita</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">paginas.sql</span></div>
 <pre>PL_FPDF.SetMargins(left => <span class="n">20</span>, top => <span class="n">15</span>, right => <span class="n">20</span>);  <span class="c">-- right omitido = igual à esquerda</span>
@@ -247,23 +250,23 @@ PL_FPDF.SetXY(x => <span class="n">20</span>, y => <span class="n">40</span>);  
 <section id="fontes">
   <h2><span class="n">03</span> Fontes e UTF-8</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>SetFont(família, estilo, tamanho)</td><td>Core: Arial/Helvetica, Times, Courier · estilos '', B, I, BI, U</td></tr>
-    <tr><td>SetFontSize(pt)</td><td>Muda apenas o tamanho</td></tr>
-    <tr><td>AddTTFFont(nome, blob, enc, embed)</td><td>TrueType a partir de BLOB, com embedding</td></tr>
-    <tr><td>LoadTTFFromFile(nome, arquivo, directory)</td><td>TrueType de um DIRECTORY Oracle</td></tr>
-    <tr><td>IsTTFFontLoaded · GetTTFFontInfo · ClearTTFFontCache</td><td>Gestão do cache de fontes</td></tr>
+    <tr><td><a href="reference.html#setfont">SetFont</a>(família, estilo, tamanho)</td><td>Core: Arial/Helvetica, Times, Courier · estilos '', B, I, BI, U</td></tr>
+    <tr><td><a href="reference.html#setfontsize">SetFontSize</a>(pt)</td><td>Muda apenas o tamanho</td></tr>
+    <tr><td><a href="reference.html#addttffont">AddTTFFont</a>(nome, blob, enc, embed)</td><td>TrueType a partir de BLOB, com embedding</td></tr>
+    <tr><td><a href="reference.html#loadttffromfile">LoadTTFFromFile</a>(nome, arquivo, directory)</td><td>TrueType de um DIRECTORY Oracle</td></tr>
+    <tr><td><a href="reference.html#isttffontloaded">IsTTFFontLoaded</a> · <a href="reference.html#getttffontinfo">GetTTFFontInfo</a> · <a href="reference.html#clearttffontcache">ClearTTFFontCache</a></td><td>Gestão do cache de fontes</td></tr>
   </tbody></table></div>
 </section>
 
 <section id="texto">
   <h2><span class="n">04</span> Escrita de texto</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>Cell(w,h,txt,borda,ln,alinh,fill,link)</td><td>Bloco retangular — a API mais usada</td></tr>
-    <tr><td>MultiCell(w,h,txt,borda,alinh,fill)</td><td>Parágrafo com quebra automática (function retorna nº de linhas)</td></tr>
-    <tr><td>Write(h, txt, link)</td><td>Texto fluido inline (misture fontes no meio da frase)</td></tr>
-    <tr><td>Text(x, y, txt)</td><td>Posição absoluta, sem mover o cursor</td></tr>
-    <tr><td>CellRotated(...) · WriteRotated(...)</td><td>Texto rotacionado 0/90/180/270</td></tr>
-    <tr><td>GetStringWidth(txt) · SetLineSpacing</td><td>Medição para centralizar · espaçamento entre linhas</td></tr>
+    <tr><td><a href="reference.html#cell">Cell</a>(w,h,txt,borda,ln,alinh,fill,link)</td><td>Bloco retangular — a API mais usada</td></tr>
+    <tr><td><a href="reference.html#multicell">MultiCell</a>(w,h,txt,borda,alinh,fill)</td><td>Parágrafo com quebra automática (function retorna nº de linhas)</td></tr>
+    <tr><td><a href="reference.html#write">Write</a>(h, txt, link)</td><td>Texto fluido inline (misture fontes no meio da frase)</td></tr>
+    <tr><td><a href="reference.html#text">Text</a>(x, y, txt)</td><td>Posição absoluta, sem mover o cursor</td></tr>
+    <tr><td><a href="reference.html#cellrotated">CellRotated</a>(...) · <a href="reference.html#writerotated">WriteRotated</a>(...)</td><td>Texto rotacionado 0/90/180/270</td></tr>
+    <tr><td><a href="reference.html#getstringwidth">GetStringWidth</a>(txt) · <a href="reference.html#setlinespacing">SetLineSpacing</a></td><td>Medição para centralizar · espaçamento entre linhas</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">cell_parametros.sql</span></div>
 <pre>PL_FPDF.Cell(
@@ -274,7 +277,7 @@ PL_FPDF.SetXY(x => <span class="n">20</span>, y => <span class="n">40</span>);  
   pln     => <span class="n">1</span>,        <span class="c">-- 0 cursor à direita | 1 próxima linha | 2 abaixo</span>
   palign  => <span class="s">&#x27;R&#x27;</span>,      <span class="c">-- &#x27;L&#x27; | &#x27;C&#x27; | &#x27;R&#x27;</span>
   pfill   => <span class="n">1</span>,        <span class="c">-- 1 = fundo com a cor de SetFillColor</span>
-  plink   => <span class="s">&#x27;&#x27;</span>);      <span class="c">-- URL ou link interno (AddLink)</span>
+  plink   => <span class="s">&#x27;&#x27;</span>);      <span class="c">-- URL; link interno não existe (-20601)</span>
 
 l_linhas := PL_FPDF.MultiCell(<span class="n">0</span>, <span class="n">6</span>, l_paragrafo, <span class="s">&#x27;1&#x27;</span>, <span class="s">&#x27;J&#x27;</span>);  <span class="c">-- &#x27;J&#x27; justificado; retorna nº de linhas</span>
 PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span class="s">&#x27;VERTICAL&#x27;</span>, p_rotation => <span class="n">90</span>);   <span class="c">-- 0/90/180/270</span></pre></div>
@@ -283,10 +286,10 @@ PL_FPDF.CellRotated(<span class="n">40</span>, <span class="n">10</span>, <span 
 <section id="desenho">
   <h2><span class="n">05</span> Cores e desenho</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>SetDrawColor / SetFillColor / SetTextColor (r,g,b)</td><td>Cores RGB 0–255 de contorno, preenchimento e texto</td></tr>
-    <tr><td>SetLineWidth · SetDash · SetLineDashPattern</td><td>Espessura e tracejado</td></tr>
-    <tr><td>Line(x1,y1,x2,y2) · Rect(x,y,w,h,estilo)</td><td>Linha · retângulo ('' contorno, 'F' cheio, 'DF' ambos)</td></tr>
-    <tr><td>Poly(pontos, fechar, estilo) · Triangle(...)</td><td>Polígonos e triângulos</td></tr>
+    <tr><td><a href="reference.html#setdrawcolor">SetDrawColor</a> / <a href="reference.html#setfillcolor">SetFillColor</a> / <a href="reference.html#settextcolor">SetTextColor</a> (r,g,b)</td><td>Cores RGB 0–255 de contorno, preenchimento e texto</td></tr>
+    <tr><td><a href="reference.html#setlinewidth">SetLineWidth</a> · <a href="reference.html#setdash">SetDash</a> · <a href="reference.html#setlinedashpattern">SetLineDashPattern</a></td><td>Espessura e tracejado</td></tr>
+    <tr><td><a href="reference.html#line">Line</a>(x1,y1,x2,y2) · <a href="reference.html#rect">Rect</a>(x,y,w,h,estilo)</td><td>Linha · retângulo ('' contorno, 'F' cheio, 'DF' ambos)</td></tr>
+    <tr><td><a href="reference.html#poly">Poly</a>(pontos, fechar, estilo) · <a href="reference.html#triangle">Triangle</a>(...)</td><td>Polígonos e triângulos</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">desenho.sql</span></div>
 <pre>PL_FPDF.SetDrawColor(r => <span class="n">200</span>, g => <span class="n">0</span>, b => <span class="n">0</span>);   <span class="c">-- RGB 0-255; só r = tom de cinza</span>
@@ -299,18 +302,20 @@ PL_FPDF.SetLineDashPattern(<span class="s">&#x27;[3 2] 0&#x27;</span>);         
 <section id="imagens">
   <h2><span class="n">06</span> Imagens e links</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>Image(arquivo, x, y, w, h, tipo, link)</td><td>PNG/JPEG; w ou h = 0 mantém proporção</td></tr>
-    <tr><td>getImageFromUrl(url)</td><td>Baixa imagem via UTL_HTTP para usar no documento</td></tr>
-    <tr><td>AddLink · SetLink(link, y, página)</td><td>Links internos (índices, sumários)</td></tr>
-    <tr><td>Link(x,y,w,h,url)</td><td>Área clicável arbitrária</td></tr>
+    <tr><td><a href="reference.html#imagefromblob">ImageFromBlob</a>(blob, nome, x, y, w, h, link)</td><td>PNG/JPEG que já está numa tabela ou variável — sem rede e sem ACL; w ou h = 0 mantém a proporção</td></tr>
+    <tr><td><a href="reference.html#image">Image</a>(url, x, y, w, h, tipo, link)</td><td>PNG/JPEG buscado por URL; exige ACL de rede concedida ao schema</td></tr>
+    <tr><td><a href="reference.html#getimagefromurl">getImageFromUrl</a>(url)</td><td>Baixa a imagem via UTL_HTTP e devolve os bytes, sem desenhar</td></tr>
+    <tr><td><a href="reference.html#link">Link</a>(x,y,w,h,url)</td><td>Área clicável levando a uma URL. <b>Uma por página</b>: a segunda chamada na mesma página substitui a primeira</td></tr>
+    <tr><td><a href="reference.html#addlink">AddLink</a> · <a href="reference.html#setlink">SetLink</a></td><td><b>Não suportado</b>: link interno (sumário, índice) não está implementado, e a chamada levanta <code>ORA-20601</code>. Use URL</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">imagem.sql</span></div>
-<pre>PL_FPDF.Image(
-  pFile   => <span class="s">&#x27;logo.png&#x27;</span>,  <span class="c">-- arquivo no DIRECTORY</span>
+<pre><span class="k">SELECT</span> logo <span class="k">INTO</span> l_logo <span class="k">FROM</span> empresa <span class="k">WHERE</span> id = <span class="n">1</span>;   <span class="c">-- BLOB com o PNG/JPEG</span>
+PL_FPDF.ImageFromBlob(
+  p_blob  => l_logo,
+  p_name  => <span class="s">&#x27;LOGO&#x27;</span>,      <span class="c">-- chave no cache: o mesmo nome reaproveita a imagem</span>
   pX      => <span class="n">10</span>, pY => <span class="n">10</span>,
   pWidth  => <span class="n">40</span>,          <span class="c">-- largura fixa…</span>
   pHeight => <span class="n">0</span>,           <span class="c">-- …0 = altura proporcional</span>
-  pType   => <span class="k">NULL</span>,        <span class="c">-- NULL autodetecta PNG/JPEG</span>
   pLink   => <span class="s">&#x27;https://msbrasil.inf.br&#x27;</span>);  <span class="c">-- imagem clicável (opcional)</span></pre></div>
 </section>
 
@@ -318,9 +323,9 @@ PL_FPDF.SetLineDashPattern(<span class="s">&#x27;[3 2] 0&#x27;</span>);         
   <h2><span class="n">07</span> Cabeçalho e rodapé automáticos</h2>
   <p class="desc">Registre procedures suas para executarem a cada página, com parâmetros.</p>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>SetHeaderProc(proc, params)</td><td>Procedure chamada no topo de cada página</td></tr>
-    <tr><td>SetFooterProc(proc, params)</td><td>Procedure chamada no rodapé</td></tr>
-    <tr><td>SetAliasNbPages('{nb}')</td><td>Placeholder do total de páginas ("Página 2/{nb}")</td></tr>
+    <tr><td><a href="reference.html#setheaderproc">SetHeaderProc</a>(proc, params)</td><td>Procedure chamada no topo de cada página</td></tr>
+    <tr><td><a href="reference.html#setfooterproc">SetFooterProc</a>(proc, params)</td><td>Procedure chamada no rodapé</td></tr>
+    <tr><td><a href="reference.html#setaliasnbpages">SetAliasNbPages</a>('{nb}')</td><td>Placeholder do total de páginas ("Página 2/{nb}")</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">rodape.sql</span></div>
 <pre><span class="c">-- procedure sua, chamada a cada página:</span>
@@ -338,11 +343,13 @@ PL_FPDF.SetAliasNbPages(<span class="s">&#x27;{nb}&#x27;</span>);  <span class="
 <section id="codigos">
   <h2><span class="n">08</span> QR Code e código de barras</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>AddQRCode(x, y, size, dados, formato, correção)</td><td>Formatos TEXT, URL, PIX, VCARD, WIFI, EMAIL · correção L/M/Q/H</td></tr>
-    <tr><td>AddBarcode(x, y, w, h, código, tipo, texto)</td><td>CODE128, CODE39, EAN13, EAN8, ITF14</td></tr>
+    <tr><td><a href="reference.html#addqrcode">AddQRCode</a>(x, y, size, dados, formato, correção)</td><td>Formatos TEXT, URL, PIX, VCARD, WIFI, EMAIL · correção L/M/Q/H</td></tr>
+    <tr><td><a href="reference.html#addbarcode">AddBarcode</a>(x, y, w, h, código, tipo, texto)</td><td>CODE128, CODE39, EAN13, EAN8, ITF14 e ITF — o ITF (Interleaved 2 of 5) aceita qualquer quantidade par de dígitos, como os 44 do boleto</td></tr>
   </tbody></table></div>
-  <p class="note">PIX com payload EMV completo e Boleto FEBRABAN prontos para uso estão na
-  <a href="https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments">extensão brazilian-payments</a>.</p>
+  <p class="note">PIX com payload EMV completo e Boleto no leiaute FEBRABAN estão na
+  <a href="https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments">extensão brazilian-payments</a>,
+  opcional e instalada à parte. Ela não tem homologação bancária: antes de usar em
+  produção, valide o boleto com o banco e o PIX com o seu prestador de pagamento.</p>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">qr_barras.sql</span></div>
 <pre>PL_FPDF.AddQRCode(
   p_x => <span class="n">150</span>, p_y => <span class="n">20</span>, p_size => <span class="n">40</span>,   <span class="c">-- posição e lado (unidade do doc)</span>
@@ -353,18 +360,18 @@ PL_FPDF.SetAliasNbPages(<span class="s">&#x27;{nb}&#x27;</span>);  <span class="
 PL_FPDF.AddBarcode(
   p_x => <span class="n">30</span>, p_y => <span class="n">70</span>, p_width => <span class="n">150</span>, p_height => <span class="n">20</span>,
   p_code      => <span class="s">&#x27;7891234567895&#x27;</span>,
-  p_type      => <span class="s">&#x27;EAN13&#x27;</span>,               <span class="c">-- CODE128 | CODE39 | EAN13 | EAN8 | ITF14</span>
+  p_type      => <span class="s">&#x27;EAN13&#x27;</span>,               <span class="c">-- CODE128 | CODE39 | EAN13 | EAN8 | ITF14 | ITF</span>
   p_show_text => <span class="k">TRUE</span>);                 <span class="c">-- número legível abaixo das barras</span></pre></div>
 </section>
 
 <section id="meta">
   <h2><span class="n">09</span> Metadados e configuração</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>SetTitle / SetSubject / SetAuthor / SetKeywords / SetCreator</td><td>Metadados do documento</td></tr>
-    <tr><td>SetDisplayMode(zoom, layout)</td><td>Como o leitor abre o PDF</td></tr>
-    <tr><td>SetCompression(bool)</td><td>Compressão do conteúdo</td></tr>
-    <tr><td>SetDocumentConfig(json) · GetDocumentMetadata</td><td>Configuração em lote e leitura via JSON</td></tr>
-    <tr><td>GetPageInfo(n)</td><td>Dimensões e rotação de uma página (JSON)</td></tr>
+    <tr><td><a href="reference.html#settitle">SetTitle</a> / <a href="reference.html#setsubject">SetSubject</a> / <a href="reference.html#setauthor">SetAuthor</a> / <a href="reference.html#setkeywords">SetKeywords</a> / <a href="reference.html#setcreator">SetCreator</a></td><td>Metadados do documento</td></tr>
+    <tr><td><a href="reference.html#setdisplaymode">SetDisplayMode</a>(zoom, layout)</td><td>Como o leitor abre o PDF</td></tr>
+    <tr><td><a href="reference.html#setcompression">SetCompression</a>(bool)</td><td>Compressão do conteúdo</td></tr>
+    <tr><td><a href="reference.html#setdocumentconfig">SetDocumentConfig</a>(json) · <a href="reference.html#getdocumentmetadata">GetDocumentMetadata</a></td><td>Configuração em lote e leitura via JSON</td></tr>
+    <tr><td><a href="reference.html#getpageinfo">GetPageInfo</a>(n)</td><td>Dimensões e rotação de uma página (JSON)</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">metadados.sql</span></div>
 <pre>PL_FPDF.SetTitle(<span class="s">&#x27;Relatório Mensal&#x27;</span>);
@@ -378,9 +385,9 @@ PL_FPDF.SetDocumentConfig(JSON_OBJECT_T(<span class="s">&#x27;{&quot;title&quot;
 <section id="saida">
   <h2><span class="n">10</span> Saída — gerar o PDF</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>Quando usar</th></tr></thead><tbody>
-    <tr><td>OutputBlob → BLOB</td><td>Padrão: gravar em tabela, e-mail, APEX, ORDS</td></tr>
-    <tr><td>OutputFile(arquivo, directory)</td><td>Gravar num DIRECTORY Oracle</td></tr>
-    <tr><td>ReturnBlob · Output</td><td>Compatibilidade com código legado/FPDF clássico</td></tr>
+    <tr><td><a href="reference.html#outputblob">OutputBlob</a> → BLOB</td><td>Padrão: gravar em tabela, e-mail, APEX, ORDS. O BLOB devolvido é temporário: depois de gravar ou enviar, libere com <code>DBMS_LOB.FREETEMPORARY</code></td></tr>
+    <tr><td><a href="reference.html#outputfile">OutputFile</a>(arquivo, directory)</td><td>Gravar num DIRECTORY Oracle</td></tr>
+    <tr><td><a href="reference.html#returnblob">ReturnBlob</a> · <a href="reference.html#output">Output</a></td><td>Compatibilidade com código legado/FPDF clássico</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">saida.sql</span></div>
 <pre>l_pdf := PL_FPDF.OutputBlob();                        <span class="c">-- BLOB para tabela/e-mail/APEX</span>
@@ -393,12 +400,12 @@ PL_FPDF.OutputFile(
   <h2><span class="n">11</span> Manipulação de PDF existente</h2>
   <p class="desc">Fluxo: <code>LoadPDF</code> → inspecionar/modificar → <code>OutputModifiedPDF</code>.</p>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>LoadPDF(blob)</td><td>Carrega e interpreta um PDF existente</td></tr>
-    <tr><td>GetPageCount · GetPDFInfo</td><td>Total de páginas · metadados/versão (JSON)</td></tr>
-    <tr><td>RotatePage(n, graus) · RemovePage(n)</td><td>Rotação 0/90/180/270 · remoção de página</td></tr>
-    <tr><td>AddWatermark(texto, opacidade, rotação, páginas, fonte, tam, cor)</td><td>Marca d'água em 'ALL' ou '1,3-5'</td></tr>
-    <tr><td>GetWatermarks · GetActivePageCount · IsPageRemoved · IsPDFModified</td><td>Consultas de estado (JSON)</td></tr>
-    <tr><td>OutputModifiedPDF → BLOB · ClearPDFCache</td><td>Gera o PDF final · libera memória</td></tr>
+    <tr><td><a href="reference.html#loadpdf">LoadPDF</a>(blob)</td><td>Carrega e interpreta um PDF existente. PDF cifrado é recusado com <code>ORA-20867</code>: passe antes pelo <code>DecryptPDF</code></td></tr>
+    <tr><td><a href="reference.html#getpagecount">GetPageCount</a> · <a href="reference.html#getpdfinfo">GetPDFInfo</a></td><td>Total de páginas · metadados/versão (JSON)</td></tr>
+    <tr><td><a href="reference.html#rotatepage">RotatePage</a>(n, graus) · <a href="reference.html#removepage">RemovePage</a>(n)</td><td>Rotação 0/90/180/270 · remoção de página</td></tr>
+    <tr><td><a href="reference.html#addwatermark">AddWatermark</a>(texto, opacidade, rotação, páginas, fonte, tam, cor)</td><td>Marca d'água em 'ALL' ou '1,3-5'</td></tr>
+    <tr><td><a href="reference.html#getwatermarks">GetWatermarks</a> · <a href="reference.html#getactivepagecount">GetActivePageCount</a> · <a href="reference.html#ispageremoved">IsPageRemoved</a> · <a href="reference.html#ispdfmodified">IsPDFModified</a></td><td>Consultas de estado (JSON)</td></tr>
+    <tr><td><a href="reference.html#outputmodifiedpdf">OutputModifiedPDF</a> → BLOB · <a href="reference.html#clearpdfcache">ClearPDFCache</a></td><td>Gera o PDF final · libera memória</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">editar.sql</span></div>
 <pre>PL_FPDF.LoadPDF(l_pdf);
@@ -418,9 +425,9 @@ l_pdf := PL_FPDF.OutputModifiedPDF();</pre></div>
   <h2><span class="n">12</span> Overlays — conteúdo sobre PDF existente</h2>
   <p class="desc">Carimbos, logos e assinaturas em coordenadas exatas (pontos PDF; Y de baixo para cima).</p>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>OverlayText(página, texto, x, y, opções)</td><td>Opções JSON: font, fontSize, color, opacity, rotation, align, bold, zOrder</td></tr>
-    <tr><td>OverlayImage(página, blob, x, y, w, h, opções)</td><td>JPEG/PNG; opacity, rotation, maintainAspect, scaleToFit</td></tr>
-    <tr><td>GetOverlays(página) · RemoveOverlay(id) · ClearOverlays(página)</td><td>Gestão das sobreposições</td></tr>
+    <tr><td><a href="reference.html#overlaytext">OverlayText</a>(página, texto, x, y, opções)</td><td>Opções JSON: font, fontSize, color, opacity, rotation, align, bold, zOrder</td></tr>
+    <tr><td><a href="reference.html#overlayimage">OverlayImage</a>(página, blob, x, y, w, h, opções)</td><td>JPEG/PNG; opacity, rotation, maintainAspect, scaleToFit</td></tr>
+    <tr><td><a href="reference.html#getoverlays">GetOverlays</a>(página) · <a href="reference.html#removeoverlay">RemoveOverlay</a>(id) · <a href="reference.html#clearoverlays">ClearOverlays</a>(página)</td><td>Gestão das sobreposições</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">overlay.sql</span></div>
 <pre>PL_FPDF.OverlayText(
@@ -441,10 +448,10 @@ PL_FPDF.OverlayImage(
 <section id="multi">
   <h2><span class="n">13</span> Multi-PDF: merge, split e extração</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>LoadPDFWithID(blob, id) · UnloadPDF(id) · GetLoadedPDFs</td><td>Vários PDFs em memória, cada um com ID</td></tr>
-    <tr><td>MergePDFs(ids JSON) → BLOB</td><td>Mescla na ordem do array</td></tr>
-    <tr><td>SplitPDF(id, ranges JSON) → JSON</td><td>Divide por intervalos ("1-10", "11-20", "21-")</td></tr>
-    <tr><td>ExtractPages(id, '1,5-10,15') → BLOB</td><td>Novo PDF só com as páginas indicadas</td></tr>
+    <tr><td><a href="reference.html#loadpdfwithid">LoadPDFWithID</a>(blob, id) · <a href="reference.html#unloadpdf">UnloadPDF</a>(id) · <a href="reference.html#getloadedpdfs">GetLoadedPDFs</a></td><td>Vários PDFs em memória, cada um com ID</td></tr>
+    <tr><td><a href="reference.html#mergepdfs">MergePDFs</a>(ids JSON) → BLOB</td><td>Mescla na ordem do array</td></tr>
+    <tr><td><a href="reference.html#splitpdf">SplitPDF</a>(id, ranges JSON) → JSON</td><td>Divide por intervalos ("1-10", "11-20", "21-")</td></tr>
+    <tr><td><a href="reference.html#extractpages">ExtractPages</a>(id, '1,5-10,15') → BLOB</td><td>Novo PDF só com as páginas indicadas</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">merge.sql</span></div>
 <pre>PL_FPDF.LoadPDFWithID(l_capa, <span class="s">&#x27;capa&#x27;</span>);
@@ -453,13 +460,13 @@ l_final := PL_FPDF.MergePDFs(JSON_ARRAY_T(<span class="s">&#x27;[&quot;capa&quot
 </section>
 
 <section id="seguranca">
-  <h2><span class="n">14</span> Segurança e criptografia (v3.2)</h2>
+  <h2><span class="n">14</span> Segurança e criptografia</h2>
   <div class="tbl"><table><thead><tr><th>API</th><th>O que faz</th></tr></thead><tbody>
-    <tr><td>EncryptPDF(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — 'AES-256', 'AES-128', 'RC4-128' ou 'RC4-40'</td></tr>
-    <tr><td>DecryptPDF(pdf, senha)</td><td>Remove a proteção</td></tr>
-    <tr><td>IsEncrypted(pdf) · GetSecurityInfo(pdf)</td><td>Verifica e inspeciona (algoritmo, chave, permissões)</td></tr>
-    <tr><td>SetEncryption(...) · SetPermissions(...)</td><td>Criptografia e permissões de um documento <b>novo</b>, antes do OutputBlob</td></tr>
-    <tr><td>SetPDFVersion('1.7') · GetPDFVersion</td><td>Versão do arquivo gerado</td></tr>
+    <tr><td><a href="reference.html#encryptpdf">EncryptPDF</a>(pdf, senha_user, senha_owner, permissões, algoritmo)</td><td>Protege um BLOB pronto — 'AES-256', 'AES-128', 'RC4-128' ou 'RC4-40'. Sem o algoritmo, o padrão é o <b>RC4-128</b>, legado: informe <code>'AES-256'</code></td></tr>
+    <tr><td><a href="reference.html#decryptpdf">DecryptPDF</a>(pdf, senha)</td><td>Remove a proteção</td></tr>
+    <tr><td><a href="reference.html#isencrypted">IsEncrypted</a>(pdf) · <a href="reference.html#getsecurityinfo">GetSecurityInfo</a>(pdf)</td><td>Verifica e inspeciona (algoritmo, chave, permissões)</td></tr>
+    <tr><td><a href="reference.html#setencryption">SetEncryption</a>(...) · <a href="reference.html#setpermissions">SetPermissions</a>(...)</td><td>Criptografia e permissões de um documento <b>novo</b>, antes do OutputBlob</td></tr>
+    <tr><td><a href="reference.html#setpdfversion">SetPDFVersion</a>('1.7') · <a href="reference.html#getpdfversion">GetPDFVersion</a></td><td>Versão do arquivo gerado</td></tr>
   </tbody></table></div>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">proteger.sql</span></div>
 <pre>l_perms := JSON_OBJECT_T();
@@ -494,5 +501,21 @@ l_seguro := PL_FPDF.EncryptPDF(
 </footer>
 
 </div>
+<script>
+/* Bloco de código ou tabela mais largo que a tela rola na horizontal, e
+   quem usa só o teclado precisa poder focá-lo para rolar (WCAG 2.1.1; axe
+   scrollable-region-focusable). Só os que de fato rolam ganham tabindex:
+   pôr em todos encheria a navegação por Tab de paradas inúteis. */
+(function () {
+  function marcar() {
+    document.querySelectorAll('pre, .tbl').forEach(function (e) {
+      if (e.scrollWidth > e.clientWidth + 1) e.tabIndex = 0;
+      else e.removeAttribute('tabindex');
+    });
+  }
+  marcar();
+  window.addEventListener('resize', marcar);
+})();
+</script>
 </body>
 </html>

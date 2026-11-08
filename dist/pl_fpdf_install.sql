@@ -3976,7 +3976,8 @@ procedure SetFontSize(psize in number);
  * @param palign 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right,
  *        direita)
  * @param pfill 1 pinta o fundo com a cor de SetFillColor, 0 não
- * @param plink URL ou identificador de link interno
+ * @param plink URL do link (opcional). Link interno não é suportado: veja
+ *        AddLink
  * @raises -20100 qualquer falha na escrita da célula. O Cell embrulha o erro
  *         original neste código, mas preserva a pilha (keeperrorstack), de
  *         modo que a causa -- um ORA-20203 de caractere fora do WinAnsi, por
@@ -4066,7 +4067,8 @@ procedure MultiCell
  *
  * @param pH altura da linha, na unidade corrente
  * @param ptxt o texto
- * @param plink URL ou identificador de link interno
+ * @param plink URL do link (opcional). Link interno não é suportado: veja
+ *        AddLink
  * @raises -20100 qualquer falha na escrita, com a pilha original preservada
  * @since 0.9.4
  * @example
@@ -4093,7 +4095,8 @@ procedure Write(pH in varchar2, ptxt in varchar2, plink in varchar2 default null
  * @param p_align 'L' (Left, esquerda), 'C' (Center, centro), 'R' (Right,
  *        direita)
  * @param p_fill 1 pinta o fundo, 0 não
- * @param p_link URL ou link interno
+ * @param p_link URL do link (opcional). Link interno não é suportado: veja
+ *        AddLink
  * @param p_rotation giro do texto em graus (0, 90, 180, 270)
  * @raises -20110 giro inválido
  * @since 2.0.0
@@ -4113,17 +4116,20 @@ procedure CellRotated(
 );
 
 /**
- * O mesmo que Write, com o texto girado.
+ * O mesmo que Write, com um parâmetro de giro -- mas só o giro de 0 grau é
+ * aceito: qualquer outro levanta -20111. Para texto girado, use CellRotated.
  *
  * @param p_height altura da linha
  * @param p_text o texto
- * @param p_link URL ou link interno
- * @param p_rotation giro em graus (0, 90, 180, 270)
+ * @param p_link URL do link (opcional). Link interno não é suportado: veja
+ *        AddLink
+ * @param p_rotation giro em graus; só 0 é aceito
  * @raises -20110 giro inválido
  * @raises -20111 só o giro de 0 grau é suportado; use CellRotated
  * @since 2.0.0
  * @example
- *   PL_FPDF.WriteRotated(5, 'CONFIDENCIAL', NULL, 90);
+ *   PL_FPDF.WriteRotated(5, 'Texto na linha', NULL, 0);
+ *   -- girado: PL_FPDF.CellRotated(10, 40, 'CONFIDENCIAL', '0', 0, 'C', 0, '', 90);
  */
 procedure WriteRotated(
   p_height number,
@@ -4139,13 +4145,15 @@ procedure WriteRotated(
  * saem da própria imagem, a 72 dpi; com uma das duas em zero, ela é derivada
  * da outra, mantendo a proporção.
  *
- * @param pFile URL da imagem
+ * @param pFile URL da imagem (http/https), buscada pela rede: exige ACL
+ *        concedida ao schema. Não é caminho de arquivo local
  * @param pX canto superior esquerdo
  * @param pY canto superior esquerdo
  * @param pWidth largura (0 = derivada)
  * @param pHeight altura (0 = derivada)
  * @param pType formato, quando não se quer deduzir do arquivo
- * @param pLink URL ou identificador de link interno sobre a imagem
+ * @param pLink URL do link sobre a imagem (opcional). Link interno não é
+ *        suportado: veja AddLink
  * @raises -20100 falha ao buscar ou interpretar a imagem, com a pilha original
  *         preservada
  * @since 0.9.4
@@ -4585,7 +4593,8 @@ procedure AddBarcode(
 );
 
 /**
- * Carregar documento PDF existente na memória para leitura e modificação
+ * Carregar documento PDF existente na memória para leitura e modificação.
+ * PDF cifrado é recusado (-20867): decifre antes com DecryptPDF.
  *
  * @param p_pdf_blob Documento PDF como BLOB
  * @raises -20800 PDF nulo, ou pequeno demais para ter cabeçalho e trailer
@@ -5251,7 +5260,8 @@ FUNCTION ExtractPages(
  * @param p_owner_password senha de acesso total (opcional)
  * @param p_permissions JSON com flags de permissão
  * @param p_encryption Encryption method:
- *        'RC4-40','RC4-128','AES-128','AES-256'
+ *        'RC4-40','RC4-128','AES-128','AES-256'. O padrão é o RC4-128,
+ *        legado: informe 'AES-256'
  * @return PDF criptografado
  * @raises -20850 Método de criptografia inválido
  * @raises -20851 Senha obrigatória
@@ -5333,7 +5343,8 @@ FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN;
 FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T;
 
 /**
- * Definir criptografia para PDF em geração (usar antes do Output)
+ * Definir criptografia para PDF em geração (usar antes do Output). Prefira
+ * 'AES-256': o RC4 fica só por compatibilidade com leitores antigos.
  *
  * @param p_encryption Method: 'RC4-40','RC4-128','AES-128','AES-256'
  * @param p_user_password Senha para abrir

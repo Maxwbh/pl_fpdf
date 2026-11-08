@@ -60,7 +60,7 @@ Gere e manipule PDFs **diretamente dentro do Oracle Database** — sem Java, sem
 | Proteger documentos sensíveis | Criptografia AES-256, AES-128 ou RC4, com senha de usuário/proprietário e permissões |
 | Zero dependências externas | Sem OWA, sem OrdImage, sem Java Stored Procedures, sem libs de terceiros |
 | Deploy simples | Dois packages, sem objetos de banco: `PL_FPDF_UTIL` e `PL_FPDF` |
-| Mercado brasileiro | Extensão opcional pronta para **PIX** (QR Code EMV) e **Boleto Bancário** (FEBRABAN) |
+| Mercado brasileiro | Extensão opcional, instalada à parte, para **PIX** (QR Code EMV) e **Boleto Bancário** (FEBRABAN) — sem homologação bancária |
 
 **Quando faz sentido usar:** ERPs e sistemas legados 100% PL/SQL, ambientes Oracle EBS/Forms sem camada Java, geração de relatório fiscal/contábil direto de trigger ou job, ou qualquer cenário onde instalar uma lib externa (iText, wkhtmltopdf, etc.) não é viável.
 

@@ -100,6 +100,7 @@ ROTULOS_PT = {
     'desde': 'Desde a versão',
     'link_perm': 'Link permanente para',
     'so_na': 'só na {v}, ainda candidata — não existe na {estavel}, a estável',
+    'indisponivel': 'não suportada',
 }
 
 ROTULOS_EN = {
@@ -116,6 +117,7 @@ ROTULOS_EN = {
     'desde': 'Since version',
     'link_perm': 'Permanent link to',
     'so_na': 'only in {v}, still a candidate — not in {estavel}, the stable one',
+    'indisponivel': 'not supported',
 }
 
 
@@ -155,8 +157,13 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
     nome = a['nome']
     tipo = 'Function' if a['tipo'] == 'function' else 'Procedure'
     alvo = nome.lower()
+    import meta
+    # API que existe na spec mas recusa sempre (AddLink, SetLink): o selo diz
+    # isso no título, sem depender de ler a descrição até o fim
+    selo = (f' <span class="unsup">{rot["indisponivel"]}</span>'
+            if nome in meta.INDISPONIVEIS else '')
     o = [f'<article class="api" id="{alvo}">',
-         f'<h3>{esc(nome)} <span class="kind">{tipo}</span>'
+         f'<h3>{esc(nome)} <span class="kind">{tipo}</span>{selo}'
          f'<a class="anchor" href="#{alvo}" aria-label="{rot["link_perm"]} {esc(nome)}">#</a></h3>',
          f'<p class="d">{esc(a["descricao"])}</p>']
     v, aviso = desde(a, rot)
@@ -164,6 +171,12 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
         o.append(f'<p class="since">{rot["desde"]} <b>{esc(v)}</b>'
                  + (f' <span class="novo">— {esc(aviso)}</span>' if aviso else '')
                  + '</p>')
+    # a limitação vem logo abaixo da descrição, antes da sintaxe: lá no fim,
+    # depois dos erros, quem copiava a assinatura já tinha ido embora
+    for n in a['notas']:
+        if n['tipo'] == 'limitation':
+            o.append(f'<p class="limit"><b>{rot["nota"]["limitation"]}:</b> '
+                     f'{esc(n["texto"])}</p>')
     o += [f'<h4>{rot["sintaxe"]}</h4>',
          '<div class="code"><pre>' + realcar(sintaxe(a)) + '</pre></div>']
     for s in sobrecargas:
@@ -199,6 +212,8 @@ def artigo(a, sintaxe, veja_tambem, sobrecargas=(), compativel=None,
         o.append(f'<h4>{rot["retorno"]}</h4>'
                  f'<p class="d">{esc(a["retorno"])}</p>')
     for n in a['notas']:
+        if n['tipo'] == 'limitation':
+            continue
         titulo = rot['nota'].get(n['tipo'], n['tipo'].capitalize())
         o.append(f'<h4>{titulo}</h4><p class="d">{esc(n["texto"])}</p>')
     if a['erros']:

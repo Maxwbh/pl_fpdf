@@ -999,7 +999,7 @@ PROCEDURE PL_FPDF.Cell(
 | `pln` | NUMBER | `0` | Where the cursor goes afterwards. 0 = to the right of the cell (default); 1 = start of the next line; 2 = below the cell |
 | `palign` | VARCHAR2 | `''` | Text alignment. 'L' (left), 'C' (centre), 'R' (right) or '' (default, left) |
 | `pfill` | NUMBER | `0` | Fills the background with the SetFillColor colour. 0 = transparent (default); 1 = filled |
-| `plink` | VARCHAR2 | `''` | Makes the cell clickable. URL ('https://...'); an AddLink identifier is refused with ORA-20601 |
+| `plink` | VARCHAR2 | `''` | Optional link URL ('https://...') that makes the cell clickable. Internal links are not supported: see AddLink |
 
 #### Errors
 
@@ -1063,7 +1063,7 @@ PROCEDURE PL_FPDF.CellRotated(
 | `p_ln` | NUMBER | `0` | Cursor position afterwards. 0 = to the right; 1 = next line; 2 = below |
 | `p_align` | VARCHAR2 | `''` | Alignment. 'L', 'C' or 'R' |
 | `p_fill` | NUMBER | `0` | Fill. 0 or 1 |
-| `p_link` | VARCHAR2 | `''` | Optional link. URL; an AddLink identifier is refused with ORA-20601 |
+| `p_link` | VARCHAR2 | `''` | Optional link URL. Internal links are not supported: see AddLink |
 | `p_rotation` | PLS_INTEGER | `0` | Rotation angle of the text. 0 (default), 90, 180 or 270 — any other value raises an error |
 
 #### Errors
@@ -1385,7 +1385,7 @@ PROCEDURE PL_FPDF.Write(
 |-----------|------|--------|-----------|
 | `pH` | VARCHAR2 | — | Line height. Number in the unit set by Init (mm, cm, pt or in) |
 | `ptxt` | VARCHAR2 | — | Text to write. Any VARCHAR2 |
-| `plink` | VARCHAR2 | `null` | Optional link applied to the text. URL; NULL (default) = no link. An AddLink identifier is refused with ORA-20601 |
+| `plink` | VARCHAR2 | `null` | Optional link URL applied to the text; NULL (default) = no link. Internal links are not supported: see AddLink |
 
 #### Errors
 
@@ -1408,7 +1408,7 @@ PL_FPDF.Write(5, 'manual', 'https://example.com/manual');
 
 ### WriteRotated
 
-Write with the text rotated.
+The same as Write, with a rotation parameter -- but only a rotation of 0 degrees is accepted: any other raises -20111. For rotated text, use CellRotated.
 
 *Since version 2.0.0*
 
@@ -1428,8 +1428,8 @@ PROCEDURE PL_FPDF.WriteRotated(
 |-----------|------|--------|-----------|
 | `p_height` | NUMBER | — | Line height. Number in the unit set by Init (mm, cm, pt or in) |
 | `p_text` | VARCHAR2 | — | Text to write. Any VARCHAR2 |
-| `p_link` | VARCHAR2 | `null` | Optional link. URL NULL = no link. An AddLink identifier is refused with ORA-20601 |
-| `p_rotation` | PLS_INTEGER | `0` | Rotation angle. 0 (default), 90, 180 or 270 |
+| `p_link` | VARCHAR2 | `null` | Optional link URL NULL = no link. Internal links are not supported: see AddLink |
+| `p_rotation` | PLS_INTEGER | `0` | Rotation angle in degrees; only 0 is accepted |
 
 #### Errors
 
@@ -1441,7 +1441,8 @@ PROCEDURE PL_FPDF.WriteRotated(
 #### Example
 
 ```sql
-PL_FPDF.WriteRotated(5, 'CONFIDENTIAL', NULL, 90);
+PL_FPDF.WriteRotated(5, 'Text on the line', NULL, 0);
+-- rotated: PL_FPDF.CellRotated(10, 40, 'CONFIDENTIAL', '0', 0, 'C', 0, '', 90);
 ```
 
 **See also:** [Write](#write) · [CellRotated](#cellrotated)
@@ -1866,7 +1867,7 @@ l_img := PL_FPDF.getImageFromUrl('https://example.com/logo.png');
 
 ### image
 
-Places a PNG or JPEG image on the current page, with optional proportional scaling.
+Places an image fetched by URL. The fetch goes over the network and needs an ACL granted to the schema -- when the image is already in a table or a variable, ImageFromBlob does the same with no network and no permission. Width and height of zero come from the image itself, at 72 dpi; with only one of them zero, it is derived from the other, keeping the aspect ratio.
 
 *Since version 0.9.4*
 
@@ -1887,13 +1888,13 @@ PROCEDURE PL_FPDF.image(
 
 | Parameter | Type | Default | Description |
 |-----------|------|--------|-----------|
-| `pFile` | VARCHAR2 | — | Source of the image. File name in an Oracle DIRECTORY, or the identifier returned by getImageFromUrl |
+| `pFile` | VARCHAR2 | — | Image URL (http/https), fetched over the network: needs an ACL granted to the schema. Not a local file path |
 | `pX` | NUMBER | — | X of the top-left corner. Number in the unit set by Init (mm, cm, pt or in) |
 | `pY` | NUMBER | — | Y of the top-left corner. Number in the unit set by Init (mm, cm, pt or in) |
 | `pWidth` | NUMBER | `0` | Desired width. Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the height |
 | `pHeight` | NUMBER | `0` | Desired height. Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the width, keeping the aspect ratio |
 | `pType` | VARCHAR2 | `null` | Image format. 'PNG', 'JPG'/'JPEG', or NULL (default) to detect it automatically |
-| `pLink` | VARCHAR2 | `null` | Makes the image clickable. URL NULL = no link. An AddLink identifier is refused with ORA-20601 |
+| `pLink` | VARCHAR2 | `null` | Optional link URL over the image NULL = no link. Internal links are not supported: see AddLink |
 
 #### Errors
 
@@ -3256,7 +3257,7 @@ END IF;
 
 ### LoadPDF
 
-Loads an existing PDF into session memory for reading and modification. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.
+Loads an existing PDF into session memory for reading and modification. An encrypted PDF is refused (-20867): decrypt it first with DecryptPDF. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF.
 
 *Since version 3.0.0*
 
@@ -4072,7 +4073,7 @@ FUNCTION PL_FPDF.EncryptPDF(
 | `p_user_password` | VARCHAR2 | — | Password asked for when opening the document. Text; empty allows opening without a password while keeping the restrictions |
 | `p_owner_password` | VARCHAR2 | `NULL` | Owner password, which allows changing permissions. Text; NULL (default) reuses the user password |
 | `p_permissions` | JSON_OBJECT_T | `NULL` | Permissions granted to the reader. JSON_OBJECT_T with the boolean keys: print, modify, copy, annotate, fill_forms, extract, assemble, print_high. Missing keys take the restrictive default |
-| `p_encryption` | VARCHAR2 | `'RC4-128'` | Encryption algorithm. 'AES-256' and 'AES-128' (recommended), 'RC4-128' (the default, kept for compatibility) or 'RC4-40' (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it |
+| `p_encryption` | VARCHAR2 | `'RC4-128'` | Encryption algorithm. 'AES-256' and 'AES-128' (recommended), 'RC4-128' (the default, legacy: pass 'AES-256') or 'RC4-40' (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it |
 
 #### Returns
 
@@ -4199,7 +4200,7 @@ IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
 
 ### SetEncryption
 
-Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob.
+Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob. Prefer 'AES-256': RC4 stays only for compatibility with old readers.
 
 *Since version 3.0.0*
 
@@ -4216,7 +4217,7 @@ PROCEDURE PL_FPDF.SetEncryption(
 
 | Parameter | Type | Default | Description |
 |-----------|------|--------|-----------|
-| `p_encryption` | VARCHAR2 | — | Encryption algorithm. 'RC4-128' or 'RC4-40' |
+| `p_encryption` | VARCHAR2 | — | Encryption algorithm: 'RC4-40', 'RC4-128', 'AES-128' or 'AES-256' (recommended) |
 | `p_user_password` | VARCHAR2 | — | Opening password. Text |
 | `p_owner_password` | VARCHAR2 | `NULL` | Owner password. Text; NULL (default) = same as the user password |
 

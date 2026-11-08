@@ -59,9 +59,9 @@ Generate and manipulate PDFs **directly in Oracle Database** - no Java, no exter
 | Create reports from Oracle | Pure PL/SQL - runs inside the database |
 | Modify existing PDFs | Load, edit, merge, split - all in PL/SQL |
 | Protect documents | AES-256, AES-128 or RC4 encryption with permissions |
-| Zero dependencies | No OWA, no OrdImage, no external libs |
+| Zero dependencies | No Java, no OWA, no OrdImage, no external libs |
 | Simple deployment | Two packages, no database objects: `PL_FPDF_UTIL` then `PL_FPDF` |
-| Brazilian market | Optional extension for **PIX** (EMV QR code) and **Boleto** (FEBRABAN) |
+| Brazilian market | Optional extension, installed separately, for **PIX** (EMV QR code) and **Boleto** (FEBRABAN) — not bank-certified |
 
 ---
 

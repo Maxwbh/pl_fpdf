@@ -117,6 +117,10 @@ FORA_DA_REFERENCIA = [
 ]
 
 # API -> APIs que se usam junto
+# Na spec, mas recusam sempre: o link interno não está implementado e as duas
+# levantam -20601. A referência mostra o selo "não suportada" no título.
+INDISPONIVEIS = ['AddLink', 'SetLink']
+
 VEJA_TAMBEM = {
     'AcceptPageBreak': ['SetAutoPageBreak'],
     'AddBarcode': ['AddQRCode'],

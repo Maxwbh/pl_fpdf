@@ -861,8 +861,8 @@ TEXTOS = {
                       "Text alignment. 'L' (left), 'C' (centre), 'R' (right) or '' (default, left)"),
             "pfill": ("1 pinta o fundo com a cor de SetFillColor, 0 não",
                      "Fills the background with the SetFillColor colour. 0 = transparent (default), 1 = filled"),
-            "plink": ("URL ou identificador de link interno",
-                     "Makes the cell clickable. URL ('https://...'); an AddLink identifier is refused with ORA-20601"),
+            "plink": ("URL do link (opcional). Link interno não é suportado: veja AddLink",
+                     "Optional link URL ('https://...') that makes the cell clickable. Internal links are not supported: see AddLink"),
         },
     },
     "MultiCell": {
@@ -895,8 +895,8 @@ TEXTOS = {
                   "Line height. Number in the unit set by Init (mm, cm, pt or in)"),
             "ptxt": ("o texto",
                     "Text to write. Any VARCHAR2"),
-            "plink": ("URL ou identificador de link interno",
-                     "Optional link applied to the text. URL; NULL (default) = no link. An AddLink identifier is refused with ORA-20601"),
+            "plink": ("URL do link (opcional). Link interno não é suportado: veja AddLink",
+                     "Optional link URL applied to the text; NULL (default) = no link. Internal links are not supported: see AddLink"),
         },
     },
     "CellRotated": {
@@ -917,32 +917,32 @@ TEXTOS = {
                        "Alignment. 'L', 'C' or 'R'"),
             "p_fill": ("1 pinta o fundo, 0 não",
                       "Fill. 0 or 1"),
-            "p_link": ("URL ou link interno",
-                      "Optional link. URL; an AddLink identifier is refused with ORA-20601"),
+            "p_link": ("URL do link (opcional). Link interno não é suportado: veja AddLink",
+                      "Optional link URL. Internal links are not supported: see AddLink"),
             "p_rotation": ("giro do texto em graus (0, 90, 180, 270)",
                           "Rotation angle of the text. 0 (default), 90, 180 or 270 — any other value raises an error"),
         },
     },
     "WriteRotated": {
-        "descricao": ("O mesmo que Write, com o texto girado.",
-                      "Write with the text rotated."),
+        "descricao": ("O mesmo que Write, com um parâmetro de giro -- mas só o giro de 0 grau é aceito: qualquer outro levanta -20111. Para texto girado, use CellRotated.",
+                      "The same as Write, with a rotation parameter -- but only a rotation of 0 degrees is accepted: any other raises -20111. For rotated text, use CellRotated."),
         "params": {
             "p_height": ("altura da linha",
                         "Line height. Number in the unit set by Init (mm, cm, pt or in)"),
             "p_text": ("o texto",
                       "Text to write. Any VARCHAR2"),
-            "p_link": ("URL ou link interno",
-                      "Optional link. URL; NULL = no link. An AddLink identifier is refused with ORA-20601"),
-            "p_rotation": ("giro em graus (0, 90, 180, 270)",
-                          "Rotation angle. 0 (default), 90, 180 or 270"),
+            "p_link": ("URL do link (opcional). Link interno não é suportado: veja AddLink",
+                      "Optional link URL; NULL = no link. Internal links are not supported: see AddLink"),
+            "p_rotation": ("giro em graus; só 0 é aceito",
+                          "Rotation angle in degrees; only 0 is accepted"),
         },
     },
     "image": {
         "descricao": ("Coloca uma imagem buscada por URL. A busca sai pela rede e exige ACL concedida ao schema -- quando a imagem já está numa tabela ou numa variável, ImageFromBlob faz o mesmo sem rede e sem permissão. Largura e altura em zero saem da própria imagem, a 72 dpi; com uma das duas em zero, ela é derivada da outra, mantendo a proporção.",
-                      "Places a PNG or JPEG image on the current page, with optional proportional scaling."),
+                      "Places an image fetched by URL. The fetch goes over the network and needs an ACL granted to the schema -- when the image is already in a table or a variable, ImageFromBlob does the same with no network and no permission. Width and height of zero come from the image itself, at 72 dpi; with only one of them zero, it is derived from the other, keeping the aspect ratio."),
         "params": {
-            "pFile": ("URL da imagem",
-                     "Source of the image. File name in an Oracle DIRECTORY, or the identifier returned by getImageFromUrl"),
+            "pFile": ("URL da imagem (http/https), buscada pela rede: exige ACL concedida ao schema. Não é caminho de arquivo local",
+                     "Image URL (http/https), fetched over the network: needs an ACL granted to the schema. Not a local file path"),
             "pX": ("canto superior esquerdo",
                   "X of the top-left corner. Number in the unit set by Init (mm, cm, pt or in)"),
             "pY": ("canto superior esquerdo",
@@ -953,8 +953,8 @@ TEXTOS = {
                        "Desired height. Number in the unit set by Init (mm, cm, pt or in); 0 (default) derives it from the width, keeping the aspect ratio"),
             "pType": ("formato, quando não se quer deduzir do arquivo",
                      "Image format. 'PNG', 'JPG'/'JPEG', or NULL (default) to detect it automatically"),
-            "pLink": ("URL ou identificador de link interno sobre a imagem",
-                     "Makes the image clickable. URL; NULL = no link. An AddLink identifier is refused with ORA-20601"),
+            "pLink": ("URL do link sobre a imagem (opcional). Link interno não é suportado: veja AddLink",
+                     "Optional link URL over the image; NULL = no link. Internal links are not supported: see AddLink"),
         },
     },
     "ImageFromBlob": {
@@ -1190,8 +1190,8 @@ TEXTOS = {
         },
     },
     "LoadPDF": {
-        "descricao": ("Carregar documento PDF existente na memória para leitura e modificação",
-                      "Loads an existing PDF into session memory for reading and modification. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF."),
+        "descricao": ("Carregar documento PDF existente na memória para leitura e modificação. PDF cifrado é recusado (-20867): decifre antes com DecryptPDF.",
+                      "Loads an existing PDF into session memory for reading and modification. An encrypted PDF is refused (-20867): decrypt it first with DecryptPDF. It is the starting point of the whole manipulation flow, which ends at OutputModifiedPDF."),
         "params": {
             "p_pdf_blob": ("Documento PDF como BLOB",
                           "PDF document to load. Non-null BLOB with a valid %PDF header"),
@@ -1485,8 +1485,8 @@ TEXTOS = {
                                 "Owner password, which allows changing permissions. Text; NULL (default) reuses the user password"),
             "p_permissions": ("JSON com flags de permissão",
                              "Permissions granted to the reader. JSON_OBJECT_T with the boolean keys: print, modify, copy, annotate, fill_forms, extract, assemble, print_high. Missing keys take the restrictive default"),
-            "p_encryption": ("Encryption method: 'RC4-40','RC4-128','AES-128','AES-256'",
-                            "Encryption algorithm. 'AES-256' and 'AES-128' (recommended), 'RC4-128' (the default, kept for compatibility) or 'RC4-40' (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it"),
+            "p_encryption": ("Encryption method: 'RC4-40','RC4-128','AES-128','AES-256'. O padrão é o RC4-128, legado: informe 'AES-256'",
+                            "Encryption algorithm. 'AES-256' and 'AES-128' (recommended), 'RC4-128' (the default, legacy: pass 'AES-256') or 'RC4-40' (legacy). RC4 has been broken for years and PDF 2.0 dropped it from the specification; recent readers warn about it or refuse it"),
         },
         "retorno": ("PDF criptografado",
                     "BLOB — the encrypted PDF."),
@@ -1532,11 +1532,11 @@ TEXTOS = {
                     "JSON_OBJECT_T — algorithm, key length and the permissions granted. **See also:** [IsEncrypted](#isencrypted), [EncryptPDF](#encryptpdf)"),
     },
     "SetEncryption": {
-        "descricao": ("Definir criptografia para PDF em geração (usar antes do Output)",
-                      "Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob."),
+        "descricao": ("Definir criptografia para PDF em geração (usar antes do Output). Prefira 'AES-256': o RC4 fica só por compatibilidade com leitores antigos.",
+                      "Sets the encryption of a document being built; it is applied when the PDF is finalised by OutputBlob. Prefer 'AES-256': RC4 stays only for compatibility with old readers."),
         "params": {
             "p_encryption": ("Method: 'RC4-40','RC4-128','AES-128','AES-256'",
-                            "Encryption algorithm. 'RC4-128' or 'RC4-40'"),
+                            "Encryption algorithm: 'RC4-40', 'RC4-128', 'AES-128' or 'AES-256' (recommended)"),
             "p_user_password": ("Senha para abrir",
                                "Opening password. Text"),
             "p_owner_password": ("Senha acesso total",
@@ -1783,8 +1783,10 @@ EXEMPLOS = {
  ('CellRotated',
   "  PL_FPDF.CellRotated(10, 40, 'Janeiro', '1', 0, 'C', 0, '', 90);"):
      "  PL_FPDF.CellRotated(10, 40, 'January', '1', 0, 'C', 0, '', 90);",
- ('WriteRotated', "  PL_FPDF.WriteRotated(5, 'CONFIDENCIAL', NULL, 90);"):
-     "  PL_FPDF.WriteRotated(5, 'CONFIDENTIAL', NULL, 90);",
+ ('WriteRotated', "  PL_FPDF.WriteRotated(5, 'Texto na linha', NULL, 0);"):
+     "  PL_FPDF.WriteRotated(5, 'Text on the line', NULL, 0);",
+ ('WriteRotated', "  -- girado: PL_FPDF.CellRotated(10, 40, 'CONFIDENCIAL', '0', 0, 'C', 0, '', 90);"):
+     "  -- rotated: PL_FPDF.CellRotated(10, 40, 'CONFIDENTIAL', '0', 0, 'C', 0, '', 90);",
  ('Output', "  PL_FPDF.Output('relatorio.pdf', 'F');"):
      "  PL_FPDF.Output('report.pdf', 'F');",
  ('OutputFile', "  PL_FPDF.OutputFile('relatorio.pdf', 'PDF_DIR');"):

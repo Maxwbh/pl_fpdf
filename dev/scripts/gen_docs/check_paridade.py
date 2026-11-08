@@ -144,7 +144,8 @@ def prosa(html):
     """
     h = re.sub(r'<style>.*?</style>|<svg.*?</svg>|<!--.*?-->|<pre>.*?</pre>',
                '', html, flags=re.S)
-    h = re.sub(r'<tr><td>[^<]*</td>', '<tr>', h)
+    # a célula pode ter os links para a referência: até o primeiro </td>
+    h = re.sub(r'<tr><td>.*?</td>', '<tr>', h, flags=re.S)
     saida = []
     for m in re.finditer(r'<(p|h1|h2|h3|li|span|td)\b[^>]*>(.*?)</\1>', h, re.S):
         t = re.sub(r'\s+', ' ', re.sub(r'<[^>]+>', ' ', m.group(2))).strip()
