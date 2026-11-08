@@ -65,7 +65,7 @@ jobs:
       - name: Todo subprograma da spec tem corpo no body (PLS-00323)
         run: python dev/scripts/plsql_lint/check_spec_body.py src/PL_FPDF.pks src/PL_FPDF.pkb
         # e o utilitário, que tem spec própria
-      - name: Todo subprograma da spec do utilitario tem corpo no body
+      - name: Todo subprograma da spec do utilitário tem corpo no body
         run: python dev/scripts/plsql_lint/check_spec_body.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
 
       # O vizinho do de baixo, e faltava: chamada a algo que NÃO EXISTE. A
@@ -83,7 +83,7 @@ jobs:
       # verificação cada rodada de compilação revela só um caso.
       - name: Nenhuma chamada a subprograma definido mais abaixo (PLS-00313)
         run: python dev/scripts/plsql_lint/check_call_order.py src/PL_FPDF.pks src/PL_FPDF.pkb
-      - name: Nenhuma chamada a subprograma definido mais abaixo, no utilitario
+      - name: Nenhuma chamada a subprograma definido mais abaixo, no utilitário
         run: python dev/scripts/plsql_lint/check_call_order.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
 
       # SUBSTRB/LENGTHB/INSTRB em CLOB compilam sem reclamação e só quebram em
@@ -110,7 +110,7 @@ jobs:
       # aferição -- e nunca roda. E a suite falava quatro dialetos para a mesma
       # asserção. Dois deles nem emitiam [PASS]/[FAIL], então o runner contava
       # zero verificação e uma falha ali era invisível.
-      - name: A suite tem um vocabulario so, e ninguem fica de fora
+      - name: A suíte tem um vocabulário só, e ninguém fica de fora
         run: python dev/scripts/plsql_lint/check_suite.py
 
       # Um gerador emitia "l_hex := '...'" em toda linha, sem terminador em
@@ -118,14 +118,14 @@ jobs:
       # com ORA-06550 apontando a linha de baixo -- 60 casos que passavam
       # deixaram de rodar por causa de uma linha. Nenhuma outra verificação
       # daqui analisa sintaxe, então só a rodada contra o banco pegava.
-      - name: Nenhuma atribuicao comecando antes de a anterior terminar
+      - name: Nenhuma atribuição começando antes de a anterior terminar
         run: python dev/scripts/plsql_lint/check_atribuicao.py
 
       # Metade da API pública da spec não tinha bloco de documentação — e a
       # metade sem bloco era a mais usada: Cell, SetFont, Text, Line, Output.
       # O que tinha vinha em três dialetos. A spec e a documentação que se lê
       # sem sair do banco, e não cumpria esse papel.
-      - name: Toda API publica documentada, no padrao Javadoc e em PT-BR
+      - name: Toda API pública documentada, no padrão Javadoc e em PT-BR
         run: python dev/scripts/plsql_lint/check_spec_comments.py
 
       - name: Comentários do body (privado documentado, PT-BR, sem código morto)
@@ -137,7 +137,7 @@ jobs:
       # e a versão em inglês descrevia o pborder da forma que já tinha sido
       # reescrita em português por ser incompreensível. O passo também recusa
       # texto em inglês escrito contra um português que mudou depois.
-      - name: Referencia da API (PT e EN) em dia com o Javadoc da spec
+      - name: Referência da API (PT e EN) em dia com o Javadoc da spec
         run: python dev/scripts/gen_docs/generate.py --check
 
       # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na
@@ -152,7 +152,7 @@ jobs:
       # do subprograma que a invalidou, então se procura no lugar errado.
       # Custou uma rodada contra o banco: o arquivo passou por todos os lints
       # porque nenhum olhava para dev/tests/*.sql.
-      - name: Nenhuma declaracao depois de subprograma local nos testes
+      - name: Nenhuma declaração depois de subprograma local nos testes
         run: python dev/scripts/plsql_lint/check_block_declarations.py dev/tests/*.sql
 
       # NVL(tabela(i), x) NÃO evita NO_DATA_FOUND: o índice e lido primeiro. A
@@ -216,7 +216,7 @@ jobs:
       # de forma. Nada disso quebra — e é por isso que fica.
       - name: Nada declarado no body sem ninguém usar
         run: python dev/scripts/plsql_lint/check_dead_code.py src/PL_FPDF.pks src/PL_FPDF.pkb
-      - name: Nada declarado no utilitario sem ninguém usar
+      - name: Nada declarado no utilitário sem ninguém usar
         run: python dev/scripts/plsql_lint/check_dead_code.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
 
       # O fonte de 2017 era GPL e o projeto e MIT. Enquanto houver código de lá
@@ -229,7 +229,7 @@ jobs:
       # reportlab. Uma só não bastaria — os AFM da URW são anteriores ao Euro.
       - name: As larguras das fontes conferem com o AFM da Adobe
         run: PYTHONPATH=dev/scripts/font_reference python dev/scripts/font_reference/validate.py
-      - name: O bloco de larguras no .pkb esta em dia
+      - name: O bloco de larguras no .pkb está em dia
         run: PYTHONPATH=dev/scripts/font_reference python dev/scripts/font_reference/gerar.py --check
 
       # Dentro de (...) num fluxo de conteúdo, a barra invertida inicia
@@ -241,7 +241,7 @@ jobs:
       - name: Uma só rotina escapa string de PDF, e está certa
         run: python dev/scripts/plsql_lint/check_escape_pdf.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
-      - name: A heranca do fonte original nao aumentou
+      - name: A herança do fonte original não aumentou
         run: python dev/scripts/plsql_lint/check_heranca.py
 
       # Os scripts resolviam caminho relativo ao diretório ATUAL. Funcionava

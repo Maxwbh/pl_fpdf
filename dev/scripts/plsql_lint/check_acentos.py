@@ -142,7 +142,12 @@ def regioes(rel, t):
         return regioes_sql(t)
     if ext == '.py':
         return regioes_py(t)
-    if ext in ('.yml', '.sh'):
+    if ext == '.yml':
+        # os comentários, e os nomes de workflow, job e passo: aparecem na tela
+        # do Actions, e entraram sem acento justamente por não serem comentário
+        return regioes_hash(t) + [(m.start(1), m.end(1)) for m in
+                                  re.finditer(r'(?m)^\s*(?:- )?name:\s*(.+)$', t)]
+    if ext == '.sh':
         return regioes_hash(t)
     if ext == '.html':
         return [(m.start(1), m.end(1)) for m in re.finditer(r'<!--(.*?)-->|/\*(.*?)\*/', t, re.S)
