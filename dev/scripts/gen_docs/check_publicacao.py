@@ -28,7 +28,10 @@ Sem rede (no CI, a cada push):
 4. O sitemap lista toda página do site, e nenhuma que não exista, e o
    `lastmod` de cada uma não é anterior ao último commit que a mudou. O
    `generate.py` já põe a data ao reescrever uma página; isto pega a página
-   mexida por outro caminho. Precisa do histórico (`fetch-depth: 0`).
+   mexida por outro caminho. Precisa do histórico (`fetch-depth: 0`). E o
+   formato que o Google aceita: a ordem do esquema do sitemaps.org (os
+   `xhtml:link` depois de `priority`), data W3C, URLs debaixo do diretório do
+   sitemap, e hreflang recíproco e igual ao que cada página declara no `<head>`.
 
 Com rede (`--online`: antes de publicar o site, e no workflow semanal):
 
@@ -135,6 +138,98 @@ def sitemap():
                          f'mudou em {mudou} — ponha {mudou} no lastmod')
     for url in sorted(set(datas) - urls):
         erros.append(f'site/sitemap.xml: {url} não é página do site')
+    return erros + formato_sitemap(base)
+
+
+NS_SM = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+NS_XHTML = '{http://www.w3.org/1999/xhtml}'
+
+
+def formato_sitemap(base):
+    """O sitemap no formato que o Google aceita, sem depender de rede nem de XSD.
+
+    A ordem dos filhos de <url> é a do esquema do sitemaps.org: loc, lastmod,
+    changefreq, priority, e só DEPOIS os elementos de outro namespace. O
+    arquivo trazia os xhtml:link logo depois do loc e não validava contra o
+    sitemap.xsd. O resto é regra do Google: toda URL debaixo do diretório do
+    sitemap, data W3C, e hreflang recíproco, com a própria página, x-default, e
+    o mesmo conjunto que a página declara no <head>, com canonical para si."""
+    import xml.etree.ElementTree as ET
+    erros = []
+    bruto = io.open(os.path.join(RAIZ, 'site', 'sitemap.xml'), 'rb').read()
+    if bruto.startswith(b'\xef\xbb\xbf') or not bruto.startswith(
+            b'<?xml version="1.0" encoding="UTF-8"?>'):
+        erros.append('site/sitemap.xml: deve começar por <?xml version="1.0" '
+                     'encoding="UTF-8"?>, sem BOM')
+    try:
+        raiz = ET.fromstring(bruto)
+    except ET.ParseError as e:
+        return erros + [f'site/sitemap.xml: XML inválido — {e}']
+    if raiz.tag != NS_SM + 'urlset':
+        return erros + ['site/sitemap.xml: a raiz não é <urlset> do sitemaps.org']
+    ordem = ['loc', 'lastmod', 'changefreq', 'priority']
+    alternativas = {}
+    for u in raiz.findall(NS_SM + 'url'):
+        loc = (u.findtext(NS_SM + 'loc') or '').strip()
+        nomes = [f.tag.replace(NS_SM, '') if f.tag.startswith(NS_SM) else None for f in u]
+        do_sm = [n for n in nomes if n]
+        if do_sm != [n for n in ordem if n in do_sm] or not do_sm or do_sm[0] != 'loc' \
+                or (None in nomes and any(nomes[nomes.index(None):])):
+            erros.append(f'site/sitemap.xml: {loc}: os filhos de <url> fora da ordem do '
+                         f'esquema (loc, lastmod, changefreq, priority, e depois xhtml:link)')
+        if not loc.startswith(base):
+            erros.append(f'site/sitemap.xml: {loc} fora de {base}, onde o sitemap está')
+        lm = u.findtext(NS_SM + 'lastmod')
+        if lm and not re.fullmatch(r'\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?'
+                                   r'(Z|[+-]\d{2}:\d{2}))?', lm):
+            erros.append(f'site/sitemap.xml: {loc}: lastmod {lm!r} não é data W3C')
+        cf = u.findtext(NS_SM + 'changefreq')
+        if cf and cf not in ('always', 'hourly', 'daily', 'weekly', 'monthly',
+                             'yearly', 'never'):
+            erros.append(f'site/sitemap.xml: {loc}: changefreq {cf!r} inválido')
+        pr = u.findtext(NS_SM + 'priority')
+        if pr and not (re.fullmatch(r'\d(\.\d+)?', pr) and 0 <= float(pr) <= 1):
+            erros.append(f'site/sitemap.xml: {loc}: priority {pr!r} fora de 0.0 a 1.0')
+        links = {}
+        for l in u.findall(NS_XHTML + 'link'):
+            if l.get('rel') != 'alternate' or not l.get('hreflang') or not l.get('href'):
+                erros.append(f'site/sitemap.xml: {loc}: xhtml:link sem rel="alternate", '
+                             f'hreflang ou href')
+                continue
+            links[l.get('hreflang')] = l.get('href')
+        if links:
+            if loc not in [h for k, h in links.items() if k != 'x-default']:
+                erros.append(f'site/sitemap.xml: {loc}: o hreflang não inclui a própria página')
+            if 'x-default' not in links:
+                erros.append(f'site/sitemap.xml: {loc}: hreflang sem x-default')
+        alternativas[loc] = links
+    for loc, links in alternativas.items():
+        for k, h in links.items():
+            if h not in alternativas:
+                erros.append(f'site/sitemap.xml: {loc}: hreflang {k} aponta para {h}, '
+                             f'que não está no sitemap')
+            elif alternativas[h] != links:
+                erros.append(f'site/sitemap.xml: {loc} e {h} não declaram o mesmo '
+                             f'conjunto de hreflang — tem de ser recíproco')
+        # o que a página declara no <head> bate com o sitemap
+        rel = loc[len(base):]
+        arq = os.path.join(RAIZ, 'site', *(rel + 'index.html' if rel.endswith('/') or not rel
+                                            else rel).split('/'))
+        if not os.path.exists(arq):
+            continue
+        html = io.open(arq, encoding='utf-8').read()
+        canon = re.search(r'<link rel="canonical" href="([^"]+)"', html)
+        if not canon or canon.group(1) != loc:
+            erros.append(f'site/sitemap.xml: {loc}: a página não tem canonical para si mesma')
+        no_head = dict(re.findall(r'<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"',
+                                  html))
+        if no_head != links:
+            erros.append(f'site/sitemap.xml: {loc}: o hreflang do sitemap difere do que '
+                         f'a página declara no <head>')
+        if re.search(r'<meta[^>]+name="robots"[^>]+noindex', html, re.I):
+            erros.append(f'site/sitemap.xml: {loc}: a página tem noindex e está no sitemap')
+    if len(bruto) > 50 * 1024 * 1024 or len(alternativas) > 50000:
+        erros.append('site/sitemap.xml: acima do limite do Google (50 MB ou 50.000 URLs)')
     return erros
 
 
