@@ -25,13 +25,17 @@ Sem rede (no CI, a cada push):
    versão estável, o dado estruturado (`softwareVersion` = a estável) e o aviso
    de candidata, presente só quando ela existe.
 3. Os selos de versão dos READMEs dizem o mesmo que o chip.
+4. O sitemap lista toda página do site, e nenhuma que não exista, e o
+   `lastmod` de cada uma não é anterior ao último commit que a mudou. O
+   `generate.py` já põe a data ao reescrever uma página; isto pega a página
+   mexida por outro caminho. Precisa do histórico (`fetch-depth: 0`).
 
 Com rede (`--online`: antes de publicar o site, e no workflow semanal):
 
-4. O release estável existe, não é pré-lançamento, traz `pl_fpdf_install.sql`
+5. O release estável existe, não é pré-lançamento, traz `pl_fpdf_install.sql`
    e `SHA256.txt`, e é ele que o "latest" do GitHub entrega — é o link do botão
    de download.
-5. A candidata existe, é pré-lançamento e traz os mesmos dois arquivos.
+6. A candidata existe, é pré-lançamento e traz os mesmos dois arquivos.
 
 Uso:  python dev/scripts/gen_docs/check_publicacao.py [--online]
 """
@@ -39,6 +43,7 @@ import io
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.error
 import urllib.request
@@ -95,6 +100,41 @@ def estaticas(versao):
         if not m or not m.group(1).startswith(alvo):
             erros.append(f'{arq}: o selo de versão não diz {alvo!r} '
                          f'({m.group(1) if m else "selo ausente"})')
+    return erros + sitemap()
+
+
+def sitemap():
+    """Cada página do site está no sitemap, e o lastmod dela não é anterior ao
+    último commit que a mudou. Com lastmod atrasado o Google aprende a ignorar o
+    campo: em novembro de 2026 ele dizia 25/10 para páginas reescritas em 7 e
+    8/11. Precisa do histórico -- em clone raso o único commit "mudou" tudo."""
+    erros = []
+    raso = subprocess.run(['git', 'rev-parse', '--is-shallow-repository'], cwd=RAIZ,
+                          capture_output=True, text=True).stdout.strip()
+    if raso != 'false':
+        return ['site/sitemap.xml: o lastmod é conferido contra o histórico do git, '
+                'e este clone é raso — no workflow, actions/checkout com fetch-depth: 0']
+    xml = ler('site', 'sitemap.xml')
+    datas = dict(re.findall(r'<loc>([^<]+)</loc>.*?<lastmod>([^<]+)</lastmod>', xml, re.S))
+    base = 'https://maxwbh.github.io/pl_fpdf/'
+    paginas = sorted(os.path.relpath(os.path.join(d, f), os.path.join(RAIZ, 'site'))
+                     .replace(os.sep, '/')
+                     for d, _, fs in os.walk(os.path.join(RAIZ, 'site'))
+                     for f in fs if f.endswith('.html') and not f.startswith('google'))
+    urls = set()
+    for p in paginas:
+        url = base + re.sub(r'(^|/)index\.html$', r'\1', p)
+        urls.add(url)
+        if url not in datas:
+            erros.append(f'site/sitemap.xml: falta {url}')
+            continue
+        mudou = subprocess.run(['git', 'log', '-1', '--format=%cs', '--', f'site/{p}'],
+                               cwd=RAIZ, capture_output=True, text=True).stdout.strip()
+        if mudou and datas[url] < mudou:
+            erros.append(f'site/sitemap.xml: lastmod {datas[url]} de {url}, e a página '
+                         f'mudou em {mudou} — ponha {mudou} no lastmod')
+    for url in sorted(set(datas) - urls):
+        erros.append(f'site/sitemap.xml: {url} não é página do site')
     return erros
 
 
