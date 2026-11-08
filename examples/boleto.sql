@@ -18,7 +18,7 @@
 --
 -- O PL_FPDF DESENHA; ele não calcula cobrança. Os 44 dígitos do código de
 -- barras e a linha digitavel entram prontos, como qualquer outro dado que o
--- chamador passa — monta-los a partir de banco, vencimento, valor e campo
+-- chamador passa — montá-los a partir de banco, vencimento, valor e campo
 -- livre (verificador, fator de vencimento, regra de cada banco) e assunto de
 -- um projeto de cobrança, não de uma biblioteca de PDF.
 --

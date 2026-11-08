@@ -1,10 +1,10 @@
 # Histórias de desenvolvimento — lacunas priorizadas
 
-**DOCUMENTO DE MANUTENÇÃO.** Não e documentação de quem usa a biblioteca.
-Quem usa quer saber o que a API faz, e isso esta em `docs/API_REFERENCE.md` e
+**DOCUMENTO DE MANUTENÇÃO.** Não é documentação de quem usa a biblioteca.
+Quem usa quer saber o que a API faz, e isso está em `docs/API_REFERENCE.md` e
 em `docs/DOCUMENTATION.md`.
 
-Aqui esta o **como**: uma história por lacuna, com a lógica definida, o caso
+Aqui está o **como**: uma história por lacuna, com a lógica definida, o caso
 de uso que a justifica e o critério que diz quando acabou. O **o que** e o
 **em que ordem** ficam em `docs/ROADMAP.md`, secao "Lacunas priorizadas por
 uso medido" — inclusive o peso de cada item e a medição que o sustenta.
@@ -38,7 +38,7 @@ vale dizer **como**: nenhuma das duas premissas que as originaram se
 confirmou. A HU-00 supunha colisão de chaves na tabela de larguras, e não
 havia; a HU-01 supunha `ORA-29275` na escrita do texto, e o erro era
 `ORA-06502`, por outro motivo. As histórias continuam aqui inteiras, com o que
-se mediu ao lado do que se supôs, porque e esse par que ensina alguma coisa —
+se mediu ao lado do que se supôs, porque é esse par que ensina alguma coisa —
 apagar a suposição deixa só o resultado, que qualquer um refaz.
 
 ---
@@ -136,11 +136,11 @@ mesma coisa.
 ## HU-01 — Texto com acento sai correto nas fontes core
 
 **CONCLUÍDA na 3.4.0.** Entregue em setembro/2026, com **uma diferença de
-projeto** em relação ao que esta escrito abaixo: a conversão não pode sair em
+projeto** em relação ao que está escrito abaixo: a conversão não pode sair em
 RAW, e o texto vai para o PDF em **escape octal**. Ver "Como ficou", no fim
 desta história — o motivo foi medido, não escolhido.
 
-**Peso: o mais alto da fila.** Não e funcionalidade que falta — e defeito na
+**Peso: o mais alto da fila.** Não é funcionalidade que falta — é defeito na
 superfície mais usada da biblioteca.
 
 **Como** desenvolvedor que gera boleto, nota e relatório em português,
@@ -160,7 +160,7 @@ bytes**, C3 A1. Esses dois bytes vão crus para o PDF. O leitor, que foi
 avisado de que aquele stream esta em WinAnsi, resolve C3 como `A` com til e
 A1 como `¡` — e desenha **dois glifos errados** no lugar de um certo.
 
-Esta mascarado hoje porque os exemplos da base evitam acento.
+Está mascarado hoje porque os exemplos da base evitam acento.
 
 ### Casos de uso
 
@@ -212,7 +212,7 @@ aqui — passar quebraria o que hoje funciona.
 `g_utf8_enabled` (`src/PL_FPDF.pkb:303`) e escrito pelo setter, lido pelo
 getter, e **nada mais o consulta**: o ajuste não tem efeito nenhum. Duas
 saídas honestas — ou ele governa esta conversão, ou sai da spec. Não deixar
-como esta, que e o pior dos três.
+como esta, que é o pior dos três.
 
 **Passo 6 — lint que impeça a volta.** Nenhuma escrita de texto com fonte core
 sem passar pela conversão. Em `dev/scripts/plsql_lint/`, no padrão dos outros:
@@ -228,7 +228,7 @@ cabeçalho explicando o defeito que ele guarda.
 - [x] Caractere fora do cp1252 levanta erro próprio com posição na mensagem
       (`ORA-20203`)
 - [x] `SetUTF8Enabled` **saiu da spec** — das duas saídas honestas, a que
-      corresponde ao que a biblioteca faz: a conversão não e opcional
+      corresponde ao que a biblioteca faz: a conversão não é opcional
 - [x] Lint no CI — `check_byte_chars.py`, regras 3 e 4
 - [x] `CHANGELOG` com uma linha; o relato longo no comentário do código
 
@@ -245,16 +245,16 @@ acrescentou nada.
 
 ### Como ficou
 
-Três coisas saíram diferentes do que esta escrito acima, e as três por
+Três coisas saíram diferentes do que está escrito acima, e as três por
 medição.
 
 **1. A saída não e RAW — e escape octal.** O passo 2 mandava trabalhar em RAW
-do início ao fim, e esta certo *para a conversão*; errado para a **escrita**.
+do início ao fim, e está certo *para a conversão*; errado para a **escrita**.
 O documento desta base e montado num CLOB e convertido no fim por
 `DBMS_LOB.CONVERTTOBLOB`, que recodifica pelo charset do banco: qualquer byte
 acima de `0x7F` colocado ali e reescrito na saída. Medido no diagnóstico:
 **256 bytes entram, 422 saem**. Então o byte convertido não pode ir cru. Vai
-como `\ddd`, o escape octal que o próprio PDF define para string — que e ASCII
+como `\ddd`, o escape octal que o próprio PDF define para string — que é ASCII
 e atravessa o CLOB intacto. `p_texto_pdf` converte e escapa numa passagem só.
 
 Isto vale para todo binário que sair por este caminho, não só para texto: e o
@@ -422,7 +422,7 @@ defeito da HU-01: ou converte para WinAnsi, ou emite em UTF-16BE com BOM. Por
 isso esta HU vem **depois** da HU-01 — feita antes, nasce com o mesmo defeito
 que a outra esta consertando.
 
-Com a HU-01 concluída a dependência esta paga, e o caminho ficou mais curto do
+Com a HU-01 concluída a dependência está paga, e o caminho ficou mais curto do
 que se previa: o `p_texto_pdf` já converte e escapa qualquer string que vá para
 o arquivo, então o `/Title` do marcador passa por ele e não precisa de
 tratamento próprio.
@@ -441,12 +441,12 @@ navegação) e tratar o sumario visível como história separada.
 - [ ] `/Count` com o sinal certo (negativo = no fechado)
 - [ ] Título com acento correto (depende da HU-01)
 - [ ] Documento sem nenhum marcador continua sem `/Outlines` no catálogo
-- [ ] Marcador sobrevive ao `MergePDFs`, ou a limitação esta documentada
+- [ ] Marcador sobrevive ao `MergePDFs`, ou a limitação está documentada
 
 ### Como testar
 
 Gerar com três níveis, reabrir, conferir a árvore e o destino de cada item.
-Um caso com zero marcadores confirmando que nada e emitido a toa.
+Um caso com zero marcadores confirmando que nada é emitido à toa.
 
 **Estimativa:** 3 a 4 dias para os marcadores. O sumario visível e outra
 história, de tamanho parecido.
@@ -455,7 +455,7 @@ história, de tamanho parecido.
 
 ## HU-04 — PDF marcado (tagged / PDF-UA) — fora da fila
 
-**Não esta priorizada.** Registrada para não se perder, e para que a próxima
+**Não está priorizada.** Registrada para não se perder, e para que a próxima
 pessoa a levantar o assunto encontre a análise em vez de refazê-la.
 
 **Por que saiu:** era o terceiro item por argumento de licitação pública. A
@@ -498,7 +498,7 @@ chamador, não há como saber.
 extensão dele, não script novo.
 
 **Critério de aceite:** a lista existe, e cada item nela foi classificado em
-testar / experimental / remover. Não e preciso testar todos de uma vez; e
+testar / experimental / remover. Não é preciso testar todos de uma vez; e
 preciso **saber quais são**.
 
 ### O que a lista produziu, em setembro/2026
@@ -512,7 +512,7 @@ defeitos** no mesmo subprograma -- o `Link`, um por rodada:
    nas anteriores, que ganhavam `/Annots` quebrado sem terem pedido link;
 3. o `AddLink` levantava `ORA-06531` na linha da própria declaração -- a
    coleção `links` e nested table e ninguém a inicializa. **Nunca funcionou**;
-4. o `Link` media o quanto estender pelo `.last`, que e NULL em coleção vazia,
+4. o `Link` media o quanto estender pelo `.last`, que é NULL em coleção vazia,
    então o primeiro `Link` do SEGUNDO documento da sessão estourava com
    `ORA-06533`.
 

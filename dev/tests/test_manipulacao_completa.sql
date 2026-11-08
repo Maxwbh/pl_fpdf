@@ -192,7 +192,7 @@ BEGIN
 
   -- RemoveWatermark e ClearWatermarks não existem na API: o teste antigo as
   -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A única forma
-  -- pública de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
+  -- pública de descartar marcas d'água e ClearPDFCache, que limpa tudo.
   DECLARE
     l_watermarks JSON_ARRAY_T;
   BEGIN

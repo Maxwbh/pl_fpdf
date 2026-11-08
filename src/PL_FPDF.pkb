@@ -1,6 +1,6 @@
 CREATE OR REPLACE PACKAGE BODY PL_FPDF AS
 /**
- * Corpo do PL_FPDF. A documentação da API esta na spec; aqui se registra o
+ * Corpo do PL_FPDF. A documentação da API está na spec; aqui se registra o
  * PORQUE de o código estar como esta -- o sintoma, a causa e o conserto --,
  * que e o que não cabe na assinatura e some quando ninguém escreve.
  *
@@ -79,8 +79,8 @@ co_nls_num constant varchar2(40) := 'NLS_NUMERIC_CHARACTERS=''.,''';
 * Em ambos os casos as instruções são concatenadas num VARCHAR2 e só descarregadas
 * no CLOB quando o acumulador enche (co_page_buf_limit, avaliado em BYTES para ser
 * seguro em UTF-8). Isso evita:
-*   - o teto de 32 KB por pagina que existia quando a página era um VARCHAR2;
-*   - a recopia O(n^2) da pagina a cada instrução emitida;
+*   - o teto de 32 KB por página que existia quando a página era um VARCHAR2;
+*   - a recopia O(n^2) da página a cada instrução emitida;
 *   - uma chamada DBMS_LOB por instrução (agora uma a cada ~32 KB).
 *
 * Regra de ouro: quem LE um dos CLOBs precisa descarregar o acumulador antes.
@@ -173,7 +173,7 @@ type ArrayCharWidths is table of charSet index by word;
  -- Evita uma chamada LOB por instrução e a recopia O(n^2) da página inteira.
  g_page_buf varchar2(32767);
  g_doc_buf varchar2(32767);            -- mesmo acumulador para o buffer do documento
- g_page_buf_page pls_integer;          -- pagina a que o acumulador pertence
+ g_page_buf_page pls_integer;          -- página a que o acumulador pertence
  co_page_buf_limit constant pls_integer := 32000;
  state word;                -- estado do documento: 2 = dentro de uma página
  b_compress flag := false;  -- compressão dos fluxos de conteúdo ligada
@@ -353,7 +353,7 @@ g_pdf_modified BOOLEAN := FALSE;
 TYPE page_removal_list IS TABLE OF BOOLEAN INDEX BY PLS_INTEGER;
 g_removed_pages page_removal_list;
 
--- Marcas d'agua pedidas
+-- Marcas d'água pedidas
 TYPE watermark_rec IS RECORD (
   text VARCHAR2(200),
   opacity NUMBER,
@@ -537,7 +537,7 @@ function compute_object_key(p_enc_key raw, p_obj_num pls_integer,
                             p_gen_num pls_integer default 0,
                             p_key_length pls_integer default 128) return raw;
 
--- Geradores dos operadores de marca d'agua e overlay: ficam junto do copiador,
+-- Geradores dos operadores de marca d'água e overlay: ficam junto do copiador,
 -- porque dependem de pdf_dict_value e companhia, mas quem os chama e
 -- OutputModifiedPDF, que aparece antes.
 function ovl_marca_dagua(p_texto in varchar2, p_larg in number, p_alt in number,
@@ -615,23 +615,23 @@ end getPDFDocLength;
 ----------------------------------------------------------------------------------------
 -- Larguras das 14 fontes padrão do PDF, em milésimos de em.
 --
--- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- GERADA a partir das fontes primárias: os AFM da Adobe, as tabelas do
 -- reportlab -- que se conferem entre si, glifo a glifo -- e a
--- WinAnsiEncoding. NÃO EDITE A MAO daqui ate o fecho do bloco, NEM O
--- COMENTÁRIO: a edição se perde na geração seguinte, e ate la o CI acusa o
+-- WinAnsiEncoding. NÃO EDITE À MÃO daqui até o fecho do bloco, NEM O
+-- COMENTÁRIO: a edição se perde na geração seguinte, e até lá o CI acusa o
 -- bloco como desatualizado. Para mudar este texto, mude o gerador.
 --
--- Cada família e uma sequencia de 256 campos de 4 dígitos, um por posição da
--- codificação. A chave da tabela indexada e O BYTE WinAnsi, não o caractere.
+-- Cada família é uma sequência de 256 campos de 4 dígitos, um por posição da
+-- codificação. A chave da tabela indexada é O BYTE WinAnsi, não o caractere.
 --
--- Era `chr(i)`, e não podia ser: CHR devolve o caractere cujo BYTE e i no
+-- Era `chr(i)`, e não podia ser: CHR devolve o caractere cujo BYTE é i no
 -- charset do banco, e em AL32UTF8 os valores de 128 a 191 dão caractere
--- invalido enquanto os de 192 para cima abrem uma sequencia multibyte que
--- nunca se completa -- `ORA-29275`. O relato que expôs isso e a issue 16 do
+-- inválido enquanto os de 192 para cima abrem uma sequência multibyte que
+-- nunca se completa -- `ORA-29275`. O relato que expôs isso é a issue 16 do
 -- projeto de origem: em AL32UTF8 o erro estourava na PRIMEIRA chamada que
 -- carregasse uma métrica, com a pilha apontando para a linha da tabela onde
--- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 e caractere
--- valido de um byte, e por isso o mesmo código sempre funcionou la.
+-- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 é caractere
+-- válido de um byte, e por isso o mesmo código sempre funcionou lá.
 --
 -- O byte já era o que a tabela guardava: quem consulta parte do caractere,
 -- converte para WinAnsi com p_winansi_byte e só então mede. Indexar por
@@ -1300,7 +1300,7 @@ end SetLineSpacing;
 
 -- Responde a mesma pergunta que o is_string do porte fazia: "este VARCHAR2 NÃO
 -- contem um número?". Lá a resposta vinha de provocar exceção no to_number e
--- captura-la com WHEN OTHERS; aqui vem do TO_NUMBER ... DEFAULT NULL ON
+-- capturá-la com WHEN OTHERS; aqui vem do TO_NUMBER ... DEFAULT NULL ON
 -- CONVERSION ERROR, que responde sem exceção.
 -- NULO continua contando como número, porque era o comportamento antigo:
 -- to_number(NULL) devolve NULL e não levanta nada.
@@ -1464,7 +1464,7 @@ begin
   -- Acrescenta uma linha ao documento
   if(state = 2) then
     -- Conteúdo de página: acumula em VARCHAR2 e descarrega no CLOB quando enche.
-    -- Sem teto de 32k por página e sem recopiar a pagina a cada instrução.
+    -- Sem teto de 32k por página e sem recopiar a página a cada instrução.
     if g_page_buf_page is not null and g_page_buf_page != page then
       p_flush_page_buf;                      -- trocou de página: fecha a anterior
     end if;
@@ -1509,7 +1509,7 @@ end p_newobj;
 -- Esta e a ÚNICA implementação. Existiam cinco, e TRÊS estavam erradas:
 -- procuravam por '\\' e trocavam por '\\\\'. Em PL/SQL não há escape em
 -- literal, então aquilo procura DUAS barras e troca por QUATRO — e uma barra
--- sozinha, que e o caso comum, passava intacta para o arquivo. O comentário
+-- sozinha, que é o caso comum, passava intacta para o arquivo. O comentário
 -- original dizia "Add \ before \, ( and )": a intenção estava certa, a
 -- implementação não. Pegava PL_FPDF.Text e os metadados do documento (título,
 -- autor, assunto, palavras-chave, criador), que passam pelo p_textstring.
@@ -1654,7 +1654,7 @@ begin
     elsif l_byte between 32 and 126 then
       l_saida := l_saida || chr(l_byte);
     else
-      -- Octal de TRÊS dígitos, sempre. Com menos, '\7' seguido de um digito do
+      -- Octal de TRÊS dígitos, sempre. Com menos, '\7' seguido de um dígito do
       -- texto seria lido como um número maior. O Oracle não formata em octal,
       -- então a conta e explicita.
       l_saida := l_saida
@@ -1734,12 +1734,12 @@ begin
 	-- com RAW: a conversão implícita produzia hexadecimal por acidente, e 2000
 	-- bytes viravam 4000 caracteres, mais do que o buffer comportava.
 	--
-	-- Hexadecimal, ainda assim, e a codificação certa aqui, e a razão esta no
+	-- Hexadecimal, ainda assim, e a codificação certa aqui, e a razão está no
 	-- buffer do documento. O documento e montado como CLOB e convertido no fim
 	-- por dbms_lob.convertToBlob, então tudo o que se escreve nele faz um
 	-- percurso de ida e volta pelo charset do banco. Medido em AL32UTF8: 256
 	-- bytes escritos por utl_raw.cast_to_varchar2 voltam como 422 -- o percurso
-	-- não e fiel para nada acima de 0x7F. Hexadecimal e ASCII e atravessa
+	-- não é fiel para nada acima de 0x7F. Hexadecimal e ASCII e atravessa
 	-- intacto.
 	--
 	-- Quem chama declara o /ASCIIHexDecode e dimensiona o /Length; este
@@ -1836,7 +1836,7 @@ begin
 	-- atravessa -- sairia um arquivo maior e diferente.
 	--
 	-- /Length e o tamanho do hexadecimal mais o '>' que o fecha; /Length1 e o
-	-- tamanho do programa DESCOMPRIMIDO, que e o da fonte. Sem subset: a fonte
+	-- tamanho do programa DESCOMPRIMIDO, que é o da fonte. Sem subset: a fonte
 	-- inteira entra, e dobra de tamanho aqui dentro. Ver a HU-02.
 	--------------------------------------------------------------------------
 	g_ttf_obj.delete;
@@ -2001,7 +2001,7 @@ begin
 			        || ' /Ascent ' || tochar(g_ttf_fonts(myFile).ascent)
 			        || ' /Descent ' || tochar(g_ttf_fonts(myFile).descent)
 			        || ' /CapHeight ' || tochar(g_ttf_fonts(myFile).cap_height)
-			        -- StemV não esta no arquivo. A especificação o exige, e ele
+			        -- StemV não está no arquivo. A especificação o exige, e ele
 			        -- só pesa na substituição de fonte, que não acontece com a
 			        -- fonte embutida; 80 e o valor da referência em Python.
 			        || ' /StemV 80'
@@ -2315,7 +2315,7 @@ procedure p_putpages is
    v_2n number;
    v_3n number;
 begin
-   -- Garante que todo conteúdo acumulado já esta nos CLOBs das páginas
+   -- Garante que todo conteúdo acumulado já está nos CLOBs das páginas
    p_flush_page_buf;
 
    -- troca o marcador pelo total de páginas
@@ -2411,7 +2411,7 @@ begin
              -- leitores abrem e outros recusam. Desde setembro/2026 Link e
              -- AddLink levantam -20601 antes de chegar aqui, então todo
              -- PageLinks que sobrevive até este ponto e URL. O código morto
-             -- saiu: o histórico esta no Git, e ele só fazia parecer que
+             -- saiu: o histórico está no Git, e ele só fazia parecer que
              -- link interno estava meio implementado.
          end if;
 			   p_out(annots || ']');
@@ -2617,7 +2617,7 @@ function p_parseImage(pFile in varchar2,
   myImgInfo recImage;
   myblob blob;
   chunk_content blob;
-  -- A assinatura vem do RAW já declarado no package. Monta-la com CHR não
+  -- A assinatura vem do RAW já declarado no package. Montá-la com CHR não
   -- produz os bytes: produz os caracteres daqueles pontos de código, e em
   -- AL32UTF8 a comparação nunca casa -- o PNG era recusado com "Not a PNG
   -- file", que manda procurar defeito no arquivo em vez de no parser.
@@ -2677,7 +2677,7 @@ begin
     myImg := getImageFromUrl(pFile);
   else
     -- Recebe o PNG pronto: sem HTTP, e portanto sem ACL de rede. O
-    -- parse_png_header lê largura, altura e tipo de cor em RAW, que e o único
+    -- parse_png_header lê largura, altura é tipo de cor em RAW, que e o único
     -- dado que o getImageFromUrl fornecia além do próprio BLOB.
     myImg.image_blob := p_blob;
     if not parse_png_header(p_blob, myImg) then
@@ -2936,7 +2936,7 @@ end SetXY;
 procedure SetHeaderProc(headerprocname in varchar2, paramTable tv4000a default noParam) is
 begin
    -- Válida agora (erro aparece na configuração, não no meio do relatório) e
-   -- monta o bloco uma única vez, em vez de remonta-lo a cada página.
+   -- monta o bloco uma única vez, em vez de remontá-lo a cada página.
    MyHeader_Proc := p_assert_callback_name(headerprocname);
    MyHeader_ProcParam := paramTable;
    if MyHeader_Proc is not null then
@@ -3418,7 +3418,7 @@ begin
   -- fica exatamente assim: o delete zera a contagem e NÃO anula a coleção,
   -- então o .count não levanta, o init não acontece, o "page - NULL" da NULL,
   -- o IF não dispara (comparação com NULL não e TRUE) e o PageLinks(page)
-  -- estoura com ORA-06533. Na pratica: o primeiro Link do SEGUNDO documento da
+  -- estoura com ORA-06533. Na prática: o primeiro Link do SEGUNDO documento da
   -- sessão falhava, e o erro não fala de link nenhum.
   --
   -- O .count não tem esse buraco: coleção vazia conta zero.
@@ -3489,7 +3489,7 @@ end ClosePDF;
 
 ----------------------------------------------------------------------------------------
 -- o AddPage legado, renomeado para não criar sobrecarga ambígua
--- Chamada pelo AddPage(), que e a rotina pública
+-- Chamada pelo AddPage(), que é a rotina pública
 --------------------------------------------------------------------------------
 procedure p_addpage_internal(orientation in varchar2 default '') is
 myFamily txt;
@@ -3648,7 +3648,7 @@ begin
   -- 5. tenta acertar a sessão para UTF-8
   -- ========================================================================
 
-  -- A sessão do chamador não e mais alterada: tochar/tonumber convertem com NLS
+  -- A sessão do chamador não é mais alterada: tochar/tonumber convertem com NLS
   -- explicito (co_nls_num), o que torna a saída independente da configuração.
   log_message(4, 'Numeric conversion uses explicit NLS (session untouched)');
 
@@ -3698,7 +3698,7 @@ begin
     images.delete;
     -- orientacaoChanges guarda quais páginas tem orientação diferente do
     -- padrão, e ganha MediaBox próprio por causa dele. Ficava de fora daqui, e
-    -- por ser tabela indexada por NÚMERO da pagina o índice 1 do documento
+    -- por ser tabela indexada por NÚMERO da página o índice 1 do documento
     -- anterior virava o índice 1 do seguinte: quem gerasse um documento com a
     -- página 1 em paisagem deixava TODO documento posterior da mesma sessão
     -- com a página 1 em paisagem -- MediaBox trocado, conteúdo desenhado fora
@@ -3932,7 +3932,7 @@ begin
   -- sincroniza o contador de páginas com o do caminho legado
   g_current_page := page;
 
-  -- guarda os dados da página DEPOIS de cria-la
+  -- guarda os dados da página DEPOIS de criá-la
   g_pages(g_current_page).number_val := g_current_page;
   g_pages(g_current_page).orientation := l_orientation;
   g_pages(g_current_page).format := l_format;
@@ -3954,7 +3954,7 @@ end AddPage;
 -- Leitura das tabelas da fonte TrueType
 --
 -- Validado no MuPDF em três pontos, e o terceiro e o que pega erro AQUI: o
--- texto sai, a fonte esta embutida, e a largura que o leitor MEDE bate com a
+-- texto sai, a fonte está embutida, e a largura que o leitor MEDE bate com a
 -- que o /Widths declara.
 -- Ler o hmtx com o numberOfHMetrics errado, ou esquecer de reescalar de
 -- unitsPerEm para as 1000 unidades por em que o PDF quer, desenha o texto com
@@ -3991,7 +3991,7 @@ end ttf_u32;
 -- ttf_tabela : onde começa a tabela de quatro letras, e quanto mede.
 --
 -- A comparação e em RAW de propósito. Converter o tag para VARCHAR2 passaria
--- pelo charset do banco, que e a confusão entre byte e caractere já paga aqui
+-- pelo charset do banco, que é a confusão entre byte e caractere já paga aqui
 -- três vezes; o tag e ASCII, então cast_to_raw do lado do literal e exato.
 --------------------------------------------------------------------------------
 procedure ttf_tabela(p_b   in  blob,
@@ -4281,7 +4281,7 @@ begin
   end if;
 
   -- A tabela de larguras, na mesma forma das fontes padrão: 256 posições de
-  -- quatro dígitos, indexadas pelo BYTE WinAnsi -- que e a codificação com que
+  -- quatro dígitos, indexadas pelo BYTE WinAnsi -- que é a codificação com que
   -- o texto sai deste package desde a 3.4.0. Posição sem glifo fica zero.
   l_sub := ttf_cmap_sub(p_font_blob, l_cmap);
   if l_sub is null then
@@ -4608,7 +4608,7 @@ begin
 	-- versão de PDF padrão
 	PDFVersion:='1.4';
 	-- fpdf() e o construtor legado (Init() o chama por dentro): depois dele o
-	-- package esta pronto. Sem marcar aqui, quem chamasse fpdf() direto ficava
+	-- package está pronto. Sem marcar aqui, quem chamasse fpdf() direto ficava
 	-- com g_initialized = false e as validações de uso davam falso negativo.
 	g_initialized := true;
 end fpdf;
@@ -4853,7 +4853,7 @@ wdth number;
 l_byte pls_integer;
 begin
 	-- Largura de um texto na fonte corrente
-	-- A tabela e indexada pelo BYTE WinAnsi -- que e a codificação que o
+	-- A tabela e indexada pelo BYTE WinAnsi -- que é a codificação que o
 	-- dicionário da fonte declara. Consultar com o caractere cru não funciona
 	-- em AL32UTF8: 'c' cedilha tem dois bytes e o subtipo car tem um, então a
 	-- consulta estourava ORA-06502 ANTES de chegar na tabela. Passar pelo
@@ -4922,7 +4922,7 @@ begin
 	--    `h - y`: `h` e a altura da página. Uma conta que esqueça a inversão
 	--    desenha espelhado no eixo vertical, e o erro não aparece em página
 	--    simétrica.
-	-- 2. `myK` e o fator de escala da unidade do documento para PONTO, que e
+	-- 2. `myK` é o fator de escala da unidade do documento para PONTO, que é
 	--    a unidade do PDF. Em mm ele vale 72/25,4; em pt, 1. Coordenada que
 	--    vá para o fluxo sem multiplicar por ele sai na escala errada.
 	--
@@ -4935,7 +4935,7 @@ begin
 		--
 		-- O espaçamento entre palavras (`Tw`) e ZERADO antes de virar a página
 		-- e restaurado depois. O valor corrente foi calculado pela MultiCell
-		-- para justificar UMA linha; deixa-lo ligado faria o cabeçalho e o
+		-- para justificar UMA linha; deixá-lo ligado faria o cabeçalho e o
 		-- rodapé da página nova saírem com as palavras afastadas -- o estado
 		-- do `Tw` e do documento, não da célula.
 		if(myWS > 0) then
@@ -5013,7 +5013,7 @@ begin
 	    end if;
 
         myTXT2 := p_texto_pdf(ptxt);
-	-- A LINHA DE BASE, que e o ponto que o PDF posiciona -- não o topo nem o
+	-- A LINHA DE BASE, que é o ponto que o PDF posiciona -- não o topo nem o
 	-- centro do texto. `y + 0,5*ph` desce ao meio da célula, e `+ 0,3*fontsize`
 	-- compensa que o desenho da letra cresce PARA CIMA da linha de base: sem
 	-- essa parcela o texto sai visivelmente alto dentro da caixa. O 0,3 e a
@@ -5102,7 +5102,7 @@ begin
 	if(myPW = 0) then
 		myPW:=w - rMargin - x;
 	end if;
-	-- `wmax` NÃO esta na unidade do documento: esta em MILÉSIMOS DE EM, que e
+	-- `wmax` NÃO está na unidade do documento: está em MILÉSIMOS DE EM, que é
 	-- a unidade da tabela de larguras da fonte (`CurrentFont.cw`). Converter a
 	-- largura util uma vez, aqui, permite somar caractere a caractere dentro do
 	-- laço sem multiplicação nenhuma -- e e por isso que a comparação lá
@@ -5190,7 +5190,7 @@ begin
 			if( l > wmax) then
 				-- quebra de linha automática
 				-- Sem espaço na linha (`sep = -1`): palavra única mais larga que
-				-- a coluna. Quebra-se no caractere, que e feio mas termina; o
+				-- a coluna. Quebra-se no caractere, que é feio mas termina; o
 				-- `i := i + 1` do caso `i = j` existe para o laço ANDAR quando
 				-- o primeiro caractere já estoura a largura -- sem ele a linha
 				-- sairia vazia e a varredura não sairia do lugar.
@@ -5386,7 +5386,7 @@ end image;
 
 ----------------------------------------------------------------------------------------
 -- O Image() busca por URL, através do URIFactory, e isso exige ACL de rede
--- concedida ao schema. Quando a imagem já esta numa tabela, num BFILE ou numa
+-- concedida ao schema. Quando a imagem já está numa tabela, num BFILE ou numa
 -- variável, a ida até a rede não serve a nada e ainda pede uma permissão que
 -- boa parte dos ambientes não da.
 --
@@ -5395,7 +5395,7 @@ end image;
 -- recusada com o código de formato não suportado, em vez de virar um objeto
 -- de imagem que o leitor não desenha.
 --
--- p_name e a chave do cache de imagens, que e indexado por nome. Um BLOB não
+-- p_name e a chave do cache de imagens, que é indexado por nome. Um BLOB não
 -- tem nome, então o chamador escolhe: nomes distintos para imagens distintas,
 -- e o mesmo nome reaproveita o objeto já emitido no documento, em vez de
 -- gravar os mesmos bytes outra vez.
@@ -5586,7 +5586,7 @@ begin
 exception
   when others then
     -- erros do próprio package (-20000..-20999) já tem código e mensagem
-    -- próprios; envolve-los em -20100 escondia a causa, como o -20005 de
+    -- próprios; envolvê-los em -20100 escondia a causa, como o -20005 de
     -- 'não inicializado' que este mesmo handler engolia
     if sqlcode between -20999 and -20000 then
       raise;
@@ -5694,9 +5694,9 @@ begin
   elsif myDest in ('I', 'D', 'S') then
     -- Estes modos mandavam os cabeçalhos HTTP por conta própria. Sem eles, a
     -- entrega passou a ser da aplicação — e esquecer o Content-Type produz um
-    -- sintoma que não parece o que e: o navegador trata a resposta como HTML e
+    -- sintoma que não parece o que é: o navegador trata a resposta como HTML e
     -- mostra o FONTE do PDF na tela. Parece corrupção de caracteres, e o
-    -- arquivo esta perfeito. Por isso a mensagem aponta o cabeçalho, e não só
+    -- arquivo está perfeito. Por isso a mensagem aponta o cabeçalho, e não só
     -- a API substituta.
     raise_application_error(-20306,
       'Output mode ''' || myDest || ''' is no longer supported (OWA/HTP removed). ' ||
@@ -6400,7 +6400,7 @@ begin
     RETURN l_page_info;
   END IF;
 
-  -- em geração: devolve os dados da pagina que esta sendo montada
+  -- em geração: devolve os dados da página que está sendo montada
   -- decide de que pagina se esta falando
   if p_page_number is null then
     l_page_num := g_current_page;
@@ -6437,7 +6437,7 @@ begin
   -- giro
   l_page_info.put('rotation', g_pages(l_page_num).rotation);
 
-  -- nome do formato, quando for um dos padrão
+  -- nome do formato, quando for um dos padrões
   if g_pages(l_page_num).format.width = 210 and g_pages(l_page_num).format.height = 297 then
     l_page_info.put('format', 'A4');
   elsif g_pages(l_page_num).format.width = 216 and g_pages(l_page_num).format.height = 279 then
@@ -6726,7 +6726,7 @@ BEGIN
       RETURN;
     EXCEPTION
       WHEN OTHERS THEN
-        -- Malformado de verdade sobe: a mensagem diz o que esta errado, e
+        -- Malformado de verdade sobe: a mensagem diz o que está errado, e
         -- deixar cair no caminho antigo trocaria isso por 'Invalid xref table'.
         IF SQLCODE IN (-20843, -20847, -20848) THEN
           RAISE;
@@ -6758,7 +6758,7 @@ BEGIN
       BEGIN
         l_tmp := INSTR(l_search_chunk, 'xref' || CHR(10));
         WHILE l_tmp > 0 LOOP
-          -- garante que e o 'xref' sozinho, e não o fim de 'startxref'
+          -- garante que e o 'xref' sozinho, é não o fim de 'startxref'
           IF l_tmp = 1 OR SUBSTR(l_search_chunk, l_tmp - 1, 1) = CHR(10) THEN
             l_xref_pos := l_tmp;
           END IF;
@@ -6796,7 +6796,7 @@ BEGIN
   -- de regressão continuou falhando com o mesmo -20804.
   --
   -- Num arquivo bem formado o 'trailer' vem logo depois da tabela. Não
-  -- encontra-lo, havendo mais bytes no arquivo do que a janela leu, só pode
+  -- encontrá-lo, havendo mais bytes no arquivo do que a janela leu, só pode
   -- ser truncamento.
   IF INSTR(l_xref_section, 'trailer') = 0
      AND DBMS_LOB.GETLENGTH(p_pdf) - l_actual_offset > 32767 THEN
@@ -7236,7 +7236,7 @@ BEGIN
   -- interpreta a faixa de páginas
   l_parsed_range := parse_page_range(p_pages, g_loaded_page_count);
 
-  -- monta o registro da marca d'agua
+  -- monta o registro da marca d'água
   g_watermark_count := g_watermark_count + 1;
   l_watermark.text := p_text;
   l_watermark.opacity := p_opacity;
@@ -7246,7 +7246,7 @@ BEGIN
   l_watermark.font_size := p_size;
   l_watermark.color := p_color;
 
-  -- guarda a marca d'agua
+  -- guarda a marca d'água
   g_watermarks(g_watermark_count) := l_watermark;
 
   -- Mark PDF as modified
@@ -7264,7 +7264,7 @@ BEGIN
     raise_application_error(-20809, 'No PDF loaded. Call LoadPDF() first.');
   END IF;
 
-  -- monta o array JSON das marcas d'agua
+  -- monta o array JSON das marcas d'água
   l_idx := g_watermarks.FIRST;
   WHILE l_idx IS NOT NULL LOOP
     l_watermark := JSON_OBJECT_T();
@@ -7291,7 +7291,7 @@ END GetWatermarks;
 -- fontes, imagens, anotações), sem re-renderizacao. Aplica remoção de páginas
 -- (RemovePage) e rotação (RotatePage).
 --
--- Marcas d'agua e overlays são desenhados no fluxo de conteúdo: cada pagina que
+-- Marcas d'água e overlays são desenhados no fluxo de conteúdo: cada pagina que
 -- os tem ganha um objeto de stream com os operadores e um /Resources próprio.
 -- Quem monta os operadores são as rotinas ovl_*, logo abaixo. Validado contra
 -- o MuPDF, que redesenha a página e mostra a sobreposição no lugar certo.
@@ -7370,7 +7370,7 @@ FUNCTION OutputModifiedPDF RETURN BLOB IS
   END medidas;
 
   -- Cada opacidade distinta vira um /ExtGState próprio; sem isso o carimbo
-  -- opaco herdaria a transparência da marca d'agua desenhada antes dele.
+  -- opaco herdaria a transparência da marca d'água desenhada antes dele.
   PROCEDURE usar_opacidade(p_opac IN NUMBER) IS
     l_k PLS_INTEGER := ROUND(LEAST(GREATEST(NVL(p_opac, 1), 0), 1) * 100);
   BEGIN
@@ -7433,7 +7433,7 @@ BEGIN
     END IF;
   END LOOP;
 
-  -- ── marcas d'agua e overlays ───────────────────────────────────────────────
+  -- ── marcas d'água e overlays ───────────────────────────────────────────────
   -- Os operadores são montados por página e entregues ao pdf_assemble, que cria
   -- o objeto do fluxo e o /Resources próprio da página.
   FOR i IN 1 .. l_srcs(1).pages.COUNT LOOP
@@ -7457,7 +7457,7 @@ BEGIN
                      NVL(g_watermarks(l_idx).rotation, 45),
                      NVL(g_watermarks(l_idx).font_size, 48),
                      NVL(g_watermarks(l_idx).opacity, 0.3), l_r, l_g, l_b);
-          usar_fonte('Helvetica', FALSE);   -- a marca d'agua sai sempre nela
+          usar_fonte('Helvetica', FALSE);   -- a marca d'água sai sempre nela
         END IF;
         l_idx := g_watermarks.NEXT(l_idx);
       END LOOP;
@@ -7583,7 +7583,7 @@ END OutputModifiedPDF;
 /*******************************************************************************
 * FlateDecode: descomprime um stream /FlateDecode do PDF
 *
-* Pública porque e util por si — quem tem um stream comprimido de qualquer
+* Pública porque é util por si — quem tem um stream comprimido de qualquer
 * origem consegue lê-lo — e porque torna o inflate testavel sem gancho de
 * teste na API.
 *******************************************************************************/
@@ -7977,7 +7977,7 @@ BEGIN
 
   -- lê o PDF para saber quantas páginas tem
   DECLARE
-    -- guarda o estado corrente, para devolve-lo nos dois caminhos
+    -- guarda o estado corrente, para devolvê-lo nos dois caminhos
     l_saved_blob BLOB := g_loaded_pdf;
     l_saved_count PLS_INTEGER := g_loaded_page_count;
   BEGIN
@@ -8173,7 +8173,7 @@ BEGIN
   -- `/Width 12` num dicionário, um número dentro de um nome (`/F12`), a
   -- geração de uma entrada da xref. Daí as duas guardas seguintes.
   WHILE l_i <= l_n LOOP
-    -- o digito só abre uma referencia se NÃO vier colado em letra ou digito
+    -- o digito só abre uma referência se NÃO vier colado em letra ou digito
     -- anterior: sem isto, o `12` de `/F12 0 R` viraria um id próprio
     IF SUBSTRB(p_text, l_i, 1) BETWEEN '0' AND '9'
        AND (l_i = 1 OR NOT pdf_is_alnum(SUBSTRB(p_text, l_i - 1, 1))) THEN
@@ -8192,7 +8192,7 @@ BEGIN
       END LOOP;
       -- o teto de 9 dígitos no id não e do PDF, e do PLS_INTEGER: `TO_NUMBER`
       -- de dez dígitos já pode passar de 2147483647, e o ORA-01426 chegaria
-      -- sem dizer de onde. Número maior que isso não e id de objeto: e dado.
+      -- sem dizer de onde. Número maior que isso não é id de objeto: é dado.
       IF l_d2s > l_j AND l_d1e - l_i + 1 <= 9 THEN
         l_j := l_d2s;
         WHILE l_j <= l_n AND SUBSTRB(p_text, l_j, 1) BETWEEN '0' AND '9' LOOP
@@ -8659,7 +8659,7 @@ END pdf_walk_pages;
 -- dentro de object streams (/Type /ObjStm), também comprimidos. Nesses
 -- arquivos um objeto não fica num offset do arquivo: fica dentro do stream de
 -- outro objeto. Era o que o ORA-20843 recusava, e com ele iam merge, extract,
--- marca d'agua e overlay sobre documento de terceiro.
+-- marca d'água e overlay sobre documento de terceiro.
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -8704,7 +8704,7 @@ END pdf_ints;
 --------------------------------------------------------------------------------
 -- pdf_undo_pred: desfaz o predictor do /DecodeParms
 --
--- O predictor NÃO e compressão: e uma transformação aplicada antes do deflate
+-- O predictor NÃO é compressão: é uma transformação aplicada antes do deflate
 -- para que colunas parecidas virem zeros. Sem desfazê-la o inflate devolve
 -- bytes limpos e ERRADOS — offsets plausíveis apontando para o lugar errado.
 -- Mesmo gênero do inflate com os bits ao contrário: não quebra, mente.
@@ -8743,7 +8743,7 @@ BEGIN
     RETURN;
   END IF;
   IF p_pred < 10 THEN
-    -- 2 e o preditor TIFF, definido para imagem. Trata-lo como 1 devolveria
+    -- 2 e o preditor TIFF, definido para imagem. Tratá-lo como 1 devolveria
     -- offsets errados sem nenhum sinal; recusar sai mais barato.
     RAISE_APPLICATION_ERROR(-20848,
       'xref em stream: /Predictor ' || p_pred || ' (TIFF) nao suportado.');
@@ -8936,7 +8936,7 @@ BEGIN
 END pdf_stream_data;
 
 --------------------------------------------------------------------------------
--- pdf_xref_stream: lê uma secao de xref que e um objeto /Type /XRef
+-- pdf_xref_stream: lê uma secao de xref que é um objeto /Type /XRef
 --
 -- Os três tipos de entrada:
 --   0  objeto livre — ignorado
@@ -9158,7 +9158,7 @@ END pdf_objstm_load;
 --------------------------------------------------------------------------------
 FUNCTION pdf_src_load(
   p_doc          IN BLOB,
-  -- Chave do documento, quando a origem esta CIFRADA. Só o object stream
+  -- Chave do documento, quando a origem está CIFRADA. Só o object stream
   -- precisa dela: a xref em stream nunca e cifrada.
   p_chave        IN RAW     DEFAULT NULL,
   p_aes          IN BOOLEAN DEFAULT FALSE,
@@ -9297,7 +9297,7 @@ BEGIN
     -- cada) o resto da tabela foi cortado calado. Antes disto o laço saia aqui,
     -- l_rootval ficava NULL e o erro que chegava ao chamador era um
     -- '-20803 /Root não encontrado no trailer' — que aponta para o lugar
-    -- errado e manda procurar defeito num PDF que esta intacto.
+    -- errado e manda procurar defeito num PDF que está intacto.
     IF l_t = 0 AND l_n >= 32767 THEN
       RAISE_APPLICATION_ERROR(-20841,
         'Secao xref classica em ' || l_off || ' excede os 32767 bytes que se ' ||
@@ -9309,7 +9309,7 @@ BEGIN
 
     -- Híbrido: o trailer clássico traz /XRefStm apontando para uma xref em
     -- stream com o que o leitor antigo não enxerga. E raro, mas o Acrobat
-    -- gera, e ignora-lo perde objetos EM SILÊNCIO — a tabela clássica marca
+    -- gera, e ignorá-lo perde objetos EM SILÊNCIO — a tabela clássica marca
     -- como livres justamente os que só o /XRefStm tem. Lido depois da tabela,
     -- como manda a especificação, e antes do /Prev; a regra "quem chegou
     -- primeiro vence" cuida do resto.
@@ -9472,7 +9472,7 @@ END ovl_escape;
 -- 'Arial' e sinônimo de Helvetica no PDF, como no resto do package. Qualquer
 -- outro nome cai em Helvetica em vez de levantar erro: o overlay já foi aceito
 -- por OverlayText, e recusar só na hora de desenhar deixaria o chamador sem
--- saída — o pedido já esta registrado.
+-- saída — o pedido já está registrado.
 FUNCTION ovl_familia(p_fonte IN VARCHAR2) RETURN VARCHAR2 IS
   l_f VARCHAR2(50) := LOWER(TRIM(NVL(p_fonte, 'helvetica')));
 BEGIN
@@ -9533,7 +9533,7 @@ BEGIN
               WHEN 'C' THEN 'courier'   -- monoespacada: mesma métrica
               ELSE CASE WHEN l_b THEN 'helveticaB' ELSE 'helvetica' END
             END);
-  -- A tabela e indexada pelo BYTE WinAnsi; a conversão esta no
+  -- A tabela e indexada pelo BYTE WinAnsi; a conversão está no
   -- p_largura_do_car, que devolve 0 para o que não existe lá. O NO_DATA_FOUND
   -- que se tratava aqui vinha de consultar com o caractere cru, e a largura
   -- media que ele repunha mascarava justamente o acento medido errado.
@@ -9547,7 +9547,7 @@ END ovl_largura;
 -- ovl_gs_nome: nome do /ExtGState de uma opacidade
 --
 -- Um nome por opacidade, e não um /GSwm único: uma página pode ter marca
--- d'agua a 30% e um carimbo opaco, e com um só estado gráfico o segundo
+-- d'água a 30% e um carimbo opaco, e com um só estado gráfico o segundo
 -- herdaria a transparência do primeiro.
 FUNCTION ovl_gs_nome(p_opac IN NUMBER) RETURN VARCHAR2 IS
 BEGIN
@@ -9594,8 +9594,8 @@ BEGIN
   RETURN 'q /' || ovl_gs_nome(p_opac) || ' gs '
       || ovl_num(p_r) || ' ' || ovl_num(p_g) || ' ' || ovl_num(p_b) || ' rg'
       -- O nome do recurso TEM de sair de ovl_fonte_nome: aqui havia um
-      -- '/FwmPLFPDF' fixo, que não e declarado no /Font de página nenhuma —
-      -- o Tf ficava sem fonte e a marca d'agua não desenhava. A largura acima
+      -- '/FwmPLFPDF' fixo, que não é declarado no /Font de página nenhuma —
+      -- o Tf ficava sem fonte e a marca d'água não desenhava. A largura acima
       -- e medida com Helvetica não-negrito, então e essa que se declara.
       || CHR(10) || 'BT /' || ovl_fonte_nome('Helvetica', FALSE) || ' '
       || ovl_num(p_corpo) || ' Tf' || CHR(10)
@@ -9639,7 +9639,7 @@ FUNCTION ovl_texto(
 
   -- quebra em palavras, sem cortar no meio de uma. Uma palavra sozinha mais
   -- larga que a caixa fica na própria linha e transborda: cortar caractere a
-  -- caractere estragaria URLs e códigos, que e justamente o que costuma
+  -- caractere estragaria URLs e códigos, que é justamente o que costuma
   -- aparecer em carimbo.
   PROCEDURE quebrar IS
     l_resto VARCHAR2(32767) := p_texto;
@@ -9767,7 +9767,7 @@ END ovl_gs_entrada;
 --
 -- O que NÃO existe e um deflate, então o que sai deste caminho vai SEM
 -- compressão. E maior no arquivo e e honesto; comprimir de volta exigiria
--- escrever um deflate, que e outro trabalho inteiro.
+-- escrever um deflate, que é outro trabalho inteiro.
 --------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
@@ -9780,7 +9780,7 @@ END ovl_gs_entrada;
 -- A montagem e por LINHA de destino, e não por pixel de origem: escrever no
 -- meio de um raster exigiria acesso aleatório, que em PL/SQL sai caro de
 -- qualquer forma que se faça. Percorrendo o destino em ordem, cada linha e
--- montada por concatenação — que e barata — puxando de uma linha já carregada
+-- montada por concatenação — que é barata — puxando de uma linha já carregada
 -- da passagem que possui aquele x.
 --------------------------------------------------------------------------------
 PROCEDURE ovl_png_desentrelacar(
@@ -9941,7 +9941,7 @@ END ovl_png_separar_alfa;
 --
 -- Nenhum dos dois formatos precisa ser descomprimido aqui:
 --   JPEG entra inteiro, com /DCTDecode;
---   PNG guarda os dados em IDAT já em zlib, que e o /FlateDecode do PDF —
+--   PNG guarda os dados em IDAT já em zlib, que é o /FlateDecode do PDF —
 --   basta concatenar os IDAT e declarar /Predictor 15, porque o PNG filtra
 --   cada linha e o leitor sabe desfazer isso.
 --
@@ -10106,7 +10106,7 @@ BEGIN
 
       -- ── passagem direta ────────────────────────────────────────────────
       -- Sem alfa e sem entrelaçamento nada e descomprimido: os IDAT já são
-      -- zlib, que e o /FlateDecode do PDF. Vale para 1, 2, 4, 8 E 16 bits — o
+      -- zlib, que é o /FlateDecode do PDF. Vale para 1, 2, 4, 8 E 16 bits — o
       -- PDF aceita /BitsPerComponent 16, e o predictor também. O 16 estava
       -- recusado por engano, junto com os casos que de fato precisam de
       -- reprocessamento.
@@ -10196,7 +10196,7 @@ END ovl_img_xobject;
 -- Para cada chave (/Font, /ExtGState, /XObject), se ela já existe como
 -- dicionário direto as entradas entram nele; se não existe, a chave e criada.
 -- Uma chave INDIRETA e recusada: reescrever o objeto apontado espalharia a
--- alteração por todas as páginas que o compartilham, que e exatamente o que
+-- alteração por todas as páginas que o compartilham, que é exatamente o que
 -- este caminho existe para evitar.
 --------------------------------------------------------------------------------
 FUNCTION ovl_mesclar(p_res IN VARCHAR2, p_novas IN VARCHAR2) RETURN VARCHAR2 IS
@@ -10255,7 +10255,7 @@ END ovl_mesclar;
 --------------------------------------------------------------------------------
 -- pdf_assemble: monta um novo PDF com as páginas escolhidas de cada origem
 --
--- Para cada origem: fecho transitivo das referencias a partir das páginas
+-- Para cada origem: fecho transitivo das referências a partir das páginas
 -- (objetos não alcançados ficam de fora), cópia dos objetos com os ids
 -- deslocados de um valor fixo, e por fim um Catalog (1) e um /Pages (2) novos.
 --------------------------------------------------------------------------------
@@ -10285,7 +10285,7 @@ FUNCTION pdf_assemble(
   l_kidcount PLS_INTEGER := 0;
   l_size     PLS_INTEGER;
   l_xref_off PLS_INTEGER;
-  -- sobreposição (marca d'agua / overlay)
+  -- sobreposição (marca d'água / overlay)
   l_extra    PLS_INTEGER;      -- próximo id livre depois de todas as origens
   l_mid      PLS_INTEGER;      -- id do /SMask da imagem corrente
   l_idic     VARCHAR2(32767);  -- dicionário da imagem, já com o /SMask
@@ -10386,7 +10386,7 @@ BEGIN
 
           -- /Resources próprio da página. No PDF que o próprio PL_FPDF gera
           -- todas as páginas apontam para o MESMO objeto de recursos; mesclar
-          -- ali espalharia a fonte da marca d'agua — ou um /XObject — por todo
+          -- ali espalharia a fonte da marca d'água — ou um /XObject — por todo
           -- o documento.
           l_resval := pdf_dict_value(l_pgraw, '/Resources');
           IF l_resval IS NULL THEN
@@ -10753,7 +10753,7 @@ END ExtractPages;
 * MD5 sai de STANDARD_HASH, função SQL nativa desde o 12c: não precisa de GRANT
 * nenhum. RC4 são poucas linhas e esta implementado abaixo.
 *
-* Antes isto dependia de EXECUTE em SYS.DBMS_CRYPTO, o que na pratica levava
+* Antes isto dependia de EXECUTE em SYS.DBMS_CRYPTO, o que na prática levava
 * quem não tinha o privilégio a criar um substituto no próprio schema -- e um
 * substituto que "cifra" com XOR simples, ou que devolve a entrada, faz o PDF
 * sair marcado como protegido com o /O em TEXTO CLARO e QUALQUER senha ser
@@ -11027,7 +11027,7 @@ END generate_file_id;
 --
 -- TUDO EM RAW, de propósito. A versão anterior percorria o dicionário com
 -- SUBSTRB(p_dic, k, 1) e remontava o conteúdo da string byte a byte num
--- VARCHAR2. Num banco AL32UTF8 isso não e seguro: extrair UM byte do meio de
+-- VARCHAR2. Num banco AL32UTF8 isso não é seguro: extrair UM byte do meio de
 -- um caractere multibyte não devolve aquele byte, e a cifra produz metade dos
 -- bytes acima de 127. Os bytes ASCII atravessavam intactos e os altos voltavam
 -- alterados.
@@ -11137,7 +11137,7 @@ BEGIN
     -- inteiro virava "uma string". O l_hex abaixo guarda DOIS caracteres por
     -- byte, então qualquer pseudo-string acima de ~16 KB estourava o
     -- VARCHAR2(32767) — ORA-06502, que o EncryptPDF rebatizava como
-    -- '-20852 Encryption failed'. Um parênteses solto em dado binário lido
+    -- '-20852 Encryption failed'. Um parêntese solto em dado binário lido
     -- como ASCII basta para disparar, e era o que derrubava a cifragem das
     -- amostras.
     --
@@ -11261,7 +11261,7 @@ END sec_e_estrutura;
 --
 -- Serve também para DECIFRAR: RC4 e simétrico e o tratamento das strings
 -- (desescapa, RC4, reescapa) e o seu próprio inverso. Na decifragem o objeto
--- /Encrypt precisa sair do arquivo, e p_pular diz qual e — ele não e emitido e
+-- /Encrypt precisa sair do arquivo, e p_pular diz qual é — ele não é emitido e
 -- não ganha entrada na xref.
 --------------------------------------------------------------------------------
 PROCEDURE sec_cifrar_objetos(
@@ -11292,7 +11292,7 @@ PROCEDURE sec_cifrar_objetos(
   l_cif    BLOB;
   l_novo   PLS_INTEGER;
 BEGIN
-  -- Na DECIFRAGEM a origem esta cifrada, e o object stream vem cifrado junto:
+  -- Na DECIFRAGEM a origem está cifrada, e o object stream vem cifrado junto:
   -- a chave precisa entrar aqui, senão ele não infla. Na cifragem a origem
   -- esta em claro e não há chave a passar.
   l_src := pdf_src_load(p_pdf,
@@ -11344,7 +11344,7 @@ BEGIN
 
     -- ── objeto que veio de dentro de um object stream ────────────────────
     -- Ele não tem posição no arquivo e não pode ter stream (a especificação
-    -- proíbe): o corpo já esta materializado, e o que resta e a assimetria
+    -- proíbe): o corpo já está materializado, e o que resta é a assimetria
     -- das strings, logo abaixo.
     IF l_src.objstm.EXISTS(l_oid) THEN
       l_ok := CASE WHEN p_r6 THEN p_key
@@ -11355,7 +11355,7 @@ BEGIN
       -- que se cifra e o stream inteiro (PDF 32000-1, 7.5.7).
       --   cifrando   -> agora que o objeto e de primeiro nível, as strings
       --                 passam a precisar de cifra própria
-      --   decifrando -> elas já saíram em claro junto com o stream; passa-las
+      --   decifrando -> elas já saíram em claro junto com o stream; passá-las
       --                 pela decifragem de novo as transforma em lixo
       -- Errar isso não quebra o arquivo: ele abre, as páginas aparecem, e só o
       -- título ou o texto de uma anotação sai embaralhado.
@@ -11394,9 +11394,9 @@ BEGIN
 
     IF l_slen > 0 AND p_aes THEN
       -- O AES muda o tamanho do payload (16 bytes de IV mais o preenchimento),
-      -- ao contrário do RC4, que e cifra de fluxo: o /Length TEM de ser
+      -- ao contrário do RC4, que é cifra de fluxo: o /Length TEM de ser
       -- reescrito nos DOIS sentidos — para mais ao cifrar, para menos ao
-      -- decifrar. Deixa-lo como esta faz o leitor parar no meio do bloco.
+      -- decifrar. Deixá-lo como está faz o leitor parar no meio do bloco.
       DBMS_LOB.CREATETEMPORARY(l_ent, TRUE);
       DBMS_LOB.CREATETEMPORARY(l_cif, TRUE);
       DBMS_LOB.COPY(l_ent, p_pdf, l_slen, 1, l_dend + 1);
@@ -11574,7 +11574,7 @@ BEGIN
                      l_result, l_offsets, l_new_obj_num, l_root_num, l_info_num,
                      p_aes => l_aes, p_r6 => l_r6);
 
-  -- o dicionário /Encrypt entra como objeto novo e NÃO e cifrado: seus /O e /U
+  -- o dicionário /Encrypt entra como objeto novo é NÃO e cifrado: seus /O e /U
   -- já são o resultado dos algoritmos 3 e 5
   l_new_obj_num := l_new_obj_num + 1;
   l_offsets(l_new_obj_num) := DBMS_LOB.GETLENGTH(l_result);
@@ -11683,7 +11683,7 @@ FUNCTION verify_password(
   p_key_length IN PLS_INTEGER,
   p_is_owner OUT BOOLEAN,
   -- a chave do documento sai junto: quem verifica a senha e quem precisa
-  -- decifrar são o mesmo chamador, e recalcula-la fora daqui obrigaria a
+  -- decifrar são o mesmo chamador, e recalculá-la fora daqui obrigaria a
   -- repetir o caminho do proprietário (algoritmo 7) inteiro.
   p_enc_key OUT RAW
 ) RETURN BOOLEAN IS
@@ -11740,7 +11740,7 @@ BEGIN
 
   -- se a senha de proprietário conferiu, l_decrypted e a senha de usuário
   -- confere recalculando o /U
-  -- l_decrypted JA e a senha de usuário preenchida em 32 bytes: usa-la como
+  -- l_decrypted JA e a senha de usuário preenchida em 32 bytes: usá-la como
   -- RAW evita o round-trip por VARCHAR2, que corrompia o preenchimento.
   l_enc_key := compute_encryption_key_raw(
     l_decrypted, p_o_value, p_permissions, p_file_id, p_key_length
@@ -12088,7 +12088,7 @@ END IsEncrypted;
 FUNCTION parse_permissions(p_perm_value PLS_INTEGER) RETURN JSON_OBJECT_T IS
   l_perms JSON_OBJECT_T := JSON_OBJECT_T();
   -- NUMBER, e não PLS_INTEGER: /P e um inteiro de 32 bits com sinal e quase
-  -- sempre negativo, e converte-lo para sem sinal passa de 2^31-1 (com todas
+  -- sempre negativo, e convertê-lo para sem sinal passa de 2^31-1 (com todas
   -- as permissões, -4 vira 4294967292). Em PLS_INTEGER isso estourava, o
   -- handler de GetSecurityInfo engolia o erro e TODAS as permissões saiam
   -- falsas — o que fazia os testes que esperavam FALSE passarem por engano.

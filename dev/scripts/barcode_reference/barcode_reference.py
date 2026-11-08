@@ -122,8 +122,8 @@ def itf(data, ratio=3):
     """Interleaved 2 of 5 puro: qualquer quantidade PAR de dígitos, sem
     verificador.
 
-    E o que o boleto bancário usa — 44 dígitos, sem digito de controle no
-    símbolo (o verificador do boleto esta DENTRO dos 44, na posição 5, e não e
+    E o que o boleto bancário usa — 44 dígitos, sem dígito de controle no
+    símbolo (o verificador do boleto está DENTRO dos 44, na posição 5, e não é
     calculado pela simbologia). O ITF14 e um caso particular disto, com 14
     dígitos e verificador próprio.
     """

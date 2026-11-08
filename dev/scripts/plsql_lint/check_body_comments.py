@@ -227,7 +227,7 @@ def conferir(pks, pkb):
     linhas = io.open(do_repo(pkb), encoding='utf-8').read().split('\n')
     falhas = []
 
-    # texto do bloco Javadoc de cada publico, para cruzar com o do body
+    # texto do bloco Javadoc de cada público, para cruzar com o do body
     esp = io.open(do_repo(pks), encoding='utf-8').read().split('\n')
     bloco_spec = {}
     for i, l in enumerate(esp):
@@ -287,7 +287,7 @@ def conferir(pks, pkb):
                                       f'body repete a descrição da spec — duas '
                                       f'versões que divergem'))
             continue
-        # Régua não e documentação -- ela começa com `--` e passava por
+        # Régua não é documentação -- ela começa com `--` e passava por
         # comentário --, mas também não interrompe a busca: o padrão herdado
         # do porte e `regua / texto / régua / subprograma`, e parar na
         # primeira daria "sem comentário" para quem tem.

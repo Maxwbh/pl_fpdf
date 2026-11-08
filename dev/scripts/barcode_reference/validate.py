@@ -78,7 +78,7 @@ def main():
         modulos = bc.make(dado, tipo)
         lido = zxingcpp.read_barcode(render(modulos))
         texto = lido.text if lido else None
-        # EAN e ITF devolvem o código com o digito verificador incluído
+        # EAN e ITF devolvem o código com o dígito verificador incluído
         if texto and (texto == dado or texto.startswith(dado)):
             ok += 1
         else:

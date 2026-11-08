@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 -- PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant
 --
--- As bordas do documento: fecha-lo, os callbacks de cabeçalho e rodapé, o
+-- As bordas do documento: fechá-lo, os callbacks de cabeçalho e rodapé, o
 -- caminho interno de erro, e as saídas que dependem de recurso de fora.
 --
 -- Os três últimos casos existem para provar que a RECUSA funciona sem

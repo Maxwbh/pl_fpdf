@@ -19,7 +19,7 @@ exemplo são os mesmos nas duas línguas -- o que muda neles é só o `alt`.
 """
 
 # A ÚLTIMA versão publicada como release, que não e a mesma coisa que o
-# `co_version`: este anda na frente enquanto a versão nova esta em teste.
+# `co_version`: este anda na frente enquanto a versão nova está em teste.
 ULTIMO_RELEASE = '3.4.0'
 
 # A candidata publicada da versão que a página descreve, ou None. Enquanto
@@ -33,7 +33,7 @@ ULTIMA_CANDIDATA = None
 # o cabeçalho da API e da referência e o dado estruturado. Antes, o chip e o
 # destaque mostravam o co_version como "versão atual": com a 3.4.0 ainda
 # candidata, o visitante entendia que ela já era a estável. Com candidata, o
-# chip diz que e pre-lancamento e o destaque mostra a estável; sem candidata,
+# chip diz que e pre-lancamento é o destaque mostra a estável; sem candidata,
 # volta a ser o número do package.
 CHIP_CANDIDATA = ("{candidata} · pré-lançamento", "{candidata} · pre-release")
 STAT_ESTAVEL = ("<em>{release}</em>", ("versão estável", "stable version"))
@@ -420,7 +420,7 @@ INSTALACAO = {
             'titulo': ("Confirme a versão", "Check the version"),
             'texto': ("A versão sai na aba Output. Pronto para gerar o primeiro PDF.",
                       "The version shows in the Output tab. Ready to produce the first PDF."),
-            # Bloco, e não SELECT: constante de package não e visível em SQL, e
+            # Bloco, e não SELECT: constante de package não é visível em SQL, e
             # `SELECT PL_FPDF.co_version FROM DUAL` da ORA-06553 PLS-221 em
             # qualquer versão do Oracle. Quem seguia o passo achava que a
             # instalação tinha falhado.
@@ -432,7 +432,7 @@ INSTALACAO = {
              "<b>Pin the version for production.</b>\nThe link above always serves the newest one — fine to try it out, wrong for a\nchange ticket. Every version has its own immutable URL on the\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">releases page</a>, with a\n<code>SHA256.txt</code> beside it to verify what you downloaded:"),
     # O comando abaixo PRENDE uma versão, então ele tem de citar uma que exista
     # como release -- e a do package NÃO serve: ela anda na frente enquanto a
-    # versão nova esta em teste. Apontar para `v{versão}` deixou o comando
+    # versão nova está em teste. Apontar para `v{versão}` deixou o comando
     # devolvendo 404 no dia em que o co_version virou 3.4.0 e não havia release.
     # Quando a 3.4.0 for publicada, este número sobe junto.
     #

@@ -27,8 +27,8 @@ falta de privilégio vira `ORA-00942`, que um `EXCEPTION` captura de verdade.
 
 O que cobra
 -----------
-Referencia a `V$...`, `GV$...` ou `DBA_...` fora de literal de string. Dentro de
-aspas esta tudo bem: e exatamente o `EXECUTE IMMEDIATE` que se quer.
+Referência a `V$...`, `GV$...` ou `DBA_...` fora de literal de string. Dentro de
+aspas está tudo bem: é exatamente o `EXECUTE IMMEDIATE` que se quer.
 
 `USER_*` e `ALL_*` NÃO entram: são acessíveis por padrão e não dependem de role.
 

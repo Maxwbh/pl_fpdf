@@ -193,7 +193,7 @@ def confere_tipos_posicionais(nome, args, info):
         base = ptipo.split('(')[0].strip()
         if LITERAL_TEXTO.match(arg) and base in NAO_ACEITA_TEXTO:
             # o conteúdo do literal já veio apagado por quem preparou o
-            # fonte (e o que impede virgula dentro de string de bagunçar a
+            # fonte (e o que impede vírgula dentro de string de bagunçar a
             # contagem), então a mensagem diz o TIPO, não o valor
             faltas.append(f'{nome}: argumento {i + 1} e um literal de texto, '
                           f'mas {pnome} e {base}')

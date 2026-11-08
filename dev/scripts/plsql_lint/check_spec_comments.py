@@ -140,7 +140,7 @@ DECL = re.compile(r'^\s{0,2}(procedure|function)\s+([A-Za-z_][A-Za-z_0-9]*)',
                   re.I)
 TAG = re.compile(r'^\s*\*\s*(@[A-Za-z_]+)')
 
-# uma ` / ` dentro de literal ou de caminho não e par bilingue: 'up'/'U',
+# uma ` / ` dentro de literal ou de caminho não é par bilingue: 'up'/'U',
 # OS/2, docs/ROADMAP.md, http/https
 LIVRE = re.compile(r"'[^']*'\s*/|/\s*'[^']*'|\w/\w|@example|@note \w")
 

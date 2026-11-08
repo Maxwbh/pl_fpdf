@@ -72,7 +72,7 @@ def main():
     import pymupdf
 
     tab = ref.tabela_cp1252()
-    # só o que e desenhavel: controle não produz glifo, e espaço não volta
+    # só o que é desenhavel: controle não produz glifo, e espaço não volta
     # distinguível na extração
     posicoes = sorted((b, cp) for cp, b in tab.items()
                       if b >= 0x21 and not (0x7F <= b <= 0x9F and b not in
@@ -90,7 +90,7 @@ def main():
     # As duas posições em que o PDF se afasta do cp1252, de propósito e por
     # escrito: o Anexo D trata 0xA0 como espaço e 0xAD como hífen. Não são
     # divergência da tabela — são o comportamento previsto, e o MuPDF as
-    # devolve assim. Foram as ÚNICAS duas em 217, o que e a confirmação de que
+    # devolve assim. Foram as ÚNICAS duas em 217, o que é a confirmação de que
     # o resto da tabela vale para desenhar num leitor de verdade.
     EQUIVALENTES = {0xA0: 0x20, 0xAD: 0x2D}
     esperado = ''.join(chr(EQUIVALENTES.get(b, cp)) for b, cp in posicoes)

@@ -60,23 +60,23 @@ def bloco():
 ----------------------------------------------------------------------------------------
 -- Larguras das 14 fontes padrão do PDF, em milésimos de em.
 --
--- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- GERADA a partir das fontes primárias: os AFM da Adobe, as tabelas do
 -- reportlab -- que se conferem entre si, glifo a glifo -- e a
--- WinAnsiEncoding. NÃO EDITE A MAO daqui ate o fecho do bloco, NEM O
--- COMENTÁRIO: a edição se perde na geração seguinte, e ate la o CI acusa o
+-- WinAnsiEncoding. NÃO EDITE À MÃO daqui até o fecho do bloco, NEM O
+-- COMENTÁRIO: a edição se perde na geração seguinte, e até lá o CI acusa o
 -- bloco como desatualizado. Para mudar este texto, mude o gerador.
 --
--- Cada família e uma sequencia de 256 campos de 4 dígitos, um por posição da
--- codificação. A chave da tabela indexada e O BYTE WinAnsi, não o caractere.
+-- Cada família é uma sequência de 256 campos de 4 dígitos, um por posição da
+-- codificação. A chave da tabela indexada é O BYTE WinAnsi, não o caractere.
 --
--- Era `chr(i)`, e não podia ser: CHR devolve o caractere cujo BYTE e i no
+-- Era `chr(i)`, e não podia ser: CHR devolve o caractere cujo BYTE é i no
 -- charset do banco, e em AL32UTF8 os valores de 128 a 191 dão caractere
--- invalido enquanto os de 192 para cima abrem uma sequencia multibyte que
--- nunca se completa -- `ORA-29275`. O relato que expôs isso e a issue 16 do
+-- inválido enquanto os de 192 para cima abrem uma sequência multibyte que
+-- nunca se completa -- `ORA-29275`. O relato que expôs isso é a issue 16 do
 -- projeto de origem: em AL32UTF8 o erro estourava na PRIMEIRA chamada que
 -- carregasse uma métrica, com a pilha apontando para a linha da tabela onde
--- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 e caractere
--- valido de um byte, e por isso o mesmo código sempre funcionou la.
+-- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 é caractere
+-- válido de um byte, e por isso o mesmo código sempre funcionou lá.
 --
 -- O byte já era o que a tabela guardava: quem consulta parte do caractere,
 -- converte para WinAnsi com p_winansi_byte e só então mede. Indexar por

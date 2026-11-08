@@ -854,7 +854,7 @@ DECLARE
     RETURN l_b;
   END blob_de;
 
-  -- Escreve o texto num CLOB e converte de volta para BLOB, que e o percurso
+  -- Escreve o texto num CLOB e converte de volta para BLOB, que é o percurso
   -- que todo stream faz: o documento e montado em CLOB e convertido no fim.
   FUNCTION ida_e_volta(p_texto IN VARCHAR2) RETURN BLOB IS
     l_c CLOB;
@@ -4220,7 +4220,7 @@ BEGIN
 
   -- RemoveWatermark e ClearWatermarks não existem na API: o teste antigo as
   -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A única forma
-  -- pública de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
+  -- pública de descartar marcas d'água e ClearPDFCache, que limpa tudo.
   DECLARE
     l_watermarks JSON_ARRAY_T;
   BEGIN
@@ -5760,11 +5760,11 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 80, '='));
 
   --------------------------------------------------------------------------
-  -- 1. A marca d'agua referenciava uma fonte que ninguém declara
+  -- 1. A marca d'água referenciava uma fonte que ninguém declara
   --
   -- ovl_marca_dagua emitia o literal '/FwmPLFPDF'. Esse nome não sai de
   -- ovl_fonte_nome e não entra no /Font de página nenhuma: o operador Tf
-  -- ficava sem fonte e a marca NÃO DESENHAVA. O nome certo e /FwmH, que e o
+  -- ficava sem fonte e a marca NÃO DESENHAVA. O nome certo é /FwmH, que e o
   -- que a largura já media (Helvetica não-negrito).
   --------------------------------------------------------------------------
   caso('AddWatermark referencia uma fonte declarada (nao /FwmPLFPDF)');
@@ -5824,7 +5824,7 @@ BEGIN
   --
   -- NÃO TEM CASO AQUI, DE PROPÓSITO.
   --
-  -- O vazamento não e observável de dentro do próprio schema: USER_* não
+  -- O vazamento não é observável de dentro do próprio schema: USER_* não
   -- expõe contagem de LOB temporário, e as instâncias vazadas não tem
   -- locator que se possa passar ao DBMS_LOB.ISTEMPORARY. A primeira versão
   -- deste arquivo media V$TEMPORARY_LOBS, o que exige GRANT de DBA — e um
@@ -5840,7 +5840,7 @@ BEGIN
   -- 4. buildPlsqlStatment: o default só existia na declaração antecipada
   --
   -- Se a definição e a antecipada divergirem, o Oracle não compila o body
-  -- (PLS-00593) — então este caso e, na pratica, "o package esta VALID e o
+  -- (PLS-00593) — então este caso é, na prática, "o package está VALID e o
   -- caminho sem paramTable funciona".
   --------------------------------------------------------------------------
   caso('SetFooterProc sem paramTable usa o default e o package esta VALID');
@@ -5958,7 +5958,7 @@ BEGIN
   --
   -- Agora recusa, e o código certo e -20866: e o erro que o próprio package
   -- já usava na SAÍDA do escape, com a mesma mensagem e o mesmo teto de
-  -- 16000 bytes. A primeira versão deste caso esperava -20841, que e o erro
+  -- 16000 bytes. A primeira versão deste caso esperava -20841, que é o erro
   -- de LEITURA truncada — outro assunto. Expectativa errada minha, não
   -- defeito do código: o -20866 e o mais preciso dos dois.
   --------------------------------------------------------------------------
@@ -5969,7 +5969,7 @@ BEGIN
     l_perm    JSON_OBJECT_T := JSON_OBJECT_T();
     l_grande  BLOB;
   BEGIN
-    -- Palavras-chave enormes entram no /Info, que e um objeto de dicionário.
+    -- Palavras-chave enormes entram no /Info, que é um objeto de dicionário.
     -- 17000 e o mínimo que passa do teto de 16000 do escape. A versão
     -- anterior usava 32000 sem necessidade, e como o Reset não limpava
     -- metadado (defeito consertado nesta mesma rodada), aquilo vazava para
@@ -6091,7 +6091,7 @@ BEGIN
   -- O ramo que escreveria o /Dest do link INTERNO saiu comentado no porte
   -- original e nunca voltou. Com plink numérico o dicionário do /Annot ficava
   -- ABERTO -- sai "<</Type /Annot ... /Border [0 0 0] ]", sem o >> que fecha.
-  -- Não e link que não navega: e PDF que o leitor recusa.
+  -- Não é link que não navega: é PDF que o leitor recusa.
   --
   -- Ninguém reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
   -- escrever este caso que apareceu o terceiro lado do mesmo defeito: o
@@ -6626,7 +6626,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('GetX/SetX: negativo conta a partir da borda direita');
   --------------------------------------------------------------------------
-  -- A regra do SetX não esta no nome dele: px negativo NÃO e erro, e sim
+  -- A regra do SetX não está no nome dele: px negativo NÃO é erro, e sim
   -- medida a partir da direita. Quem não sabe disso passa -10 achando que
   -- volta dez para trás e o texto vai parar do outro lado da página.
   novo_doc;
@@ -6781,7 +6781,7 @@ BEGIN
   caso('SetAutoPageBreak liga e desliga a quebra, e o AcceptPageBreak conta');
   --------------------------------------------------------------------------
   -- Desligada, o conteúdo que passa do fim da página e escrito fora dela e
-  -- SOME, sem erro nenhum. Vale saber qual e o estado.
+  -- SOME, sem erro nenhum. Vale saber qual é o estado.
   novo_doc;
   PL_FPDF.SetAutoPageBreak(TRUE, 20);
   IF NVL(PL_FPDF.AcceptPageBreak, FALSE) THEN
@@ -7127,7 +7127,7 @@ END;
 --
 -- Os dois se aferem pelo operador que sai no fluxo de conteúdo -- '[] 0 d'
 -- para linha cheia, 'm' e 'l' para o caminho --, porque "não levantou" não
--- prova desenho nenhum. Foi assim que a marca d'agua passou meses marcada
+-- prova desenho nenhum. Foi assim que a marca d'água passou meses marcada
 -- como pronta sem desenhar nada.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
@@ -7200,7 +7200,7 @@ BEGIN
   caso('Tracejado: SetDash liga, e sem argumento volta a linha cheia');
   --------------------------------------------------------------------------
   -- O operador 'd' do PDF: '[] 0 d' e linha cheia, qualquer outra coisa e
-  -- tracejado. Sem isto a linha sai continua e ninguém nota até imprimir.
+  -- tracejado. Sem isto a linha sai contínua e ninguém nota até imprimir.
   novo_doc;
   PL_FPDF.SetDash(2, 2);
   PL_FPDF.Line(20, 50, 190, 50);
@@ -7388,7 +7388,7 @@ DECLARE
     --
     -- O digito antes do ponto e OPCIONAL, e isto custou a primeira rodada: o
     -- `tochar` do package formata com a máscara `TM9`, que NÃO escreve o zero
-    -- da parte inteira. A profundidade do sublinhado, que e uma fração de
+    -- da parte inteira. A profundidade do sublinhado, que é uma fração de
     -- ponto, sai como `-.72` -- valido no PDF, e fora de um padrão que exija
     -- digito antes do ponto. Exigindo-o, o quarto número não casava e a
     -- expressão inteira falhava, sem dizer por que.
@@ -7401,7 +7401,7 @@ DECLARE
       RETURN NULL;
     END IF;
     -- O sinal e a parte inteira vão na mão, e não por máscara: `TO_NUMBER`
-    -- com mascara que declare o sinal exige que ele ESTEJA lá, e o x e a
+    -- com máscara que declare o sinal exige que ele ESTEJA lá, e o x e a
     -- largura vem sem sinal. Tratado aqui, os dois formatos entram.
     l_neg := SUBSTR(l_str, 1, 1) = '-';
     l_str := LTRIM(l_str, '-');
@@ -8257,7 +8257,7 @@ END;
 --------------------------------------------------------------------------------
 -- PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant
 --
--- As bordas do documento: fecha-lo, os callbacks de cabeçalho e rodapé, o
+-- As bordas do documento: fechá-lo, os callbacks de cabeçalho e rodapé, o
 -- caminho interno de erro, e as saídas que dependem de recurso de fora.
 --
 -- Os três últimos casos existem para provar que a RECUSA funciona sem

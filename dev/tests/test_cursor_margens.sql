@@ -78,7 +78,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('GetX/SetX: negativo conta a partir da borda direita');
   --------------------------------------------------------------------------
-  -- A regra do SetX não esta no nome dele: px negativo NÃO e erro, e sim
+  -- A regra do SetX não está no nome dele: px negativo NÃO é erro, e sim
   -- medida a partir da direita. Quem não sabe disso passa -10 achando que
   -- volta dez para trás e o texto vai parar do outro lado da página.
   novo_doc;
@@ -233,7 +233,7 @@ BEGIN
   caso('SetAutoPageBreak liga e desliga a quebra, e o AcceptPageBreak conta');
   --------------------------------------------------------------------------
   -- Desligada, o conteúdo que passa do fim da página e escrito fora dela e
-  -- SOME, sem erro nenhum. Vale saber qual e o estado.
+  -- SOME, sem erro nenhum. Vale saber qual é o estado.
   novo_doc;
   PL_FPDF.SetAutoPageBreak(TRUE, 20);
   IF NVL(PL_FPDF.AcceptPageBreak, FALSE) THEN

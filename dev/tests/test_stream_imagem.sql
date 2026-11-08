@@ -72,7 +72,7 @@ DECLARE
     RETURN l_b;
   END blob_de;
 
-  -- Escreve o texto num CLOB e converte de volta para BLOB, que e o percurso
+  -- Escreve o texto num CLOB e converte de volta para BLOB, que é o percurso
   -- que todo stream faz: o documento e montado em CLOB e convertido no fim.
   FUNCTION ida_e_volta(p_texto IN VARCHAR2) RETURN BLOB IS
     l_c CLOB;

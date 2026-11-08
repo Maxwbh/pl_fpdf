@@ -109,7 +109,7 @@ DECLARE
     --
     -- O digito antes do ponto e OPCIONAL, e isto custou a primeira rodada: o
     -- `tochar` do package formata com a máscara `TM9`, que NÃO escreve o zero
-    -- da parte inteira. A profundidade do sublinhado, que e uma fração de
+    -- da parte inteira. A profundidade do sublinhado, que é uma fração de
     -- ponto, sai como `-.72` -- valido no PDF, e fora de um padrão que exija
     -- digito antes do ponto. Exigindo-o, o quarto número não casava e a
     -- expressão inteira falhava, sem dizer por que.
@@ -122,7 +122,7 @@ DECLARE
       RETURN NULL;
     END IF;
     -- O sinal e a parte inteira vão na mão, e não por máscara: `TO_NUMBER`
-    -- com mascara que declare o sinal exige que ele ESTEJA lá, e o x e a
+    -- com máscara que declare o sinal exige que ele ESTEJA lá, e o x e a
     -- largura vem sem sinal. Tratado aqui, os dois formatos entram.
     l_neg := SUBSTR(l_str, 1, 1) = '-';
     l_str := LTRIM(l_str, '-');

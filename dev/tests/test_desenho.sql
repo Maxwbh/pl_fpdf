@@ -6,7 +6,7 @@
 --
 -- Os dois se aferem pelo operador que sai no fluxo de conteúdo -- '[] 0 d'
 -- para linha cheia, 'm' e 'l' para o caminho --, porque "não levantou" não
--- prova desenho nenhum. Foi assim que a marca d'agua passou meses marcada
+-- prova desenho nenhum. Foi assim que a marca d'água passou meses marcada
 -- como pronta sem desenhar nada.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
@@ -79,7 +79,7 @@ BEGIN
   caso('Tracejado: SetDash liga, e sem argumento volta a linha cheia');
   --------------------------------------------------------------------------
   -- O operador 'd' do PDF: '[] 0 d' e linha cheia, qualquer outra coisa e
-  -- tracejado. Sem isto a linha sai continua e ninguém nota até imprimir.
+  -- tracejado. Sem isto a linha sai contínua e ninguém nota até imprimir.
   novo_doc;
   PL_FPDF.SetDash(2, 2);
   PL_FPDF.Line(20, 50, 190, 50);

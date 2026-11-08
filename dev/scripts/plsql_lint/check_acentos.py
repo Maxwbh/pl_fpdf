@@ -16,12 +16,12 @@ acento em 134 arquivos, metade delas no corpo do package.
 
 E nada reclamava: os lints conferem que o comentário é "PT-BR", mas não que
 ele tem acento — a heurística que detecta prosa inglesa chegava a tratar
-"so", sem acento, como palavra portuguesa válida. Esta verificação fecha isso.
+`so`, sem acento, como palavra portuguesa válida. Esta verificação fecha isso.
 
 Como funciona
 -------------
 Uma palavra é acusada quando **não existe** no dicionário de português e a
-forma acentuada dela **existe**: "nao" (não), "versao" (versão), "codigo"
+forma acentuada dela **existe**: `nao` (não), `versao` (versão), `codigo`
 (código). Mais a regra brasileira -cao/-coes → -ção/-ções, que o dicionário,
 de Portugal ("secção"), não cobre. Não acusa o que tem duas formas válidas
 ("e"/"é", "esta"/"está", "pagina" verbo/"página") — isso pede contexto, e fica

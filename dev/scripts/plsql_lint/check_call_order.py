@@ -27,7 +27,7 @@ import sys
 
 def strip_literals(src):
     """Remove comentários e strings. Comentários primeiro: uma apóstrofe solta
-    num comentário (d'agua) não deve abrir string."""
+    num comentário (d'água) não deve abrir string."""
     out, i, n = [], 0, len(src)
     while i < n:
         if src.startswith('--', i):

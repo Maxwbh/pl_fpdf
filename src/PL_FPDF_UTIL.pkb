@@ -3,7 +3,7 @@ CREATE OR REPLACE PACKAGE BODY PL_FPDF_UTIL AS
  * PL_FPDF_UTIL -- o que não e PDF.
  *
  * QR Code, códigos de barras, DEFLATE/INFLATE e criptografia. Nada aqui sabe
- * o que e uma página, uma fonte ou um objeto de PDF: entra dado, sai dado.
+ * o que é uma página, uma fonte ou um objeto de PDF: entra dado, sai dado.
  *
  * Por que existe: o body do PL_FPDF passou de 14 mil linhas, e um quinto
  * disso não tinha relação nenhuma com PDF. Os codificadores de QR e de barras
@@ -91,7 +91,7 @@ g_crypto_ok boolean := false;
 -- AES: tabelas montadas uma vez por sessão
 --
 -- A S-box e as multiplicações no corpo de Galois viram tabelas porque o PL/SQL
--- e lento demais para calcula-las a cada byte: sem elas, o MixColumns de um
+-- e lento demais para calculá-las a cada byte: sem elas, o MixColumns de um
 -- único bloco custa 640 multiplicações de 8 iterações cada.
 --
 -- co_aes_sbox e a S-box do FIPS-197 em hexadecimal. A inversa e as tabelas de
@@ -126,7 +126,7 @@ g_aes_hex    tv4000; -- byte -> os dois dígitos hexadecimais, para remontar o R
 --
 -- Existe porque o UTL_COMPRESS não serve: ele só descomprime com o CRC-32 e o
 -- tamanho do rodapé gzip corretos, e o CRC e do conteúdo DESCOMPRIMIDO — para
--- calcula-lo seria preciso descomprimir -- o que e justamente o que se quer
+-- calculá-lo seria preciso descomprimir -- o que é justamente o que se quer
 -- fazer. Medido contra o banco antes de escrever este código.
 --
 -- Sem isto o copiador recusa qualquer PDF com xref em stream ou object stream,
@@ -209,7 +209,7 @@ g_inf_len   PLS_INTEGER := 0;
 g_inf_pos   PLS_INTEGER := 1;    -- próximo byte a ler, base 1
 g_inf_acum  NUMBER := 0;         -- bits lidos e ainda não consumidos
 g_inf_nbits PLS_INTEGER := 0;
--- inflate e deflate são públicas: a declaração esta na spec, e as duas ficam
+-- inflate e deflate são públicas: a declaração está na spec, e as duas ficam
 -- no fim do body, depois das rotinas que usam.
 -- crypto_rc4_blob, aes_cbc_decifrar e aes_chave_objeto não tem declaração
 -- antecipada aqui: elas são PÚBLICAS, e a spec já as declara. Declarar de novo
@@ -358,7 +358,7 @@ procedure qr_encode(p_text varchar2, p_ecl varchar2,
   l_out   pls_integer := 0;
 
   -- put_bits: empilha os p_n bits menos significativos de p_val no fluxo do QR,
-  -- do mais significativo para o menos, que e a ordem da especificação.
+  -- do mais significativo para o menos, que é a ordem da especificação.
   procedure put_bits(p_val pls_integer, p_n pls_integer) is
   begin
     for i in reverse 0..p_n-1 loop
@@ -694,7 +694,7 @@ end qr_place_version;
 -- mascara que produz o símbolo mais legível.
 --
 -- As oito máscaras são aplicadas, cada uma pontuada aqui, e a de MENOR pontos
--- ganha. Não e estética: cada regra pune um arranjo que atrapalha o leitor
+-- ganha. Não é estética: cada regra pune um arranjo que atrapalha o leitor
 -- optico -- faixa longa de uma cor só (regra 1), bloco maciço (regra 2), a
 -- sequência 1011101 seguida de quatro claros (regra 3), que imita o padrão de
 -- localização e faz o leitor procurar um canto onde não há, e desequilíbrio
@@ -1012,7 +1012,7 @@ end bc_itf14;
 -- adiante: o decodificador de Huffman lê UM bit por vez e e chamado uma vez por
 -- símbolo, então copiar um record a cada chamada dominaria o custo.
 --
--- ATENÇÃO ao sentido dos bits, que e a armadilha clássica: dentro de cada byte
+-- ATENÇÃO ao sentido dos bits, que é a armadilha clássica: dentro de cada byte
 -- o DEFLATE lê do bit MENOS significativo para o mais, mas os códigos de
 -- Huffman são formados do MAIS significativo para o menos. Trocar os dois
 -- produz saída plausível por alguns bytes e lixo depois.
@@ -1022,7 +1022,7 @@ PROCEDURE inf_init IS
   --
   -- A versão anterior fazia l_s := SUBSTR(l_s, l_p + 1) até esvaziar, e caiu na
   -- armadilha do NULL: em Oracle, SUBSTR que devolve vazio e NULL, INSTR(NULL)
-  -- e NULL, e 'EXIT WHEN NULL = 0' NÃO e verdadeiro — comparação com NULL da
+  -- e NULL, e 'EXIT WHEN NULL = 0' NÃO é verdadeiro — comparação com NULL da
   -- NULL, e o EXIT só dispara com TRUE. O laço rodava para sempre atribuindo
   -- NULL a índices cada vez maiores, e a tabela indexada crescia até estourar a
   -- PGA (ORA-04036). E a mesma família do 'IF NOT f() THEN' com uma função
@@ -1222,7 +1222,7 @@ PROCEDURE pdf_inflate(
   -- emitir: acrescenta um byte descomprimido, respeitando o teto de saída.
   PROCEDURE emitir(p_b IN PLS_INTEGER) IS
   BEGIN
-    -- Teto de saída. Estava na referência e eu não o portei, o que e uma falha
+    -- Teto de saída. Estava na referência é eu não o portei, o que e uma falha
     -- de segurança por si: um PDF de terceiro e entrada NÃO CONFIÁVEL, e um
     -- inflate sem teto e vetor clássico de zip bomb — alguns KB comprimidos
     -- viram gigabytes e derrubam a sessão com ORA-04036, que e o que se viu.
@@ -1383,7 +1383,7 @@ BEGIN
 END pdf_inflate;
 
 --------------------------------------------------------------------------------
--- inflate: tira a casca zlib (RFC 1950), que e o /FlateDecode do PDF
+-- inflate: tira a casca zlib (RFC 1950), que é o /FlateDecode do PDF
 --------------------------------------------------------------------------------
 PROCEDURE inflate(
   p_src IN            BLOB,
@@ -1720,14 +1720,14 @@ BEGIN
 END deflate;
 
 --------------------------------------------------------------------------------
--- Marcas d'agua e overlays: operadores do fluxo de conteúdo
+-- Marcas d'água e overlays: operadores do fluxo de conteúdo
 --
 -- Validado contra o MuPDF: 18 de 18 páginas redesenhadas trazem a
 -- sobreposição na posição e no ângulo previstos.
 --
 -- O que existia antes (generate_watermark_stream e irmãs) não era PDF valido:
--- 'TO_CHAR(rotação) || '' rotate''' não e operador — rotação no PDF e matriz,
--- em Tm para texto e em cm para imagem — e a cor da marca d'agua estava fixa
+-- 'TO_CHAR(rotação) || '' rotate''' não é operador — rotação no PDF é matriz,
+-- em Tm para texto e em cm para imagem — e a cor da marca d'água estava fixa
 -- em cinza, ignorando o parâmetro. Como OutputModifiedPDF recusava com
 -- ORA-20845, isso nunca chegou a ser gravado num arquivo.
 --------------------------------------------------------------------------------
@@ -1938,7 +1938,7 @@ BEGIN
   aes_init;
   IF l_nk NOT IN (4, 8) THEN
     -- -20865, e não -20852: aquele já significa 'simbologia de código de
-    -- barras não suportada'. A colisão de códigos entre domínios esta no
+    -- barras não suportada'. A colisão de códigos entre domínios está no
     -- roadmap; não vale a pena acrescentar mais uma.
     RAISE_APPLICATION_ERROR(-20865,
       'Chave AES deve ter 16 ou 32 bytes; recebeu '

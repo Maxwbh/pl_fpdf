@@ -41,7 +41,7 @@ DECLARE
   l_outros   PLS_INTEGER := 0;
   -- Na 26ai o CHR de 192 para cima LEVANTA, em vez de devolver o byte cru como
   -- no 19c. Medido em 07/11/2026, Oracle AI Database 26ai Free 23.26.3: e o
-  -- ORA-29275 da issue 16 do projeto de origem, e a medição precisa conta-lo
+  -- ORA-29275 da issue 16 do projeto de origem, e a medição precisa contá-lo
   -- em vez de morrer nele -- morrer era o que este arquivo fazia até então.
   l_levanta  PLS_INTEGER := 0;
   l_de_onde  PLS_INTEGER;
@@ -208,8 +208,8 @@ BEGIN
   ------------------------------------------------------------------------
   -- O relato original era este: os bytes do 'ç' chegavam crus, em UTF-8, num
   -- stream declarado como WinAnsi. As DUAS respostas abaixo são 'não' hoje, e
-  -- isso não e inconclusivo: o acentuado não sai como byte nenhum, sai como
-  -- escape octal de três dígitos, que e ASCII e atravessa o CONVERTTOBLOB. A
+  -- isso não é inconclusivo: o acentuado não sai como byte nenhum, sai como
+  -- escape octal de três dígitos, que é ASCII e atravessa o CONVERTTOBLOB. A
   -- terceira linha mede justamente isso.
   DECLARE
     l_pdf BLOB;

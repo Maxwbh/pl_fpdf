@@ -9,7 +9,7 @@
 | O que **já foi entregue**, por versão | "Versões Lançadas" |
 | Que defeitos existiram e como foram resolvidos | "Pendências resolvidas — histórico" |
 | O que **ainda falta**, em ordem de prioridade | "Lacunas priorizadas por uso medido" e "Backlog" |
-| O que esta **planejado** com versão | "Versões Planejadas" |
+| O que está **planejado** com versão | "Versões Planejadas" |
 | O que **não será feito**, e por que | "Fora de escopo — decidido, não esquecido" |
 | O que o CI verifica | "Verificações automáticas no CI" |
 
@@ -21,13 +21,13 @@ compilar. Detalhe em `docs/COMPATIBILITY.md` e no `CHANGELOG.md`.
 
 Revisado em 10/09/2026, e antes em 28/08/2026, conferindo cada afirmação contra
 o código. As correções estão marcadas ao longo do documento; a mais importante
-da primeira revisão e que **v3.0.0 dava marcas d'agua e overlays como prontos
+da primeira revisão e que **v3.0.0 dava marcas d'água e overlays como prontos
 desde fevereiro, e eles não desenhavam nada** — só passaram a desenhar depois.
 
 A revisão de setembro achou três inconsistências no próprio documento, e as
 três estão corrigidas abaixo: as versões planejadas 3.3.0 e 3.4.0 descreviam
 funcionalidades que **não são** as que saíram com esses números; cinco
-verificações rodavam no CI sem constar da tabela que diz registra-las; e as
+verificações rodavam no CI sem constar da tabela que diz registrá-las; e as
 quatro correções de setembro não estavam nas pendências.
 
 A revisão trouxe também a secao **"Lacunas priorizadas por uso medido"** e o
@@ -81,7 +81,7 @@ concluídas.
 
 > **Correção da revisão.** Até agosto/2026 as três últimas linhas de sobreposição
 > registravam o pedido em memória e **nada era desenhado**; `OutputModifiedPDF`
-> recusava gerar com `ORA-20845`. Marca-las como prontas em fevereiro foi erro
+> recusava gerar com `ORA-20845`. Marcá-las como prontas em fevereiro foi erro
 > do roadmap, não do código — o código era honesto ao recusar.
 
 ### Criptografia — API desde a v3.0.0, cifragem de fato desde a v3.3.0
@@ -111,7 +111,7 @@ concluídas.
 
 ### v3.2.1 - Security AES ✅ (ago/2026)
 
-Motivação: o RC4 esta quebrado há anos e o **PDF 2.0 o removeu da
+Motivação: o RC4 está quebrado há anos e o **PDF 2.0 o removeu da
 especificação**; leitores novos avisam ou recusam. Concluída e verificada
 contra o banco.
 
@@ -152,7 +152,7 @@ Os experimentos com o `UTL_COMPRESS` fecharam uma porta, mas também **reduziram
 o escopo** — e foi isso que tornou o item viável:
 
 O copiador de objetos **não precisa descomprimir fluxo de conteúdo**. Merge,
-extract, marca d'agua e overlay copiam os streams byte a byte e acrescentam
+extract, marca d'água e overlay copiam os streams byte a byte e acrescentam
 conteúdo novo; nada disso lê o que já esta lá dentro. O inflate seria necessário
 só para as estruturas: a **xref em stream** e os **object streams**, que
 escondem dicionários como o Catalog e as páginas.
@@ -168,7 +168,7 @@ MuPDF.
 
 O que a segunda etapa ensinou, e que uma porta feita direto teria custado caro:
 
-- **O predictor não e compressão.** E uma transformação aplicada ANTES do
+- **O predictor não é compressão.** É uma transformação aplicada ANTES do
   deflate, e sem desfazê-la o inflate devolve bytes limpos e **errados** —
   offsets plausíveis apontando para o lugar errado. O MuPDF grava xref em stream
   *sem* predictor; Acrobat e Ghostscript gravam com `/Predictor 12`. Validar só
@@ -204,7 +204,7 @@ inteira no 19c e no 26ai; as evidências estão em `docs/COMPATIBILITY.md`.
 
 ## Pendências resolvidas — histórico
 
-> **Tudo nesta tabela esta resolvido.** Ela fica como registro do defeito, da
+> **Tudo nesta tabela está resolvido.** Ela fica como registro do defeito, da
 > causa e do conserto. O que **ainda falta** esta em "Lacunas priorizadas por
 > uso medido" e no "Backlog"; o que **não será feito**, em "Fora de escopo".
 
@@ -218,11 +218,11 @@ passaram a ser conferidos por decodificadores reais.
 
 | Item | Situação |
 |------|----------|
-| ~~**Fonte TrueType registrada não chega ao documento**~~ | **Resolvido em setembro/2026.** O cache `g_ttf_fonts` não tinha consumidor: o `SetFont` nunca o consultava e nada emitia os bytes no PDF. E o `parse_ttf_header` não interpretava o arquivo — `units_per_em := 1000`, `ascent := 800`, `descent := -200` eram literais no código, então um BLOB de 28 bytes devolvia as mesmas métricas de uma fonte real. Agora o parser lê `head`, `hhea`, `hmtx`, `cmap` (formato 4), `OS/2` e `post`; o `SetFont` registra a fonte do cache; o `GetStringWidth` mede pela tabela dela; e o `p_putfonts` emite `/Subtype /TrueType`, o `/FontDescriptor` e o `/FontFile2`. Fonte sem tabela obrigatória e recusada com **-20202**, em vez de inventada. Referência em `dev/scripts/ttfembed_reference/`, validada no MuPDF nos três lados que importam: o texto sai, a fonte esta embutida, e a largura que o leitor MEDE bate com a que o `/Widths` declara. O teste usa uma TTF de 716 bytes gerada por `dev/scripts/ttf_reference/gerar.py`, com **2048 unidades por em** de propósito — com upm 1000 não se distinguiria "leu do arquivo" de "chutou a constante de sempre". **Falta o subset (HU-02):** a fonte inteira entra, em hexadecimal, e ocupa o dobro do tamanho dela. |
+| ~~**Fonte TrueType registrada não chega ao documento**~~ | **Resolvido em setembro/2026.** O cache `g_ttf_fonts` não tinha consumidor: o `SetFont` nunca o consultava e nada emitia os bytes no PDF. E o `parse_ttf_header` não interpretava o arquivo — `units_per_em := 1000`, `ascent := 800`, `descent := -200` eram literais no código, então um BLOB de 28 bytes devolvia as mesmas métricas de uma fonte real. Agora o parser lê `head`, `hhea`, `hmtx`, `cmap` (formato 4), `OS/2` e `post`; o `SetFont` registra a fonte do cache; o `GetStringWidth` mede pela tabela dela; e o `p_putfonts` emite `/Subtype /TrueType`, o `/FontDescriptor` e o `/FontFile2`. Fonte sem tabela obrigatória e recusada com **-20202**, em vez de inventada. Referência em `dev/scripts/ttfembed_reference/`, validada no MuPDF nos três lados que importam: o texto sai, a fonte está embutida, e a largura que o leitor MEDE bate com a que o `/Widths` declara. O teste usa uma TTF de 716 bytes gerada por `dev/scripts/ttf_reference/gerar.py`, com **2048 unidades por em** de propósito — com upm 1000 não se distinguiria "leu do arquivo" de "chutou a constante de sempre". **Falta o subset (HU-02):** a fonte inteira entra, em hexadecimal, e ocupa o dobro do tamanho dela. |
 | ~~**Link interno produz PDF malformado**~~ | **Resolvido por recusa, em setembro/2026; achado na revisão dos comentários.** `Link` com `plink` numérico caia num ramo que **não existe**: o `else` que escreveria o `/Dest` saiu comentado no porte original e nunca voltou, e o dicionário do `/Annot` ficava **aberto** — `<</Type /Annot ... /Border [0 0 0] ]`, sem o `>>`. Não era "link que não navega": era arquivo estruturalmente inválido. E havia um segundo lado, que atingia o caso COMUM: o `Link` estende a coleção até a página corrente, e as páginas anteriores ficavam com entrada vazia; o emissor só testava `.exists(i)`, então um `Link` na página 3 punha `/Annots` quebrado nas páginas 1 e 2, que não pediram link nenhum. Agora `Link` recusa destino que não seja URL com **-20601**, e o emissor exige entrada COM destino. Recusar vale mais que gravar o arquivo que o leitor não abre. Ficou escondido porque **nenhum teste chamava `AddLink` ou `SetLink`** — a HU-05 em forma concreta; há caso de regressão para os dois lados em `dev/tests/test_regressoes_revisao.sql`. E há um TERCEIRO lado, achado ao escrever o teste: o `AddLink` levantava `ORA-06531` — *reference to uninitialized collection* — na linha da própria declaração, porque a coleção `links` e nested table e ninguém a inicializa. **Nunca funcionou, em nenhuma versão.** Os três — `AddLink`, `SetLink` e `Link` com destino numérico — passam a recusar com **-20601** e mensagem que diz o que usar. E um QUARTO, no caminho comum: o `Link` media o quanto estender pelo `.last`, e `.last` de coleção vazia e NULL. Depois de um `Reset` a coleção fica vazia — o `delete` zera a contagem e não anula a coleção —, então `page - NULL` dava NULL, o `IF` não disparava e o `PageLinks(page)` estourava com `ORA-06533` **no primeiro `Link` do segundo documento da sessão**, com URL e tudo. Passa a medir pelo `.count`, que conta zero em coleção vazia. Quem emite em lote passava por isso em toda emissão a partir da segunda. **Continua faltando** escrever o `/Dest` para que o link interno funcione de verdade. |
 | ~~**`EncryptPDF` não cifra os fluxos de conteúdo**~~ | **Resolvido.** `sec_cifrar_objetos` aplica RC4 com a chave de cada objeto aos streams e as strings; `DecryptPDF` desfaz. Referência em `dev/scripts/pdfcrypt_reference/`, validada no MuPDF. |
-| ~~**Marcas d'agua e overlays de texto não são rasterizados**~~ | **Resolvido.** Cada página afetada ganha um objeto de conteúdo próprio e um `/Resources` próprio — no PDF do PL_FPDF o `/Resources` e compartilhado por todas as páginas, e mescla-lo espalharia a fonte da marca por todo o documento. Referência em `dev/scripts/pdfoverlay_reference/`. |
-| ~~**Overlay de imagem não e rasterizado**~~ | **Resolvido.** JPEG entra inteiro como `/DCTDecode`; os IDAT do PNG já são zlib, que e o `/FlateDecode` do PDF, então são concatenados e declarados com `/Predictor 15`. Referência em `dev/scripts/pdfimage_reference/`, validada pelos pixels desenhados. |
+| ~~**Marcas d'água e overlays de texto não são rasterizados**~~ | **Resolvido.** Cada página afetada ganha um objeto de conteúdo próprio e um `/Resources` próprio — no PDF do PL_FPDF o `/Resources` e compartilhado por todas as páginas, e mesclá-lo espalharia a fonte da marca por todo o documento. Referência em `dev/scripts/pdfoverlay_reference/`. |
+| ~~**Overlay de imagem não e rasterizado**~~ | **Resolvido.** JPEG entra inteiro como `/DCTDecode`; os IDAT do PNG já são zlib, que é o `/FlateDecode` do PDF, então são concatenados e declarados com `/Predictor 15`. Referência em `dev/scripts/pdfimage_reference/`, validada pelos pixels desenhados. |
 | ~~**AES**~~ | **Resolvido.** `EncryptPDF` gera e `DecryptPDF` desfaz AES-128 (V4/R4, `AESV2`) e AES-256 (V5/R6, `AESV3`), com as senhas de usuário e de proprietário. O filtro e lido do `/CFM`, não presumido. Referência em `dev/scripts/pdfaes_reference/`, validada nos vetores do FIPS-197 e no MuPDF (29/29). |
 | ~~**`IsEncrypted` mentia acima de 32 KB**~~ | **Resolvido.** Lia os PRIMEIROS 32767 bytes procurando `/Encrypt`, que fica no trailer. Além de fazer `DecryptPDF` recusar PDF valido, deixava `EncryptPDF` cifrar de novo um documento grande já cifrado, sem erro. Passa a usar `DBMS_LOB.INSTR` no BLOB inteiro, começando pelo fim. Encontrado ao testar o RC4 em fluxo grande. |
 | ~~**RC4 não cifra fluxo grande**~~ | **Resolvido.** O limite real era **16383 bytes**, e não 32767: `crypto_rc4` monta o resultado em hexadecimal, dois caracteres por byte, e o acumulador de 32767 caracteres estourava com `ORA-06502` sem explicação. `crypto_rc4_blob` agenda a chave uma vez e carrega S, i e j entre os pedaços — fatiar com `crypto_rc4` reiniciaria a cifra em cada pedaço e produziria lixo. `crypto_rc4` passou a recusar acima do seu teto com `ORA-20864`, em vez de estourar. |
@@ -230,10 +230,10 @@ passaram a ser conferidos por decodificadores reais.
 | ~~**Opções de `OverlayText` parcialmente honradas**~~ | **Resolvido.** `font` (Helvetica/Arial, Times, Courier) e `bold` escolhem o `/BaseFont`, e a página declara só as fontes que usa; `width` define a caixa, com quebra de linha dentro dela; `align` e relativo a caixa quando há `width`, e ao próprio ponto quando não há; `zOrder` ordena a emissão, e maior fica por cima. Conferido no MuPDF pela POSIÇÃO do texto — a amostra `overlay_opcoes` distingue 9/9 com alinhamento de 6/9 sem. |
 | ~~**Strings literais corrompidas ao cifrar**~~ | **Resolvido, e não tinha a ver com object streams:** atingia qualquer PDF com título, produtor ou texto de anotação desde que `EncryptPDF` passou a cifrar de verdade. Duas confusões entre byte e caractere na mesma função — `CHR(n)` na escrita e `SUBSTRB(x, k, 1)` na leitura. Ficou porque os fluxos de conteúdo são copiados byte a byte e não passam por ali, e **nenhuma amostra conferia uma string literal**; as duas amostras novas conferem, e foi assim que apareceu. `sec_cifrar_strings` passou a trabalhar inteiramente em RAW. (`check_byte_chars.py`) |
 | ~~**Código de barras de boleto**~~ | **Resolvido.** `AddBarcodeBoleto` da extensão passava os 44 dígitos do boleto para `'ITF14'`, que exige 13 ou 14 — levantava `ORA-20887` **sempre**, ou seja, nenhum boleto chegou a sair com código de barras. `AddBarcode` ganhou a simbologia `'ITF'` (Interleaved 2 of 5 puro, qualquer quantidade PAR de dígitos, sem verificador de simbologia — o de controle do boleto fica dentro dos 44, na posição 5). O `ITF14` passou a ser construído sobre ela. Validado no zxing-cpp, 45/45; o símbolo sai com 114 grupos de barras, o mesmo de um boleto Itau de verdade. O que o `PL_FPDF` passou a cobrir e o **desenho**: a amostra `boleto` recebe os 44 dígitos prontos e o zxing os lê do PDF renderizado. **Montar** esses dígitos e regra de cobrança, e saiu do escopo deste projeto — a extensão `PL_FPDF_BOLETO` fica onde esta, sem cobertura aqui, até migrar para um projeto próprio. |
-| ~~**Imagens que exigem reprocessar pixels**~~ | **Resolvido.** O que destravou foi o inflate, escrito para a xref em stream, mais o `pdf_undo_pred`, que já desfazia os cinco filtros do PNG. **Canal alfa** (color type 4 e 6): o PDF não guarda a transparência dentro do pixel, então ela vira um segundo objeto de imagem apontado por `/SMask`. **Entrelaçado** (Adam7): as sete passagens são desfiltradas separadamente e o raster e remontado linha a linha. **16 bits** nunca precisou de nada — o PDF aceita `/BitsPerComponent 16` e o predictor também; estava recusado por engano. O caminho que reprocessa sai **sem compressão**, porque há inflate e não há deflate, e tem teto de `co_img_max_px` (4 megapixels) porque e O(pixels) em PL/SQL. Referência em `dev/scripts/pdfimage_reference/`, validada nos PIXELS que o MuPDF desenha (25/25). |
-| ~~**xref em stream (PDF 1.5+)**~~ | **Resolvido.** O `UTL_COMPRESS` não serve (dois diagnósticos), então o INFLATE (RFC 1951) foi escrito no package e esta provado no banco (`dev/tests/diag_inflate.sql`, 4/4 contra vetores do zlib), exposto por `FlateDecode` com teto de saída contra zip bomb. Sobre ele, `pdf_src_load` passou a ler a **xref em stream** (`/Type /XRef`, com `/W`, `/Index`, `/Prev` e os três tipos de entrada), os **object streams** (`/Type /ObjStm` — o objeto não fica num offset do arquivo, e o corpo e materializado na carga) e o **híbrido** (`/XRefStm`), além do **predictor PNG** nos cinco filtros. Referência em `dev/scripts/pdfxref_reference/`, validada contra o MuPDF (43/43). **Provado no banco**: `dev/tests/diag_xrefstm.sql` passa 12/12 e a suite inteira fecha sem falha, com as amostras `objstm` e `xref_predictor` conferidas pelo MuPDF. A **cifragem** também fechou: `EncryptPDF`/`DecryptPDF` achatam a origem e a saída leva xref clássica (`dev/scripts/pdfobjstm_crypt_reference/`, 25/25 no MuPDF). |
+| ~~**Imagens que exigem reprocessar pixels**~~ | **Resolvido.** O que destravou foi o inflate, escrito para a xref em stream, mais o `pdf_undo_pred`, que já desfazia os cinco filtros do PNG. **Canal alfa** (color type 4 e 6): o PDF não guarda a transparência dentro do pixel, então ela vira um segundo objeto de imagem apontado por `/SMask`. **Entrelaçado** (Adam7): as sete passagens são desfiltradas separadamente e o raster e remontado linha a linha. **16 bits** nunca precisou de nada — o PDF aceita `/BitsPerComponent 16` e o predictor também; estava recusado por engano. O caminho que reprocessa sai **sem compressão**, porque há inflate e não há deflate, e tem teto de `co_img_max_px` (4 megapixels) porque é O(pixels) em PL/SQL. Referência em `dev/scripts/pdfimage_reference/`, validada nos PIXELS que o MuPDF desenha (25/25). |
+| ~~**xref em stream (PDF 1.5+)**~~ | **Resolvido.** O `UTL_COMPRESS` não serve (dois diagnósticos), então o INFLATE (RFC 1951) foi escrito no package e está provado no banco (`dev/tests/diag_inflate.sql`, 4/4 contra vetores do zlib), exposto por `FlateDecode` com teto de saída contra zip bomb. Sobre ele, `pdf_src_load` passou a ler a **xref em stream** (`/Type /XRef`, com `/W`, `/Index`, `/Prev` e os três tipos de entrada), os **object streams** (`/Type /ObjStm` — o objeto não fica num offset do arquivo, e o corpo e materializado na carga) e o **híbrido** (`/XRefStm`), além do **predictor PNG** nos cinco filtros. Referência em `dev/scripts/pdfxref_reference/`, validada contra o MuPDF (43/43). **Provado no banco**: `dev/tests/diag_xrefstm.sql` passa 12/12 e a suite inteira fecha sem falha, com as amostras `objstm` e `xref_predictor` conferidas pelo MuPDF. A **cifragem** também fechou: `EncryptPDF`/`DecryptPDF` achatam a origem e a saída leva xref clássica (`dev/scripts/pdfobjstm_crypt_reference/`, 25/25 no MuPDF). |
 | ~~**Quebra automática virava página nova em silêncio**~~ | **Resolvido.** A `Cell` do PL_FPDF abre PÁGINA NOVA quando `y + altura` passa de 277 (A4 menos a margem inferior de 20 mm). Não e erro, e comportamento: o rodapé do ingresso, posto em 276 com célula de 9 mm, transformava dois ingressos em **seis páginas**, e o sintoma aparecia longe da causa ("6 páginas, esperado 2"). O gatilho virou parte do modelo em `dev/scripts/pdflayout.py` e as duas réguas conferem que nenhuma célula o cruza. |
-| ~~**Exemplo e amostra podiam divergir**~~ | **Resolvido.** O mesmo desenho vive no `examples/*.sql` (documentação) e na amostra do runner (o que roda contra o banco). O conserto do rodapé teve de ser aplicado nos dois arquivos, e nada garantia que fosse — um exemplo que desenha diferente do que o teste cobre e pior que exemplo nenhum, porque parece verificado. `check_examples_sync.py` compara as chamadas de desenho por instrução (quebrar linha não e divergência) e roda no CI. |
+| ~~**Exemplo e amostra podiam divergir**~~ | **Resolvido.** O mesmo desenho vive no `examples/*.sql` (documentação) e na amostra do runner (o que roda contra o banco). O conserto do rodapé teve de ser aplicado nos dois arquivos, e nada garantia que fosse — um exemplo que desenha diferente do que o teste cobre e pior que exemplo nenhum, porque parece verificado. `check_examples_sync.py` compara as chamadas de desenho por instrução (quebrar linha não é divergência) e roda no CI. |
 | ~~**`Triangle` ignorava a orientação**~~ | **Resolvido.** O `porientation` era aceito e IGNORADO — qualquer valor desenhava a ponta para a direita, e a referência da API já prometia as quatro direções. Agora up/down/left/right (ou U/D/L/R) apontam para onde dizem, e valor inválido levanta `ORA-20821` em vez de desenhar errado calado. A amostra `formas` confere os **vértices** de cada triângulo, e não a contagem de operadores: quatro triângulos iguais emitiriam quatro caminhos de três linhas, exatamente como quatro diferentes. Mudança incompatível para quem passava `left` — o desenho antigo agora se pede com `right`. A documentação também dizia "equilátero" e "a partir do centro", e nenhuma das duas era verdade. |
 | ~~**`SetCompression` era um no-op**~~ | **Resolvido.** Ele perguntava por uma função de zlib que o Oracle não tem (`function_exists('gzcompress')`, que devolvia FALSE sempre) e desligava a compressão — todo PDF saia cru, e o ramo que declarava `/FlateDecode` sem comprimir nada teria produzido arquivo quebrado se alguém o ligasse. Agora há um DEFLATE (RFC 1951) no package: um bloco com Huffman FIXA e LZ77 guloso, com escape para bloco armazenado quando não compensa, então a saída nunca fica maior que a entrada. Referência em `dev/scripts/pdfdeflate_reference/`, validada contra o zlib (32/32), e `dev/tests/diag_deflate.sql` compara o que o banco produz com ela **byte a byte** — descomprimir e voltar não bastaria, porque o inflate desta mesma casa toleraria escolhas diferentes. O fluxo sai em HEXADECIMAL, com `/Filter [/ASCIIHexDecode /FlateDecode]`: o documento e montado num CLOB e só vira BLOB no fim, com conversão de charset, e byte binário não sobrevive a isso. O hexadecimal dobra o comprimido, então a compressão só e usada quando ainda assim encolhe. |
 | ~~**`NVL` onde o PL/SQL não perdoa**~~ | **Resolvido, e virou lint.** Duas regras. Sobre tabela indexada, `NVL(tab(i), -1)` NÃO evita `NO_DATA_FOUND`: o índice e lido primeiro e a exceção sobe antes de o NVL ver qualquer coisa — a linha parece defensiva e falha na primeira posição não visitada. Sobre LOB, `NVL(p_data, EMPTY_BLOB())` nem COMPILA (`PLS-00306`), e a mensagem fala de "wrong number or types of arguments" sem dizer que o problema e o tipo. A primeira eu peguei antes de ir ao banco; a segunda custou uma rodada de compilação. (`check_assoc_nvl.py`) |
@@ -243,7 +243,7 @@ passaram a ser conferidos por decodificadores reais.
 | ~~**Antecipação de subprograma publico**~~ | **Resolvido, e virou lint.** `PLS-00305`: três declarações antecipadas vieram junto com o código para o `PL_FPDF_UTIL` e passaram a apontar para subprogramas que a spec nova declara. A spec já declara; repetir no body e redeclarar no mesmo escopo. Antecipação só serve para subprograma PRIVADO chamado antes de ser definido. (`check_spec_body.py`) |
 | ~~**Tipo que ficou no outro package**~~ | **Resolvido, e virou lint.** `PLS-00201`: o `PL_FPDF_UTIL` usava `tpi` e `tv4000`, que ficaram no `PL_FPDF` — um package não herda tipo do outro. Como o `PLS-00371`, este erro **aborta a análise da unidade inteira**, então ele escondeu o próprio: foram duas rodadas para dois erros que estavam no arquivo ao mesmo tempo. A regra entrou no `check_spec_body.py`: todo tipo usado no body tem de estar declarado no body, na spec, ou ser nativo. |
 | ~~**Tipo declarado na spec e no body**~~ | **Resolvido, e virou lint.** O body herda o que a spec declara; redeclarar da `PLS-00371` e **aborta a análise da unidade inteira**, com a mensagem apontando a linha de um vizinho qualquer. Custou uma rodada na separação do `PL_FPDF_UTIL`: o tipo `tqr` veio junto na mudança e já estava na spec nova. A regra entrou no `check_spec_body.py`, que já lia o par spec/body — sem etapa nova no CI. |
-| ~~**Texto acentuado saia com dois glifos**~~ | **Resolvido.** O dicionário da fonte declarava `/Encoding /WinAnsiEncoding` e o texto entrava cru, em AL32UTF8: cada acentuado chegava ao leitor como DOIS bytes e ele desenhava dois glifos — sem erro, num arquivo que abre. A medição derrubou as duas suposições do relato: a tabela de larguras estava **integra** (256 chaves distintas), e o sintoma não era medida errada e sim `ORA-06502`, porque `subtype car is varchar2(1)` e UM byte e o `a` com til tem dois. Como `Cell` só mede para `align` C e R, alinhado a esquerda desenhava errado calado e centralizado LEVANTAVA. A tabela cp1252 saiu do codec do Python e foi conferida no MuPDF (217 de 217 posições desenháveis); o byte sai como escape OCTAL, que e ASCII e atravessa o CLOB — a mesma lição do stream de imagem. `SetUTF8Enabled`/`IsUTF8Enabled` saíram da spec: não faziam nada. (`check_byte_chars.py`, regra 4) |
+| ~~**Texto acentuado saia com dois glifos**~~ | **Resolvido.** O dicionário da fonte declarava `/Encoding /WinAnsiEncoding` e o texto entrava cru, em AL32UTF8: cada acentuado chegava ao leitor como DOIS bytes e ele desenhava dois glifos — sem erro, num arquivo que abre. A medição derrubou as duas suposições do relato: a tabela de larguras estava **íntegra** (256 chaves distintas), e o sintoma não era medida errada e sim `ORA-06502`, porque `subtype car is varchar2(1)` e UM byte e o `a` com til tem dois. Como `Cell` só mede para `align` C e R, alinhado a esquerda desenhava errado calado e centralizado LEVANTAVA. A tabela cp1252 saiu do codec do Python e foi conferida no MuPDF (217 de 217 posições desenháveis); o byte sai como escape OCTAL, que é ASCII e atravessa o CLOB — a mesma lição do stream de imagem. `SetUTF8Enabled`/`IsUTF8Enabled` saíram da spec: não faziam nada. (`check_byte_chars.py`, regra 4) |
 | ~~**`Image()` recusava todo PNG em AL32UTF8**~~ | **Resolvido.** Não era `ORA-29275`, como o relato supunha: o `UTL_RAW.CAST_TO_VARCHAR2` não levanta sobre binário. A assinatura era montada com `chr(137) \|\| 'PNG'`, que em AL32UTF8 nunca casa com os oito bytes do arquivo — e o parser recusava com `Not a PNG file`, uma mensagem que manda procurar defeito **no arquivo**. Todo o percurso binário do `p_parseImage` passou a RAW, com a assinatura vindo de `HEXTORAW`. |
 | ~~**Stream de imagem em hexadecimal não declarado**~~ | **Resolvido.** O `p_putstream` lia o BLOB para buffer `VARCHAR2`: a sobrecarga de BLOB entrega RAW, e a conversão implícita devolve hexadecimal — 2000 bytes viravam 4000 caracteres. O hexadecimal era a codificação CERTA (o documento e montado num CLOB, e byte acima de 0x7F não sobrevive: medido, 256 entram e 422 saem), mas era acidental e sem `/ASCIIHexDecode`. Mais dois defeitos nas mesmas seis linhas: o laço parava um byte antes do fim, e o tamanho do pedaço era `IN OUT` e ficava preso na primeira leitura curta. (`check_byte_chars.py`, regra 3) |
 | ~~**Documento em paisagem contaminava o seguinte**~~ | **Resolvido.** O `Reset` limpava fontes, imagens, links e metadados — e deixava de fora o `OrientationChanges`, que diz quais páginas ganham `/MediaBox` próprio. Como e indexado pelo NÚMERO da página, o índice 1 de um documento virava o índice 1 do próximo: quem gerasse um documento com a página 1 em paisagem deixava **todo documento posterior da mesma sessão** com a página 1 em paisagem. Conteúdo desenhado fora do papel, arquivo que abre EM BRANCO, sem erro nenhum. Doze amostras caíram juntas e o sintoma não acusava a causa — a página 1 saia errada e as demais certas, porque só o índice reaproveitado colide. O que fechou foi ler o arquivo gerado: `-30 bytes` por documento depois do conserto, exatamente o `/MediaBox` que sobrava. |
@@ -295,7 +295,7 @@ passaram a ser conferidos por decodificadores reais.
 |---------|--------|------------|
 | Cross-Reference Streams | ✅ (ago/2026) | Leitura completa: `/W`, `/Index`, `/Prev`, os três tipos de entrada e o predictor PNG nos cinco filtros |
 | Object Streams | ✅ (ago/2026) | Leitura completa; o corpo e materializado na carga, porque o objeto não tem offset no arquivo |
-| Híbrido `/XRefStm` | ✅ (ago/2026) | Não estava previsto e precisava estar: ignora-lo perde objetos **em silêncio** |
+| Híbrido `/XRefStm` | ✅ (ago/2026) | Não estava previsto e precisava estar: ignorá-lo perde objetos **em silêncio** |
 | `FlateDecode` (descomprimir) | ✅ (ago/2026) | INFLATE (RFC 1951) escrito no package, com teto de saída contra zip bomb |
 | Cifrar PDF com object streams | ✅ (ago/2026) | `EncryptPDF` e `DecryptPDF` **achatam** a origem: os objetos de dentro dos object streams viram objetos de primeiro nível, os `ObjStm`/`XRef` são descartados e a saída leva xref clássica. Na decifragem o object stream e decifrado ANTES de inflado. Referência em `dev/scripts/pdfobjstm_crypt_reference/`, validada contra o MuPDF (25/25); **provado no banco**, com as amostras `objstm_cifrado` (AES-128) e `objstm_ida_volta` (RC4), que conferem o TÍTULO — a string que mora dentro do object stream |
 | `FlateDecode` (comprimir) | ✅ (ago/2026) | DEFLATE com Huffman fixa e LZ77 guloso, escrito no package; `SetCompression` deixou de ser no-op |
@@ -379,7 +379,7 @@ O que continua automático é a **conferência**, que é onde o CI ajuda de verd
 |-------------|-------------|
 | `check_refs.py` | Toda referência `PL_FPDF.*` citada na documentação existe no package |
 | `check_links.py` | Todo link e imagem relativa aponta para arquivo que existe |
-| `check_escape_pdf.py` | Mais de uma rotina escapando string literal de PDF. Existiam cinco, e TRÊS estavam erradas — procuravam `'\\\\'` e trocavam por `'\\\\\\\\'`, ou seja, duas barras por quatro, e a barra sozinha, que e o caso comum, passava intacta |
+| `check_escape_pdf.py` | Mais de uma rotina escapando string literal de PDF. Existiam cinco, e TRÊS estavam erradas — procuravam `'\\\\'` e trocavam por `'\\\\\\\\'`, ou seja, duas barras por quatro, e a barra sozinha, que é o caso comum, passava intacta |
 | `check_heranca.py` | Mede quanto do fonte de 2017 ainda vive em `src/` e **trava o número**: a herança só pode diminuir |
 | `check_lob_temp.py` | LOB temporário devolvido por função e não liberado por quem chama — vazamento que só aparece sob carga |
 | `check_undeclared.py` | Chamada a subprograma que não existe (`PLS-00201`), que aborta a análise da unidade inteira e esconde o erro seguinte |
@@ -455,7 +455,7 @@ no banco, e existe para que ele não volte:
 
 DOCUMENTO DE MANUTENÇÃO.
 
-Esta secao existe para responder uma pergunta só: **entre o que falta, o que e
+Esta secao existe para responder uma pergunta só: **entre o que falta, o que é
 de fato usado?** A ordem abaixo não saiu de opinião — saiu de três medições
 independentes, e ela **contradisse** a ordem que este mesmo documento teria
 proposto por intuição. O item que a intuição punha em terceiro caiu para o
@@ -471,7 +471,7 @@ Esta secao fica com o **o que** e o **em que ordem**.
 > que mudou desde então esta dito item a item — o item 1 saiu na 3.4.0.
 
 > **O ESTADO de cada item foi reconferido no código em 13/09/2026**, e e o que
-> esta escrito abaixo. O que se olhou, e o que se achou:
+> está escrito abaixo. O que se olhou, e o que se achou:
 >
 > | Item | Como se conferiu | Estado |
 > |---|---|---|
@@ -523,7 +523,7 @@ desta base de fato usam (106 distintos).
 
 > **Demanda alta não e o mesmo que escopo.** Os três itens marcados como fora
 > de escopo somam 33 casos e ocupam o 2o, o 4o e o 5o lugares da medição —
-> mais que o primeiro colocado sozinho. Saem assim mesmo, e a decisão esta em
+> mais que o primeiro colocado sozinho. Saem assim mesmo, e a decisão está em
 > "Fora de escopo", adiante. Medir a demanda e uma coisa; decidir que produto
 > se esta construindo e outra.
 
@@ -535,9 +535,9 @@ desta base de fato usam (106 distintos).
 > em documento de licitação. Sem essa norma, o item não se sustenta como
 > prioridade. Foi para o backlog.
 
-> **O sinal mais alto não esta entre os quatro.** Célula/linha/tabela tem 31
+> **O sinal mais alto não está entre os quatro.** Célula/linha/tabela tem 31
 > casos — mais que o dobro do segundo. Já consta do backlog como "Table
-> auto-pagination / Media / Alto". A medição diz que essa entrada esta
+> auto-pagination / Media / Alto". A medição diz que essa entrada está
 > subestimada: e a superfície mais usada de qualquer biblioteca de PDF, e a
 > única em que estamos parciais e não ausentes.
 
@@ -601,7 +601,7 @@ deve embutir barato. O item perde urgência e mantém o valor.
 na fonte A. E a única estrutura desta lista que o PDF resolve com um
 dicionário simples, sem codificação nem binário.
 
-Dependia do item 1 pelo acento do `/Title`, e a dependência esta paga.
+Dependia do item 1 pelo acento do `/Title`, e a dependência está paga.
 
 **Lógica, casos de uso e critério de aceite:** `docs/HISTORIAS.md`, HU-03.
 
@@ -707,7 +707,7 @@ da mesma medição daqui a seis meses e refaz a discussão.
 |------|------:|-------------|
 | XHTML -> PDF | 14 | E **outro produto**, e a funcionalidade já existe pronta e fácil fora daqui. Reimplementar um subconjunto de HTML e CSS dentro do PL/SQL entrega uma versão pior de algo que a pessoa resolve melhor por outro caminho. |
 | Gráfico (barra, linha, pizza) | 10 | E **outro produto**. Gráfico e visualização de dado — escala de eixo, legenda, posicionamento de rótulo, paleta —, um domínio inteiro que por acaso termina numa imagem. E o encaixe **já existe**: quem gera o gráfico onde for melhor coloca a imagem com `Image`, `ImageFromBlob` ou `OverlayImage`, que esta base já faz e já válida por pixel. Construir um motor de gráfico aqui competiria com ferramenta madura para entregar menos. |
-| Assinatura digital | 9 | E **outro produto**. Assinatura e infraestrutura de certificado, cadeia, carimbo do tempo e política de assinatura — não e geração de PDF. Quem faz isso sério não quer que a biblioteca de desenho também assine. |
+| Assinatura digital | 9 | E **outro produto**. Assinatura e infraestrutura de certificado, cadeia, carimbo do tempo e política de assinatura — não é geração de PDF. Quem faz isso sério não quer que a biblioteca de desenho também assine. |
 
 O critério e o mesmo que já tirou o `PL_FPDF_BOLETO` daqui: **montar** os 44
 dígitos e regra de cobrança, não desenho de PDF; **desenhar** o código de

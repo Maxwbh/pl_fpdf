@@ -53,7 +53,7 @@ DECLARACAO = re.compile(
     r'^  ([a-z_][a-z_0-9$#]*)\s+'
     r'(?!IS\b|AS\b)'
     r'[a-z_0-9$#.%]+\s*(\(|:=|;|\bNOT\b|\bDEFAULT\b)', re.I)
-# Palavra reservada abrindo a linha não e declaração. O caso que motivou a
+# Palavra reservada abrindo a linha não é declaração. O caso que motivou a
 # lista: 'END nome;' fecha um subprograma no mesmo nível de indentação dos
 # itens do bloco, e casa com o padrão acima — 'END' seguido do nome e do ponto
 # e vírgula. Sem isso o lint acusaria todo arquivo da pasta.

@@ -8,7 +8,7 @@
 --     cinzas com miolo branco (SetFillColor + Rect 'F' + SetTextColor);
 --   * QR CODE e CODE 39 na mesma página, os dois dizendo o mesmo código;
 --   * DUAS PÁGINAS, cada uma com o seu participante e o seu código;
---   * uma forma que NÃO e retângulo — o rabinho do balão, com Poly.
+--   * uma forma que NÃO é retângulo — o rabinho do balão, com Poly.
 --
 -- Sem imagem nenhuma: e tudo desenho vetorial e texto.
 --
@@ -102,7 +102,7 @@ DECLARE
     painel(14.8,  115.3, 180.4,   13.4, 255);
     PL_FPDF.AddBarcode(45, 117, 120, 10, pcodigo, 'CODE39', FALSE);
 
-    -- balão de aviso: retângulo mais o rabinho, que não e retângulo
+    -- balão de aviso: retângulo mais o rabinho, que não é retângulo
     painel(32, 138.5, 142, 17, co_cinza_c, 241, 241);
     -- o registro vai montado: atribuir l_pts(0).x num elemento que ainda
     -- não existe levanta ORA-01403 em tempo de execução

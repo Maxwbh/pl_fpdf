@@ -13,9 +13,9 @@ volta do laço **não libera** o anterior: cada intervalo deixava para trás um
 LOB de duração de SESSÃO.
 
 A primeira tentativa de cobrir isso foi um caso de teste medindo
-`V$TEMPORARY_LOBS` antes e depois. Não serve: V$ não esta no schema de quem
+`V$TEMPORARY_LOBS` antes e depois. Não serve: V$ não está no schema de quem
 roda os testes, e um teste que exige `GRANT` de DBA vira um [SKIP] permanente —
-cobertura de mentira. Pior, o vazamento **não e observável** de dentro do
+cobertura de mentira. Pior, o vazamento **não é observável** de dentro do
 próprio schema: `USER_*` não expõe contagem de LOB temporário, e as instâncias
 vazadas não tem locator que se possa passar ao `DBMS_LOB.ISTEMPORARY`.
 
@@ -36,7 +36,7 @@ entregaria um locator morto. E o caso do `MergePDFs` e do `ExtractPages`.
 
 Caminho de exceção: se o `FREETEMPORARY` existe mas fica depois de um `RAISE`,
 isto aprova. Fluxo completo e analise que esta verificação não faz — ela pega
-o esquecimento, que e o caso comum.
+o esquecimento, que é o caso comum.
 
 Uso:  python dev/scripts/plsql_lint/check_lob_temp.py src/PL_FPDF.pkb
 """

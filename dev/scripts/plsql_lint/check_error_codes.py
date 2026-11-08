@@ -8,7 +8,7 @@ Os códigos cresceram por acréscimo, sem dono, e acabaram colidindo entre
 domínios que não têm nada a ver um com o outro:
 
     ORA-20843  "AddQRCode: conteúdo vazio"     E  "xref em stream não suportada"
-    ORA-20844  "AddQRCode: tamanho inválido"   E  "objeto de página não e dicionário"
+    ORA-20844  "AddQRCode: tamanho inválido"   E  "objeto de página não é dicionário"
     ORA-20846  "CODE128 aceita ASCII 32..126"  E  três erros de /Resources
     ORA-20850  "AddBarcode: código vazio"      E  "método de criptografia inválido"
     ORA-20851  "AddBarcode: largura/altura"    E  "senha de usuário obrigatória"

@@ -35,7 +35,7 @@ import sys
 
 LINK = re.compile(r'\]\((?!https?:|mailto:)([^)#]+)')
 IMG = re.compile(r'<img\s[^>]*src="(?!https?:|data:)([^"#]+)', re.I)
-# href/src de HTML. O (?!#) descarta a âncora pura (href="#init"), que e um
+# href/src de HTML. O (?!#) descarta a âncora pura (href="#init"), que é um
 # alvo dentro da própria página e não um arquivo.
 HREF = re.compile(r'(?:href|src)="(?!https?:|mailto:|data:|#)([^"#]+)', re.I)
 # Ancorado na RAIZ, calculada deste arquivo: com padrão relativo ao diretório

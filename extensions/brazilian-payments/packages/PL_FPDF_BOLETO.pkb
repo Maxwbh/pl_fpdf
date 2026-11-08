@@ -446,7 +446,7 @@ BEGIN
   -- ITF puro, e não ITF14: o código de barras do boleto tem 44 dígitos, e o
   -- ITF14 exige 13 ou 14 — esta chamada levantava ORA-20887 SEMPRE, ou seja,
   -- o código de barras de um boleto nunca chegou a ser desenhado. O digito de
-  -- controle do boleto fica DENTRO dos 44, na posição 5, e não e calculado
+  -- controle do boleto fica DENTRO dos 44, na posição 5, é não e calculado
   -- pela simbologia.
   PL_FPDF.AddBarcode(p_x, p_y, p_width, p_height, l_codigo, 'ITF', FALSE);
 
