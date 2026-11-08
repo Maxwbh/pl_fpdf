@@ -529,5 +529,21 @@
   </footer>
 
 </div>
+<script>
+/* Bloco de código ou tabela mais largo que a tela rola na horizontal, e
+   quem usa só o teclado precisa poder focá-lo para rolar (WCAG 2.1.1; axe
+   scrollable-region-focusable). Só os que de fato rolam ganham tabindex:
+   pôr em todos encheria a navegação por Tab de paradas inúteis. */
+(function () {
+  function marcar() {
+    document.querySelectorAll('pre, .tbl').forEach(function (e) {
+      if (e.scrollWidth > e.clientWidth + 1) e.tabIndex = 0;
+      else e.removeAttribute('tabindex');
+    });
+  }
+  marcar();
+  window.addEventListener('resize', marcar);
+})();
+</script>
 </body>
 </html>
