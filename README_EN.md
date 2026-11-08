@@ -422,9 +422,6 @@ Oracle Database with the original PL/SQL port this work builds upon; and
 redistribute it and ship it inside a commercial product, keeping the copyright
 notice.
 
-The generation core descends from a 2017 PL/SQL port; the lineage credits are
-just below.
-
 ---
 
 <p align="center">
