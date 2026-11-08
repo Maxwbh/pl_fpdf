@@ -98,7 +98,7 @@ BEGIN
   END;
 
   -- Test: PDF carregado
-  -- Nao existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
+  -- Não existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
   BEGIN
     confere('PDF carregado - GetPageCount responde', PL_FPDF.GetPageCount > 0);
   EXCEPTION WHEN OTHERS THEN
@@ -190,9 +190,9 @@ BEGIN
     confere('GetWatermarks', FALSE, SQLERRM);
   END;
 
-  -- RemoveWatermark e ClearWatermarks nao existem na API: o teste antigo as
-  -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A unica forma
-  -- publica de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
+  -- RemoveWatermark e ClearWatermarks não existem na API: o teste antigo as
+  -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A única forma
+  -- pública de descartar marcas d'água e ClearPDFCache, que limpa tudo.
   DECLARE
     l_watermarks JSON_ARRAY_T;
   BEGIN

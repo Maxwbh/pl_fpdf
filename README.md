@@ -215,7 +215,7 @@ resto — e nenhum dos dois usa imagem:
 
 | Item | Detalhe |
 |---|---|
-| Cor | faixa de cabeçalho preenchida, **texto branco sobre ela**, painéis cinzas com miolo branco |
+| Cor | faixa de cabeçalho preenchida, **texto branco sobre ela**, painéis cinza com miolo branco |
 | Dois símbolos | **QR Code e Code 39 na mesma página**, dizendo o mesmo código |
 | Multi-página | um ingresso por página, cada um com o seu participante e o seu código |
 | Forma livre | o rabinho do balão de aviso, com `Poly` — nem tudo é retângulo |

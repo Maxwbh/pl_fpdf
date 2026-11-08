@@ -96,7 +96,7 @@ def campos_clob(texto):
 
 
 def blocos(texto):
-    """(inicio, fim, conjunto de CLOBs locais) de cada subprograma do package."""
+    """(início, fim, conjunto de CLOBs locais) de cada subprograma do package."""
     marcas = [m.start() for m in CABECALHO.finditer(texto)] or [0]
     marcas.append(len(texto))
     return [(marcas[i], marcas[i + 1],

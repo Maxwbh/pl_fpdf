@@ -244,7 +244,7 @@ FUNCTION  aes_iv RETURN RAW;
  * @param o_perms a entrada /Perms
  * @since 3.3.0
  * @example
- *   PL_FPDF_UTIL.aes_valores_r6('usuario', 'dono', l_chave, -4,
+ *   PL_FPDF_UTIL.aes_valores_r6('usuário', 'dono', l_chave, -4,
  *                               l_u, l_ue, l_o, l_oe, l_perms);
  */
 PROCEDURE aes_valores_r6(p_senha_usr  IN  VARCHAR2,

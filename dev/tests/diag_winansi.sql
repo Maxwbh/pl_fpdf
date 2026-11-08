@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Medicao: chave da tabela de larguras e conversao WinAnsi
+-- PL_FPDF - Medição: chave da tabela de larguras e conversão WinAnsi
 --
--- DIAGNOSTICO, nao conserto. Este arquivo nasceu para responder uma pergunta
+-- DIAGNÓSTICO, não conserto. Este arquivo nasceu para responder uma pergunta
 -- antes de qualquer linha ser mudada, porque a resposta mudava o tamanho do
 -- trabalho. A pergunta era: a tabela de larguras era montada com
 --
@@ -12,26 +12,26 @@
 --     charSetWidth(substr(pstr, i, 1))
 --
 -- ou seja, chave de um lado e caractere do outro. Em AL32UTF8 as duas pontas
--- discordam: CHR(231) e um byte, o cedilha tirado de um texto sao dois.
+-- discordam: CHR(231) e um byte, o cedilha tirado de um texto são dois.
 --
--- AS DUAS PONTAS FORAM CONSERTADAS DESDE ENTAO. A tabela passou a ser indexada
+-- AS DUAS PONTAS FORAM CONSERTADAS DESDE ENTÃO. A tabela passou a ser indexada
 -- pelo BYTE WinAnsi e quem mede converte com p_winansi_byte antes de consultar
--- -- GetStringWidth, MultiCell, Write e o overlay. A saida tambem: o acentuado
--- sai como escape octal, e nao como UTF-8 cru num stream declarado WinAnsi.
+-- -- GetStringWidth, MultiCell, Write e o overlay. A saída também: o acentuado
+-- sai como escape octal, e não como UTF-8 cru num stream declarado WinAnsi.
 --
--- O arquivo continua rodando porque a MEDICAO continua util: ela diz, em cada
--- instancia, o que CHR(i) devolve e se ele casa com o caractere. E dessa
--- resposta que dependem as duas decisoes de projeto acima, e ela muda de banco
--- para banco. O que mudou foram as CONCLUSOES impressas, que descreviam um
--- estado que nao existe mais. Quem guarda o comportamento agora e o
+-- O arquivo continua rodando porque a MEDIÇÃO continua util: ela diz, em cada
+-- instância, o que CHR(i) devolve e se ele casa com o caractere. E dessa
+-- resposta que dependem as duas decisões de projeto acima, e ela muda de banco
+-- para banco. O que mudou foram as CONCLUSÕES impressas, que descreviam um
+-- estado que não existe mais. Quem guarda o comportamento agora e o
 -- test_winansi.sql, com [FAIL] de verdade.
 --
--- Cada caso IMPRIME o que mediu. Nao ha [FAIL] aqui de proposito: medicao que
--- reprova antes de existir criterio vira ruido, e a decisao e de quem le.
+-- Cada caso IMPRIME o que mediu. Não há [FAIL] aqui de propósito: medição que
+-- reprova antes de existir critério vira ruído, e a decisão e de quem lê.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -41,8 +41,8 @@ DECLARE
   l_outros   PLS_INTEGER := 0;
   -- Na 26ai o CHR de 192 para cima LEVANTA, em vez de devolver o byte cru como
   -- no 19c. Medido em 07/11/2026, Oracle AI Database 26ai Free 23.26.3: e o
-  -- ORA-29275 da issue 16 do projeto de origem, e a medicao precisa conta-lo
-  -- em vez de morrer nele -- morrer era o que este arquivo fazia ate entao.
+  -- ORA-29275 da issue 16 do projeto de origem, e a medição precisa contá-lo
+  -- em vez de morrer nele -- morrer era o que este arquivo fazia até então.
   l_levanta  PLS_INTEGER := 0;
   l_de_onde  PLS_INTEGER;
   e_parcial  EXCEPTION;
@@ -54,10 +54,10 @@ DECLARE
   l_ced_txt  VARCHAR2(10);
   l_erro     VARCHAR2(400);
 
-  -- O runner so imprime a saida de um teste que passou quando recebe -v.
-  -- Aqui a saida E o resultado -- o arquivo mede, nao afere --, entao cada
+  -- O runner só imprime a saída de um teste que passou quando recebe -v.
+  -- Aqui a saída E o resultado -- o arquivo mede, não afere --, então cada
   -- linha vai marcada com '***', que o runner imprime sempre. Sem isso o
-  -- diagnostico rodava, passava, e nao dizia nada a ninguem.
+  -- diagnóstico rodava, passava, e não dizia nada a ninguém.
   PROCEDURE diz(p_msg VARCHAR2) IS
   BEGIN
     DBMS_OUTPUT.PUT_LINE('*** ' || p_msg);
@@ -76,10 +76,10 @@ BEGIN
   diz('1. Quantos bytes tem CHR(i) de 128 a 255');
   diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
-  -- Se CHR(i) devolver UM byte, a chave e o byte cru -- que nao e UTF-8
-  -- valido sozinho, e nao vai casar com caractere nenhum tirado de um texto.
-  -- Se devolver DOIS, a chave e o caractere do ponto de codigo i, que casa com
-  -- texto mas nao com byte.
+  -- Se CHR(i) devolver UM byte, a chave e o byte cru -- que não e UTF-8
+  -- valido sozinho, e não vai casar com caractere nenhum tirado de um texto.
+  -- Se devolver DOIS, a chave e o caractere do ponto de código i, que casa com
+  -- texto mas não com byte.
   FOR i IN 128 .. 255 LOOP
     BEGIN
       CASE LENGTHB(CHR(i))
@@ -108,7 +108,7 @@ BEGIN
   diz('2. As 256 chaves CHR(i) sao distintas entre si?');
   diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
-  -- Chave repetida significa posicao de largura perdida: a segunda sobrescreve
+  -- Chave repetida significa posição de largura perdida: a segunda sobrescreve
   -- a primeira, e as duas passam a devolver a mesma largura.
   BEGIN
     SELECT COUNT(DISTINCT CHR(LEVEL - 1)) INTO l_distintas
@@ -129,9 +129,9 @@ BEGIN
   diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- Era assim que a tabela e a consulta se encontravam: a tabela montada com
-  -- CHR(231) e a consulta com o SUBSTR de um texto. A medicao continua valendo
+  -- CHR(231) e a consulta com o SUBSTR de um texto. A medição continua valendo
   -- como PROVA de que os dois nunca foram a mesma coisa em AL32UTF8 -- mas o
-  -- package nao depende mais disso: a tabela e indexada pelo BYTE WinAnsi e
+  -- package não depende mais disso: a tabela e indexada pelo BYTE WinAnsi e
   -- quem consulta converte com p_winansi_byte antes de medir.
   BEGIN
     l_ced_chr := CHR(231);
@@ -163,9 +163,9 @@ BEGIN
   diz('4. O que GetStringWidth devolve, na pratica');
   diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
-  -- Media-se aqui qual sintoma acontecia: ORA-06502 na variavel de um byte ou
+  -- Media-se aqui qual sintoma acontecia: ORA-06502 na variável de um byte ou
   -- NO_DATA_FOUND na chave ausente. Hoje o GetStringWidth converte o caractere
-  -- para byte WinAnsi e trata a chave ausente, entao o que se mede e o VALOR.
+  -- para byte WinAnsi e trata a chave ausente, então o que se mede e o VALOR.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.AddPage;
@@ -207,9 +207,9 @@ BEGIN
   diz(RPAD('-', 70, '-'));
   ------------------------------------------------------------------------
   -- O relato original era este: os bytes do 'ç' chegavam crus, em UTF-8, num
-  -- stream declarado como WinAnsi. As DUAS respostas abaixo sao 'nao' hoje, e
-  -- isso nao e inconclusivo: o acentuado nao sai como byte nenhum, sai como
-  -- escape octal de tres digitos, que e ASCII e atravessa o CONVERTTOBLOB. A
+  -- stream declarado como WinAnsi. As DUAS respostas abaixo são 'não' hoje, e
+  -- isso não é inconclusivo: o acentuado não sai como byte nenhum, sai como
+  -- escape octal de três dígitos, que é ASCII e atravessa o CONVERTTOBLOB. A
   -- terceira linha mede justamente isso.
   DECLARE
     l_pdf BLOB;

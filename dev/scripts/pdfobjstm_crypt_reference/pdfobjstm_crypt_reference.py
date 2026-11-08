@@ -248,7 +248,7 @@ def _hexstr(dic, chave):
 
 
 def chave_do_arquivo(pdf, senha):
-    """(chave, revisao, aes, n_bytes, oid_encrypt) do documento cifrado."""
+    """(chave, revisão, aes, n_bytes, oid_encrypt) do documento cifrado."""
     dic, oid = dicionario_encrypt(pdf)
     if dic is None:
         raise ErroCrypt('o PDF nao esta cifrado')

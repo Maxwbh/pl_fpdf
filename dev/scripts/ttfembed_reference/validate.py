@@ -57,7 +57,7 @@ def conferir(caminho, texto):
     if ext in ('n/a', ''):
         return False, f'a fonte {nome_base} NAO esta embutida (ext={ext})'
 
-    # 3. as larguras que o leitor usa sao as que o /Widths declara
+    # 3. as larguras que o leitor usa são as que o /Widths declara
     dados = doc.extract_font(xref)
     if not dados or not dados[3]:
         return False, 'o MuPDF nao devolveu o programa da fonte'
@@ -68,7 +68,7 @@ def conferir(caminho, texto):
             b = c['c'].encode('cp1252')[0]
             largura_pdf = fonte['larguras'][b - ref.PRIMEIRO] / 1000 * span['size']
             medida = c['bbox'][2] - c['bbox'][0]
-            # o bbox do MuPDF e o avanco do glifo nesta fonte simples
+            # o bbox do MuPDF e o avanço do glifo nesta fonte simples
             if abs(medida - largura_pdf) > 0.05:
                 divergentes.append((c['c'], round(medida, 3),
                                     round(largura_pdf, 3)))

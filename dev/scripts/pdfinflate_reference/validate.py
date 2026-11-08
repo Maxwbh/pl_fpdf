@@ -114,7 +114,7 @@ def main():
               f'{padrao!r} repetido {rep}x volta identico')
 
     print('\n== stream de um PDF real (xref em stream)')
-    # /W [1 2 1]: tipo, offset de 2 bytes, geracao — o formato tipico
+    # /W [1 2 1]: tipo, offset de 2 bytes, geração — o formato típico
     entradas = b''.join(bytes([1, (o >> 8) & 0xFF, o & 0xFF, 0])
                         for o in range(0, 4000, 7))
     z = zlib.compress(entradas, 6)

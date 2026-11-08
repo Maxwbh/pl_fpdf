@@ -21,7 +21,7 @@ import sys
 
 def strip_literals(src):
     """Remove comentários e strings. Comentários primeiro: uma apóstrofe solta
-    num comentário (d'agua) não deve abrir string."""
+    num comentário (d'água) não deve abrir string."""
     out, i, n = [], 0, len(src)
     while i < n:
         if src.startswith('--', i):
@@ -113,7 +113,7 @@ def main(spec_path, body_path):
     return 0
 
 
-# TYPE/SUBTYPE/CONSTANT declarados no topo, como instrucao completa. O ', ' no
+# TYPE/SUBTYPE/CONSTANT declarados no topo, como instrução completa. O ', ' no
 # fim evita casar com fragmentos como 'type word,' dentro de uma lista.
 DUPLA = re.compile(r'^[ \t]*(?:(TYPE|SUBTYPE)\s+([a-z_][a-z_0-9$#]*)\s+IS\b'
                    r'|([a-z_][a-z_0-9$#]*)\s+CONSTANT\s+\w)',
@@ -124,9 +124,9 @@ def redeclarados(spec, body):
     """[(nome, linha)] declarados na spec E no body — PLS-00371.
 
     O body herda tudo o que a spec declara. Redeclarar um tipo ou uma constante
-    nao e aviso: aborta a analise da unidade inteira, e a linha apontada e a de
-    um vizinho qualquer. Aconteceu na separacao do PL_FPDF_UTIL: o tipo tqr
-    veio junto na mudanca e ja estava na spec nova.
+    não e aviso: aborta a análise da unidade inteira, e a linha apontada e a de
+    um vizinho qualquer. Aconteceu na separação do PL_FPDF_UTIL: o tipo tqr
+    veio junto na mudança e já estava na spec nova.
     """
     def itens(texto):
         return {(m.group(2) or m.group(3)).lower(): m.start()
@@ -147,7 +147,7 @@ NATIVOS = {
     'double', 'binary_float', 'binary_double', 'boolean', 'long', 'rowid',
     'urowid', 'xmltype', 'json_object_t', 'json_array_t', 'json_element_t',
     'sys_refcursor', 'exception', 'record', 'table', 'ref',
-    # tipos do Oracle que aparecem nesta base sem qualificacao
+    # tipos do Oracle que aparecem nesta base sem qualificação
     'uritype', 'json_key_list', 'anydata', 'dbms_lob',
 }
 # uma declaração de variável ou parâmetro: nome, tipo e o que a fecha
@@ -169,9 +169,9 @@ def tipos_indefinidos(spec, body):
     """[(tipo, linha)] usados no body sem declaração em lugar nenhum.
 
     O `PLS-00201` chega como "identifier 'X' must be declared" e **aborta a
-    analise da unidade inteira** — como o PLS-00371, ele esconde tudo o que vem
-    depois. Custou uma rodada na separacao do PL_FPDF_UTIL: os tipos `tpi` e
-    `tv4000` ficaram no PL_FPDF, e um package nao herda tipo do outro.
+    análise da unidade inteira** — como o PLS-00371, ele esconde tudo o que vem
+    depois. Custou uma rodada na separação do PL_FPDF_UTIL: os tipos `tpi` e
+    `tv4000` ficaram no PL_FPDF, e um package não herda tipo do outro.
     """
     declarados = {m.group(2).lower()
                   for m in re.finditer(r'^\s*(?:TYPE|SUBTYPE)\s+'
@@ -193,20 +193,20 @@ def tipos_indefinidos(spec, body):
     return sorted(fora.items(), key=lambda x: x[1])
 
 
-# assinatura terminada em ';' e sem IS/AS: e declaracao antecipada
+# assinatura terminada em ';' e sem IS/AS: e declaração antecipada
 ANTECIPADA = re.compile(
     r'^[ \t]*(?:FUNCTION|PROCEDURE)\s+([a-z_][a-z_0-9$#]*)((?:[^;]|\n)*?);',
     re.I | re.M)
 
 
 def antecipadas_de_publico(spec, body):
-    """[(nome, linha)] antecipacoes no body de subprogramas que a spec declara.
+    """[(nome, linha)] antecipações no body de subprogramas que a spec declara.
 
-    A spec ja declara; repetir no body e redeclarar no MESMO escopo, e o Oracle
+    A spec já declara; repetir no body e redeclarar no MESMO escopo, e o Oracle
     responde `PLS-00305: previous use of X conflicts with this use` — que, como
-    os outros erros de declaracao, aborta a analise da unidade inteira. Custou
-    uma rodada na separacao do PL_FPDF_UTIL: tres antecipacoes vieram junto com
-    o codigo e passaram a apontar para subprogramas que viraram publicos.
+    os outros erros de declaração, aborta a análise da unidade inteira. Custou
+    uma rodada na separação do PL_FPDF_UTIL: três antecipações vieram junto com
+    o código e passaram a apontar para subprogramas que viraram públicos.
     """
     publicos = {m.group(1).lower()
                 for m in re.finditer(r'^\s*(?:FUNCTION|PROCEDURE)\s+'
@@ -215,7 +215,7 @@ def antecipadas_de_publico(spec, body):
     fora = []
     for m in ANTECIPADA.finditer(sem_comentario):
         if re.search(r'\b(IS|AS)\b', m.group(2), re.I):
-            continue                       # e um corpo, nao uma antecipacao
+            continue                       # e um corpo, não uma antecipação
         nome = m.group(1).lower()
         if nome in publicos:
             fora.append((nome, sem_comentario[:m.start()].count('\n') + 1))

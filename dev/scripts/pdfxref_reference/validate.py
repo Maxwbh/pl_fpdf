@@ -224,7 +224,7 @@ def monta_pdf_xrefstream(caminho, predictor=None, filtro=2, w=(1, 4, 2),
     for inicio, quantos in faixas:
         for oid in range(inicio, inicio + quantos):
             if oid == 0:
-                t, a, b = 0, 0, 0            # livre; a geracao nao e lida
+                t, a, b = 0, 0, 0            # livre; a geração não é lida
             else:
                 t, a, b = 1, offs[oid], 0
             if w[0] == 0 and t != 1:

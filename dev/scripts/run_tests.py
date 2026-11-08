@@ -67,10 +67,10 @@ import os
 import re
 import sys
 
-# Tudo ancorado na RAIZ do repositorio, calculada a partir deste arquivo, e
-# nao no diretorio de onde se chamou. Caminho relativo ao CWD funciona enquanto
-# todo mundo roda da raiz e quebra no primeiro que nao roda — foi o que
-# aconteceu: 'examples/boleto.sql' nao existe se voce chamar o runner de dentro
+# Tudo ancorado na RAIZ do repositório, calculada a partir deste arquivo, e
+# não no diretório de onde se chamou. Caminho relativo ao CWD funciona enquanto
+# todo mundo roda da raiz e quebra no primeiro que não roda — foi o que
+# aconteceu: 'examples/boleto.sql' não existe se você chamar o runner de dentro
 # de dev/scripts. O erro sai como FileNotFoundError no meio da lista de
 # amostras, longe da causa.
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -82,8 +82,8 @@ def do_repo(*partes):
 
 PKS = do_repo('src', 'PL_FPDF.pks')
 PKB = do_repo('src', 'PL_FPDF.pkb')
-# O utilitario vem PRIMEIRO: o PL_FPDF o chama. Instalar ao contrario deixa o
-# PL_FPDF invalido ate o utilitario existir.
+# O utilitário vem PRIMEIRO: o PL_FPDF o chama. Instalar ao contrário deixa o
+# PL_FPDF inválido até o utilitário existir.
 UTIL_PKS = do_repo('src', 'PL_FPDF_UTIL.pks')
 UTIL_PKB = do_repo('src', 'PL_FPDF_UTIL.pkb')
 FONTES = (UTIL_PKS, UTIL_PKB, PKS, PKB)
@@ -151,9 +151,9 @@ def compilar(con):
     if erros:
         print(f'   {len(erros)} erro(s) de compilação:')
         for onde, linha, pos, texto in erros[:40]:
-            # a linha e a da fonte ARMAZENADA, que comeca no CREATE: some o
-            # cabecalho de comentario do arquivo. Sem o nome do objeto, com
-            # dois packages, nao da para saber nem em qual arquivo procurar.
+            # a linha e a da fonte ARMAZENADA, que começa no CREATE: some o
+            # cabeçalho de comentário do arquivo. Sem o nome do objeto, com
+            # dois packages, não da para saber nem em qual arquivo procurar.
             print(f'     {onde} {linha}:{pos}  {texto}')
         if len(erros) > 40:
             print(f'     ... e mais {len(erros) - 40}')
@@ -515,7 +515,7 @@ AMOSTRAS = [
       # conferido no PNG de origem, em (640, 320) de 1280x640
       'pixel': (1, 300, 540, (13, 25, 44))}),
 
-    # ── texto acentuado nas fontes padrao ───────────────────────────────────
+    # ── texto acentuado nas fontes padrão ───────────────────────────────────
     #
     # A prova que interessa não é o escape estar no arquivo — é um LEITOR
     # devolver o texto certo. O validador extrai o texto com o MuPDF e compara,
@@ -537,9 +537,9 @@ AMOSTRAS = [
           :saida := PL_FPDF.OutputBlob();
           PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
         END;""",
-     # 'textos' e uma lista POR PAGINA: o indice e a pagina, nao o item. Tres
-     # strings soltas fariam o validador procurar texto nas paginas 2 e 3, que
-     # nao existem -- foi o que aconteceu na primeira versao desta amostra.
+     # 'textos' e uma lista POR PÁGINA: o índice e a página, não o item. Três
+     # strings soltas fariam o validador procurar texto nas páginas 2 e 3, que
+     # não existem -- foi o que aconteceu na primeira versão desta amostra.
      {'paginas': 1,
       'textos': [['Endereço de cobrança - São Paulo',
                   'Acentuacao: à é î õ ü ç ñ Ç',
@@ -565,9 +565,9 @@ AMOSTRAS = [
           PL_FPDF.ClearPDFCache; PL_FPDF.Reset;
         END;""",
      {'paginas': 1, 'textos': ['Imagem pelo parser'], 'imagens': {1: 1},
-      # o proprio vermelho do PNG de origem, no meio da area desenhada.
+      # o próprio vermelho do PNG de origem, no meio da área desenhada.
       #
-      # A conta, que erra facil: o ImageFromBlob recebe mm e conta o pY do
+      # A conta, que erra fácil: o ImageFromBlob recebe mm e conta o pY do
       # TOPO; o validador quer PONTOS contados da BASE. Imagem em x=20 mm,
       # 60 mm de lado, 40 mm abaixo do topo, numa A4 de 297 mm:
       #   x = (20 + 30) mm x 2,8346          = 142 pt
@@ -614,7 +614,7 @@ AMOSTRAS = [
     # Como o boleto, o PL/SQL vem de `examples/ticket.sql`.
     #
     # O que esta amostra tem e o boleto não: **cor** (faixa preenchida, texto
-    # branco sobre ela, painéis cinzas), **QR Code e Code 39 na mesma página**
+    # branco sobre ela, painéis cinza), **QR Code e Code 39 na mesma página**
     # dizendo a mesma coisa, **duas páginas** com participantes diferentes e uma
     # forma que não é retângulo (o rabinho do balão, via `Poly`).
     #
@@ -860,7 +860,7 @@ AMOSTRAS = [
      {'paginas': 1, 'senha': 'senha123', 'textos': ['Conteudo protegido']}),
 
     # Ida e volta do AES-128: o resultado tem de abrir SEM senha e trazer o texto
-    # legivel. E a unica prova de que DecryptPDF decifra em vez de desmarcar.
+    # legível. E a única prova de que DecryptPDF decifra em vez de desmarcar.
     ('aes128_ida_volta', """
         DECLARE l_pdf BLOB; l_cif BLOB; BEGIN
           PL_FPDF.Init('P','mm','A4');
@@ -876,7 +876,7 @@ AMOSTRAS = [
      {'paginas': 1, 'sem_senha': True, 'textos': ['Documento decifrado']}),
 
     # Ida e volta do AES-256: o resultado tem de abrir SEM senha e trazer o texto
-    # legivel. E a unica prova de que DecryptPDF decifra em vez de desmarcar.
+    # legível. E a única prova de que DecryptPDF decifra em vez de desmarcar.
     ('aes256_ida_volta', """
         DECLARE l_pdf BLOB; l_cif BLOB; BEGIN
           PL_FPDF.Init('P','mm','A4');
@@ -1144,7 +1144,7 @@ CONTEUDOS = {'qrcode_pix': PIX, 'barcode_code128': 'PL-FPDF-2026',
              # três conteúdos diferentes no mesmo bloco
              'marca_dagua': 'CONFIDENCIAL',
              'overlay_img': {'img': png_solido(8, (32, 144, 208))},
-             # mesmo helper do overlay, cor diferente para nao confundir as
+             # mesmo helper do overlay, cor diferente para não confundir as
              # duas amostras quando uma falha
              'imagem_blob': {'img': png_solido(8, (200, 60, 40))},
              'png_alfa': {'img': png_alfa(8, (200, 60, 40, 128))},
@@ -1576,7 +1576,7 @@ def validar_amostras(geradas, verboso=False):
                          f'(usadas: {sorted(usadas[chave])})')
 
         # símbolos: 'decodificar' diz para procurar, na página 1, o próprio
-        # conteúdo que o bloco recebeu por bind; 'simbolos' lista o que se
+        # conteúdo que o bloco recebeu por bind; 'símbolos' lista o que se
         # espera ler em cada página, que é o caso de quem traz o dado dentro
         # do próprio exemplo.
         if 'decodificar' in exp:
@@ -1664,7 +1664,7 @@ def _sha(texto):
 
 
 def impressao_do_package():
-    """{'spec', 'cabecalho', 'subprogramas': {nome: hash}} das fontes em disco.
+    """{'spec', 'cabeçalho', 'subprogramas': {nome: hash}} das fontes em disco.
 
     O body é fatiado nos mesmos pontos que o `check_declarations.py` usa, para
     que "mudou o subprograma X" queira dizer a mesma coisa nos dois lugares.
@@ -1828,11 +1828,11 @@ def arquivos_de_teste():
         base = os.path.basename(f)
         if base == 'run_all_tests.sql':
             continue
-        # Lixo de conflito de merge: o Git cria copias com estes sufixos e o
-        # numero do processo. Nao sao testes — sao versoes velhas e misturadas
-        # do mesmo arquivo, e rodar isso produz falha que nao existe no codigo.
+        # Lixo de conflito de merge: o Git cria cópias com estes sufixos e o
+        # número do processo. Não são testes — são versões velhas e misturadas
+        # do mesmo arquivo, e rodar isso produz falha que não existe no código.
         # Aconteceu: um run_all_tests_REMOTE_276.sql acusou 27 falhas de
-        # cifragem que a suite de verdade nao tinha.
+        # cifragem que a suite de verdade não tinha.
         if re.search(r'_(BACKUP|LOCAL|REMOTE|BASE)_\d+\.sql$', base, re.I):
             print(f'  ignorando {base}: sobra de conflito de merge, '
                   f'nao e um teste')

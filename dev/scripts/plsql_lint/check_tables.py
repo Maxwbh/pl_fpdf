@@ -20,8 +20,8 @@ import re
 import os
 import sys
 
-# Ancorado neste arquivo, e nao no diretorio atual: com caminho relativo ao
-# CWD o import so achava as referencias quando se rodava da raiz.
+# Ancorado neste arquivo, e não no diretório atual: com caminho relativo ao
+# CWD o import só achava as referências quando se rodava da raiz.
 _REFS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RAIZ = os.path.dirname(os.path.dirname(_REFS))
 
@@ -35,8 +35,8 @@ sys.path.insert(0, os.path.join(_REFS, 'qr_reference'))
 from barcode_reference import C39, C128, EAN_L, EAN_G, EAN_R, EAN_PARITY, ITF  # noqa: E402
 import qr_reference  # noqa: E402
 
-# As tabelas do QR e dos codigos de barras sairam do PL_FPDF quando o
-# utilitario foi separado: elas nao tem nada de PDF.
+# As tabelas do QR e dos códigos de barras saíram do PL_FPDF quando o
+# utilitário foi separado: elas não tem nada de PDF.
 PKB = do_repo('src', 'PL_FPDF_UTIL.pkb')
 
 

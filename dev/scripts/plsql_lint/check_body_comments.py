@@ -81,13 +81,13 @@ PARES = [('src/PL_FPDF.pks', 'src/PL_FPDF.pkb'),
 
 DEF = re.compile(r'^\s{0,2}(procedure|function)\s+(\w+)', re.I)
 
-# Palavra funcional inglesa que NAO existe em portugues. `for`, `so`, `no`,
-# `a` e `as` ficaram de fora de proposito: sao palavras dos dois idiomas
-# (`for` e verbo, `so` e "so" sem acento) e marcavam prosa portuguesa como
+# Palavra funcional inglesa que NÃO existe em português. `for`, `so`, `no`,
+# `a` e `as` ficaram de fora de propósito: são palavras dos dois idiomas
+# (`for` e verbo, `so` e "só" sem acento) e marcavam prosa portuguesa como
 # inglesa.
 # Duas listas, e as duas precisam existir. FUNC pega a prosa por palavra
-# funcional; VERBO pega o titulo curto, que nao tem funcional nenhuma --
-# `Parse PNG header to extract metadata` tem so um "to" e passava batido.
+# funcional; VERBO pega o título curto, que não tem funcional nenhuma --
+# `Parse PNG header to extract metadata` tem só um "to" e passava batido.
 FUNC = set('''the of and to in with is are be by from on it its or not an
 that this which when will can must should would could has have had into only
 both all any more than then there here'''.split())
@@ -100,22 +100,22 @@ which what where why many much more most less least does did doing gets got
 sets puts make makes made take takes'''.split())
 LITERAL = re.compile(r"'(?:[^']|'')*'")
 ACENTO = re.compile(r'[áéíóúâêôàãõçÁÉÍÓÚÂÊÔÀÃÕÇ]')
-# linha de exemplo/codigo dentro de comentario nao conta como prosa
+# linha de exemplo/codigo dentro de comentário não conta como prosa
 CODIGO = re.compile(r'^\s*(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|FOR|LOOP|'
                     r'EXIT|PL_FPDF|DBMS_|UTL_|l_|:=|\{|\}|")', re.I)
-# um `/` sem espaco em volta e caminho ou sigla: OS/2, dev/scripts, http/https
+# um `/` sem espaço em volta e caminho ou sigla: OS/2, dev/scripts, http/https
 BILINGUE = re.compile(r'\S+ / \S+')
-# Declaracao ou comando comentado. Tem de TERMINAR em `;`: sem essa ancora,
-# prosa legitima casava -- `com RAW: a conversao implicita produzia hexadecimal`
-# virava "declaracao comentada" porque tem uma palavra, um tipo e dois-pontos.
+# Declaração ou comando comentado. Tem de TERMINAR em `;`: sem essa âncora,
+# prosa legítima casava -- `com RAW: a conversão implícita produzia hexadecimal`
+# virava "declaração comentada" porque tem uma palavra, um tipo e dois-pontos.
 COD_COMENTADO = re.compile(
     r'^\s*(procedure|function|type|subtype|cursor|pragma)\s+\w+.*;\s*$|'
     r'^\s*\w+\s+(constant\s+)?(varchar2|number|pls_integer|boolean|blob|clob|'
     r'raw|date)\s*(\([^)]*\))?\s*(:=[^;]*)?;\s*$|'
     r'^\s*(if|for|while|begin|end|select|insert|update|delete)\b[^.]*;\s*$',
     re.I)
-# Caminho de arquivo do repositorio dentro de um comentario. Proibido: o
-# comentario tem de se bastar.
+# Caminho de arquivo do repositório dentro de um comentário. Proibido: o
+# comentário tem de se bastar.
 CAMINHO = re.compile(r'\b((?:dev|docs|src|examples|site|extensions|\.github)'
                      r'/[\w./*-]+)')
 
@@ -124,11 +124,11 @@ def ingles(texto):
     if CODIGO.match(texto):
         return False
     t = LITERAL.sub(' ', texto)
-    # `.first`, `.last`, `.count`: metodo de colecao do PL/SQL, nao prosa.
+    # `.first`, `.last`, `.count`: método de coleção do PL/SQL, não prosa.
     t = re.sub(r'\.\w+', ' ', t)
-    # Identificador nao e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
-    # e `Parametro IN (nao IN OUT)` daria dois "in" -- os dois marcavam
-    # portugues como ingles. Token com `_` e token TODO EM MAIUSCULA (palavra
+    # Identificador não e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
+    # e `Parametro IN (não IN OUT)` daria dois "in" -- os dois marcavam
+    # português como inglês. Token com `_` e token TODO EM MAIÚSCULA (palavra
     # reservada do PL/SQL, nome de tipo) ficam de fora da conta.
     p = [w for w in re.findall(r'[A-Za-zÀ-ÿ_]+', t)
          if '_' not in w and not w.isupper()]
@@ -136,7 +136,7 @@ def ingles(texto):
     if any(sum(1 for k in range(j, min(j + 4, len(p)))
                if p[k] in FUNC) >= 2 for j in range(len(p))):
         return True
-    # sem acento e com dois verbos ingleses: e titulo em ingles
+    # sem acento e com dois verbos ingleses: e título em inglês
     return (len(p) >= 3 and not ACENTO.search(' '.join(p))
             and sum(1 for w in p if w in VERBO) >= 2)
 
@@ -227,7 +227,7 @@ def conferir(pks, pkb):
     linhas = io.open(do_repo(pkb), encoding='utf-8').read().split('\n')
     falhas = []
 
-    # texto do bloco Javadoc de cada publico, para cruzar com o do body
+    # texto do bloco Javadoc de cada público, para cruzar com o do body
     esp = io.open(do_repo(pks), encoding='utf-8').read().split('\n')
     bloco_spec = {}
     for i, l in enumerate(esp):
@@ -245,8 +245,8 @@ def conferir(pks, pkb):
                                   ' '.join(x.strip(' *')
                                            for x in esp[j + 1:k]).lower())
 
-    # nomes dos dois packages: um cabecalho pode ter ficado para tras na
-    # separacao e nomear subprograma que hoje mora no outro arquivo
+    # nomes dos dois packages: um cabeçalho pode ter ficado para trás na
+    # separação e nomear subprograma que hoje mora no outro arquivo
     nomes = set()
     for _, outro in PARES:
         nomes |= {m.group(2).lower() for m in
@@ -259,8 +259,8 @@ def conferir(pks, pkb):
 
     for n, nome in corpos(linhas):
         if nome.lower() in publicos:
-            # publico com comentario de UMA linha: so pode estar repetindo a
-            # spec, que ja descreve o que ele faz
+            # publico com comentário de UMA linha: só pode estar repetindo a
+            # spec, que já descreve o que ele faz
             k, bloco = n - 2, []
             while k >= 0 and (linhas[k].strip().startswith(('--', '*'))
                               or linhas[k].strip().endswith('*/')):
@@ -270,11 +270,11 @@ def conferir(pks, pkb):
                     break
             util = [b for b in bloco if b.strip(' -*/')
                     and not re.match(r'^\s*(-{15,}|\*{15,})\s*$', b)]
-            # O que se recusa nao e o TAMANHO, e a REPETICAO: uma linha pode
+            # O que se recusa não e o TAMANHO, e a REPETIÇÃO: uma linha pode
             # acrescentar (`inflate: tira a casca zlib (RFC 1950)` diz o que a
-            # spec nao diz). O que nao pode e repetir a descricao, criando duas
-            # versoes que divergem.
-            # Curto E repetindo. Um comentario LONGO que divide vocabulario
+            # spec não diz). O que não pode e repetir a descrição, criando duas
+            # versões que divergem.
+            # Curto E repetindo. Um comentário LONGO que divide vocabulário
             # com a spec ainda acrescenta profundidade -- o do ImageFromBlob
             # conta a ACL de rede, o formato lido pela assinatura e a chave do
             # cache, nada disso na spec.
@@ -287,10 +287,10 @@ def conferir(pks, pkb):
                                       f'body repete a descrição da spec — duas '
                                       f'versões que divergem'))
             continue
-        # Regua nao e documentacao -- ela comeca com `--` e passava por
-        # comentario --, mas tambem nao interrompe a busca: o padrao herdado
-        # do porte e `regua / texto / regua / subprograma`, e parar na
-        # primeira daria "sem comentario" para quem tem.
+        # Régua não é documentação -- ela começa com `--` e passava por
+        # comentário --, mas também não interrompe a busca: o padrão herdado
+        # do porte e `regua / texto / régua / subprograma`, e parar na
+        # primeira daria "sem comentário" para quem tem.
         k = n - 2
         while k >= 0 and (not linhas[k].strip()
                           or re.match(r'^\s*(-{20,}|\*{20,})\s*$', linhas[k])):

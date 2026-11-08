@@ -45,11 +45,11 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 TESTE = os.path.join(RAIZ, 'dev', 'tests', 'test_fontes_truetype.sql')
 
-# 2048 de proposito, e nao 1000: ate setembro/2026 o parser INVENTAVA as
-# metricas -- upm 1000, ascent 800, descent -200 eram literais no codigo. Uma
-# fonte com esses mesmos valores nao distinguiria "leu do arquivo" de "chutou o
-# de sempre". Com 2048 e as metricas abaixo, cada numero que o package devolve
-# so pode ter vindo do arquivo.
+# 2048 de propósito, e não 1000: até setembro/2026 o parser INVENTAVA as
+# métricas -- upm 1000, ascent 800, descent -200 eram literais no código. Uma
+# fonte com esses mesmos valores não distinguiria "leu do arquivo" de "chutou o
+# de sempre". Com 2048 e as métricas abaixo, cada numero que o package devolve
+# só pode ter vindo do arquivo.
 UPM = 2048
 NOME = 'PLFPDFTeste'
 
@@ -84,7 +84,7 @@ def montar():
 
 
 def conferir(bytes_):
-    """Reabre com o fontTools. Uma fonte que ele recusa nao serve de amostra."""
+    """Reabre com o fontTools. Uma fonte que ele recusa não serve de amostra."""
     f = TTFont(io.BytesIO(bytes_))
     assert f['head'].unitsPerEm == UPM, f['head'].unitsPerEm
     assert f['hhea'].ascent == 1900, f['hhea'].ascent
@@ -101,12 +101,12 @@ def em_pedacos(hexa, por_linha=64):
 
 
 def bloco_plsql(hexa):
-    """O hexadecimal como UMA atribuicao, com as continuacoes concatenadas.
+    """O hexadecimal como UMA atribuição, com as continuações concatenadas.
 
-    A primeira versao disto emitia `l_hex := '...'` em TODA linha, sem
-    terminador em nenhuma menos a ultima -- nao era PL/SQL, e so apareceu na
-    primeira execucao contra o banco, com ORA-06550. Nenhum verificador daqui
-    analisa sintaxe de PL/SQL, entao a rodada no banco e o que pega isto.
+    A primeira versão disto emitia `l_hex := '...'` em TODA linha, sem
+    terminador em nenhuma menos a última -- não era PL/SQL, e só apareceu na
+    primeira execução contra o banco, com ORA-06550. Nenhum verificador daqui
+    analisa sintaxe de PL/SQL, então a rodada no banco e o que pega isto.
     """
     linhas = em_pedacos(hexa)
     saida = ["    l_hex := '" + linhas[0] + "'"]
@@ -140,16 +140,16 @@ def main():
                   + os.path.relpath(TESTE, RAIZ))
             return 1
         # A fonte e gerada de novo a cada rodada e o fontTools pode mudar de
-        # versao, entao o que se confere e que o teste tem uma fonte VALIDA --
-        # nao que ela seja byte a byte esta.
+        # versão, então o que se confere e que o teste tem uma fonte VÁLIDA --
+        # não que ela seja byte a byte esta.
         try:
             conferir(bytes.fromhex(atual))
         except Exception as e:                                  # noqa: BLE001
             print(f'a fonte embutida no teste nao e valida: {e}')
             return 1
 
-        # A FORMA tambem, e nao so o conteudo: foi uma forma errada -- uma
-        # atribuicao por linha, sem terminador -- que derrubou a compilacao do
+        # A FORMA também, e não só o conteúdo: foi uma forma errada -- uma
+        # atribuição por linha, sem terminador -- que derrubou a compilação do
         # bloco inteiro na primeira rodada contra o banco.
         esperado = bloco_plsql(atual.upper())
         t = io.open(TESTE, encoding='utf-8').read()

@@ -131,7 +131,7 @@ PADRAO = ['src/PL_FPDF.pks', 'src/PL_FPDF_UTIL.pks']
 TAGS = {'@param', '@return', '@raises', '@note', '@example', '@limitation',
         '@process', '@options', '@since'}
 
-# tag errada -> a certa. Sao os enganos que a mao comete sozinha.
+# tag errada -> a certa. São os enganos que a mão comete sozinha.
 ENGANOS = {'@returns': '@return', '@throws': '@raises', '@throw': '@raises',
            '@params': '@param', '@exception': '@raises', '@arg': '@param',
            '@ret': '@return'}
@@ -140,17 +140,17 @@ DECL = re.compile(r'^\s{0,2}(procedure|function)\s+([A-Za-z_][A-Za-z_0-9]*)',
                   re.I)
 TAG = re.compile(r'^\s*\*\s*(@[A-Za-z_]+)')
 
-# uma ` / ` dentro de literal ou de caminho nao e par bilingue: 'up'/'U',
+# uma ` / ` dentro de literal ou de caminho não é par bilingue: 'up'/'U',
 # OS/2, docs/ROADMAP.md, http/https
 LIVRE = re.compile(r"'[^']*'\s*/|/\s*'[^']*'|\w/\w|@example|@note \w")
 
-# Palavra funcional inglesa que NAO existe em portugues. `for`, `so`, `no`,
-# `a` e `as` ficaram de fora de proposito: sao palavras dos dois idiomas
-# (`for` e verbo, `so` e "so" sem acento) e marcavam prosa portuguesa como
+# Palavra funcional inglesa que NÃO existe em português. `for`, `so`, `no`,
+# `a` e `as` ficaram de fora de propósito: são palavras dos dois idiomas
+# (`for` e verbo, `so` e "só" sem acento) e marcavam prosa portuguesa como
 # inglesa.
 # Duas listas, e as duas precisam existir. FUNC pega a prosa por palavra
-# funcional; VERBO pega o titulo curto, que nao tem funcional nenhuma --
-# `Parse PNG header to extract metadata` tem so um "to" e passava batido.
+# funcional; VERBO pega o título curto, que não tem funcional nenhuma --
+# `Parse PNG header to extract metadata` tem só um "to" e passava batido.
 FUNC = set('''the of and to in with is are be by from on it its or not an
 that this which when will can must should would could has have had into only
 both all any more than then there here'''.split())
@@ -161,51 +161,51 @@ invalid empty current first last only must should when this that these those
 with into from through after before while each every both either whether
 which what where why many much more most less least does did doing gets got
 sets puts make makes made take takes'''.split())
-# linha de codigo de exemplo: `IF ... THEN`, `SELECT ... INTO`, chamada, JSON
+# linha de código de exemplo: `IF ... THEN`, `SELECT ... INTO`, chamada, JSON
 CODIGO = re.compile(r'^\s*\*\s+(IF|BEGIN|END|DECLARE|SELECT|INSERT|UPDATE|'
                     r'FOR|LOOP|EXIT|PL_FPDF|DBMS_|l_|:=|\{|\}|"|--|/\*)',
                     re.I)
 LITERAL = re.compile(r"'(?:[^']|'')*'")
 ACENTO = re.compile(r'[áéíóúâêôàãõçÁÉÍÓÚÂÊÔÀÃÕÇ]')
-# Caminho de arquivo do repositorio dentro do bloco. Proibido: o comentario
-# tem de se bastar -- endereco envelhece, e ponteiro quebrado em comentario
-# nao quebra nada, entao ninguem descobre.
+# Caminho de arquivo do repositório dentro do bloco. Proibido: o comentário
+# tem de se bastar -- endereço envelhece, e ponteiro quebrado em comentário
+# não quebra nada, então ninguém descobre.
 CAMINHO = re.compile(r'\b((?:dev|docs|src|examples|site|extensions|\.github)'
                      r'/[\w./*-]+)')
 
 
 def ingles(linha):
-    """A linha e prosa inglesa? Codigo de exemplo e literal nao contam."""
+    """A linha e prosa inglesa? Código de exemplo e literal não contam."""
     if CODIGO.match(linha):
         return False
     texto = LITERAL.sub(' ', re.sub(r'^\s*\*\s?', '', linha))
-    texto = re.sub(r'\.\w+', ' ', texto)   # `.first`/`.last`: metodo, nao prosa
-    # Identificador nao e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
-    # e `Parametro IN (nao IN OUT)` daria dois "in" -- os dois marcavam
-    # portugues como ingles. Token com `_` e token TODO EM MAIUSCULA (palavra
+    texto = re.sub(r'\.\w+', ' ', texto)   # `.first`/`.last`: método, não prosa
+    # Identificador não e prosa: `pdf_is_ws / pdf_is_alnum` daria dois "is",
+    # e `Parametro IN (não IN OUT)` daria dois "in" -- os dois marcavam
+    # português como inglês. Token com `_` e token TODO EM MAIÚSCULA (palavra
     # reservada do PL/SQL, nome de tipo) ficam de fora da conta.
     p = [w.lower() for w in re.findall(r'[A-Za-zÀ-ÿ_]+', texto)
          if '_' not in w and not w.isupper()]
     if any(sum(1 for k in range(j, min(j + 4, len(p)))
                if p[k] in FUNC) >= 2 for j in range(len(p))):
         return True
-    # sem acento e com dois verbos ingleses: e titulo em ingles
+    # sem acento e com dois verbos ingleses: e título em inglês
     return (len(p) >= 3 and not ACENTO.search(' '.join(p))
             and sum(1 for w in p if w in VERBO) >= 2)
 
 
-# o que sobrou do banner antigo, se a conversao passou por cima de alguem
+# o que sobrou do banner antigo, se a conversão passou por cima de alguém
 BANNER = re.compile(r'^\s*\*\s*(Procedure|Function|Descrição / Description|'
                     r'Parâmetros / Parameters|Retorna / Returns|'
                     r'Erros / Raises):')
 
 
 def parametros(linhas, n):
-    """Os nomes dos parametros da declaracao que comeca na linha n.
+    """Os nomes dos parâmetros da declaração que começa na linha n.
 
-    Percorre ate fechar o parentese, contando profundidade e respeitando
-    literal -- um default como `'[] 0'` tem espaco dentro, e `noParam` tem
-    parentese em outros casos.
+    Percorre até fechar o parêntese, contando profundidade e respeitando
+    literal -- um default como `'[] 0'` tem espaço dentro, e `noParam` tem
+    parêntese em outros casos.
     """
     texto = ''
     i, prof, achou, fim = n, 0, False, False
@@ -231,10 +231,10 @@ def parametros(linhas, n):
                     fim = True
                     break
             elif c == ';' and prof == 0:
-                # `procedure Header;` nao tem parametro nenhum. Sem esta
-                # parada o laco seguia varrendo e achava o parentese do
-                # comentario do subprograma de baixo -- foi assim que o
-                # IsInitialized "ganhou" os parametros width e height.
+                # `procedure Header;` não tem parâmetro nenhum. Sem esta
+                # parada o laço seguia varrendo e achava o parêntese do
+                # comentário do subprograma de baixo -- foi assim que o
+                # IsInitialized "ganhou" os parâmetros width e height.
                 fim = True
                 break
             if prof >= 1:

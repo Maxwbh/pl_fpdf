@@ -1,17 +1,17 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Regressoes da revisao de agosto/2026
+-- PL_FPDF - Regressões da revisão de agosto/2026
 --
--- Um caso por defeito encontrado na revisao da branch. Cada um FALHA se o
+-- Um caso por defeito encontrado na revisão da branch. Cada um FALHA se o
 -- defeito voltar; nenhum passa por acidente.
 --
--- Regra deste arquivo: quando o ambiente nao permite concluir (o fixture nao
+-- Regra deste arquivo: quando o ambiente não permite concluir (o fixture não
 -- montou, o stream saiu comprimido), o caso imprime [SKIP] com o motivo.
--- Passar sem ter olhado e pior que falhar, porque ninguem desconfia.
+-- Passar sem ter olhado e pior que falhar, porque ninguém desconfia.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
--- Defeito que so se observa de fora vira lint estatico, nao caso de teste.
+-- Defeito que só se observa de fora vira lint estático, não caso de teste.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -49,13 +49,13 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
   END;
 
-  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
+  -- Procura um texto no BLOB. Devolve 0 quando não acha.
   FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
   BEGIN
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
   END acha;
 
-  -- Um PDF de n paginas, gerado pelo proprio package.
+  -- Um PDF de n páginas, gerado pelo próprio package.
   FUNCTION pdf_de(p_paginas IN PLS_INTEGER) RETURN BLOB IS
     l_b BLOB;
   BEGIN
@@ -76,12 +76,12 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 80, '='));
 
   --------------------------------------------------------------------------
-  -- 1. A marca d'agua referenciava uma fonte que ninguem declara
+  -- 1. A marca d'água referenciava uma fonte que ninguém declara
   --
-  -- ovl_marca_dagua emitia o literal '/FwmPLFPDF'. Esse nome nao sai de
-  -- ovl_fonte_nome e nao entra no /Font de pagina nenhuma: o operador Tf
-  -- ficava sem fonte e a marca NAO DESENHAVA. O nome certo e /FwmH, que e o
-  -- que a largura ja media (Helvetica nao-negrito).
+  -- ovl_marca_dagua emitia o literal '/FwmPLFPDF'. Esse nome não sai de
+  -- ovl_fonte_nome e não entra no /Font de página nenhuma: o operador Tf
+  -- ficava sem fonte e a marca NÃO DESENHAVA. O nome certo é /FwmH, que e o
+  -- que a largura já media (Helvetica não-negrito).
   --------------------------------------------------------------------------
   caso('AddWatermark referencia uma fonte declarada (nao /FwmPLFPDF)');
   BEGIN
@@ -96,8 +96,8 @@ BEGIN
     ELSIF acha(l_out, 'FwmH') > 0 THEN
       passou('a marca usa /FwmH, que o /Font da pagina declara');
     ELSE
-      -- nenhum dos dois no claro: o stream saiu comprimido e este caso nao
-      -- consegue afirmar nada. Nao e um PASS.
+      -- nenhum dos dois no claro: o stream saiu comprimido e este caso não
+      -- consegue afirmar nada. Não e um PASS.
       pulou('nem /FwmH nem /FwmPLFPDF no claro — stream comprimido, ' ||
             'caso inconclusivo');
     END IF;
@@ -107,10 +107,10 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 2. cor() estourava na DECLARACAO
+  -- 2. cor() estourava na DECLARAÇÃO
   --
   -- l_h era VARCHAR2(10). Uma cor de 11+ caracteres levantava ORA-06502
-  -- ANTES do CASE — que trataria o nome desconhecido caindo no padrao — e
+  -- ANTES do CASE — que trataria o nome desconhecido caindo no padrão — e
   -- derrubava o OutputModifiedPDF inteiro.
   --------------------------------------------------------------------------
   caso('AddWatermark aceita nome de cor longo sem ORA-06502');
@@ -136,27 +136,27 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 3. SplitPDF vazava um CLOB temporario por intervalo
+  -- 3. SplitPDF vazava um CLOB temporário por intervalo
   --
-  -- NAO TEM CASO AQUI, DE PROPOSITO.
+  -- NÃO TEM CASO AQUI, DE PROPÓSITO.
   --
-  -- O vazamento nao e observavel de dentro do proprio schema: USER_* nao
-  -- expoe contagem de LOB temporario, e as instancias vazadas nao tem
-  -- locator que se possa passar ao DBMS_LOB.ISTEMPORARY. A primeira versao
+  -- O vazamento não é observável de dentro do próprio schema: USER_* não
+  -- expõe contagem de LOB temporário, e as instâncias vazadas não tem
+  -- locator que se possa passar ao DBMS_LOB.ISTEMPORARY. A primeira versão
   -- deste arquivo media V$TEMPORARY_LOBS, o que exige GRANT de DBA — e um
-  -- caso que so sabe pular vira cobertura de mentira.
+  -- caso que só sabe pular vira cobertura de mentira.
   --
-  -- Quem guarda este defeito e o check_lob_temp.py, que le o fonte: toda
-  -- variavel que recebe LOB temporario de uma funcao tem de passar por
+  -- Quem guarda este defeito e o check_lob_temp.py, que lê o fonte: toda
+  -- variável que recebe LOB temporário de uma função tem de passar por
   -- FREETEMPORARY, a menos que seja devolvida. Roda sem banco, sem
-  -- privilegio e sem rede, que e o que este projeto pode exigir.
+  -- privilégio e sem rede, que e o que este projeto pode exigir.
   --------------------------------------------------------------------------
 
   --------------------------------------------------------------------------
-  -- 4. buildPlsqlStatment: o default so existia na declaracao antecipada
+  -- 4. buildPlsqlStatment: o default só existia na declaração antecipada
   --
-  -- Se a definicao e a antecipada divergirem, o Oracle nao compila o body
-  -- (PLS-00593) — entao este caso e, na pratica, "o package esta VALID e o
+  -- Se a definição e a antecipada divergirem, o Oracle não compila o body
+  -- (PLS-00593) — então este caso é, na prática, "o package está VALID e o
   -- caminho sem paramTable funciona".
   --------------------------------------------------------------------------
   caso('SetFooterProc sem paramTable usa o default e o package esta VALID');
@@ -181,14 +181,14 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 5. Secao xref classica maior que a janela de 32767 bytes
+  -- 5. Seção xref clássica maior que a janela de 32767 bytes
   --
   -- pdf_read faz LEAST(p_len, 32767) e trunca calado: acima de ~1638 entradas
-  -- (20 bytes cada) o resto da tabela sumia, o 'trailer' nao era achado e o
-  -- chamador recebia '-20803 /Root nao encontrado' — que aponta para o lugar
+  -- (20 bytes cada) o resto da tabela sumia, o 'trailer' não era achado e o
+  -- chamador recebia '-20803 /Root não encontrado' — que aponta para o lugar
   -- errado. Agora se recusa com -20841 e mensagem que diz o que aconteceu.
   --
-  -- O que se cobra aqui e o CODIGO do erro, nao o sucesso: se o PDF couber na
+  -- O que se cobra aqui e o CÓDIGO do erro, não o sucesso: se o PDF couber na
   -- janela, ele carrega normalmente e o caso registra isso.
   --------------------------------------------------------------------------
   caso('xref classica grande: erro claro (-20841), nunca -20803 enganoso');
@@ -196,7 +196,7 @@ BEGIN
     l_grande BLOB;
     l_cod    PLS_INTEGER;
   BEGIN
-    -- ~900 paginas: cada uma rende objeto de pagina e stream de conteudo,
+    -- ~900 páginas: cada uma rende objeto de página e stream de conteúdo,
     -- o que passa folgado das ~1638 entradas de uma janela.
     l_grande := pdf_de(900);
     BEGIN
@@ -218,20 +218,20 @@ BEGIN
     END;
   EXCEPTION
     WHEN OTHERS THEN
-      -- nao conseguir GERAR 900 paginas e limite de ambiente, nao a regressao
+      -- não conseguir GERAR 900 páginas e limite de ambiente, não a regressão
       pulou('nao foi possivel montar o PDF de 900 paginas: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  -- 6. Reset deixava metadado para tras
+  -- 6. Reset deixava metadado para trás
   --
-  -- O package tem estado de SESSAO. O Reset zerava fontes, imagens, links,
+  -- O package tem estado de SESSÃO. O Reset zerava fontes, imagens, links,
   -- callbacks e criptografia — e esquecia title, subject, author, keywords e
   -- creator. O /Keywords de um documento reaparecia em todos os seguintes.
   --
-  -- Custou uma rodada inteira de diagnostico: um SetKeywords grande num teste
+  -- Custou uma rodada inteira de diagnóstico: um SetKeywords grande num teste
   -- fez cada PDF da suite nascer com 32 KB a mais, a cifragem recusar todos, e
-  -- o sintoma nao apontava para o Reset em momento nenhum.
+  -- o sintoma não apontava para o Reset em momento nenhum.
   --------------------------------------------------------------------------
   caso('Reset limpa os metadados do documento');
   DECLARE
@@ -269,14 +269,14 @@ BEGIN
   -- Antes: sec_cifrar_strings acumulava o hexadecimal num VARCHAR2(32767),
   -- dois caracteres por byte, e estourava ORA-06502 — que o EncryptPDF
   -- rebatizava como '-20852 Encryption failed', escondendo a causa. Pior:
-  -- sec_cifrar_objetos truncava o dicionario calado e devolvia arquivo
+  -- sec_cifrar_objetos truncava o dicionário calado e devolvia arquivo
   -- quebrado REPORTANDO SUCESSO.
   --
-  -- Agora recusa, e o codigo certo e -20866: e o erro que o proprio package
-  -- ja usava na SAIDA do escape, com a mesma mensagem e o mesmo teto de
-  -- 16000 bytes. A primeira versao deste caso esperava -20841, que e o erro
-  -- de LEITURA truncada — outro assunto. Expectativa errada minha, nao
-  -- defeito do codigo: o -20866 e o mais preciso dos dois.
+  -- Agora recusa, e o código certo e -20866: e o erro que o próprio package
+  -- já usava na SAÍDA do escape, com a mesma mensagem e o mesmo teto de
+  -- 16000 bytes. A primeira versão deste caso esperava -20841, que é o erro
+  -- de LEITURA truncada — outro assunto. Expectativa errada minha, não
+  -- defeito do código: o -20866 e o mais preciso dos dois.
   --------------------------------------------------------------------------
   caso('EncryptPDF recusa objeto com dicionario acima de 32 KB');
   DECLARE
@@ -285,12 +285,12 @@ BEGIN
     l_perm    JSON_OBJECT_T := JSON_OBJECT_T();
     l_grande  BLOB;
   BEGIN
-    -- Palavras-chave enormes entram no /Info, que e um objeto de dicionario.
-    -- 17000 e o minimo que passa do teto de 16000 do escape. A versao
-    -- anterior usava 32000 sem necessidade, e como o Reset nao limpava
+    -- Palavras-chave enormes entram no /Info, que é um objeto de dicionário.
+    -- 17000 e o mínimo que passa do teto de 16000 do escape. A versão
+    -- anterior usava 32000 sem necessidade, e como o Reset não limpava
     -- metadado (defeito consertado nesta mesma rodada), aquilo vazava para
-    -- TODA amostra seguinte da sessao: cada PDF nascia com 32 KB a mais e a
-    -- cifragem recusava todos. Fixture de teste nao pode sujar o que vem
+    -- TODA amostra seguinte da sessão: cada PDF nascia com 32 KB a mais e a
+    -- cifragem recusava todos. Fixture de teste não pode sujar o que vem
     -- depois — nem quando o package tem defeito.
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.SetKeywords(RPAD('a', 17000, 'a'));
@@ -305,8 +305,8 @@ BEGIN
                                       p_user_password  => 'x',
                                       p_permissions    => l_perm,
                                       p_encryption     => 'AES-128');
-      -- Chegou aqui: ou o dicionario coube, ou o guard nao disparou. Para
-      -- distinguir, confere se a saida ainda tem o /Info inteiro.
+      -- Chegou aqui: ou o dicionário coube, ou o guard não disparou. Para
+      -- distinguir, confere se a saída ainda tem o /Info inteiro.
       IF acha(l_cifrado, 'Encrypt') > 0 THEN
         pulou('o dicionario ficou abaixo de 32 KB e a cifragem passou — ' ||
               'este caso nao exercitou o limite');
@@ -317,7 +317,7 @@ BEGIN
       WHEN OTHERS THEN
         l_cod := SQLCODE;
         -- -20866: literal de string acima do teto do escape (o preciso).
-        -- -20841: leitura truncada do objeto — tambem e recusa honesta, e
+        -- -20841: leitura truncada do objeto — também e recusa honesta, e
         --         vale para um fixture que chegue por aquele caminho.
         IF l_cod IN (-20866, -20841) THEN
           passou('recusou com ' || l_cod ||
@@ -336,36 +336,36 @@ BEGIN
 
   --------------------------------------------------------------------------
   -- O caso que existia aqui conferia que SetUTF8Enabled e IsUTF8Enabled eram
-  -- coerentes entre si -- o unico contrato que aquela API cumpria, porque a
-  -- flag nao era consultada em lugar nenhum. As duas sairam da spec quando a
-  -- conversao WinAnsi passou a ser sempre feita, e o caso saiu com elas.
+  -- coerentes entre si -- o único contrato que aquela API cumpria, porque a
+  -- flag não era consultada em lugar nenhum. As duas saíram da spec quando a
+  -- conversão WinAnsi passou a ser sempre feita, e o caso saiu com elas.
   --
   -- O que ele registrava em texto agora e aferido de verdade, em
   -- test_winansi.sql: o acentuado convertido, o alinhamento que antes
-  -- levantava ORA-06502, e a recusa do que nao existe em WinAnsi.
+  -- levantava ORA-06502, e a recusa do que não existe em WinAnsi.
   --------------------------------------------------------------------------
 
   --------------------------------------------------------------------------
   caso('Documento em paisagem nao contamina o seguinte');
   --------------------------------------------------------------------------
-  -- O Reset limpava fontes, imagens, links e metadados, mas NAO o
-  -- OrientationChanges -- a tabela que diz quais paginas tem orientacao
-  -- diferente do padrao, e que faz cada uma delas ganhar MediaBox proprio.
+  -- O Reset limpava fontes, imagens, links e metadados, mas NÃO o
+  -- OrientationChanges -- a tabela que diz quais páginas tem orientação
+  -- diferente do padrão, e que faz cada uma delas ganhar MediaBox próprio.
   --
-  -- Como ela e indexada pelo NUMERO da pagina, o indice 1 de um documento
-  -- virava o indice 1 do proximo: quem gerasse um documento com a pagina 1 em
-  -- paisagem deixava TODO documento posterior da mesma sessao com a pagina 1
-  -- em paisagem. MediaBox trocado, conteudo desenhado fora do papel, arquivo
+  -- Como ela e indexada pelo NÚMERO da página, o índice 1 de um documento
+  -- virava o índice 1 do próximo: quem gerasse um documento com a página 1 em
+  -- paisagem deixava TODO documento posterior da mesma sessão com a página 1
+  -- em paisagem. MediaBox trocado, conteúdo desenhado fora do papel, arquivo
   -- que abre EM BRANCO -- sem erro nenhum.
   --
-  -- O sintoma nao acusa a causa: a pagina 1 sai errada e as demais certas,
-  -- porque so o indice reaproveitado colide. Foi assim que apareceu: doze
-  -- amostras com o texto nao extraido, e o codigo de barras sem decodificar.
+  -- O sintoma não acusa a causa: a página 1 sai errada e as demais certas,
+  -- porque só o índice reaproveitado colide. Foi assim que apareceu: doze
+  -- amostras com o texto não extraído, e o código de barras sem decodificar.
   DECLARE
     l_paisagem BLOB;
     l_retrato  BLOB;
   BEGIN
-    -- primeiro documento: pagina 1 em PAISAGEM
+    -- primeiro documento: página 1 em PAISAGEM
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage('L');
@@ -374,7 +374,7 @@ BEGIN
     l_paisagem := PL_FPDF.OutputBlob;
     PL_FPDF.Reset;
 
-    -- segundo documento: tudo RETRATO, sem tocar em orientacao
+    -- segundo documento: tudo RETRATO, sem tocar em orientação
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage;
     PL_FPDF.SetFont('Arial', '', 12);
@@ -383,7 +383,7 @@ BEGIN
     PL_FPDF.Reset;
 
     -- A4 retrato: 595.28 x 841.89. Paisagem inverte os dois. O segundo
-    -- documento nao pode ter MediaBox proprio em pagina nenhuma.
+    -- documento não pode ter MediaBox próprio em página nenhuma.
     IF acha(l_retrato, '/MediaBox [0 0 841.89 595.28]') = 0 THEN
       passou('o documento retrato nao herdou a paisagem do anterior');
     ELSE
@@ -405,16 +405,16 @@ BEGIN
   caso('Link so aceita URL, e recusa o link interno em vez de gravar quebrado');
   --------------------------------------------------------------------------
   -- O ramo que escreveria o /Dest do link INTERNO saiu comentado no porte
-  -- original e nunca voltou. Com plink numerico o dicionario do /Annot ficava
+  -- original e nunca voltou. Com plink numérico o dicionário do /Annot ficava
   -- ABERTO -- sai "<</Type /Annot ... /Border [0 0 0] ]", sem o >> que fecha.
-  -- Nao e link que nao navega: e PDF que o leitor recusa.
+  -- Não é link que não navega: é PDF que o leitor recusa.
   --
-  -- Ninguem reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
+  -- Ninguém reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
   -- escrever este caso que apareceu o terceiro lado do mesmo defeito: o
   -- AddLink levantava ORA-06531, "reference to uninitialized collection", na
-  -- linha da propria declaracao. A colecao "links" e nested table e ninguem a
-  -- inicializa, entao o AddLink NUNCA funcionou -- nem uma vez, em nenhuma
-  -- versao. Os tres passam a recusar com ORA-20601 e mensagem que diz o que
+  -- linha da própria declaração. A coleção "links" e nested table e ninguém a
+  -- inicializa, então o AddLink NUNCA funcionou -- nem uma vez, em nenhuma
+  -- versão. Os três passam a recusar com ORA-20601 e mensagem que diz o que
   -- usar no lugar.
   DECLARE
     l_pdf   BLOB;
@@ -475,10 +475,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Link na pagina 3 nao estraga as paginas 1 e 2');
   --------------------------------------------------------------------------
-  -- O Link estende a colecao ate a pagina corrente, e as paginas anteriores
-  -- ficavam com entrada VAZIA. O emissor so testava .exists(i), entao essas
-  -- paginas ganhavam um /Annots com /Rect vazio e o dicionario aberto -- sem
-  -- que ninguem tivesse pedido link nenhum nelas.
+  -- O Link estende a coleção até a página corrente, e as páginas anteriores
+  -- ficavam com entrada VAZIA. O emissor só testava .exists(i), então essas
+  -- páginas ganhavam um /Annots com /Rect vazio e o dicionário aberto -- sem
+  -- que ninguém tivesse pedido link nenhum nelas.
   DECLARE
     l_pdf BLOB;
     l_n   PLS_INTEGER;
@@ -493,7 +493,7 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob;
     PL_FPDF.Reset;
 
-    -- tres paginas, UM /Annots so
+    -- três páginas, UM /Annots só
     l_n := 0;
     FOR i IN 1 .. 3 LOOP
       IF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW('/Annots ['), 1, i) > 0 THEN
@@ -506,7 +506,7 @@ BEGIN
       falhou('ha ' || l_n || ' /Annots no arquivo, e so uma pagina tem link');
     END IF;
 
-    -- e nenhum dicionario de anotacao ficou aberto
+    -- e nenhum dicionário de anotação ficou aberto
     IF acha(l_pdf, '/Border [0 0 0] ]') = 0 THEN
       passou('nenhum /Annot com o dicionario aberto');
     ELSE
@@ -520,14 +520,14 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Link funciona no SEGUNDO documento da sessao');
   --------------------------------------------------------------------------
-  -- O Link media o quanto estender pelo .last, e .last de colecao VAZIA e
-  -- NULL. Depois de um Reset a colecao fica exatamente assim: o delete zera a
-  -- contagem e nao anula a colecao. Entao "page - NULL" dava NULL, o IF nao
+  -- O Link media o quanto estender pelo .last, e .last de coleção VAZIA e
+  -- NULL. Depois de um Reset a coleção fica exatamente assim: o delete zera a
+  -- contagem e não anula a coleção. Então "page - NULL" dava NULL, o IF não
   -- disparava e o PageLinks(page) estourava com ORA-06533 -- no primeiro Link
-  -- do segundo documento, e o erro nao fala de link nenhum.
+  -- do segundo documento, e o erro não fala de link nenhum.
   --
   -- Atinge o caminho COMUM, com URL, e quem gera documento em lote passa por
-  -- ele em toda emissao a partir da segunda.
+  -- ele em toda emissão a partir da segunda.
   DECLARE
     l_um    BLOB;
     l_dois  BLOB;
@@ -540,7 +540,7 @@ BEGIN
     l_um := PL_FPDF.OutputBlob;
     PL_FPDF.Reset;
 
-    -- segundo documento na MESMA sessao: e aqui que estourava
+    -- segundo documento na MESMA sessão: e aqui que estourava
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage;
     PL_FPDF.SetFont('Helvetica', '', 12);

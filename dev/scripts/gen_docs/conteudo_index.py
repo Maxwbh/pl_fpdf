@@ -11,30 +11,30 @@ dobrado, é a divergência calada: o comando de download dizia **v3.3.0** três
 parágrafos abaixo da vitrine que anunciava 3.4.0.
 
 Por isso a versão **não está escrita aqui**. Ela é lida de `src/PL_FPDF.pks` na
-hora de gerar e entra por `{versao}`: o número da vitrine, o do exemplo de
+hora de gerar e entra por `{versão}`: o número da vitrine, o do exemplo de
 `co_version` e o do link do release não têm como discordar do package.
 
 Cada texto é um par `(português, inglês)`. O ícone do cartão e a imagem do
 exemplo são os mesmos nas duas línguas -- o que muda neles é só o `alt`.
 """
 
-# A ULTIMA versao publicada como release, que nao e a mesma coisa que o
-# `co_version`: este anda na frente enquanto a versao nova esta em teste.
+# A ÚLTIMA versão publicada como release, que não e a mesma coisa que o
+# `co_version`: este anda na frente enquanto a versão nova está em teste.
 ULTIMO_RELEASE = '3.4.0'
 
-# A candidata publicada da versao que a pagina descreve, ou None. Enquanto
-# houver uma, a instalacao avisa que o link instala a estavel, que a pagina e a
-# referencia ja descrevem a candidata, e que no Oracle 26ai a estavel nao roda.
+# A candidata publicada da versão que a página descreve, ou None. Enquanto
+# houver uma, a instalação avisa que o link instala a estável, que a página e a
+# referência já descrevem a candidata, e que no Oracle 26ai a estável não roda.
 # Quando a 3.4.0 final sair: ULTIMO_RELEASE = '3.4.0' e isto volta a None.
 ULTIMA_CANDIDATA = None
 
 
-# Como o site ANUNCIA a versao -- um lugar so para o chip do topo, o destaque,
-# o cabecalho da API e da referencia e o dado estruturado. Antes, o chip e o
-# destaque mostravam o co_version como "versao atual": com a 3.4.0 ainda
-# candidata, o visitante entendia que ela ja era a estavel. Com candidata, o
-# chip diz que e pre-lancamento e o destaque mostra a estavel; sem candidata,
-# volta a ser o numero do package.
+# Como o site ANUNCIA a versão -- um lugar só para o chip do topo, o destaque,
+# o cabeçalho da API e da referência e o dado estruturado. Antes, o chip e o
+# destaque mostravam o co_version como "versão atual": com a 3.4.0 ainda
+# candidata, o visitante entendia que ela já era a estável. Com candidata, o
+# chip diz que e pre-lancamento é o destaque mostra a estável; sem candidata,
+# volta a ser o número do package.
 CHIP_CANDIDATA = ("{candidata} · pré-lançamento", "{candidata} · pre-release")
 STAT_ESTAVEL = ("<em>{release}</em>", ("versão estável", "stable version"))
 KICKER_CANDIDATA = ("{candidata} · pré-lançamento · estável {release} · Oracle 19c+",
@@ -65,12 +65,12 @@ def kicker(versao, k):
                                           release=ULTIMO_RELEASE)
     return KICKER.format(versao=versao)
 
-# O FORMATO do SHA256.txt mudou com o release, e o comando de conferencia tem
-# de acompanhar o release que a pagina CITA, nao o package. Ate a 3.3.0 o
-# workflow gravava so a soma, sem o nome do arquivo, e o `sha256sum -c` recusa
-# assim -- dai remontar a linha na hora. Da 3.4.0 em diante o arquivo sai no
-# formato do proprio sha256sum, e o comando puro basta. Trocar o comando sem
-# olhar o release quebrava a conferencia de quem seguia a vitrine: ela manda
+# O FORMATO do SHA256.txt mudou com o release, e o comando de conferência tem
+# de acompanhar o release que a página CITA, não o package. Até a 3.3.0 o
+# workflow gravava só a soma, sem o nome do arquivo, e o `sha256sum -c` recusa
+# assim -- daí remontar a linha na hora. Da 3.4.0 em diante o arquivo sai no
+# formato do próprio sha256sum, e o comando puro basta. Trocar o comando sem
+# olhar o release quebrava a conferência de quem seguia a vitrine: ela manda
 # baixar a 3.3.0, e mandava conferir como se fosse a 3.4.
 SHA256_COMPLETO_DESDE = (3, 4, 0)
 
@@ -330,7 +330,7 @@ EXEMPLOS = {
          "E o irmão colorido: um ingresso de evento",
          "And its colourful sibling: an event ticket"),
         ("lead", "",
-         "O boleto prova grade. O ingresso prova o resto: <b>cor</b> —\nfaixa preenchida com texto branco por cima, painéis cinzas —, <b>QR Code e\nCode 39 na mesma página</b> dizendo o mesmo código, <b>uma página por\ningresso</b> e uma forma que não é retângulo, o rabinho do balão. Também\nsem imagem nenhuma.",
+         "O boleto prova grade. O ingresso prova o resto: <b>cor</b> —\nfaixa preenchida com texto branco por cima, painéis cinza —, <b>QR Code e\nCode 39 na mesma página</b> dizendo o mesmo código, <b>uma página por\ningresso</b> e uma forma que não é retângulo, o rabinho do balão. Também\nsem imagem nenhuma.",
          "The Boleto proves the grid. The ticket proves the rest: <b>colour</b> —\na filled band with white text over it, grey panels —, <b>a QR Code and a Code 39 on the\nsame page</b> saying the same code, <b>one page per ticket</b>, and a shape that is not a\nrectangle: the little tail of the speech bubble. Again, not a single image."),
         ("imagem", "",
          "<picture>\n<source srcset=\"assets/exemplo-ticket.webp\" type=\"image/webp\">\n<img src=\"assets/exemplo-ticket.png\" width=\"470\" height=\"642\" loading=\"lazy\" decoding=\"async\"\nstyle=\"max-width:100%;height:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)\"\nalt=\"Ingresso de evento gerado pelo PL_FPDF: cabeçalho colorido, QR Code e código de barras\">\n</picture>",
@@ -403,7 +403,7 @@ INSTALACAO = {
             'texto': ("Sem clone: o instalador completo em um <code>.sql</code>, com o SHA-256 ao lado.",
                       "No clone: the whole installer in a single <code>.sql</code>, with its SHA-256 beside it."),
             'codigo': "<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql\">pl_fpdf_install.sql</a>",
-            # O "latest" do GitHub nao inclui pre-lancamento: este link nunca
+            # O "latest" do GitHub não inclui pre-lancamento: este link nunca
             # entrega a candidata, e o texto tem de dizer isso.
             'depois': ("A versão estável mais recente — o “latest” do GitHub não inclui pré-lançamentos.",
                        "The latest stable version — GitHub's “latest” never includes pre-releases."),
@@ -420,23 +420,23 @@ INSTALACAO = {
             'titulo': ("Confirme a versão", "Check the version"),
             'texto': ("A versão sai na aba Output. Pronto para gerar o primeiro PDF.",
                       "The version shows in the Output tab. Ready to produce the first PDF."),
-            # Bloco, e nao SELECT: constante de package nao e visivel em SQL, e
+            # Bloco, e não SELECT: constante de package não é visível em SQL, e
             # `SELECT PL_FPDF.co_version FROM DUAL` da ORA-06553 PLS-221 em
-            # qualquer versao do Oracle. Quem seguia o passo achava que a
-            # instalacao tinha falhado.
-            # A versao que o passo 1 instala -- a do release, nao a do package.
+            # qualquer versão do Oracle. Quem seguia o passo achava que a
+            # instalação tinha falhado.
+            # A versão que o passo 1 instala -- a do release, não a do package.
             'codigo': "BEGIN\n  DBMS_OUTPUT.PUT_LINE(PL_FPDF.co_version);\nEND;\n/\n-- {release}",
         },
     ],
     'nota': ("<b>Para produção, fixe a versão.</b>\nO link acima serve sempre a mais nova — bom para experimentar, ruim para um\nchamado de mudança. Cada versão tem URL própria e imutável na\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">página de releases</a>, com o\n<code>SHA256.txt</code> ao lado para conferir o que foi baixado:",
              "<b>Pin the version for production.</b>\nThe link above always serves the newest one — fine to try it out, wrong for a\nchange ticket. Every version has its own immutable URL on the\n<a href=\"https://github.com/Maxwbh/pl_fpdf/releases\">releases page</a>, with a\n<code>SHA256.txt</code> beside it to verify what you downloaded:"),
-    # O comando abaixo PRENDE uma versao, entao ele tem de citar uma que exista
-    # como release -- e a do package NAO serve: ela anda na frente enquanto a
-    # versao nova esta em teste. Apontar para `v{versao}` deixou o comando
-    # devolvendo 404 no dia em que o co_version virou 3.4.0 e nao havia release.
-    # Quando a 3.4.0 for publicada, este numero sobe junto.
+    # O comando abaixo PRENDE uma versão, então ele tem de citar uma que exista
+    # como release -- e a do package NÃO serve: ela anda na frente enquanto a
+    # versão nova está em teste. Apontar para `v{versão}` deixou o comando
+    # devolvendo 404 no dia em que o co_version virou 3.4.0 e não havia release.
+    # Quando a 3.4.0 for publicada, este número sobe junto.
     #
-    # A conferencia depende do formato do SHA256.txt DAQUELE release -- ver
+    # A conferência depende do formato do SHA256.txt DAQUELE release -- ver
     # CONFERIR, no topo do arquivo.
     'curl': "curl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v{release}/pl_fpdf_install.sql\ncurl -LO https://github.com/Maxwbh/pl_fpdf/releases/download/v{release}/SHA256.txt\n" + CONFERIR,
 }

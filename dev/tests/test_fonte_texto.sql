@@ -1,24 +1,24 @@
 --------------------------------------------------------------------------------
 -- PL_FPDF - Fonte corrente, entrelinha e escrita de texto
 --
--- A fonte que esta valendo, e o texto escrito com ela fora da celula.
+-- A fonte que esta valendo, e o texto escrito com ela fora da célula.
 --
--- O que distingue estas rotinas: o SetFont NORMALIZA -- familia em minuscula,
--- estilo em maiuscula --, entao comparar o retorno com o que se passou nunca
--- casa; o Text escreve num ponto e NAO move o cursor; e o giro tem dois erros
--- diferentes, um para o angulo que nao existe e outro para o que existe e a
--- rotina nao faz.
+-- O que distingue estas rotinas: o SetFont NORMALIZA -- família em minúscula,
+-- estilo em maiúscula --, então comparar o retorno com o que se passou nunca
+-- casa; o Text escreve num ponto e NÃO move o cursor; e o giro tem dois erros
+-- diferentes, um para o ângulo que não existe e outro para o que existe e a
+-- rotina não faz.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -78,10 +78,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Fonte: corpo, familia e estilo sao lidos de volta');
   --------------------------------------------------------------------------
-  -- O que se le de volta NAO e o eco do que se passou: o package NORMALIZA a
-  -- familia para minuscula e o estilo para maiuscula, como o FPDF original.
-  -- Entao "IF GetCurrentFontFamily = 'Times'" nunca casa, e o teste afere a
-  -- normalizacao de proposito -- foi assim que ela apareceu, com este caso
+  -- O que se lê de volta NÃO e o eco do que se passou: o package NORMALIZA a
+  -- família para minúscula e o estilo para maiúscula, como o FPDF original.
+  -- Então "IF GetCurrentFontFamily = 'Times'" nunca casa, e o teste afere a
+  -- normalização de propósito -- foi assim que ela apareceu, com este caso
   -- falhando contra a expectativa errada de quem o escreveu.
   novo_doc;
   PL_FPDF.SetFont('Times', 'b', 14);
@@ -130,7 +130,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Text escreve no ponto, sem mover o cursor');
   --------------------------------------------------------------------------
-  -- E o que distingue o Text do Cell: nao ha celula, nao ha quebra e o cursor
+  -- E o que distingue o Text do Cell: não há célula, não há quebra e o cursor
   -- fica onde estava.
   novo_doc;
   PL_FPDF.SetXY(50, 60);
@@ -183,8 +183,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('WriteRotated: so giro zero, e os outros dizem o porque');
   --------------------------------------------------------------------------
-  -- Aqui ha DOIS erros diferentes, e a diferenca importa: -20110 e giro que
-  -- nao existe, -20111 e giro que existe mas esta rotina nao faz.
+  -- Aqui há DOIS erros diferentes, e a diferença importa: -20110 e giro que
+  -- não existe, -20111 e giro que existe mas esta rotina não faz.
   novo_doc;
   BEGIN
     PL_FPDF.WriteRotated(6, 'teste', NULL, 45);
@@ -223,7 +223,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('UTF8ToPDFString escapa o que a sintaxe do PDF reserva');
   --------------------------------------------------------------------------
-  -- Parentese e barra invertida terminam a string do PDF antes da hora, e o
+  -- Parêntese e barra invertida terminam a string do PDF antes da hora, e o
   -- arquivo quebra a partir dali.
   l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido) 50\%');
   IF INSTR(l_txt, '\(') > 0 AND INSTR(l_txt, '\)') > 0 THEN
@@ -241,8 +241,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('AddFont registra sem ler arquivo nenhum');
   --------------------------------------------------------------------------
-  -- O AddFont so registra na colecao de fontes e deriva o nome do arquivo de
-  -- metricas quando nao recebe um. Nao le disco, entao roda em qualquer
+  -- O AddFont só registra na coleção de fontes e deriva o nome do arquivo de
+  -- métricas quando não recebe um. Não lê disco, então roda em qualquer
   -- ambiente -- foi engano meu te-lo posto na lista dos que precisam de grant.
   novo_doc;
   BEGIN

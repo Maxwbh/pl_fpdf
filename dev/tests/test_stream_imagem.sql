@@ -3,18 +3,18 @@
 --
 -- O p_putstream lia o BLOB para um buffer VARCHAR2. Com um BLOB no primeiro
 -- argumento o DBMS_LOB.READ resolve para a sobrecarga cujo buffer e RAW, e a
--- conversao implicita devolve a representacao hexadecimal: 2000 bytes viravam
--- 4000 caracteres, que nao cabiam no varchar2(2000).
+-- conversão implícita devolve a representação hexadecimal: 2000 bytes viravam
+-- 4000 caracteres, que não cabiam no varchar2(2000).
 --
--- Ele e privado, entao os casos 1 a 3 exercitam as duas formas do laco e as duas
--- codificacoes lado a lado, sobre um BLOB controlado: medem o comportamento em
+-- Ele e privado, então os casos 1 a 3 exercitam as duas formas do laço e as duas
+-- codificações lado a lado, sobre um BLOB controlado: medem o comportamento em
 -- vez de inferi-lo de um arquivo gerado. Os casos 5 e 6 percorrem o caminho
 -- completo da imagem pelo ImageFromBlob, que recebe os bytes prontos e por isso
--- nao precisa da ACL de rede que o Image() exige.
+-- não precisa da ACL de rede que o Image() exige.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -72,7 +72,7 @@ DECLARE
     RETURN l_b;
   END blob_de;
 
-  -- Escreve o texto num CLOB e converte de volta para BLOB, que e o percurso
+  -- Escreve o texto num CLOB e converte de volta para BLOB, que é o percurso
   -- que todo stream faz: o documento e montado em CLOB e convertido no fim.
   FUNCTION ida_e_volta(p_texto IN VARCHAR2) RETURN BLOB IS
     l_c CLOB;
@@ -91,7 +91,7 @@ DECLARE
     RETURN l_b;
   END ida_e_volta;
 
-  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
+  -- Procura um texto no BLOB. Devolve 0 quando não acha.
   FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
   BEGIN
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
@@ -104,10 +104,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O laco le ate o ultimo byte');
   --------------------------------------------------------------------------
-  -- O teste era offset < tamanho. Quando o ultimo pedaco comeca exatamente no
-  -- byte final, o laco termina sem le-lo: o stream sai um byte curto enquanto
+  -- O teste era offset < tamanho. Quando o ultimo pedaço começa exatamente no
+  -- byte final, o laço termina sem lê-lo: o stream sai um byte curto enquanto
   -- o /Length continua prometendo o total. 2001 bytes e o menor caso que
-  -- mostra isso com pedaco de 2000.
+  -- mostra isso com pedaço de 2000.
   l_blob := blob_de(2001);
   l_tam  := DBMS_LOB.GETLENGTH(l_blob);
 
@@ -145,8 +145,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O tamanho do pedaco e IN OUT');
   --------------------------------------------------------------------------
-  -- O DBMS_LOB.READ devolve no parametro de quantidade o que leu de fato. Se a
-  -- variavel for inicializada uma vez so, em vez de atribuida a cada passagem,
+  -- O DBMS_LOB.READ devolve no parâmetro de quantidade o que leu de fato. Se a
+  -- variável for inicializada uma vez só, em vez de atribuída a cada passagem,
   -- uma leitura curta vira o tamanho de todas as seguintes.
   l_blob := blob_de(500);
   l_qtd  := 2000;
@@ -162,7 +162,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Por que o stream sai em hexadecimal');
   --------------------------------------------------------------------------
-  -- O documento e montado como CLOB e convertido no fim, entao tudo o que se
+  -- O documento e montado como CLOB e convertido no fim, então tudo o que se
   -- escreve nele faz um percurso de ida e volta pelo charset do banco. Este
   -- caso manda os 256 valores de byte pelos dois caminhos e compara.
   SELECT value INTO l_charset
@@ -205,7 +205,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O package segue gerando documento');
   --------------------------------------------------------------------------
-  -- O p_out esta no caminho de toda linha do documento, entao qualquer mexida
+  -- O p_out esta no caminho de toda linha do documento, então qualquer mexida
   -- na escrita de stream passa por aqui.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
@@ -225,7 +225,7 @@ BEGIN
   --------------------------------------------------------------------------
   -- Pelo ImageFromBlob, que recebe os bytes prontos: sem HTTP, sem ACL, nada
   -- fora do schema. O PNG abaixo tem 2x2 pixels e paleta de quatro cores,
-  -- indexado de proposito, porque a paleta e a parte que o percurso binario
+  -- indexado de propósito, porque a paleta e a parte que o percurso binário
   -- mais toca.
   l_hex := '89504E470D0A1A0A0000000D494844520000000200000002080300000045';
   l_hex := l_hex || '68FD160000000C504C5445FF000000FF000000FFFFFF00D6028F7B000000';
@@ -259,8 +259,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Formato nao suportado e recusado, nao aceito em silencio');
   --------------------------------------------------------------------------
-  -- Um SVG comeca com '<?xml' ou '<svg': nao tem assinatura binaria de PNG nem
-  -- marcador SOI de JPEG. Recusar com erro proprio vale mais que gravar um
+  -- Um SVG começa com '<?xml' ou '<svg': não tem assinatura binária de PNG nem
+  -- marcador SOI de JPEG. Recusar com erro próprio vale mais que gravar um
   -- objeto de imagem que nenhum leitor desenha.
   BEGIN
     PL_FPDF.Reset;

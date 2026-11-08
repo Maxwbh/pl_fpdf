@@ -1,24 +1,24 @@
 --------------------------------------------------------------------------------
 -- PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant
 --
--- As bordas do documento: fecha-lo, os callbacks de cabecalho e rodape, o
--- caminho interno de erro, e as saidas que dependem de recurso de fora.
+-- As bordas do documento: fechá-lo, os callbacks de cabeçalho e rodapé, o
+-- caminho interno de erro, e as saídas que dependem de recurso de fora.
 --
--- Os tres ultimos casos existem para provar que a RECUSA funciona sem
--- concessao nenhuma -- diretorio inexistente e URL que nao responde --, e para
--- apontar a alternativa que nao precisa de grant: o OutputBlob devolve os
+-- Os três últimos casos existem para provar que a RECUSA funciona sem
+-- concessão nenhuma -- diretório inexistente e URL que não responde --, e para
+-- apontar a alternativa que não precisa de grant: o OutputBlob devolve os
 -- mesmos bytes que o OutputFile gravaria, e o ImageFromBlob dispensa a rede.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -78,7 +78,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('ClosePDF fecha, e fechar de novo nao estraga');
   --------------------------------------------------------------------------
-  -- As rotinas de saida ja chamam o ClosePDF. Chamar antes, a mao, nao pode
+  -- As rotinas de saída já chamam o ClosePDF. Chamar antes, a mão, não pode
   -- gerar documento diferente nem levantar.
   novo_doc;
   PL_FPDF.Cell(50, 10, 'fechado a mao');
@@ -102,8 +102,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Header e Footer sem callback registrado nao fazem nada');
   --------------------------------------------------------------------------
-  -- Sao chamadas pelo proprio motor a cada pagina. Sem SetHeaderProc, a
-  -- chamada tem de ser inocua -- nao levantar e nao escrever.
+  -- São chamadas pelo próprio motor a cada página. Sem SetHeaderProc, a
+  -- chamada tem de ser inócua -- não levantar e não escrever.
   novo_doc;
   BEGIN
     PL_FPDF.Header;
@@ -118,7 +118,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Error levanta ORA-20100 com a mensagem dada');
   --------------------------------------------------------------------------
-  -- E o caminho interno de erro da biblioteca, publico por heranca. Se ele
+  -- E o caminho interno de erro da biblioteca, publico por herança. Se ele
   -- deixar de levantar, sessenta handlers do package passam a engolir erro.
   BEGIN
     PL_FPDF.Error('mensagem de teste');
@@ -138,8 +138,8 @@ BEGIN
   caso('Saida em arquivo: recusa sem DIRECTORY, e o BLOB e a alternativa');
   --------------------------------------------------------------------------
   -- OutputFile e Output gravam em DIRECTORY do banco, que exige WRITE
-  -- concedido. O caminho de RECUSA nao exige nada: diretorio inexistente da
-  -- ORA-29280, que o package traduz para -20401. E quem nao tem o grant tem o
+  -- concedido. O caminho de RECUSA não exige nada: diretório inexistente da
+  -- ORA-29280, que o package traduz para -20401. E quem não tem o grant tem o
   -- OutputBlob, que devolve os mesmos bytes.
   novo_doc;
   PL_FPDF.Cell(50, 10, 'conteudo');
@@ -191,11 +191,11 @@ BEGIN
   --------------------------------------------------------------------------
   -- Image e getImageFromUrl saem pela rede e exigem ACL concedida ao schema.
   -- Sem ela o UTL_HTTP levanta ORA-24247, que o package embrulha em -20100 --
-  -- o MESMO codigo de uma URL invalida, entao o teste nao consegue distinguir
-  -- os dois casos, e nao finge que consegue.
+  -- o MESMO código de uma URL invalida, então o teste não consegue distinguir
+  -- os dois casos, e não finge que consegue.
   --
   -- O que da para afirmar sem ACL nenhuma: que a recusa acontece, e que o
-  -- caminho equivalente por BLOB funciona. Esse ja tem cobertura propria em
+  -- caminho equivalente por BLOB funciona. Esse já tem cobertura própria em
   -- test_stream_imagem.sql.
   novo_doc;
   BEGIN

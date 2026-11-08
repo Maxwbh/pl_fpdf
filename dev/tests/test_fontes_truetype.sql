@@ -1,29 +1,29 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Fonte TrueType: registro, metricas e embutimento
+-- PL_FPDF - Fonte TrueType: registro, métricas e embutimento
 --
 -- Registrar uma fonte, medir por ela e embuti-la no arquivo.
 --
--- Ate setembro/2026 nada disto funcionava: o cache de fontes NAO TINHA
+-- Até setembro/2026 nada disto funcionava: o cache de fontes NÃO TINHA
 -- CONSUMIDOR -- o SetFont nunca o consultava e os bytes nunca iam para o PDF --
--- e o parser conferia o magic number e INVENTAVA as metricas, com upm 1000 e
--- ascendente 800 literais no codigo.
+-- e o parser conferia o magic number e INVENTAVA as métricas, com upm 1000 e
+-- ascendente 800 literais no código.
 --
--- Por isso a fonte deste teste tem 2048 unidades por em e metricas que nao sao
--- numero redondo: com upm 1000 nao se distinguiria "leu do arquivo" de "chutou
+-- Por isso a fonte deste teste tem 2048 unidades por em e métricas que não são
+-- número redondo: com upm 1000 não se distinguiria "leu do arquivo" de "chutou
 -- a constante de sempre". Ela e gerada por dev/scripts/ttf_reference/gerar.py e
 -- conferida reabrindo no fontTools; a estrutura que sai daqui e validada no
 -- MuPDF por dev/scripts/ttfembed_reference/.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -83,7 +83,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Fontes TrueType: cache responde sem fonte carregada');
   --------------------------------------------------------------------------
-  -- Sem arquivo de fonte a mao nao da para carregar nada, mas as consultas
+  -- Sem arquivo de fonte a mão não da para carregar nada, mas as consultas
   -- precisam responder em vez de levantar -- e o GetTTFFontInfo precisa
   -- recusar com o erro dele.
   PL_FPDF.ClearTTFFontCache;
@@ -94,8 +94,8 @@ BEGIN
   END IF;
 
   BEGIN
-    -- o retorno vai para uma variavel: o PL/SQL nao aceita selecionar campo
-    -- direto do retorno de funcao
+    -- o retorno vai para uma variável: o PL/SQL não aceita selecionar campo
+    -- direto do retorno de função
     l_fonte := PL_FPDF.GetTTFFontInfo('NaoExiste');
     falhou('GetTTFFontInfo devolveu dados de fonte inexistente: '
            || NVL(l_fonte.font_name, 'sem nome'));
@@ -123,15 +123,15 @@ BEGIN
   --------------------------------------------------------------------------
   caso('TTF por BLOB: as metricas saem do ARQUIVO, nao de constante');
   --------------------------------------------------------------------------
-  -- O LoadTTFFromFile exige READ num DIRECTORY, e este projeto nao depende de
-  -- concessao extra. O caminho equivalente e o AddTTFFont, que recebe BLOB --
-  -- e o BLOB vem daqui, de uma TTF minima gerada por
+  -- O LoadTTFFromFile exige READ num DIRECTORY, e este projeto não depende de
+  -- concessão extra. O caminho equivalente e o AddTTFFont, que recebe BLOB --
+  -- e o BLOB vem daqui, de uma TTF mínima gerada por
   -- dev/scripts/ttf_reference/gerar.py e conferida reabrindo no fontTools.
   --
-  -- A fonte tem 2048 unidades por em DE PROPOSITO. Ate setembro/2026 o parser
+  -- A fonte tem 2048 unidades por em DE PROPÓSITO. Até setembro/2026 o parser
   -- conferia o magic number e inventava o resto -- upm 1000, ascent 800,
-  -- descent -200 eram literais no codigo. Com metricas incomuns, cada numero
-  -- abaixo so pode ter vindo do arquivo.
+  -- descent -200 eram literais no código. Com métricas incomuns, cada número
+  -- abaixo só pode ter vindo do arquivo.
   -- fonte gerada por dev/scripts/ttf_reference/gerar.py
   -- 716 bytes, upm 2048, ascent 1900, descent -500, glifos ['.notdef', 'A']
   DECLARE
@@ -207,8 +207,8 @@ BEGIN
              || ' ' || TO_CHAR(l_fonte.bbox_ymax) || '], esperado [59 0 479 698]');
     END IF;
 
-    -- a largura e o que separa "a fonte esta la" de "o leitor usa a fonte que
-    -- esta la": o A avanca 1234/2048 = 603, e o B nao tem glifo nenhum
+    -- a largura e o que separa "a fonte esta lá" de "o leitor usa a fonte que
+    -- esta lá": o A avança 1234/2048 = 603, e o B não tem glifo nenhum
     IF TO_NUMBER(SUBSTR(l_fonte.larguras, ASCII('A') * 4 + 1, 4)) = 603 THEN
       passou('a largura do A e 603, do hmtx pelo cmap');
     ELSE
@@ -235,8 +235,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('TTF: o SetFont a usa, e o programa da fonte vai para o arquivo');
   --------------------------------------------------------------------------
-  -- Este e o caso que nao existia: o cache era consultavel e NADA o consumia.
-  -- O SetFont nunca olhava para ele, entao registrar uma fonte e pedi-la dava
+  -- Este e o caso que não existia: o cache era consultável e NADA o consumia.
+  -- O SetFont nunca olhava para ele, então registrar uma fonte e pedi-la dava
   -- "Undefined font"; e nada emitia os bytes no PDF.
   -- fonte gerada por dev/scripts/ttf_reference/gerar.py
   -- 716 bytes, upm 2048, ascent 1900, descent -500, glifos ['.notdef', 'A']
@@ -296,7 +296,7 @@ BEGIN
       falhou('a fonte corrente e "' || PL_FPDF.GetCurrentFontFamily || '"');
     END IF;
 
-    -- o A mede 603 milesimos do corpo: 14 * 603 / 1000 = 8,442 pt, e em mm
+    -- o A mede 603 milésimos do corpo: 14 * 603 / 1000 = 8,442 pt, e em mm
     -- isso e 8,442 / 2,8346 = 2,978
     IF ROUND(PL_FPDF.GetStringWidth('A'), 2) = ROUND(14 * 603 / 1000 / (72/25.4), 2) THEN
       passou('o GetStringWidth mede pela tabela da TTF');
@@ -336,7 +336,7 @@ BEGIN
       falhou('sem /ASCIIHexDecode: byte cru nao atravessa o CLOB de montagem');
     END IF;
 
-    -- 0603 na posicao do A dentro do /Widths
+    -- 0603 na posição do A dentro do /Widths
     IF acha(l_doc, ' 603 ') > 0 THEN
       passou('a largura 603 do A esta no /Widths');
     ELSE
@@ -350,9 +350,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('TTF sem tabela obrigatoria e recusada, em vez de inventada');
   --------------------------------------------------------------------------
-  -- Ate setembro/2026 um BLOB de 28 bytes com o magic number certo e mais nada
-  -- era ACEITO, e devolvia upm 1000 e ascent 800 -- as constantes. Agora nao
-  -- ha de onde tirar metrica, e recusar vale mais que inventar.
+  -- Até setembro/2026 um BLOB de 28 bytes com o magic number certo e mais nada
+  -- era ACEITO, e devolvia upm 1000 e ascent 800 -- as constantes. Agora não
+  -- há de onde tirar métrica, e recusar vale mais que inventar.
   BEGIN
     PL_FPDF.ClearTTFFontCache;
     PL_FPDF.AddTTFFont('TesteVazia', HEXTORAW('0001000000000000'

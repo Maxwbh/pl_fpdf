@@ -1,24 +1,24 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Tracejado e triangulo
+-- PL_FPDF - Tracejado e triângulo
 --
--- O desenho vetorial que o test_geracao_basica nao cobre: o padrao de
--- tracejado e o triangulo.
+-- O desenho vetorial que o test_geracao_basica não cobre: o padrão de
+-- tracejado e o triângulo.
 --
--- Os dois se aferem pelo operador que sai no fluxo de conteudo -- '[] 0 d'
--- para linha cheia, 'm' e 'l' para o caminho --, porque "nao levantou" nao
--- prova desenho nenhum. Foi assim que a marca d'agua passou meses marcada
+-- Os dois se aferem pelo operador que sai no fluxo de conteúdo -- '[] 0 d'
+-- para linha cheia, 'm' e 'l' para o caminho --, porque "não levantou" não
+-- prova desenho nenhum. Foi assim que a marca d'água passou meses marcada
 -- como pronta sem desenhar nada.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -79,7 +79,7 @@ BEGIN
   caso('Tracejado: SetDash liga, e sem argumento volta a linha cheia');
   --------------------------------------------------------------------------
   -- O operador 'd' do PDF: '[] 0 d' e linha cheia, qualquer outra coisa e
-  -- tracejado. Sem isto a linha sai continua e ninguem nota ate imprimir.
+  -- tracejado. Sem isto a linha sai contínua e ninguém nota até imprimir.
   novo_doc;
   PL_FPDF.SetDash(2, 2);
   PL_FPDF.Line(20, 50, 190, 50);
@@ -122,7 +122,7 @@ BEGIN
   PL_FPDF.Triangle(20, 20, 5, 'up', 'F');
   l_pdf := PL_FPDF.OutputBlob;
   PL_FPDF.Reset;
-  -- tres vertices: um 'm' para o primeiro e 'l' para os outros dois
+  -- três vértices: um 'm' para o primeiro e 'l' para os outros dois
   IF acha(l_pdf, ' m') > 0 AND acha(l_pdf, ' l') > 0 THEN
     passou('o triangulo saiu como caminho no fluxo de conteudo');
   ELSE

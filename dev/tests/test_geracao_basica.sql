@@ -91,7 +91,7 @@ BEGIN
 
   -- Test: UTF-8 encoding
   --
-  -- O IsUTF8Enabled saiu da spec: a flag era escrita e lida, e ninguem a
+  -- O IsUTF8Enabled saiu da spec: a flag era escrita e lida, e ninguém a
   -- consultava. O que se afere agora e o que importa -- que o Init aceite o
   -- encoding e que texto acentuado atravesse sem levantar.
   BEGIN
@@ -107,13 +107,13 @@ BEGIN
 
   -- Test: Unicode characters in document
   --
-  -- Este caso escrevia 'Sao Paulo - Zurich - Moscou' com acentos e cirilico
-  -- numa fonte core, e aferia so que o PDF tinha mais de zero bytes. Passava
-  -- -- e aprovava saida quebrada: o cirilico virava glifo errado, porque as
-  -- fontes padrao do PDF alcancam WinAnsi e nada alem.
+  -- Este caso escrevia 'São Paulo - Zurich - Moscou' com acentos e cirílico
+  -- numa fonte core, e aferia só que o PDF tinha mais de zero bytes. Passava
+  -- -- e aprovava saída quebrada: o cirílico virava glifo errado, porque as
+  -- fontes padrão do PDF alcançam WinAnsi e nada além.
   --
-  -- Agora sao dois casos, e cada um afere o contrato de verdade: o que cabe em
-  -- WinAnsi sai; o que nao cabe e RECUSADO, em vez de desenhado errado.
+  -- Agora são dois casos, e cada um afere o contrato de verdade: o que cabe em
+  -- WinAnsi sai; o que não cabe e RECUSADO, em vez de desenhado errado.
   DECLARE
     l_pdf BLOB;
   BEGIN
@@ -128,7 +128,7 @@ BEGIN
     confere('Unicode text rendering', FALSE, SQLERRM);
   END;
 
-  -- Test: fora de WinAnsi e recusado, nao desenhado errado
+  -- Test: fora de WinAnsi e recusado, não desenhado errado
   DECLARE
     l_pdf BLOB;
   BEGIN

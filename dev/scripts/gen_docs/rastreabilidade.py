@@ -92,12 +92,50 @@ def testes():
             for a in arqs}
 
 
+def negativos(textos):
+    """{(PACOTE, api): {arquivos}} que algum teste chama ESPERANDO um erro.
+
+    A suíte confere o erro de quatro jeitos: `SQLCODE = -20...`, `SQLCODE !=
+    ...`, `INSTR(l_erro, 'ORA-20...')`, e tabela de casos com o código esperado
+    na mesma linha da chamada. Para os três primeiros, a API testada é a ÚLTIMA
+    chamada antes do EXCEPTION do bloco -- e não qualquer chamada por perto: Init
+    abre quase todo bloco, e Reset/ClearPDFCache/UnloadPDF fecham. Contá-los
+    seria inflar a coluna. Para o quarto, a chamada e o código estão na mesma
+    linha (ou nas duas seguintes).
+    """
+    neg = {}
+    CHAMADA = re.compile(r'\b(PL_FPDF_UTIL|PL_FPDF)\s*\.\s*(\w+)', re.I)
+    CONFERE = re.compile(r"SQLCODE\s*(=|!=|<>|IN\b|BETWEEN)|'ORA-20\d{3}'", re.I)
+    LIMPEZA = {'reset', 'clearpdfcache', 'unloadpdf', 'init'}
+    for nome, texto in textos.items():
+        linhas = texto.split('\n')
+        for i, l in enumerate(linhas):
+            # tabela de casos: a chamada e o código esperado juntos
+            for p, n in CHAMADA.findall(l):
+                if n.lower() not in LIMPEZA and re.search(r'-20\d{3}', '\n'.join(linhas[i:i + 3])):
+                    neg.setdefault((p.upper(), n.lower()), set()).add(nome)
+            if not CONFERE.search(l):
+                continue
+            j = i
+            while j > max(0, i - 25) and not re.search(r'\bEXCEPTION\b', linhas[j], re.I):
+                j -= 1
+            for k in range(j - 1, max(0, j - 25), -1):
+                achadas = [c for c in CHAMADA.findall(linhas[k]) if c[1].lower() not in LIMPEZA]
+                if achadas:
+                    p, n = achadas[-1]
+                    neg.setdefault((p.upper(), n.lower()), set()).add(nome)
+                    break
+    return neg
+
+
 def montar():
-    ts = {n: chamadas(t) for n, t in testes().items()}
+    textos = testes()
+    ts = {n: chamadas(t) for n, t in textos.items()}
+    neg = negativos(textos)
     am = {n: chamadas(t) for n, t in amostras().items()}
-    # O utilitario e chamado por DENTRO do PL_FPDF: a AES e exercitada pelo
+    # O utilitário e chamado por DENTRO do PL_FPDF: a AES e exercitada pelo
     # EncryptPDF, o inflate pelo LoadPDF. Sem esta coluna, a lista "sem teste"
-    # misturaria o que nao tem teste nenhum com o que so nao tem teste DIRETO.
+    # misturaria o que não tem teste nenhum com o que só não tem teste DIRETO.
     via = chamadas(sem_comentarios(ler('src', 'PL_FPDF.pkb')))
     linhas = ["""# Rastreabilidade: API × testes · Traceability: API × tests
 
@@ -113,6 +151,22 @@ For each public API, what exercises it: the `dev/tests/` files that call it,
 and the `run_tests.py` samples — PDFs generated in the database and read back
 by independent readers. Counting a call does not prove every behaviour is
 tested; it proves the API is not **without** any test.
+
+| Coluna · Column | O que significa · What it means |
+|-----------------|--------------------------------|
+| Testes · Tests | arquivos que executam a API · files that run the API |
+| Caso negativo · Negative case | arquivos que a chamam esperando um `ORA-20xxx` — achado por heurística, é um piso · files that call it expecting an `ORA-20xxx` — found by heuristic, a lower bound |
+| Leitor independente · Independent reader | amostras cujo PDF o MuPDF ou o zxing-cpp lê de volta · samples whose PDF MuPDF or zxing-cpp reads back |
+
+A tabela não distingue a profundidade da conferência do retorno: um teste que
+só confere "não levantou" e outro que confere o valor devolvido contam igual.
+Também não cobre o Oracle APEX: os exemplos de integração foram conferidos
+contra stubs, não num APEX instalado.
+
+The table does not tell how deeply a return value is checked: a test that only
+checks "did not raise" counts the same as one that checks the value. Nor does it
+cover Oracle APEX: the integration samples were checked against stubs, not on
+an installed APEX.
 """]
     resumo, sem, indiretas = [], [], []
     for pacote in PACOTES:
@@ -131,12 +185,16 @@ tested; it proves the API is not **without** any test.
                 t = ['só via `PL_FPDF` · only through `PL_FPDF`']
             else:
                 sem.append(f'{pacote}.{api}')
+            ng = sorted(neg.get(chave, ()))
             corpo.append(f"| `{api}` | {', '.join(x if x.startswith('só') else f'`{x}`' for x in t) or '—'} | "
+                         f"{', '.join(f'`{x}`' for x in ng) or '—'} | "
                          f"{', '.join(f'`{x}`' for x in a) or '—'} |")
         resumo.append(f'| `{pacote}` | {len(lista)} | {cobertas} | {so_via} | '
                       f'{len(lista) - cobertas - so_via} |')
-        linhas.append(f'\n## {pacote}\n\n| API | Testes · Tests | Amostras · Samples |\n'
-                      f'|-----|----------------|--------------------|\n' + '\n'.join(corpo))
+        linhas.append(f'\n## {pacote}\n\n| API | Testes · Tests | Caso negativo · Negative case | '
+                      f'Leitor independente · Independent reader |\n'
+                      f'|-----|----------------|-------------------------------|'
+                      f'------------------------------------------|\n' + '\n'.join(corpo))
     linhas.insert(1, '\n## Resumo · Summary\n\n'
                      '| Package | APIs | Teste direto · Direct test | Só via PL_FPDF · Only through PL_FPDF | Sem teste · Untested |\n'
                      '|---------|-----:|---------------------------:|--------------------------------------:|---------------------:|\n'

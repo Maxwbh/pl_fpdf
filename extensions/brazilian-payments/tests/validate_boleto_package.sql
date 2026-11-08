@@ -26,9 +26,9 @@ DECLARE
   v_tests_failed PLS_INTEGER := 0;
   v_test_name VARCHAR2(200);
 
-  -- As variaveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
+  -- As variáveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
   -- declarado depois de subprograma e PLS-00103. Estavam depois, e o bloco
-  -- nao compilava em versao nenhuma do Oracle -- os testes nunca rodaram.
+  -- não compilava em versão nenhuma do Oracle -- os testes nunca rodaram.
   -- Test variables
   l_boleto_data JSON_OBJECT_T;
   l_codigo_barras VARCHAR2(44);
@@ -72,9 +72,9 @@ BEGIN
   -- Test 1: Calculate fator for known date
   BEGIN
     start_test('CalculateFatorVencimento calculates correct factor');
-    -- Pontos de referencia da FEBRABAN: 03/07/2000 = 1000, 21/02/2025 = 9999,
-    -- 22/02/2025 = 1000 (o fator recomeca), 23/02/2025 = 1001. Antes este
-    -- teste so olhava o tamanho, e o valor podia estar errado.
+    -- Pontos de referência da FEBRABAN: 03/07/2000 = 1000, 21/02/2025 = 9999,
+    -- 22/02/2025 = 1000 (o fator recomeça), 23/02/2025 = 1001. Antes este
+    -- teste só olhava o tamanho, e o valor podia estar errado.
     IF PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2000-07-03') = '1000'
        AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-01-01') = '9948'
        AND PL_FPDF_BOLETO.CalculateFatorVencimento(DATE '2025-02-21') = '9999'

@@ -7,12 +7,12 @@ Por que existe
 Os códigos cresceram por acréscimo, sem dono, e acabaram colidindo entre
 domínios que não têm nada a ver um com o outro:
 
-    ORA-20843  "AddQRCode: conteudo vazio"     E  "xref em stream nao suportada"
-    ORA-20844  "AddQRCode: tamanho invalido"   E  "objeto de pagina nao e dicionario"
-    ORA-20846  "CODE128 aceita ASCII 32..126"  E  tres erros de /Resources
-    ORA-20850  "AddBarcode: codigo vazio"      E  "metodo de criptografia invalido"
-    ORA-20851  "AddBarcode: largura/altura"    E  "senha de usuario obrigatoria"
-    ORA-20852  "Simbologia nao suportada"      E  "falha na criptografia"
+    ORA-20843  "AddQRCode: conteúdo vazio"     E  "xref em stream não suportada"
+    ORA-20844  "AddQRCode: tamanho inválido"   E  "objeto de página não é dicionário"
+    ORA-20846  "CODE128 aceita ASCII 32..126"  E  três erros de /Resources
+    ORA-20850  "AddBarcode: código vazio"      E  "método de criptografia inválido"
+    ORA-20851  "AddBarcode: largura/altura"    E  "senha de usuário obrigatória"
+    ORA-20852  "Simbologia não suportada"      E  "falha na criptografia"
 
 Quem trata a exceção pelo código não conseguia distinguir, e a documentação
 listava só um dos significados. Em agosto/2026 o QR e os códigos de barras
@@ -50,10 +50,10 @@ import os
 import re
 import sys
 
-# Ancorado na RAIZ a partir deste arquivo. Era caminho relativo ao diretorio
+# Ancorado na RAIZ a partir deste arquivo. Era caminho relativo ao diretório
 # atual, e o `except IOError: continue` abaixo transformava "rodei de outro
-# lugar" em "nao ha nada a conferir" — passava sem olhar. E o mesmo defeito que
-# o check_links.py ja tinha pago.
+# lugar" em "não há nada a conferir" — passava sem olhar. E o mesmo defeito que
+# o check_links.py já tinha pago.
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 
@@ -88,11 +88,11 @@ def dominio(sub):
 
 CITADO_PKS = re.compile(r'^\*\s+(-\d{5}):', re.M)
 
-# RAISE_APPLICATION_ERROR e PROCEDURE: nao pode aparecer dentro de expressao.
+# RAISE_APPLICATION_ERROR e PROCEDURE: não pode aparecer dentro de expressão.
 # Escrever `l_x := CASE WHEN ... THEN RAISE_APPLICATION_ERROR(...) ELSE y END`
-# nao compila, e o erro chega como PLS-00306 apontando a linha da declaracao —
+# não compila, e o erro chega como PLS-00306 apontando a linha da declaração —
 # longe da ideia errada. Custou uma rodada em agosto/2026, numa guarda de
-# tamanho que eu quis enfiar no inicializador de uma variavel.
+# tamanho que eu quis enfiar no inicializador de uma variável.
 EM_EXPRESSAO = re.compile(
     r'(?::=|\bTHEN\b|\bELSE\b|\bRETURN\b)[^;\n]*\bRAISE_APPLICATION_ERROR\s*\(',
     re.I)
@@ -100,16 +100,16 @@ CITADO_META = re.compile(r"\('(-\d{5})'\s*,")
 
 
 def codigos_fantasma(textos):
-    """[(codigo, [arquivos])] documentados e nunca levantados.
+    """[(código, [arquivos])] documentados e nunca levantados.
 
-    Recebe TODOS os bodies: desde que o utilitario saiu do PL_FPDF, um codigo
-    documentado pode ser levantado no outro arquivo. Olhar um so acusaria como
-    fantasma metade dos codigos reais.
+    Recebe TODOS os bodies: desde que o utilitário saiu do PL_FPDF, um código
+    documentado pode ser levantado no outro arquivo. Olhar um só acusaria como
+    fantasma metade dos códigos reais.
     """
     levantados = {int(m.group(1)) for texto in textos
                   for m in RAISE.finditer(texto)}
-    # O meta.py saiu do repositorio junto com o gerador da referencia; a fonte
-    # de codigos documentados passou a ser so o cabecalho da spec.
+    # O meta.py saiu do repositório junto com o gerador da referência; a fonte
+    # de códigos documentados passou a ser só o cabeçalho da spec.
     fontes = {'src/PL_FPDF.pks': CITADO_PKS}
     citados, lidas = {}, []
     for caminho, padrao in fontes.items():
@@ -128,12 +128,12 @@ def codigos_fantasma(textos):
 
 
 def raise_em_expressao(caminho, texto):
-    """RAISE_APPLICATION_ERROR usado onde so cabe expressao."""
+    """RAISE_APPLICATION_ERROR usado onde só cabe expressão."""
     fora = []
     for n, linha in enumerate(texto.split('\n'), 1):
         limpo = re.sub(r'--.*$', '', linha)
         # `THEN raise_application_error(...)` como COMANDO e correto e comum;
-        # o defeito e quando ha atribuicao ou RETURN antes, na mesma linha.
+        # o defeito e quando há atribuição ou RETURN antes, na mesma linha.
         if re.search(r'(?::=|\bRETURN\b)[^;]*\bRAISE_APPLICATION_ERROR\s*\(',
                      limpo, re.I):
             fora.append(f'{caminho}:{n}: RAISE_APPLICATION_ERROR dentro de '

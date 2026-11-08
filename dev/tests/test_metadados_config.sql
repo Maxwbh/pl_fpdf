@@ -1,23 +1,23 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Metadados, preferencias de exibicao e configuracao
+-- PL_FPDF - Metadados, preferências de exibição e configuração
 --
 -- O que o documento diz sobre si mesmo, e o que o leitor recebe como
--- preferencia de abertura.
+-- preferência de abertura.
 --
--- Tudo aqui se afere no BLOB gerado, e nao no retorno da chamada: um
--- SetSubject que nao chega ao dicionario nao levanta erro nenhum, e so
--- aparece quando alguem procura o assunto do arquivo e nao acha.
+-- Tudo aqui se afere no BLOB gerado, e não no retorno da chamada: um
+-- SetSubject que não chega ao dicionário não levanta erro nenhum, e só
+-- aparece quando alguém procura o assunto do arquivo e não acha.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -133,9 +133,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('SetCompression: o conteudo sai comprimido, e declarado');
   --------------------------------------------------------------------------
-  -- Ate agosto/2026 isto era um no-op: perguntava por uma funcao de zlib que o
-  -- Oracle nao tem e desligava a compressao sempre. O teste afere o efeito, e
-  -- nao a chamada: o texto deixa de aparecer cru E o filtro e declarado.
+  -- Até agosto/2026 isto era um no-op: perguntava por uma função de zlib que o
+  -- Oracle não tem e desligava a compressão sempre. O teste afere o efeito, e
+  -- não a chamada: o texto deixa de aparecer cru E o filtro e declarado.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.SetCompression(TRUE);
@@ -191,7 +191,7 @@ BEGIN
     falhou('SetLogLevel(1) e GetLogLevel devolveu '
            || TO_CHAR(PL_FPDF.GetLogLevel));
   END IF;
-  PL_FPDF.SetLogLevel(l_n);   -- devolve como estava, para nao sujar o resto
+  PL_FPDF.SetLogLevel(l_n);   -- devolve como estava, para não sujar o resto
 
   --------------------------------------------------------------------------
   caso('SetDocumentConfig configura o documento por JSON');

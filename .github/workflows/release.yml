@@ -92,10 +92,10 @@ jobs:
       - name: Montar as notas e o checksum
         run: |
           set -e
-          # O CHANGELOG separa as versoes com `---`, entao a secao termina nele
-          # -- e o bloco de instalacao abaixo abre com o seu. Saiam dois
+          # O CHANGELOG separa as versões com `---`, então a seção termina nele
+          # -- e o bloco de instalação abaixo abre com o seu. Saiam dois
           # seguidos no corpo do release (visto no rc2). O END apara o fim da
-          # secao: linhas em branco e o separador.
+          # seção: linhas em branco e o separador.
           awk -v v="$VERSAO" '
             $0 ~ "^## \\["v"\\]" { dentro=1; next }
             dentro && /^## \[/    { exit }
@@ -106,10 +106,10 @@ jobs:
             }
           ' CHANGELOG.md > NOTAS.md
 
-          # O corpo de um release para em 125.000 caracteres. Esta versao usa
+          # O corpo de um release para em 125.000 caracteres. Esta versão usa
           # 57.000, mas o CHANGELOG desta base e escrito por extenso — defeito,
-          # causa e conserto — e cresce rapido. Estourar o limite faria o `gh`
-          # falhar DEPOIS de a tag ja estar publicada, que e o pior momento.
+          # causa e conserto — e cresce rápido. Estourar o limite faria o `gh`
+          # falhar DEPOIS de a tag já estar publicada, que e o pior momento.
           if [ "$(wc -c < NOTAS.md)" -gt 100000 ]; then
             echo "notas com $(wc -c < NOTAS.md) caracteres: cortando"
             head -c 95000 NOTAS.md > NOTAS.curta
@@ -123,13 +123,13 @@ jobs:
             mv NOTAS.curta NOTAS.md
           fi
 
-          # O SHA256.txt sai no formato do proprio sha256sum -- soma, dois
-          # espacos, NOME DO ARQUIVO --, e com o nome que o anexo tem no
-          # release, sem o `dist/`. Antes saia so a soma, e entao
+          # O SHA256.txt sai no formato do próprio sha256sum -- soma, dois
+          # espaços, NOME DO ARQUIVO --, e com o nome que o anexo tem no
+          # release, sem o `dist/`. Antes saia só a soma, e então
           # `sha256sum -c SHA256.txt` recusava o arquivo: faltava o nome. A
-          # pagina de instalacao contornava remontando a linha na hora, e a
-          # rc1 publicada a mao ja veio no formato completo -- ou seja, o
-          # arquivo e a instrucao discordavam conforme quem tinha publicado.
+          # página de instalação contornava remontando a linha na hora, e a
+          # rc1 publicada a mão já veio no formato completo -- ou seja, o
+          # arquivo e a instrução discordavam conforme quem tinha publicado.
           (cd dist && sha256sum pl_fpdf_install.sql) > SHA256.txt
           sha=$(awk '{print $1}' SHA256.txt)
           linhas=$(wc -l < dist/pl_fpdf_install.sql)
@@ -174,11 +174,11 @@ jobs:
             dist/pl_fpdf_install.sql \
             SHA256.txt
 
-      # O site publica de novo agora que o release existe. Nao basta o
-      # `release: published` do pages.yml: evento gerado pelo token do proprio
-      # Actions nao dispara outro workflow -- a excecao e o workflow_dispatch.
-      # Release estavel publica a partir da master; pre-lancamento nao mexe no
-      # site, que continua anunciando a estavel.
+      # O site publica de novo agora que o release existe. Não basta o
+      # `release: published` do pages.yml: evento gerado pelo token do próprio
+      # Actions não dispara outro workflow -- a exceção e o workflow_dispatch.
+      # Release estável publica a partir da master; pre-lancamento não mexe no
+      # site, que continua anunciando a estável.
       - name: Publicar o site
         if: env.PRE == ''
         env:

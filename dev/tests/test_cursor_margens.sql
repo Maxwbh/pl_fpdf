@@ -1,24 +1,24 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Cursor, margens e quebra de pagina
+-- PL_FPDF - Cursor, margens e quebra de página
 --
--- Onde o proximo desenho vai cair. E a metade da biblioteca que nao aparece
--- no arquivo: o cursor, as margens e a quebra automatica decidem a posicao de
--- tudo, e erram em silencio -- o texto sai, so que no lugar errado.
+-- Onde o próximo desenho vai cair. E a metade da biblioteca que não aparece
+-- no arquivo: o cursor, as margens e a quebra automática decidem a posição de
+-- tudo, e erram em silêncio -- o texto sai, só que no lugar errado.
 --
--- Duas regras aqui nao estao no nome da rotina, e sao as que mordem:
+-- Duas regras aqui não estão no nome da rotina, e são as que mordem:
 -- coordenada NEGATIVA conta a partir da borda oposta, e o SetY devolve o x
 -- para a margem esquerda.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -78,9 +78,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('GetX/SetX: negativo conta a partir da borda direita');
   --------------------------------------------------------------------------
-  -- A regra do SetX nao esta no nome dele: px negativo NAO e erro, e sim
-  -- medida a partir da direita. Quem nao sabe disso passa -10 achando que
-  -- volta dez para tras e o texto vai parar do outro lado da pagina.
+  -- A regra do SetX não está no nome dele: px negativo NÃO é erro, e sim
+  -- medida a partir da direita. Quem não sabe disso passa -10 achando que
+  -- volta dez para trás e o texto vai parar do outro lado da página.
   novo_doc;
   PL_FPDF.SetX(30);
   IF PL_FPDF.GetX = 30 THEN
@@ -102,7 +102,7 @@ BEGIN
   caso('SetY devolve o x para a margem, e o SetXY nao');
   --------------------------------------------------------------------------
   -- Esta e a surpresa do SetY, e o motivo de o SetXY existir. Quem chama
-  -- SetY(100) achando que so desce perde a coluna em que estava.
+  -- SetY(100) achando que só desce perde a coluna em que estava.
   novo_doc;
   PL_FPDF.SetX(80);
   PL_FPDF.SetY(100);
@@ -158,7 +158,7 @@ BEGIN
   caso('GetScaleFactor converte a unidade corrente em pontos');
   --------------------------------------------------------------------------
   -- E o numero que traduz o que o chamador pede para o que o arquivo guarda.
-  -- Uma polegada tem 72 pontos e 25,4 mm, entao o milimetro vale 2,8346...
+  -- Uma polegada tem 72 pontos e 25,4 mm, então o milímetro vale 2,8346...
   novo_doc;
   IF ROUND(PL_FPDF.GetScaleFactor, 4) = ROUND(72 / 25.4, 4) THEN
     passou('em mm o fator e 72/25,4 = '
@@ -180,8 +180,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Margens: o Cell de largura 0 vai ate a margem direita');
   --------------------------------------------------------------------------
-  -- As margens so se provam pelo efeito. Largura 0 significa "ate a margem
-  -- direita", entao mexer na margem TEM de mexer onde o cursor para.
+  -- As margens só se provam pelo efeito. Largura 0 significa "até a margem
+  -- direita", então mexer na margem TEM de mexer onde o cursor para.
   novo_doc;
   PL_FPDF.SetMargins(20, 20, 20);
   PL_FPDF.Cell(0, 8, 'ate a margem');
@@ -232,8 +232,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('SetAutoPageBreak liga e desliga a quebra, e o AcceptPageBreak conta');
   --------------------------------------------------------------------------
-  -- Desligada, o conteudo que passa do fim da pagina e escrito fora dela e
-  -- SOME, sem erro nenhum. Vale saber qual e o estado.
+  -- Desligada, o conteúdo que passa do fim da página e escrito fora dela e
+  -- SOME, sem erro nenhum. Vale saber qual é o estado.
   novo_doc;
   PL_FPDF.SetAutoPageBreak(TRUE, 20);
   IF NVL(PL_FPDF.AcceptPageBreak, FALSE) THEN
@@ -249,7 +249,7 @@ BEGIN
     falhou('desligada, o AcceptPageBreak continuou dizendo que sim');
   END IF;
 
-  -- e o efeito: com a quebra ligada, encher a pagina cria a segunda
+  -- e o efeito: com a quebra ligada, encher a página cria a segunda
   novo_doc;
   PL_FPDF.SetAutoPageBreak(TRUE, 20);
   FOR i IN 1 .. 40 LOOP

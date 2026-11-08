@@ -1,36 +1,36 @@
 # -*- coding: utf-8 -*-
 """
-Nenhuma view V$/GV$/DBA_ referenciada em SQL ESTATICO dentro de PL/SQL.
+Nenhuma view V$/GV$/DBA_ referenciada em SQL ESTÁTICO dentro de PL/SQL.
 
 DOCUMENTO DE MANUTENÇÃO.
 
 Por que existe
 --------------
 Custou uma rodada em agosto/2026. O `test_regressoes_revisao.sql` media o
-vazamento de LOB temporario com um `SELECT ... FROM v$temporary_lobs` estatico,
+vazamento de LOB temporário com um `SELECT ... FROM v$temporary_lobs` estático,
 e tinha um `EXCEPTION WHEN OTHERS` logo abaixo para pular o caso quando faltasse
-privilegio.
+privilégio.
 
-O `EXCEPTION` nunca teve chance. **Role nao vale dentro de PL/SQL**: o acesso a
+O `EXCEPTION` nunca teve chance. **Role não vale dentro de PL/SQL**: o acesso a
 V$ costuma vir por `SELECT_CATALOG_ROLE` ou `SELECT ANY DICTIONARY`, e em SQL
-estatico o PL/SQL resolve o nome em tempo de COMPILACAO. Sem o privilegio
-concedido DIRETO ao usuario, o resultado e `PLS-00201` — que chega como
-`ORA-06550` e derruba o bloco inteiro **antes de executar**. Nao ha excecao a
+estático o PL/SQL resolve o nome em tempo de COMPILAÇÃO. Sem o privilégio
+concedido DIRETO ao usuário, o resultado e `PLS-00201` — que chega como
+`ORA-06550` e derruba o bloco inteiro **antes de executar**. Não há exceção a
 capturar, porque nenhuma linha rodou.
 
 O sintoma engana duas vezes: o teste falha inteiro em vez de pular, e a mensagem
-aponta a linha da view — nao o desenho errado, que era supor que um handler de
-execucao pega um erro de compilacao.
+aponta a linha da view — não o desenho errado, que era supor que um handler de
+execução pega um erro de compilação.
 
-A saida e SQL dinamico: `EXECUTE IMMEDIATE` resolve o nome em execucao, entao a
-falta de privilegio vira `ORA-00942`, que um `EXCEPTION` captura de verdade.
+A saída e SQL dinâmico: `EXECUTE IMMEDIATE` resolve o nome em execução, então a
+falta de privilégio vira `ORA-00942`, que um `EXCEPTION` captura de verdade.
 
 O que cobra
 -----------
-Referencia a `V$...`, `GV$...` ou `DBA_...` fora de literal de string. Dentro de
-aspas esta tudo bem: e exatamente o `EXECUTE IMMEDIATE` que se quer.
+Referência a `V$...`, `GV$...` ou `DBA_...` fora de literal de string. Dentro de
+aspas está tudo bem: é exatamente o `EXECUTE IMMEDIATE` que se quer.
 
-`USER_*` e `ALL_*` NAO entram: sao acessiveis por padrao e nao dependem de role.
+`USER_*` e `ALL_*` NÃO entram: são acessíveis por padrão e não dependem de role.
 
 Uso:  python dev/scripts/plsql_lint/check_v_estatico.py dev/tests/*.sql
 """
@@ -49,11 +49,11 @@ DEPENDE_DE_ROLE = re.compile(
 
 
 def sem_literais(texto):
-    """Troca o conteudo de cada literal por espacos, preservando as linhas.
+    """Troca o conteúdo de cada literal por espaços, preservando as linhas.
 
-    Preservar o comprimento e a quebra de linha e o que deixa o numero da linha
+    Preservar o comprimento e a quebra de linha e o que deixa o número da linha
     continuar batendo com o arquivo — sem isso o aviso aponta para o lugar
-    errado, que e pior que nao avisar.
+    errado, que e pior que não avisar.
     """
     fora, dentro, i = [], False, 0
     while i < len(texto):

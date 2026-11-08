@@ -227,7 +227,7 @@ def main():
           'senha de proprietario: aceita como dono e devolve a mesma chave')
     dono, k = A.verificar_r6(b'errada', u, ue, o, oe)
     check(dono is None and k is None, 'senha errada: recusada')
-    # a mesma senha para as duas coisas tem de abrir como USUARIO
+    # a mesma senha para as duas coisas tem de abrir como USUÁRIO
     u2, ue2, o2, oe2, _ = A.valores_r6(b'igual', b'igual', chave, -4)
     dono, _ = A.verificar_r6(b'igual', u2, ue2, o2, oe2)
     check(dono is False,

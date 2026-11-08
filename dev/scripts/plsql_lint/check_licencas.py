@@ -33,7 +33,7 @@ import sys
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 EXTENSOES = ('.md', '.sql', '.pks', '.pkb', '.html', '.py', '.yml', '.txt')
-# as impressoes digitais do fonte original e este proprio arquivo
+# as impressões digitais do fonte original e este próprio arquivo
 FORA = ('dev/scripts/plsql_lint/heranca/', 'dev/scripts/plsql_lint/check_licencas.py')
 
 GPL = re.compile(r'\bGPL\b|General Public License', re.I)

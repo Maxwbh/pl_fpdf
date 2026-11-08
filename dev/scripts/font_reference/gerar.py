@@ -33,13 +33,13 @@ ABERTURA = '-- <larguras-das-fontes: gerado, nao edite>'
 FECHO = '-- </larguras-das-fontes>'
 
 
-# As 14 chaves que o package usa (familia + estilo) e a familia cuja metrica
-# vale para cada uma. Este mapa e A CORRECAO desta etapa: antes ele existia
-# duas vezes, escrito a mao, em dois CASE gemeos — e os dois divergiram.
+# As 14 chaves que o package usa (família + estilo) e a família cuja métrica
+# vale para cada uma. Este mapa e A CORREÇÃO desta etapa: antes ele existia
+# duas vezes, escrito a mão, em dois CASE gêmeos — e os dois divergiram.
 # O p_getFontMetrics tinha 'timesI' DUAS vezes (a segunda devia ser 'timesB',
-# e o ramo do Times negrito era inalcancavel) e nao tinha os estilos do
+# e o ramo do Times negrito era inalcancavel) e não tinha os estilos do
 # Courier, que o p_includeFont tinha. Consertaram num e esqueceram o outro.
-# Agora o mapa e um so, gerado, e divergir deixou de ser possivel.
+# Agora o mapa e um só, gerado, e divergir deixou de ser possível.
 CHAVES = [
     # Courier e monoespacada: os quatro estilos medem igual
     ('courier', 'Courier'), ('courierB', 'Courier'),
@@ -58,29 +58,29 @@ def bloco():
 
     partes = [f"""{ABERTURA}
 ----------------------------------------------------------------------------------------
--- Larguras das 14 fontes padrao do PDF, em milesimos de em.
+-- Larguras das 14 fontes padrão do PDF, em milésimos de em.
 --
--- GERADA a partir das fontes primarias: os AFM da Adobe, as tabelas do
+-- GERADA a partir das fontes primárias: os AFM da Adobe, as tabelas do
 -- reportlab -- que se conferem entre si, glifo a glifo -- e a
--- WinAnsiEncoding. NAO EDITE A MAO daqui ate o fecho do bloco, NEM O
--- COMENTARIO: a edicao se perde na geracao seguinte, e ate la o CI acusa o
+-- WinAnsiEncoding. NÃO EDITE À MÃO daqui até o fecho do bloco, NEM O
+-- COMENTÁRIO: a edição se perde na geração seguinte, e até lá o CI acusa o
 -- bloco como desatualizado. Para mudar este texto, mude o gerador.
 --
--- Cada familia e uma sequencia de 256 campos de 4 digitos, um por posicao da
--- codificacao. A chave da tabela indexada e O BYTE WinAnsi, nao o caractere.
+-- Cada família é uma sequência de 256 campos de 4 dígitos, um por posição da
+-- codificação. A chave da tabela indexada é O BYTE WinAnsi, não o caractere.
 --
--- Era `chr(i)`, e nao podia ser: CHR devolve o caractere cujo BYTE e i no
--- charset do banco, e em AL32UTF8 os valores de 128 a 191 dao caractere
--- invalido enquanto os de 192 para cima abrem uma sequencia multibyte que
--- nunca se completa -- `ORA-29275`. O relato que expos isso e a issue 16 do
+-- Era `chr(i)`, e não podia ser: CHR devolve o caractere cujo BYTE é i no
+-- charset do banco, e em AL32UTF8 os valores de 128 a 191 dão caractere
+-- inválido enquanto os de 192 para cima abrem uma sequência multibyte que
+-- nunca se completa -- `ORA-29275`. O relato que expôs isso é a issue 16 do
 -- projeto de origem: em AL32UTF8 o erro estourava na PRIMEIRA chamada que
--- carregasse uma metrica, com a pilha apontando para a linha da tabela onde
--- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 e caractere
--- valido de um byte, e por isso o mesmo codigo sempre funcionou la.
+-- carregasse uma métrica, com a pilha apontando para a linha da tabela onde
+-- aparece o `chr(192)`. Em WE8MSWIN1252 todo valor de 0 a 255 é caractere
+-- válido de um byte, e por isso o mesmo código sempre funcionou lá.
 --
--- O byte ja era o que a tabela guardava: quem consulta parte do caractere,
--- converte para WinAnsi com p_winansi_byte e so entao mede. Indexar por
--- PLS_INTEGER tira o CHR do caminho e acaba com a conversao de ida e volta.
+-- O byte já era o que a tabela guardava: quem consulta parte do caractere,
+-- converte para WinAnsi com p_winansi_byte e só então mede. Indexar por
+-- PLS_INTEGER tira o CHR do caminho e acaba com a conversão de ida e volta.
 ----------------------------------------------------------------------------------------
 function p_larguras_de(p_tabela in varchar2) return charSet is
   mySet charSet;
@@ -91,9 +91,9 @@ begin
   return mySet;
 end p_larguras_de;
 
--- p_digitos_da_familia: a tabela de larguras de uma das 14 fontes padrao,
--- 256 entradas de 4 digitos na ordem do WinAnsi. Fica em codigo, e nao em
--- tabela do banco, porque a biblioteca nao cria objeto no schema.
+-- p_digitos_da_familia: a tabela de larguras de uma das 14 fontes padrão,
+-- 256 entradas de 4 dígitos na ordem do WinAnsi. Fica em código, e não em
+-- tabela do banco, porque a biblioteca não cria objeto no schema.
 function p_digitos_da_familia(p_familia in varchar2) return varchar2 is
 begin
   case p_familia
@@ -111,9 +111,9 @@ begin
 end p_digitos_da_familia;
 
 ----------------------------------------------------------------------------------------
--- A metrica de uma chave 'familia+estilo'. Devolve tabela VAZIA para chave
+-- A métrica de uma chave 'família+estilo'. Devolve tabela VAZIA para chave
 -- desconhecida — quem chama decide o que fazer com isso, e precisa checar
--- ANTES de percorrer: sobre tabela vazia, .first e .last sao nulos.
+-- ANTES de percorrer: sobre tabela vazia, .first e .last são nulos.
 ----------------------------------------------------------------------------------------
 function p_larguras_da_fonte(p_chave in varchar2) return charSet is
   l_digitos varchar2(1100);
@@ -143,8 +143,8 @@ def main():
         fim = texto.index(FECHO) + len(FECHO) + 1
         atual = texto[ini:fim]
     else:
-        # primeira vez: substitui o bloco herdado, da primeira getFont ate a
-        # ultima. As ancoras sao os proprios subprogramas, nao numeros de linha.
+        # primeira vez: substitui o bloco herdado, da primeira getFont até a
+        # última. As ancoras são os próprios subprogramas, não números de linha.
         m = re.search(r'^function\s+p_larguras_de\b', texto, re.M | re.I)
         f = texto.index('end getFontZapfdingbats;')
         ini, fim = m.start(), f + len('end getFontZapfdingbats;') + 1

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Referencia dos codigos de barras lineares que serao portados para PL/SQL.
+Referência dos códigos de barras lineares que serão portados para PL/SQL.
 
-Cada funcao devolve uma string de modulos: '1' = barra, '0' = espaco.
-Escrito com as mesmas tabelas e a mesma ordem de operacoes do PL/SQL.
+Cada função devolve uma string de módulos: '1' = barra, '0' = espaço.
+Escrito com as mesmas tabelas e a mesma ordem de operações do PL/SQL.
 """
 
 # ------------------------------------------------------------------ CODE39 ---
-# 9 elementos por caractere (b s b s b s b s b), n=1 / w=3, separados por 1 espaco
+# 9 elementos por caractere (b s b s b s b s b), n=1 / w=3, separados por 1 espaço
 C39 = {
  '0':'nnnwwnwnn','1':'wnnwnnnnw','2':'nnwwnnnnw','3':'wnwwnnnnn','4':'nnnwwnnnw',
  '5':'wnnwwnnnn','6':'nnwwwnnnn','7':'nnnwnnwnw','8':'wnnwnnwnn','9':'nnwwnnwnn',
@@ -31,11 +31,11 @@ def code39(data, ratio=3):
             n = ratio if w == 'w' else 1
             out.append(('1' if j % 2 == 0 else '0') * n)
         if i < len(txt) - 1:
-            out.append('0')          # espaco separador entre caracteres
+            out.append('0')          # espaço separador entre caracteres
     return ''.join(out)
 
 # ----------------------------------------------------------------- CODE128 ---
-# 107 padroes; cada um com 6 larguras (b s b s b s) somando 11 modulos
+# 107 padrões; cada um com 6 larguras (b s b s b s) somando 11 módulos
 C128 = [
  '212222','222122','222221','121223','121322','131222','122213','122312','132212',
  '221213','221312','231212','112232','122132','122231','113222','123122','123221',
@@ -53,7 +53,7 @@ C128 = [
 START_B, START_C, STOP = 104, 105, 106
 
 def code128(data):
-    """Usa Code C (pares de digitos) quando o dado e todo numerico e par; senao Code B."""
+    """Usa Code C (pares de dígitos) quando o dado e todo numérico e par; senão Code B."""
     if data.isdigit() and len(data) % 2 == 0:
         codes = [START_C] + [int(data[i:i+2]) for i in range(0, len(data), 2)]
     else:
@@ -119,19 +119,19 @@ def ean8(data):
 ITF = ['nnwwn','wnnnw','nwnnw','wwnnn','nnwnw','wnwnn','nwwnn','nnnww','wnnwn','nwnwn']
 
 def itf(data, ratio=3):
-    """Interleaved 2 of 5 puro: qualquer quantidade PAR de digitos, sem
+    """Interleaved 2 of 5 puro: qualquer quantidade PAR de dígitos, sem
     verificador.
 
-    E o que o boleto bancario usa — 44 digitos, sem digito de controle no
-    simbolo (o verificador do boleto esta DENTRO dos 44, na posicao 5, e nao e
+    E o que o boleto bancário usa — 44 dígitos, sem dígito de controle no
+    símbolo (o verificador do boleto está DENTRO dos 44, na posição 5, e não é
     calculado pela simbologia). O ITF14 e um caso particular disto, com 14
-    digitos e verificador proprio.
+    dígitos e verificador próprio.
     """
     d = ''.join(ch for ch in data if ch.isdigit())
     if not d:
         raise ValueError('ITF: nenhum digito')
     if len(d) % 2 == 1:
-        d = '0' + d                      # ITF exige quantidade par de digitos
+        d = '0' + d                      # ITF exige quantidade par de dígitos
     out = ['1010']                       # start: n n n n
     for i in range(0, len(d), 2):
         a, b = ITF[int(d[i])], ITF[int(d[i+1])]

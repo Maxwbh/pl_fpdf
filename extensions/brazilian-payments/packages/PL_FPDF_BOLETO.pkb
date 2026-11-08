@@ -30,11 +30,11 @@ BEGIN
       'Due date cannot be before 1997-10-07');
   END IF;
 
-  -- O fator tem 4 digitos e chegou a 9999 em 21/02/2025. Pela regra da
-  -- FEBRABAN, a partir de 22/02/2025 ele recomeca em 1000, e assim a cada
+  -- O fator tem 4 dígitos e chegou a 9999 em 21/02/2025. Pela regra da
+  -- FEBRABAN, a partir de 22/02/2025 ele recomeça em 1000, e assim a cada
   -- volta: gira de 1000 a 9999, em ciclos de 9000 dias. Aqui havia um teto
   -- que levantava ORA-20802 acima de 9999 -- ou seja, desde 22/02/2025 a
-  -- extensao recusava todo boleto com vencimento atual.
+  -- extensão recusava todo boleto com vencimento atual.
   IF l_days > 9999 THEN
     l_days := 1000 + MOD(l_days - 10000, 9000);
   END IF;
@@ -443,10 +443,10 @@ BEGIN
   -- Generate barcode using internal function
   l_codigo := GetCodigoBarras(p_boleto_data);
 
-  -- ITF puro, e nao ITF14: o codigo de barras do boleto tem 44 digitos, e o
+  -- ITF puro, e não ITF14: o código de barras do boleto tem 44 dígitos, e o
   -- ITF14 exige 13 ou 14 — esta chamada levantava ORA-20887 SEMPRE, ou seja,
-  -- o codigo de barras de um boleto nunca chegou a ser desenhado. O digito de
-  -- controle do boleto fica DENTRO dos 44, na posicao 5, e nao e calculado
+  -- o código de barras de um boleto nunca chegou a ser desenhado. O digito de
+  -- controle do boleto fica DENTRO dos 44, na posição 5, é não e calculado
   -- pela simbologia.
   PL_FPDF.AddBarcode(p_x, p_y, p_width, p_height, l_codigo, 'ITF', FALSE);
 

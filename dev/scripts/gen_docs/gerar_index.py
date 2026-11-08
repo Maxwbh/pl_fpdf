@@ -9,7 +9,7 @@ O desenho — CSS, SEO, a folha de PDF decorativa, o rodapé — fica em
 chamada, os números, os cartões, os exemplos, os passos da instalação e o
 fechamento.
 
-A **versão entra por `{versao}`**, lida do package. Era exatamente onde a
+A **versão entra por `{versão}`**, lida do package. Era exatamente onde a
 página escrita à mão tinha divergido: a vitrine dizia 3.4.0 e o comando de
 download, logo abaixo, buscava a v3.3.0.
 """
@@ -107,7 +107,7 @@ def pagina(c, k, versao):
     partes['HERO_JANELA'] = janela(c.HERO['janela'], c.HERO['codigo'], k)
     partes['FORK'] = c.FORK[k]
     stats = list(c.STATS)
-    if c.ULTIMA_CANDIDATA:          # o destaque mostra a ESTAVEL, nao o package
+    if c.ULTIMA_CANDIDATA:          # o destaque mostra a ESTÁVEL, não o package
         stats[0] = c.STAT_ESTAVEL
     partes['STATS'] = '\n    '.join(
         f'<div class="stat"><b>{v.format(versao=versao, release=c.ULTIMO_RELEASE)}</b>'

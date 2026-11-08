@@ -785,7 +785,7 @@ l_fonte := PL_FPDF.GetTTFFontInfo('Roboto');
 
 ### IsTTFFontLoaded
 
-Diz se a fonte está registrada nesta sessão, e portanto disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.
+Diz se a fonte está registrada nesta sessão e, portanto, disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.
 
 *Desde a versão 2.0.0*
 
@@ -961,7 +961,7 @@ VARCHAR2 - o texto pronto para ir entre parênteses num objeto PDF
 #### Exemplo
 
 ```sql
-l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido)');
+l_txt := PL_FPDF.UTF8ToPDFString('Total (líquido)');
 ```
 
 ---
@@ -1664,7 +1664,7 @@ PROCEDURE PL_FPDF.SetFillColor(
 
 ```sql
 PL_FPDF.SetFillColor(230, 230, 230);
-PL_FPDF.Cell(40, 8, 'Cabecalho', '1', 0, 'C', 1);
+PL_FPDF.Cell(40, 8, 'Cabeçalho', '1', 0, 'C', 1);
 ```
 
 **Veja também:** [Cell](#cell) · [Rect](#rect)
@@ -2491,7 +2491,7 @@ PROCEDURE PL_FPDF.SetCreator(
 #### Exemplo
 
 ```sql
-PL_FPDF.SetCreator('ERP - modulo de faturamento');
+PL_FPDF.SetCreator('ERP - módulo de faturamento');
 ```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
@@ -2603,7 +2603,7 @@ PROCEDURE PL_FPDF.SetKeywords(
 #### Exemplo
 
 ```sql
-PL_FPDF.SetKeywords('relatorio producao 2026');
+PL_FPDF.SetKeywords('relatório produção 2026');
 ```
 
 **Veja também:** [SetDocumentConfig](#setdocumentconfig)
@@ -4408,7 +4408,7 @@ PROCEDURE PL_FPDF.Error(
 #### Exemplo
 
 ```sql
-PL_FPDF.Error('nao foi possivel montar o documento');
+PL_FPDF.Error('não foi possível montar o documento');
 ```
 
 ---
