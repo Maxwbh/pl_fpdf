@@ -362,11 +362,48 @@ def main():
         print(f'OK — a referência da API está em dia com o Javadoc da spec '
               f'({n_api} APIs)')
         return 0
+    mudaram = []
     for c, novo in saidas:
+        antes = io.open(c, encoding='utf-8').read() if os.path.exists(c) else None
+        if antes != novo:
+            mudaram.append(c)
         io.open(c, 'w', encoding='utf-8').write(novo)
         print(f'{os.path.relpath(c, RAIZ)}: {n_api} APIs, '
               f'{len(novo.splitlines())} linhas')
+    datar_sitemap(mudaram)
     return 0
+
+
+SITEMAP = do_repo('site', 'sitemap.xml')
+URL_BASE = 'https://maxwbh.github.io/pl_fpdf/'
+
+
+def url_da_pagina(caminho):
+    """site/en/index.html -> https://maxwbh.github.io/pl_fpdf/en/"""
+    rel = os.path.relpath(caminho, do_repo('site')).replace(os.sep, '/')
+    return URL_BASE + re.sub(r'(^|/)index\.html$', r'\1', rel)
+
+
+def datar_sitemap(paginas):
+    """Põe a data de hoje no <lastmod> de cada página do site que mudou.
+
+    O sitemap é escrito à mão e as páginas são geradas: sem isto, o lastmod
+    fica parado enquanto as páginas mudam -- em novembro de 2026 dizia
+    25/10 para páginas reescritas em 7 e 8/11. O check_publicacao.py cobra a
+    data contra o histórico do git; aqui ela já sai certa de quem gera."""
+    import datetime
+    hoje = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+    texto = io.open(SITEMAP, encoding='utf-8').read()
+    novo = texto
+    for c in paginas:
+        if not c.startswith(do_repo('site') + os.sep):
+            continue
+        url = re.escape(url_da_pagina(c))
+        novo = re.sub(rf'(<loc>{url}</loc>.*?<lastmod>)[^<]*(</lastmod>)',
+                      rf'\g<1>{hoje}\g<2>', novo, count=1, flags=re.S)
+    if novo != texto:
+        io.open(SITEMAP, 'w', encoding='utf-8').write(novo)
+        print(f'site/sitemap.xml: lastmod {hoje} nas páginas que mudaram')
 
 
 if __name__ == '__main__':
