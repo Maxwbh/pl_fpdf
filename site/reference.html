@@ -1274,6 +1274,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabeçalho&#x27;</span>, <span class="
 <h3>image <span class="kind">Procedure</span><a class="anchor" href="#image" aria-label="Link permanente para image">#</a></h3>
 <p class="d">Coloca uma imagem buscada por URL. A busca sai pela rede e exige ACL concedida ao schema -- quando a imagem já está numa tabela ou numa variável, ImageFromBlob faz o mesmo sem rede e sem permissão. Largura e altura em zero saem da própria imagem, a 72 dpi; com uma das duas em zero, ela é derivada da outra, mantendo a proporção.</p>
 <p class="since">Desde a versão <b>0.9.4</b></p>
+<p class="limit"><b>Limitação:</b> PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por componente são recusados com -20100 neste caminho -- para eles, regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um PDF pronto com OverlayImage, que os aceita.</p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.image(
     pFile   <span class="k">varchar2</span>,
@@ -1302,6 +1303,7 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabeçalho&#x27;</span>, <span class="
 <h3>ImageFromBlob <span class="kind">Procedure</span><a class="anchor" href="#imagefromblob" aria-label="Link permanente para ImageFromBlob">#</a></h3>
 <p class="d">Coloca uma imagem que o chamador já tem em mãos, sem passar por URL. O Image() busca pela rede e exige ACL concedida ao schema; quando a imagem já está numa tabela ou numa variável, esta entrada dispensa a rede e a permissão. O formato é reconhecido pelos primeiros bytes do arquivo, não pela extensão: PNG e JPEG; qualquer outra coisa é recusada.</p>
 <p class="since">Desde a versão <b>3.4.0</b></p>
+<p class="limit"><b>Limitação:</b> PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por componente são recusados com -20100 neste caminho -- para eles, regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um PDF pronto com OverlayImage, que os aceita.</p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ImageFromBlob(
     p_blob  <span class="k">blob</span>,
@@ -1818,7 +1820,7 @@ PL_FPDF.AddWatermark(<span class="s">&#x27;APPROVED&#x27;</span>, 0.5, 0, <span 
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.ClearPDFCache;</pre></div>
 <h4>Nota</h4><p class="d">Sempre chame isso após processar um PDF para liberar recursos de memória. Limpa: PDF carregado, info páginas, rotações, páginas removidas, marcas d&#x27;água.</p>
 <h4>Exemplo</h4><div class="code"><pre>PL_FPDF.LoadPDF(l_pdf);
-<span class="c">-- Processar PDF</span>
+PL_FPDF.RotatePage(1, 90);   <span class="c">-- sem modificação, OutputModifiedPDF levanta -20819</span>
 l_modified := PL_FPDF.OutputModifiedPDF();
 <span class="c">-- Limpar memória</span>
 PL_FPDF.ClearPDFCache();</pre></div>
@@ -2157,7 +2159,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
   <span class="c">-- Marca d&#x27;água com transparência</span>
   l_options.put(<span class="s">&#x27;opacity&#x27;</span>, 0.3);
   l_options.put(<span class="s">&#x27;rotation&#x27;</span>, 45);
-  PL_FPDF.OverlayImage(1, l_watermark, 200, 400, 300, <span class="k">NULL</span>, l_options);
+  PL_FPDF.OverlayImage(1, l_logo, 200, 400, 300, <span class="k">NULL</span>, l_options);
   l_modified := PL_FPDF.OutputModifiedPDF();
 <span class="k">END</span>;</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#overlaytext">OverlayText</a>, <a href="#image">Image</a>, <a href="#getoverlays">GetOverlays</a></p>
@@ -2211,12 +2213,13 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.RemoveOverlay(
     p_overlay_id <span class="k">VARCHAR2</span>);</pre></div>
 <h4>Parâmetros</h4><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-<tr><td class="pname">p_overlay_id</td><td class="ptype">VARCHAR2</td><td>—</td><td>ID da sobreposição ()</td></tr>
+<tr><td class="pname">p_overlay_id</td><td class="ptype">VARCHAR2</td><td>—</td><td>o ID que o GetOverlays devolve em overlayId (&#x27;OVL_TEXT_00001&#x27;, &#x27;OVL_IMG_00002&#x27;): é gerado, não escolhido</td></tr>
 </tbody></table></div>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20825</td><td>Sobreposição não encontrada</td></tr>
 </tbody></table></div>
-<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.RemoveOverlay(<span class="s">&#x27;OVL_001&#x27;</span>);</pre></div>
+<h4>Exemplo</h4><div class="code"><pre>l_id := TREAT(PL_FPDF.GetOverlays(1).get(0) <span class="k">AS</span> JSON_OBJECT_T).get_string(<span class="s">&#x27;overlayId&#x27;</span>);
+PL_FPDF.RemoveOverlay(l_id);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#getoverlays">GetOverlays</a>, <a href="#clearoverlays">ClearOverlays</a></p>
 </article>
 <h2 class="grp" id="grp-multi">Multi-PDF (merge, split, extract)</h2>
@@ -2250,7 +2253,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
   PL_FPDF.LoadPDFWithID(<span class="s">&#x27;manual&#x27;</span>, l_manual_pdf);
   <span class="c">-- Extrair páginas 1, 5-10 e 15</span>
   l_extracted := PL_FPDF.ExtractPages(<span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x27;1,5-10,15&#x27;</span>, <span class="k">NULL</span>);
-  INSERT <span class="k">INTO</span> documents VALUES (<span class="s">&#x27;Summary&#x27;</span>, l_extracted);
+  INSERT <span class="k">INTO</span> documents (id, pdf_content) VALUES (124, l_extracted);
 <span class="k">END</span>;</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#splitpdf">SplitPDF</a>, <a href="#mergepdfs">MergePDFs</a></p>
 </article>
@@ -2475,7 +2478,9 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 </tbody></table></div>
 <h4>Retorno</h4><p class="d">JSON_OBJECT_T - Security info including: - encrypted: boolean - method: string (RC4-40, RC4-128, AES-128, AES-256) - permissions: object with print, copy, modify, etc. - hasUserPassword: boolean - hasOwnerPassword: boolean</p>
 <h4>Exemplo</h4><div class="code"><pre>l_info := PL_FPDF.GetSecurityInfo(l_pdf);
-<span class="k">IF</span> l_info.get_boolean(<span class="s">&#x27;encrypted&#x27;</span>) <span class="k">THEN</span> ...</pre></div>
+<span class="k">IF</span> l_info.get_boolean(<span class="s">&#x27;encrypted&#x27;</span>) <span class="k">THEN</span>
+  DBMS_OUTPUT.PUT_LINE(l_info.to_string);
+<span class="k">END</span> <span class="k">IF</span>;</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#isencrypted">IsEncrypted</a>, <a href="#encryptpdf">EncryptPDF</a></p>
 </article>
 <article class="api" id="isencrypted">
@@ -2489,7 +2494,9 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <tr><td class="pname">p_pdf</td><td class="ptype">BLOB</td><td>—</td><td>PDF blob para verificar</td></tr>
 </tbody></table></div>
 <h4>Retorno</h4><p class="d">TRUE se criptografado</p>
-<h4>Exemplo</h4><div class="code"><pre><span class="k">IF</span> PL_FPDF.IsEncrypted(l_pdf) <span class="k">THEN</span> ...</pre></div>
+<h4>Exemplo</h4><div class="code"><pre><span class="k">IF</span> PL_FPDF.IsEncrypted(l_pdf) <span class="k">THEN</span>
+  l_pdf := PL_FPDF.DecryptPDF(l_pdf, <span class="s">&#x27;senha&#x27;</span>);
+<span class="k">END</span> <span class="k">IF</span>;</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#getsecurityinfo">GetSecurityInfo</a>, <a href="#decryptpdf">DecryptPDF</a></p>
 </article>
 <article class="api" id="setencryption">

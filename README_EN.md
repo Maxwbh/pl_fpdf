@@ -247,7 +247,7 @@ rest of the API are covered in the documentation:
 
 ## Features
 
-- **Generation**: multi-page, text/shapes/images (PNG with alpha channel and interlaced, JPEG), TrueType fonts with UTF-8, auto-paginated tables
+- **Generation**: multi-page, text/shapes/images (PNG and JPEG; PNG with an alpha channel or interlacing only in the overlay on a finished PDF), TrueType fonts with UTF-8, auto-paginated tables
 - **Codes**: QR Code (TEXT, URL, PIX, VCARD, WIFI, EMAIL) and barcodes (CODE128, CODE39, EAN13, EAN8, ITF, ITF14 — ITF covers the Brazilian bank slip barcode)
 - **Manipulation**: load existing PDFs, rotate/remove pages, watermarks, overlays, merge and split — including PDF 1.5+, with cross-reference streams and object streams
 - **Security**: AES-256, AES-128 and RC4 40/128-bit encryption, user/owner passwords, permission controls

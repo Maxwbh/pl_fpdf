@@ -126,9 +126,11 @@ FUNCTION  crypto_rc4(p_src IN RAW, p_key IN RAW) RETURN RAW;
  *
  * @param p_src os dados
  * @param p_key a chave
- * @param o_dst o resultado
+ * @param o_dst o resultado, num LOB que o chamador já criou
+ *        (DBMS_LOB.CREATETEMPORARY): com NULL, ORA-22275
  * @since 3.3.0
  * @example
+ *   DBMS_LOB.CREATETEMPORARY(l_cifrado, TRUE);
  *   PL_FPDF_UTIL.crypto_rc4_blob(l_claro, l_chave, l_cifrado);
  */
 PROCEDURE crypto_rc4_blob(p_src IN BLOB, p_key IN RAW,
@@ -151,10 +153,12 @@ PROCEDURE crypto_autoteste;
  *
  * @param p_chave a chave (16 ou 32 bytes)
  * @param p_dados o conteúdo
- * @param o_saida o resultado, com o IV na frente
+ * @param o_saida o resultado, com o IV na frente, num LOB que o chamador já
+ *        criou (DBMS_LOB.CREATETEMPORARY): com NULL, ORA-22275
  * @param p_iv o IV; em branco, um aleatório; empty means random
  * @since 3.3.0
  * @example
+ *   DBMS_LOB.CREATETEMPORARY(l_cifrado, TRUE);
  *   PL_FPDF_UTIL.aes_cbc_cifrar(l_chave, l_claro, l_cifrado);
  */
 PROCEDURE aes_cbc_cifrar(p_chave IN            RAW,
@@ -180,9 +184,11 @@ FUNCTION  aes_cbc_cifrar_raw(p_chave IN RAW, p_dados IN RAW) RETURN RAW;
  *
  * @param p_chave a chave
  * @param p_dados o conteúdo cifrado
- * @param o_saida o conteúdo claro
+ * @param o_saida o conteúdo claro, num LOB que o chamador já criou
+ *        (DBMS_LOB.CREATETEMPORARY): com NULL, ORA-22275
  * @since 3.3.0
  * @example
+ *   DBMS_LOB.CREATETEMPORARY(l_claro, TRUE);
  *   PL_FPDF_UTIL.aes_cbc_decifrar(l_chave, l_cifrado, l_claro);
  */
 PROCEDURE aes_cbc_decifrar(p_chave IN            RAW,
@@ -272,7 +278,9 @@ PROCEDURE aes_valores_r6(p_senha_usr  IN  VARCHAR2,
  * @since 3.3.0
  * @example
  *   IF PL_FPDF_UTIL.aes_verificar_r6(l_senha, l_u, l_ue, l_o, l_oe,
- *                                    l_chave, l_dono) THEN ...
+ *                                    l_chave, l_dono) THEN
+ *     DBMS_OUTPUT.PUT_LINE(CASE WHEN l_dono THEN 'dono' ELSE 'usuário' END);
+ *   END IF;
  */
 FUNCTION  aes_verificar_r6(p_senha IN  VARCHAR2,
                            p_u     IN  RAW,
