@@ -87,6 +87,27 @@ def conferir(secoes):
         raise SystemExit('conteudo_api.py não fecha:\n  ' + '\n  '.join(falhas))
 
 
+def _publicas():
+    """Os nomes que têm artigo na referência (o id do artigo é o nome em
+    minúsculas): os das categorias do meta.py."""
+    import meta
+    return {n.lower() for _, nomes in meta.CATEGORIAS for n in nomes}
+
+
+PUBLICAS = _publicas()
+
+
+def ligar(celula):
+    """Cada nome de API da célula vira link para o artigo dele na referência,
+    para quem lê o índice abrir a assinatura completa sem procurar. Só nome que
+    a referência tem: o resto (parâmetros, tipos) fica como está."""
+    return re.sub(r'(?<![\w.<>])([A-Za-z]\w+)(?=\s*(?:\(|·|→|/|$))',
+                  lambda m: (f'<a href="reference.html#{m.group(1).lower()}">'
+                             f'{m.group(1)}</a>'
+                             if m.group(1).lower() in PUBLICAS else m.group(1)),
+                  celula)
+
+
 def secao(s, k):
     o = [f'<section id="{s["id"]}">',
          f'  <h2><span class="n">{s["n"]}</span> {esc(s["titulo"][k])}</h2>']
@@ -108,7 +129,7 @@ def secao(s, k):
             # transformava em texto -- o sentido ficava, o destaque não. Quem
             # escreve o conteúdo escreve HTML, como no `desc` e no `nota`.
             for api, faz in b[1]:
-                o.append(f'    <tr><td>{api[k]}</td><td>{faz[k]}</td></tr>')
+                o.append(f'    <tr><td>{ligar(api[k])}</td><td>{faz[k]}</td></tr>')
             o.append('  </tbody></table></div>')
         else:
             arquivo = b[1][k]
