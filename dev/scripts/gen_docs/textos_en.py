@@ -956,6 +956,10 @@ TEXTOS = {
             "pLink": ("URL do link sobre a imagem (opcional). Link interno não é suportado: veja AddLink",
                      "Optional link URL over the image; NULL = no link. Internal links are not supported: see AddLink"),
         },
+        "notas": [
+            ("PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por componente são recusados com -20100 neste caminho -- para eles, regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um PDF pronto com OverlayImage, que os aceita.",
+             "PNG with an alpha channel, interlaced PNG and 16-bit PNG are refused with -20100 on this path -- for those, re-save the image without alpha and without interlacing, or draw it over a finished PDF with OverlayImage, which accepts them."),
+        ],
     },
     "ImageFromBlob": {
         "descricao": ("Coloca uma imagem que o chamador já tem em mãos, sem passar por URL. O Image() busca pela rede e exige ACL concedida ao schema; quando a imagem já está numa tabela ou numa variável, esta entrada dispensa a rede e a permissão. O formato é reconhecido pelos primeiros bytes do arquivo, não pela extensão: PNG e JPEG; qualquer outra coisa é recusada.",
@@ -976,6 +980,10 @@ TEXTOS = {
             "pLink": ("link opcional sobre a área da imagem",
                      "Makes the image clickable. URL; NULL = no link. An AddLink identifier is refused with ORA-20601"),
         },
+        "notas": [
+            ("PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por componente são recusados com -20100 neste caminho -- para eles, regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um PDF pronto com OverlayImage, que os aceita.",
+             "PNG with an alpha channel, interlaced PNG and 16-bit PNG are refused with -20100 on this path -- for those, re-save the image without alpha and without interlacing, or draw it over a finished PDF with OverlayImage, which accepts them."),
+        ],
     },
     "Output": {
         "descricao": ("Fecha o documento e grava em arquivo, no DIRECTORY PDF_DIR. É a forma legada: os modos de entrega ao navegador ('I', 'D', 'S') saíram junto com o OWA/HTP e hoje recusam com -20306, dizendo o que usar no lugar. Para receber os bytes, use OutputBlob.",
@@ -1359,7 +1367,7 @@ TEXTOS = {
     },
     "OverlayImage": {
         "descricao": ("Adicionar sobreposição de imagem em posição específica com controle de tamanho Desenhada por OutputModifiedPDF() no fluxo de conteúdo. No caminho comum nada é descomprimido: o JPEG entra inteiro como /DCTDecode, e os blocos IDAT do PNG já são zlib, que é o /FlateDecode do PDF — são concatenados e declarados com /Predictor 15, o que vale de 1 a 16 bits por componente. PNG com canal alfa (color types 4 e 6) e entrelaçado (Adam7) também são desenhados, por um caminho que reprocessa pixel a pixel — e por isso sai sem compressão, já que não há deflate neste trecho. Recusados com -20823, em vez de desenhados errado: entrelaçado com menos de 8 bits por componente, indexado E entrelaçado, e imagem acima do teto de pixels do caminho que reprocessa.",
-                      "Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. Neither format is decompressed: JPEG goes in whole as /DCTDecode, and a PNG's IDAT blocks are already zlib, which is the PDF's /FlateDecode. Not supported, and refused with -20823 rather than drawn wrong: PNG with an alpha channel, interlaced PNG (Adam7) and 16-bit depth."),
+                      "Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. On the common path nothing is decompressed: JPEG goes in whole as /DCTDecode, and a PNG's IDAT blocks are already zlib, which is the PDF's /FlateDecode — they are concatenated and declared with /Predictor 15, which covers 1 to 16 bits per component. PNG with an alpha channel (colour types 4 and 6) and interlaced PNG (Adam7) are drawn too, by a path that reprocesses pixel by pixel — and so comes out uncompressed, since there is no deflate on that stretch. Refused with -20823, rather than drawn wrong: interlaced below 8 bits per component, indexed AND interlaced, and an image above the pixel ceiling of the reprocessing path."),
         "params": {
             "p_page_number": ("Número da página (base 1)",
                              "Page that receives the image. Integer >= 1, up to GetPageCount"),
@@ -1395,8 +1403,8 @@ TEXTOS = {
         "descricao": ("Remover sobreposição específica por ID",
                       "Removes one specific overlay by its identifier."),
         "params": {
-            "p_overlay_id": ("ID da sobreposição ()",
-                            "Overlay identifier. The overlayId value returned by GetOverlays, e.g. 'OVL_001'"),
+            "p_overlay_id": ("o ID que o GetOverlays devolve em overlayId ('OVL_TEXT_00001', 'OVL_IMG_00002'): é gerado, não escolhido",
+                            "The ID that GetOverlays returns in overlayId ('OVL_TEXT_00001', 'OVL_IMG_00002'): it is generated, not chosen"),
         },
     },
     "ClearOverlays": {
@@ -1737,6 +1745,8 @@ EXEMPLOS = {
      "      DBMS_OUTPUT.PUT_LINE('Watermark:' ||",
  ('OutputModifiedPDF', '    -- Aplicar modificações'):
      '    -- apply the changes',
+ ('ClearPDFCache', '  PL_FPDF.RotatePage(1, 90);   -- sem modificação, OutputModifiedPDF levanta -20819'):
+     '  PL_FPDF.RotatePage(1, 90);   -- with no change, OutputModifiedPDF raises -20819',
  ('ClearPDFCache', '  -- Limpar memória'):
      '  -- release the memory',
  ('OverlayText', '    -- Sobreposição simples'):

@@ -1896,6 +1896,10 @@ PROCEDURE PL_FPDF.image(
 | `pType` | VARCHAR2 | `null` | Image format. 'PNG', 'JPG'/'JPEG', or NULL (default) to detect it automatically |
 | `pLink` | VARCHAR2 | `null` | Optional link URL over the image NULL = no link. Internal links are not supported: see AddLink |
 
+#### Limitation
+
+PNG with an alpha channel, interlaced PNG and 16-bit PNG are refused with -20100 on this path -- for those, re-save the image without alpha and without interlacing, or draw it over a finished PDF with OverlayImage, which accepts them.
+
 #### Errors
 
 | Code | When |
@@ -1942,6 +1946,10 @@ PROCEDURE PL_FPDF.ImageFromBlob(
 | `pWidth` | NUMBER | `0` | Requested width. Number in the unit set in Init; 0 (default) derives it from the height |
 | `pHeight` | NUMBER | `0` | Requested height. Number in the unit set in Init; 0 (default) derives it from the width, keeping the aspect ratio |
 | `pLink` | VARCHAR2 | `null` | Makes the image clickable. URL NULL = no link. An AddLink identifier is refused with ORA-20601 |
+
+#### Limitation
+
+PNG with an alpha channel, interlaced PNG and 16-bit PNG are refused with -20100 on this path -- for those, re-save the image without alpha and without interlacing, or draw it over a finished PDF with OverlayImage, which accepts them.
 
 #### Errors
 
@@ -2948,7 +2956,7 @@ Always call it after processing a PDF to release memory. It clears: the loaded P
 
 ```sql
 PL_FPDF.LoadPDF(l_pdf);
--- Processar PDF
+PL_FPDF.RotatePage(1, 90);   -- with no change, OutputModifiedPDF raises -20819
 l_modified := PL_FPDF.OutputModifiedPDF();
 -- release the memory
 PL_FPDF.ClearPDFCache();
@@ -3537,7 +3545,7 @@ END;
 
 ### OverlayImage
 
-Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. Neither format is decompressed: JPEG goes in whole as /DCTDecode, and a PNG's IDAT blocks are already zlib, which is the PDF's /FlateDecode. Not supported, and refused with -20823 rather than drawn wrong: PNG with an alpha channel, interlaced PNG (Adam7) and 16-bit depth.
+Places an image at an exact position on a page of the loaded PDF — logos, scanned signatures, seals. Drawn by OutputModifiedPDF() into the content stream. On the common path nothing is decompressed: JPEG goes in whole as /DCTDecode, and a PNG's IDAT blocks are already zlib, which is the PDF's /FlateDecode — they are concatenated and declared with /Predictor 15, which covers 1 to 16 bits per component. PNG with an alpha channel (colour types 4 and 6) and interlaced PNG (Adam7) are drawn too, by a path that reprocesses pixel by pixel — and so comes out uncompressed, since there is no deflate on that stretch. Refused with -20823, rather than drawn wrong: interlaced below 8 bits per component, indexed AND interlaced, and an image above the pixel ceiling of the reprocessing path.
 
 *Since version 3.0.0*
 
@@ -3594,7 +3602,7 @@ BEGIN
   -- a watermark with transparency
   l_options.put('opacity', 0.3);
   l_options.put('rotation', 45);
-  PL_FPDF.OverlayImage(1, l_watermark, 200, 400, 300, NULL, l_options);
+  PL_FPDF.OverlayImage(1, l_logo, 200, 400, 300, NULL, l_options);
   l_modified := PL_FPDF.OutputModifiedPDF();
 END;
 ```
@@ -3683,7 +3691,7 @@ PROCEDURE PL_FPDF.RemoveOverlay(
 
 | Parameter | Type | Default | Description |
 |-----------|------|--------|-----------|
-| `p_overlay_id` | VARCHAR2 | — | Overlay identifier. The overlayId value returned by GetOverlays, e.g. 'OVL_001' |
+| `p_overlay_id` | VARCHAR2 | — | The ID that GetOverlays returns in overlayId ('OVL_TEXT_00001', 'OVL_IMG_00002'): it is generated, not chosen |
 
 #### Errors
 
@@ -3694,7 +3702,8 @@ PROCEDURE PL_FPDF.RemoveOverlay(
 #### Example
 
 ```sql
-PL_FPDF.RemoveOverlay('OVL_001');
+l_id := TREAT(PL_FPDF.GetOverlays(1).get(0) AS JSON_OBJECT_T).get_string('overlayId');
+PL_FPDF.RemoveOverlay(l_id);
 ```
 
 **See also:** [GetOverlays](#getoverlays) · [ClearOverlays](#clearoverlays)
@@ -3751,7 +3760,7 @@ BEGIN
   PL_FPDF.LoadPDFWithID('manual', l_manual_pdf);
   -- extract pages 1, 5-10 and 15
   l_extracted := PL_FPDF.ExtractPages('manual', '1,5-10,15', NULL);
-  INSERT INTO documents VALUES ('Summary', l_extracted);
+  INSERT INTO documents (id, pdf_content) VALUES (124, l_extracted);
 END;
 ```
 
@@ -4158,7 +4167,9 @@ JSON_OBJECT_T — algorithm, key length and the permissions granted. **See also:
 
 ```sql
 l_info := PL_FPDF.GetSecurityInfo(l_pdf);
-IF l_info.get_boolean('encrypted') THEN ...
+IF l_info.get_boolean('encrypted') THEN
+  DBMS_OUTPUT.PUT_LINE(l_info.to_string);
+END IF;
 ```
 
 **See also:** [IsEncrypted](#isencrypted) · [EncryptPDF](#encryptpdf)
@@ -4191,7 +4202,9 @@ BOOLEAN — TRUE if the document carries encryption. **See also:** [GetSecurityI
 #### Example
 
 ```sql
-IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
+IF PL_FPDF.IsEncrypted(l_pdf) THEN
+  l_pdf := PL_FPDF.DecryptPDF(l_pdf, 'senha');
+END IF;
 ```
 
 **See also:** [GetSecurityInfo](#getsecurityinfo) · [DecryptPDF](#decryptpdf)

@@ -247,7 +247,7 @@ todo o restante da API estão na documentação:
 
 ## Recursos
 
-- **Geração**: multi-página, texto/formas/imagens (PNG com canal alfa e entrelaçado, JPEG), fontes TrueType com UTF-8, tabelas com auto-paginação
+- **Geração**: multi-página, texto/formas/imagens (PNG e JPEG; PNG com canal alfa ou entrelaçado só no overlay sobre PDF pronto), fontes TrueType com UTF-8, tabelas com auto-paginação
 - **Códigos**: QR Code (TEXT, URL, PIX, VCARD, WIFI, EMAIL) e barras (CODE128, CODE39, EAN13, EAN8, ITF, ITF14 — o ITF cobre o código de barras de boleto)
 - **Manipulação**: carregar PDF existente, rotacionar/remover páginas, marca d'água, overlays, merge e split — inclusive em PDF 1.5+, com xref em stream e object streams
 - **Segurança**: AES-256, AES-128 e RC4 40/128 bits, senhas de usuário/proprietário, controle de permissões

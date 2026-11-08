@@ -286,7 +286,10 @@ PL_FPDF.Image(
 l_img := PL_FPDF.getImageFromUrl('https://example.com/logo.png');
 ```
 
-Formats: **PNG** and **JPEG**.
+Formats: **PNG** and **JPEG**. On this path, the one that builds the
+document, a PNG must have no alpha channel, no interlacing and at most 8 bits
+per component; the others are refused with `ORA-20100`. For those, re-save the
+image or use the overlay, below, which accepts them.
 
 ### What the image overlay accepts
 

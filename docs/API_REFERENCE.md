@@ -1896,6 +1896,10 @@ PROCEDURE PL_FPDF.image(
 | `pType` | VARCHAR2 | `null` | formato, quando não se quer deduzir do arquivo |
 | `pLink` | VARCHAR2 | `null` | URL do link sobre a imagem (opcional). Link interno não é suportado: veja AddLink |
 
+#### Limitação
+
+PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por componente são recusados com -20100 neste caminho -- para eles, regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um PDF pronto com OverlayImage, que os aceita.
+
 #### Erros
 
 | Código | Quando |
@@ -1942,6 +1946,10 @@ PROCEDURE PL_FPDF.ImageFromBlob(
 | `pWidth` | NUMBER | `0` | largura ( 0 = derivada) |
 | `pHeight` | NUMBER | `0` | altura ( 0 = derivada) |
 | `pLink` | VARCHAR2 | `null` | link opcional sobre a área da imagem |
+
+#### Limitação
+
+PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por componente são recusados com -20100 neste caminho -- para eles, regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um PDF pronto com OverlayImage, que os aceita.
 
 #### Erros
 
@@ -2948,7 +2956,7 @@ Sempre chame isso após processar um PDF para liberar recursos de memória. Limp
 
 ```sql
 PL_FPDF.LoadPDF(l_pdf);
--- Processar PDF
+PL_FPDF.RotatePage(1, 90);   -- sem modificação, OutputModifiedPDF levanta -20819
 l_modified := PL_FPDF.OutputModifiedPDF();
 -- Limpar memória
 PL_FPDF.ClearPDFCache();
@@ -3594,7 +3602,7 @@ BEGIN
   -- Marca d'água com transparência
   l_options.put('opacity', 0.3);
   l_options.put('rotation', 45);
-  PL_FPDF.OverlayImage(1, l_watermark, 200, 400, 300, NULL, l_options);
+  PL_FPDF.OverlayImage(1, l_logo, 200, 400, 300, NULL, l_options);
   l_modified := PL_FPDF.OutputModifiedPDF();
 END;
 ```
@@ -3683,7 +3691,7 @@ PROCEDURE PL_FPDF.RemoveOverlay(
 
 | Parâmetro | Tipo | Padrão | Descrição |
 |-----------|------|--------|-----------|
-| `p_overlay_id` | VARCHAR2 | — | ID da sobreposição () |
+| `p_overlay_id` | VARCHAR2 | — | o ID que o GetOverlays devolve em overlayId ('OVL_TEXT_00001', 'OVL_IMG_00002'): é gerado, não escolhido |
 
 #### Erros
 
@@ -3694,7 +3702,8 @@ PROCEDURE PL_FPDF.RemoveOverlay(
 #### Exemplo
 
 ```sql
-PL_FPDF.RemoveOverlay('OVL_001');
+l_id := TREAT(PL_FPDF.GetOverlays(1).get(0) AS JSON_OBJECT_T).get_string('overlayId');
+PL_FPDF.RemoveOverlay(l_id);
 ```
 
 **Veja também:** [GetOverlays](#getoverlays) · [ClearOverlays](#clearoverlays)
@@ -3751,7 +3760,7 @@ BEGIN
   PL_FPDF.LoadPDFWithID('manual', l_manual_pdf);
   -- Extrair páginas 1, 5-10 e 15
   l_extracted := PL_FPDF.ExtractPages('manual', '1,5-10,15', NULL);
-  INSERT INTO documents VALUES ('Summary', l_extracted);
+  INSERT INTO documents (id, pdf_content) VALUES (124, l_extracted);
 END;
 ```
 
@@ -4158,7 +4167,9 @@ JSON_OBJECT_T - Security info including: - encrypted: boolean - method: string (
 
 ```sql
 l_info := PL_FPDF.GetSecurityInfo(l_pdf);
-IF l_info.get_boolean('encrypted') THEN ...
+IF l_info.get_boolean('encrypted') THEN
+  DBMS_OUTPUT.PUT_LINE(l_info.to_string);
+END IF;
 ```
 
 **Veja também:** [IsEncrypted](#isencrypted) · [EncryptPDF](#encryptpdf)
@@ -4191,7 +4202,9 @@ TRUE se criptografado
 #### Exemplo
 
 ```sql
-IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
+IF PL_FPDF.IsEncrypted(l_pdf) THEN
+  l_pdf := PL_FPDF.DecryptPDF(l_pdf, 'senha');
+END IF;
 ```
 
 **Veja também:** [GetSecurityInfo](#getsecurityinfo) · [DecryptPDF](#decryptpdf)

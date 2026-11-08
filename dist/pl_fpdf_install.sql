@@ -149,9 +149,11 @@ FUNCTION  crypto_rc4(p_src IN RAW, p_key IN RAW) RETURN RAW;
  *
  * @param p_src os dados
  * @param p_key a chave
- * @param o_dst o resultado
+ * @param o_dst o resultado, num LOB que o chamador já criou
+ *        (DBMS_LOB.CREATETEMPORARY): com NULL, ORA-22275
  * @since 3.3.0
  * @example
+ *   DBMS_LOB.CREATETEMPORARY(l_cifrado, TRUE);
  *   PL_FPDF_UTIL.crypto_rc4_blob(l_claro, l_chave, l_cifrado);
  */
 PROCEDURE crypto_rc4_blob(p_src IN BLOB, p_key IN RAW,
@@ -174,10 +176,12 @@ PROCEDURE crypto_autoteste;
  *
  * @param p_chave a chave (16 ou 32 bytes)
  * @param p_dados o conteúdo
- * @param o_saida o resultado, com o IV na frente
+ * @param o_saida o resultado, com o IV na frente, num LOB que o chamador já
+ *        criou (DBMS_LOB.CREATETEMPORARY): com NULL, ORA-22275
  * @param p_iv o IV; em branco, um aleatório; empty means random
  * @since 3.3.0
  * @example
+ *   DBMS_LOB.CREATETEMPORARY(l_cifrado, TRUE);
  *   PL_FPDF_UTIL.aes_cbc_cifrar(l_chave, l_claro, l_cifrado);
  */
 PROCEDURE aes_cbc_cifrar(p_chave IN            RAW,
@@ -203,9 +207,11 @@ FUNCTION  aes_cbc_cifrar_raw(p_chave IN RAW, p_dados IN RAW) RETURN RAW;
  *
  * @param p_chave a chave
  * @param p_dados o conteúdo cifrado
- * @param o_saida o conteúdo claro
+ * @param o_saida o conteúdo claro, num LOB que o chamador já criou
+ *        (DBMS_LOB.CREATETEMPORARY): com NULL, ORA-22275
  * @since 3.3.0
  * @example
+ *   DBMS_LOB.CREATETEMPORARY(l_claro, TRUE);
  *   PL_FPDF_UTIL.aes_cbc_decifrar(l_chave, l_cifrado, l_claro);
  */
 PROCEDURE aes_cbc_decifrar(p_chave IN            RAW,
@@ -295,7 +301,9 @@ PROCEDURE aes_valores_r6(p_senha_usr  IN  VARCHAR2,
  * @since 3.3.0
  * @example
  *   IF PL_FPDF_UTIL.aes_verificar_r6(l_senha, l_u, l_ue, l_o, l_oe,
- *                                    l_chave, l_dono) THEN ...
+ *                                    l_chave, l_dono) THEN
+ *     DBMS_OUTPUT.PUT_LINE(CASE WHEN l_dono THEN 'dono' ELSE 'usuário' END);
+ *   END IF;
  */
 FUNCTION  aes_verificar_r6(p_senha IN  VARCHAR2,
                            p_u     IN  RAW,
@@ -4154,6 +4162,10 @@ procedure WriteRotated(
  * @param pType formato, quando não se quer deduzir do arquivo
  * @param pLink URL do link sobre a imagem (opcional). Link interno não é
  *        suportado: veja AddLink
+ * @limitation PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por
+ *             componente são recusados com -20100 neste caminho -- para eles,
+ *             regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um
+ *             PDF pronto com OverlayImage, que os aceita.
  * @raises -20100 falha ao buscar ou interpretar a imagem, com a pilha original
  *         preservada
  * @since 0.9.4
@@ -4184,6 +4196,10 @@ procedure image ( pFile   in varchar2,
  * @param pWidth largura (0 = derivada)
  * @param pHeight altura (0 = derivada)
  * @param pLink link opcional sobre a área da imagem
+ * @limitation PNG com canal alfa, PNG entrelaçado e PNG de 16 bits por
+ *             componente são recusados com -20100 neste caminho -- para eles,
+ *             regrave a imagem sem alfa e sem entrelaçar, ou desenhe sobre um
+ *             PDF pronto com OverlayImage, que os aceita.
  * @raises -20301 cabeçalho inválido, BLOB vazio ou nome ausente
  * @raises -20303 formato não suportado
  * @since 3.4.0
@@ -4859,7 +4875,7 @@ FUNCTION OutputModifiedPDF RETURN BLOB;
  * @since 3.0.0
  * @example
  *   PL_FPDF.LoadPDF(l_pdf);
- *   -- Processar PDF
+ *   PL_FPDF.RotatePage(1, 90);   -- sem modificação, OutputModifiedPDF levanta -20819
  *   l_modified := PL_FPDF.OutputModifiedPDF();
  *   -- Limpar memória
  *   PL_FPDF.ClearPDFCache();
@@ -5008,7 +5024,7 @@ PROCEDURE OverlayText(
  *     -- Marca d'água com transparência
  *     l_options.put('opacity', 0.3);
  *     l_options.put('rotation', 45);
- *     PL_FPDF.OverlayImage(1, l_watermark, 200, 400, 300, NULL, l_options);
+ *     PL_FPDF.OverlayImage(1, l_logo, 200, 400, 300, NULL, l_options);
  *     l_modified := PL_FPDF.OutputModifiedPDF();
  *   END;
  */
@@ -5058,11 +5074,13 @@ FUNCTION GetOverlays(p_page_number IN PLS_INTEGER DEFAULT NULL)
 /**
  * Remover sobreposição específica por ID
  *
- * @param p_overlay_id ID da sobreposição ()
+ * @param p_overlay_id o ID que o GetOverlays devolve em overlayId
+ *        ('OVL_TEXT_00001', 'OVL_IMG_00002'): é gerado, não escolhido
  * @raises -20825 Sobreposição não encontrada
  * @since 3.0.0
  * @example
- *   PL_FPDF.RemoveOverlay('OVL_001');
+ *   l_id := TREAT(PL_FPDF.GetOverlays(1).get(0) AS JSON_OBJECT_T).get_string('overlayId');
+ *   PL_FPDF.RemoveOverlay(l_id);
  */
 PROCEDURE RemoveOverlay(p_overlay_id IN VARCHAR2);
 
@@ -5243,7 +5261,7 @@ FUNCTION SplitPDF(
  *     PL_FPDF.LoadPDFWithID('manual', l_manual_pdf);
  *     -- Extrair páginas 1, 5-10 e 15
  *     l_extracted := PL_FPDF.ExtractPages('manual', '1,5-10,15', NULL);
- *     INSERT INTO documents VALUES ('Summary', l_extracted);
+ *     INSERT INTO documents (id, pdf_content) VALUES (124, l_extracted);
  *   END;
  */
 FUNCTION ExtractPages(
@@ -5320,7 +5338,9 @@ FUNCTION DecryptPDF(
  * @return TRUE se criptografado
  * @since 3.0.0
  * @example
- *   IF PL_FPDF.IsEncrypted(l_pdf) THEN ...
+ *   IF PL_FPDF.IsEncrypted(l_pdf) THEN
+ *     l_pdf := PL_FPDF.DecryptPDF(l_pdf, 'senha');
+ *   END IF;
  */
 FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN;
 
@@ -5338,7 +5358,9 @@ FUNCTION IsEncrypted(p_pdf IN BLOB) RETURN BOOLEAN;
  * @since 3.0.0
  * @example
  *   l_info := PL_FPDF.GetSecurityInfo(l_pdf);
- *   IF l_info.get_boolean('encrypted') THEN ...
+ *   IF l_info.get_boolean('encrypted') THEN
+ *     DBMS_OUTPUT.PUT_LINE(l_info.to_string);
+ *   END IF;
  */
 FUNCTION GetSecurityInfo(p_pdf IN BLOB) RETURN JSON_OBJECT_T;
 
