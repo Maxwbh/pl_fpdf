@@ -31,7 +31,9 @@ Sem rede (no CI, a cada push):
    mexida por outro caminho. Precisa do histórico (`fetch-depth: 0`). E o
    formato que o Google aceita: a ordem do esquema do sitemaps.org (os
    `xhtml:link` depois de `priority`), data W3C, URLs debaixo do diretório do
-   sitemap, e hreflang recíproco e igual ao que cada página declara no `<head>`.
+   sitemap, e hreflang recíproco e igual ao que cada página declara no `<head>`;
+   e, em cada página, meta description de 50 a 160 caracteres — as homes
+   tinham 261 e 274, e o Google corta por volta de 155.
 
 Com rede (`--online`: antes de publicar o site, e no workflow semanal):
 
@@ -226,6 +228,11 @@ def formato_sitemap(base):
         if no_head != links:
             erros.append(f'site/sitemap.xml: {loc}: o hreflang do sitemap difere do que '
                          f'a página declara no <head>')
+        desc = re.search(r'<meta name="description" content="([^"]*)"', html)
+        if not desc or not 50 <= len(desc.group(1)) <= 160:
+            erros.append(f'site/sitemap.xml: {loc}: meta description '
+                         f'{"ausente" if not desc else f"com {len(desc.group(1))} caracteres"}'
+                         f' — o Google mostra por volta de 155 e corta o resto')
         if re.search(r'<meta[^>]+name="robots"[^>]+noindex', html, re.I):
             erros.append(f'site/sitemap.xml: {loc}: a página tem noindex e está no sitemap')
     if len(bruto) > 50 * 1024 * 1024 or len(alternativas) > 50000:
