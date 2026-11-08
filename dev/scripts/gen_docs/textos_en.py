@@ -362,7 +362,7 @@ TEXTOS = {
         },
     },
     "IsTTFFontLoaded": {
-        "descricao": ("Diz se a fonte está registrada nesta sessão, e portanto disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.",
+        "descricao": ("Diz se a fonte está registrada nesta sessão e, portanto, disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.",
                       "Checks whether a TrueType font has already been loaded in this session."),
         "params": {
             "p_font_name": ("nome da fonte",

@@ -614,7 +614,7 @@ AMOSTRAS = [
     # Como o boleto, o PL/SQL vem de `examples/ticket.sql`.
     #
     # O que esta amostra tem e o boleto não: **cor** (faixa preenchida, texto
-    # branco sobre ela, painéis cinzas), **QR Code e Code 39 na mesma página**
+    # branco sobre ela, painéis cinza), **QR Code e Code 39 na mesma página**
     # dizendo a mesma coisa, **duas páginas** com participantes diferentes e uma
     # forma que não é retângulo (o rabinho do balão, via `Poly`).
     #

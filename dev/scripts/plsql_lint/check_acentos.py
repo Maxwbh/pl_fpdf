@@ -27,8 +27,8 @@ de Portugal ("secção"), não cobre. Não acusa o que tem duas formas válidas
 ("e"/"é", "esta"/"está", "pagina" verbo/"página") — isso pede contexto, e fica
 para a revisão.
 
-Onde olha: o texto dos .md em português (fora de código, links e URLs) e os
-comentários — `--` e `/* */` no SQL, `#` e docstrings no Python, `#` no YAML,
+Onde olha: o texto dos .md em português (fora de código, links e URLs), o
+texto visível das páginas em português do site, e os comentários — `--` e `/* */` no SQL, `#` e docstrings no Python, `#` no YAML,
 `<!-- -->` e `/* */` nos moldes HTML. Código, strings e identificadores não
 entram. Fica de fora o que é em inglês, o que é gerado e as impressões
 digitais do fonte original.
@@ -57,7 +57,7 @@ FORA = re.compile(
     r'|run_all_tests\.sql$|^dev/tests/diag_xrefstm\.sql$)')
 # termos técnicos, nomes próprios e inglês que o dicionário "acentuaria"
 TECNICOS = {'helvetica', 'cache', 're', 'util', 'index', 'has', 'pure', 'medium',
-            'ajax', 'ca', 'pre', 'pos', 'logotipo', 'agua', 'alias', 'estas'}
+            'ajax', 'ca', 'pre', 'pos', 'logotipo', 'agua', 'alias', 'estas', 'aria'}
 PALAVRA = re.compile(r"(?<![\w./`$@#<'-])([A-Za-z]+)(?![\w`$@(]|\.\w)")
 
 
@@ -152,6 +152,38 @@ def regioes(rel, t):
     return []
 
 
+SITE_PT = ('site/index.html', 'site/api.html', 'site/reference.html')
+
+
+def texto_visivel(pagina):
+    """O texto que o visitante lê numa página do site: fora de código, script e
+    estilo, mais os atributos que viram texto (alt, title, aria-label). O site
+    sai de strings Python e dos moldes, e não de comentários -- sem esta
+    passada, o texto mais lido do projeto era o único que nada conferia."""
+    import html.parser
+
+    class P(html.parser.HTMLParser):
+        def __init__(s):
+            super().__init__()
+            s.pula, s.partes = 0, []
+
+        def handle_starttag(s, tag, attrs):
+            if tag in ('code', 'pre', 'script', 'style', 'svg', 'kbd'):
+                s.pula += 1
+            s.partes += [v for k, v in attrs if k in ('alt', 'title', 'aria-label') and v]
+
+        def handle_endtag(s, tag):
+            if tag in ('code', 'pre', 'script', 'style', 'svg', 'kbd'):
+                s.pula -= 1
+
+        def handle_data(s, d):
+            if not s.pula:
+                s.partes.append(d)
+    p = P()
+    p.feed(pagina)
+    return ' '.join(p.partes)
+
+
 def main():
     try:
         from spellchecker import SpellChecker
@@ -200,6 +232,17 @@ def main():
                 if s:
                     linha = t.count('\n', 0, m.start()) + 1
                     erros.append(f'{rel}:{linha}: "{m.group(1)}" -> "{s}"')
+    for rel in SITE_PT:
+        caminho = os.path.join(RAIZ, rel)
+        if not os.path.exists(caminho):
+            continue
+        n_arqs += 1
+        texto = texto_visivel(io.open(caminho, encoding='utf-8').read())
+        for m in PALAVRA.finditer(texto):
+            s = sugestao(m.group(1))
+            if s:
+                erros.append(f'{rel} (texto visível): "{m.group(1)}" -> "{s}" '
+                             f'em "...{texto[max(0, m.start() - 30):m.end() + 30].strip()}..."')
     if erros:
         print(f'ERRO: {len(erros)} palavra(s) sem acento (português do Brasil):')
         for e in erros[:200]:

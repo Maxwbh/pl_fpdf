@@ -785,7 +785,7 @@ l_fonte := PL_FPDF.GetTTFFontInfo('Roboto');
 
 ### IsTTFFontLoaded
 
-Diz se a fonte está registrada nesta sessão, e portanto disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.
+Diz se a fonte está registrada nesta sessão e, portanto, disponível para o SetFont. O nome não diferencia maiúsculas de minúsculas.
 
 *Desde a versão 2.0.0*
 

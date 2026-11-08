@@ -330,7 +330,7 @@ EXEMPLOS = {
          "E o irmão colorido: um ingresso de evento",
          "And its colourful sibling: an event ticket"),
         ("lead", "",
-         "O boleto prova grade. O ingresso prova o resto: <b>cor</b> —\nfaixa preenchida com texto branco por cima, painéis cinzas —, <b>QR Code e\nCode 39 na mesma página</b> dizendo o mesmo código, <b>uma página por\ningresso</b> e uma forma que não é retângulo, o rabinho do balão. Também\nsem imagem nenhuma.",
+         "O boleto prova grade. O ingresso prova o resto: <b>cor</b> —\nfaixa preenchida com texto branco por cima, painéis cinza —, <b>QR Code e\nCode 39 na mesma página</b> dizendo o mesmo código, <b>uma página por\ningresso</b> e uma forma que não é retângulo, o rabinho do balão. Também\nsem imagem nenhuma.",
          "The Boleto proves the grid. The ticket proves the rest: <b>colour</b> —\na filled band with white text over it, grey panels —, <b>a QR Code and a Code 39 on the\nsame page</b> saying the same code, <b>one page per ticket</b>, and a shape that is not a\nrectangle: the little tail of the speech bubble. Again, not a single image."),
         ("imagem", "",
          "<picture>\n<source srcset=\"assets/exemplo-ticket.webp\" type=\"image/webp\">\n<img src=\"assets/exemplo-ticket.png\" width=\"470\" height=\"642\" loading=\"lazy\" decoding=\"async\"\nstyle=\"max-width:100%;height:auto;border-radius:10px;box-shadow:0 10px 40px rgba(0,0,0,.35)\"\nalt=\"Ingresso de evento gerado pelo PL_FPDF: cabeçalho colorido, QR Code e código de barras\">\n</picture>",

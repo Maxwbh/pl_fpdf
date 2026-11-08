@@ -153,7 +153,7 @@ procedure LoadTTFFromFile(
 );
 
 /**
- * Diz se a fonte está registrada nesta sessão, e portanto disponível para o
+ * Diz se a fonte está registrada nesta sessão e, portanto, disponível para o
  * SetFont. O nome não diferencia maiúsculas de minúsculas.
  *
  * @param p_font_name nome da fonte
