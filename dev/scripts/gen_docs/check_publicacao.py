@@ -154,8 +154,14 @@ def formato_sitemap(base):
     changefreq, priority, e só DEPOIS os elementos de outro namespace. O
     arquivo trazia os xhtml:link logo depois do loc e não validava contra o
     sitemap.xsd. O resto é regra do Google: toda URL debaixo do diretório do
-    sitemap, data W3C, e hreflang recíproco, com a própria página, x-default, e
-    o mesmo conjunto que a página declara no <head>, com canonical para si."""
+    sitemap, data W3C, e canonical de cada página para si.
+
+    O hreflang mora num lugar só, o <head> das páginas, e é conferido lá:
+    recíproco, com a própria página e x-default. O Google aceita o hreflang no
+    sitemap OU no <head>; ter nos dois era o mesmo dado em duas cópias, e o
+    sitemap ficava diferente dos outros sites do domínio (`pyCobranca`
+    e `cobranca-api`), que só têm loc e lastmod. Se ele voltar ao sitemap, tem de
+    ser igual ao do <head>."""
     import xml.etree.ElementTree as ET
     erros = []
     bruto = io.open(os.path.join(RAIZ, 'site', 'sitemap.xml'), 'rb').read()
@@ -171,6 +177,7 @@ def formato_sitemap(base):
         return erros + ['site/sitemap.xml: a raiz não é <urlset> do sitemaps.org']
     ordem = ['loc', 'lastmod', 'changefreq', 'priority']
     alternativas = {}
+    cabecas = {}
     for u in raiz.findall(NS_SM + 'url'):
         loc = (u.findtext(NS_SM + 'loc') or '').strip()
         nomes = [f.tag.replace(NS_SM, '') if f.tag.startswith(NS_SM) else None for f in u]
@@ -225,9 +232,10 @@ def formato_sitemap(base):
             erros.append(f'site/sitemap.xml: {loc}: a página não tem canonical para si mesma')
         no_head = dict(re.findall(r'<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"',
                                   html))
-        if no_head != links:
+        if links and no_head != links:
             erros.append(f'site/sitemap.xml: {loc}: o hreflang do sitemap difere do que '
                          f'a página declara no <head>')
+        cabecas[loc] = no_head
         desc = re.search(r'<meta name="description" content="([^"]*)"', html)
         if not desc or not 50 <= len(desc.group(1)) <= 160:
             erros.append(f'site/sitemap.xml: {loc}: meta description '
@@ -235,6 +243,19 @@ def formato_sitemap(base):
                          f' — o Google mostra por volta de 155 e corta o resto')
         if re.search(r'<meta[^>]+name="robots"[^>]+noindex', html, re.I):
             erros.append(f'site/sitemap.xml: {loc}: a página tem noindex e está no sitemap')
+    # o hreflang mora no <head> das páginas: recíproco, com a própria página
+    # e x-default, e só apontando para página do sitemap
+    for loc, cab in cabecas.items():
+        if not cab:
+            continue
+        if loc not in [h for k, h in cab.items() if k != 'x-default'] or 'x-default' not in cab:
+            erros.append(f'{loc}: o hreflang do <head> não inclui a própria página e o x-default')
+        for k, h in cab.items():
+            if h not in cabecas:
+                erros.append(f'{loc}: hreflang {k} aponta para {h}, que não está no sitemap')
+            elif cabecas[h] != cab:
+                erros.append(f'{loc} e {h} não declaram o mesmo hreflang no <head> — '
+                             f'tem de ser recíproco')
     if len(bruto) > 50 * 1024 * 1024 or len(alternativas) > 50000:
         erros.append('site/sitemap.xml: acima do limite do Google (50 MB ou 50.000 URLs)')
     return erros
