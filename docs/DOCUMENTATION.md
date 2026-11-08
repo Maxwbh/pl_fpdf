@@ -610,10 +610,12 @@ uma nota, um contrato assinado à parte.
 
 Fluxo: `LoadPDF` → inspecionar/modificar → `OutputModifiedPDF`.
 
-Vale para PDF de qualquer produtor, inclusive **PDF 1.5+** — onde a referência
-cruzada é um stream comprimido e os objetos ficam dentro de *object streams*. O
+Vale para PDF 1.0 a 1.4 e também para **PDF 1.5+** — onde a referência cruzada
+é um stream comprimido e os objetos ficam dentro de *object streams*. O
 conteúdo das páginas é copiado byte a byte, sem re-renderizar: fontes, imagens e
-anotações chegam intactas.
+anotações chegam intactas. Há limites: PDF cifrado é recusado (`ORA-20867`), e
+formulários e assinatura digital não são tratados — a lista completa está no
+[guia de compatibilidade](COMPATIBILITY.md#5-o-pdf-lido-loadpdf-e-manipulação).
 
 <!-- exemplo-ilustrativo: lê de uma tabela do usuário (documentos) -->
 ```sql
