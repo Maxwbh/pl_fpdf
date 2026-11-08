@@ -341,8 +341,10 @@ PL_FPDF.SetAliasNbPages(<span class="s">&#x27;{nb}&#x27;</span>);  <span class="
     <tr><td>AddQRCode(x, y, size, dados, formato, correção)</td><td>Formatos TEXT, URL, PIX, VCARD, WIFI, EMAIL · correção L/M/Q/H</td></tr>
     <tr><td>AddBarcode(x, y, w, h, código, tipo, texto)</td><td>CODE128, CODE39, EAN13, EAN8, ITF14</td></tr>
   </tbody></table></div>
-  <p class="note">PIX com payload EMV completo e Boleto FEBRABAN prontos para uso estão na
-  <a href="https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments">extensão brazilian-payments</a>.</p>
+  <p class="note">PIX com payload EMV completo e Boleto no leiaute FEBRABAN estão na
+  <a href="https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments">extensão brazilian-payments</a>,
+  opcional e instalada à parte. Ela não tem homologação bancária: antes de usar em
+  produção, valide o boleto com o banco e o PIX com o seu prestador de pagamento.</p>
 <div class="window"><div class="win-bar"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i><span class="win-t">qr_barras.sql</span></div>
 <pre>PL_FPDF.AddQRCode(
   p_x => <span class="n">150</span>, p_y => <span class="n">20</span>, p_size => <span class="n">40</span>,   <span class="c">-- posição e lado (unidade do doc)</span>

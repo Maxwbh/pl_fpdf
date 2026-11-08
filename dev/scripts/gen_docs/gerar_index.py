@@ -156,10 +156,14 @@ def pagina(c, k, versao):
         passos.append('      <div class="step">\n'
                       f'        <h3>{esc(p["titulo"][k])}</h3>\n'
                       f'        <p>{p["texto"][k]}</p>\n'
-                      '        <code class="block">'
-                      + p['codigo'].format(versao=versao,
-                                           release=c.ULTIMO_RELEASE)
-                      + '</code>' + depois + '\n      </div>')
+                      + (f'        <a class="btn primary" href="{p["botao"][0]}">'
+                         + esc(p['botao'][1][k].format(release=c.ULTIMO_RELEASE))
+                         + '</a>' if p.get('botao') else
+                         '        <code class="block">'
+                         + p['codigo'].format(versao=versao,
+                                              release=c.ULTIMO_RELEASE)
+                         + '</code>')
+                      + depois + '\n      </div>')
     partes['INSTALACAO'] = (
         f'    <p class="kicker">{esc(c.INSTALACAO["kicker"][k])}</p>\n'
         f'    <h2>{c.INSTALACAO["h2"][k]}</h2>\n'

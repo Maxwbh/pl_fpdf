@@ -358,8 +358,8 @@ SECOES = [
                   "CODE128, CODE39, EAN13, EAN8, ITF14")),
             ]),
             ("nota",
-             "PIX com payload EMV completo e Boleto FEBRABAN prontos para uso estão na\n  <a href=\"https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments\">extensão brazilian-payments</a>.",
-             "PIX with a full EMV payload and FEBRABAN Boleto, ready to use, live in the\n  <a href=\"https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments\">brazilian-payments extension</a> — both are Brazilian payment standards."),
+             "PIX com payload EMV completo e Boleto no leiaute FEBRABAN estão na\n  <a href=\"https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments\">extensão brazilian-payments</a>,\n  opcional e instalada à parte. Ela não tem homologação bancária: antes de usar em\n  produção, valide o boleto com o banco e o PIX com o seu prestador de pagamento.",
+             "PIX with a full EMV payload and Boleto in the FEBRABAN layout live in the\n  <a href=\"https://github.com/Maxwbh/pl_fpdf/tree/master/extensions/brazilian-payments\">brazilian-payments extension</a>,\n  optional and installed separately — both are Brazilian payment standards. It has no bank\n  certification: before using it in production, validate the boleto with the bank and the\n  PIX with your payment provider."),
             ('janela', ("qr_barras.sql", "qr_barcode.sql"), [
                 "PL_FPDF.AddQRCode(",
                 "  p_x => 150, p_y => 20, p_size => 40,   -- posição e lado (unidade do doc)",

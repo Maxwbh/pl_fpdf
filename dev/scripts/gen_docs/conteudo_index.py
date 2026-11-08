@@ -86,8 +86,8 @@ CONFERIR = ('sha256sum -c SHA256.txt'
 HERO = {
     'h1': ("PDF <span class=\"grad\">100% em PL/SQL</span>, direto no Oracle Database",
            "PDF <span class=\"grad\">100% in PL/SQL</span>, right inside Oracle Database"),
-    'sub': ("Gere, modifique, mescle e criptografe PDFs <b>sem sair do banco</b> —\nsem Java, sem middleware, sem dependências externas. Dois arquivos, um deploy.",
-            "Generate, edit, merge and encrypt PDFs <b>without leaving the database</b> —\nno Java, no middleware, no external dependencies. Two files, one deploy."),
+    'sub': ("Gere, modifique, mescle e criptografe PDFs <b>sem sair do banco</b> —\nsem Java, sem middleware, sem dependências externas. Um instalador, um deploy.",
+            "Generate, edit, merge and encrypt PDFs <b>without leaving the database</b> —\nno Java, no middleware, no external dependencies. One installer, one deploy."),
     # o primeiro é a versão, e vem do package
     'chips': [
         ("v{versao}", "v{versao}"),
@@ -161,8 +161,11 @@ RECURSOS = {
         {
             'icone': "<svg viewBox=\"0 0 24 24\"><path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M15 3v4h4M9 12h6M9 16h4\"/></svg>",
             'titulo': ("Manipula PDFs existentes", "Edits existing PDFs"),
-            'texto': ("Carregar, rotacionar, marcar d'água, mesclar e dividir arquivos PDF já prontos — inclusive PDF 1.5+, de qualquer produtor. Tudo por código.",
-                      "Load, rotate, watermark, merge and split finished PDF files — including PDF 1.5+, from any producer. All in code."),
+            # "de qualquer produtor" prometia mais do que o LoadPDF cumpre: PDF
+            # cifrado é recusado (-20867), e formulário e assinatura não
+            # sobrevivem. Os limites estão no guia de compatibilidade.
+            'texto': ("Carregar, rotacionar, marcar d'água, mesclar e dividir PDFs já prontos, inclusive PDF 1.5+ com xref e object streams. <a href=\"https://github.com/Maxwbh/pl_fpdf/blob/master/docs/COMPATIBILITY.md#5-o-pdf-lido-loadpdf-e-manipulação\">Limites no guia de compatibilidade</a>.",
+                      "Load, rotate, watermark, merge and split finished PDFs, including PDF 1.5+ with xref and object streams. <a href=\"https://github.com/Maxwbh/pl_fpdf/blob/master/docs/COMPATIBILITY_EN.md#5-the-pdf-read-loadpdf-and-manipulation\">Limits in the compatibility guide</a>."),
         },
         {
             'icone': "<svg viewBox=\"0 0 24 24\"><rect x=\"4\" y=\"10\" width=\"16\" height=\"10\" rx=\"2\"/><path d=\"M8 10V7a4 4 0 0 1 8 0v3M12 14v3\"/></svg>",
@@ -179,8 +182,10 @@ RECURSOS = {
         {
             'icone': "<svg viewBox=\"0 0 24 24\"><path d=\"M20 7 12 3 4 7m16 0v10l-8 4m8-14-8 4M4 7v10l8 4m0-10v10\"/></svg>",
             'titulo': ("Zero dependências", "Zero dependencies"),
-            'texto': ("Sem OWA, sem OrdImage, sem libs de terceiros. Apenas dois arquivos: <code>.pks</code> + <code>.pkb</code>.",
-                      "No OWA, no OrdImage, no third-party libraries. Just two files: <code>.pks</code> + <code>.pkb</code>."),
+            # Eram "dois arquivos: .pks + .pkb" desde antes de o utilitário virar
+            # package próprio. São dois packages, num instalador só.
+            'texto': ("Sem Java, OWA, OrdImage ou libs de terceiros. Dois packages PL/SQL, <code>PL_FPDF</code> e <code>PL_FPDF_UTIL</code>, num único instalador SQL.",
+                      "No Java, OWA, OrdImage or third-party libraries. Two PL/SQL packages, <code>PL_FPDF</code> and <code>PL_FPDF_UTIL</code>, in a single SQL installer."),
         },
         {
             'icone': "<svg viewBox=\"0 0 24 24\"><path d=\"m8 9-4 3 4 3m8-6 4 3-4 3M13 6l-2 12\"/></svg>",
@@ -393,8 +398,8 @@ INSTALACAO = {
                "Install"),
     "h2": ("Três passos e está no ar",
            "Three steps and it is running"),
-    "lead": ("Compatível com Oracle 19c ou superior. Nenhum objeto além dos packages é criado.",
-             "Works on Oracle 19c or later. No object other than the packages is created."),
+    "lead": ("Compatível com Oracle 19c ou superior. Nenhum objeto além dos packages é criado. Atualização, instalação em outro schema e desinstalação estão no <a href=\"https://github.com/Maxwbh/pl_fpdf/blob/master/docs/INSTALLATION.md\">guia de instalação</a>.",
+             "Works on Oracle 19c or later. No object other than the packages is created. Upgrading, installing into another schema and uninstalling are in the <a href=\"https://github.com/Maxwbh/pl_fpdf/blob/master/docs/INSTALLATION_EN.md\">installation guide</a>."),
     'aviso': ("<b>Estável × candidata.</b> O link abaixo instala a <b>{release}</b>, a versão\nestável. Esta página e a <a href=\"reference.html\">referência</a> já descrevem a\n<b>{versao}</b>, publicada como candidata\n(<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/tag/{candidata}\">{candidata}</a>); o que só\nexiste nela vem marcado na referência. <b>No Oracle 26ai, a {release} não\nfunciona</b>: lá, só a candidata roda.",
               "<b>Stable vs candidate.</b> The link below installs <b>{release}</b>, the stable\nversion. This page and the <a href=\"reference.html\">reference</a> already describe\n<b>{versao}</b>, published as a candidate\n(<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/tag/{candidata}\">{candidata}</a>); what exists\nonly there is marked in the reference. <b>On Oracle 26ai, {release} does not\nwork</b>: there, only the candidate runs."),
     'passos': [
@@ -402,7 +407,11 @@ INSTALACAO = {
             'titulo': ("Baixe um arquivo", "Download one file"),
             'texto': ("Sem clone: o instalador completo em um <code>.sql</code>, com o SHA-256 ao lado.",
                       "No clone: the whole installer in a single <code>.sql</code>, with its SHA-256 beside it."),
-            'codigo': "<a href=\"https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql\">pl_fpdf_install.sql</a>",
+            # Botão, e não só o nome do arquivo num bloco de código: é a ação
+            # principal da seção. O "latest" entrega o ULTIMO_RELEASE -- o
+            # check_publicacao.py --online confere isso antes de publicar.
+            'botao': ("https://github.com/Maxwbh/pl_fpdf/releases/latest/download/pl_fpdf_install.sql",
+                      ("Baixar a versão {release}", "Download version {release}")),
             # O "latest" do GitHub não inclui pre-lancamento: este link nunca
             # entrega a candidata, e o texto tem de dizer isso.
             'depois': ("A versão estável mais recente — o “latest” do GitHub não inclui pré-lançamentos.",
@@ -418,8 +427,8 @@ INSTALACAO = {
         },
         {
             'titulo': ("Confirme a versão", "Check the version"),
-            'texto': ("A versão sai na aba Output. Pronto para gerar o primeiro PDF.",
-                      "The version shows in the Output tab. Ready to produce the first PDF."),
+            'texto': ("A versão sai na aba Output, com o DBMS_OUTPUT ligado (no SQL*Plus, <code>SET SERVEROUTPUT ON</code>). Pronto para gerar o primeiro PDF.",
+                      "The version shows in the Output tab, with DBMS_OUTPUT enabled (in SQL*Plus, <code>SET SERVEROUTPUT ON</code>). Ready to produce the first PDF."),
             # Bloco, e não SELECT: constante de package não é visível em SQL, e
             # `SELECT PL_FPDF.co_version FROM DUAL` da ORA-06553 PLS-221 em
             # qualquer versão do Oracle. Quem seguia o passo achava que a
