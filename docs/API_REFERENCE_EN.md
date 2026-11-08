@@ -173,7 +173,7 @@ FUNCTION PL_FPDF.AcceptPageBreak RETURN BOOLEAN;
 
 #### Returns
 
-BOOLEAN — TRUE if the automatic page break is enabled. **See also:** [SetAutoPageBreak](#setautopagebreak)
+BOOLEAN — TRUE if the automatic page break is enabled.
 
 #### Example
 
@@ -248,7 +248,7 @@ FUNCTION PL_FPDF.GetCurrentPage RETURN PLS_INTEGER;
 
 #### Returns
 
-PLS_INTEGER — number of the active page. **See also:** [SetPage](#setpage), [PageNo](#pageno)
+PLS_INTEGER — number of the active page.
 
 #### Example
 
@@ -274,7 +274,7 @@ FUNCTION PL_FPDF.GetX RETURN NUMBER;
 
 #### Returns
 
-NUMBER — X coordinate. **See also:** [SetX](#setx), [SetXY](#setxy)
+NUMBER — X coordinate.
 
 #### Example
 
@@ -300,7 +300,7 @@ FUNCTION PL_FPDF.GetY RETURN NUMBER;
 
 #### Returns
 
-NUMBER — Y coordinate. **See also:** [SetY](#sety)
+NUMBER — Y coordinate.
 
 #### Example
 
@@ -681,7 +681,7 @@ PL_FPDF.AddFont('Arial', 'B');
 
 ### AddTTFFont
 
-Registers a TrueType font from a BLOB and makes it available to `SetFont`. The file's tables are really parsed, and the font is embedded in the PDF as `/FontFile2`.
+Registers a TrueType font from a BLOB and makes it available to SetFont. The file's tables are really parsed, and the font is embedded in the PDF as /FontFile2.
 
 *Since version 2.0.0*
 
@@ -765,7 +765,7 @@ FUNCTION PL_FPDF.GetTTFFontInfo(
 
 #### Returns
 
-recTTFFont — record with the font's metrics and information. **See also:** [AddTTFFont](#addttffont)
+recTTFFont — record with the font's metrics and information.
 
 #### Errors
 
@@ -804,7 +804,7 @@ FUNCTION PL_FPDF.IsTTFFontLoaded(
 
 #### Returns
 
-BOOLEAN — TRUE if the font is in the cache. **See also:** [AddTTFFont](#addttffont), [ClearTTFFontCache](#clearttffontcache)
+BOOLEAN — TRUE if the font is in the cache.
 
 #### Example
 
@@ -1096,7 +1096,7 @@ FUNCTION PL_FPDF.GetCurrentFontFamily RETURN VARCHAR2;
 
 #### Returns
 
-VARCHAR2 — the family name. **See also:** [SetFont](#setfont)
+VARCHAR2 — the family name.
 
 #### Example
 
@@ -1122,7 +1122,7 @@ FUNCTION PL_FPDF.GetCurrentFontSize RETURN NUMBER;
 
 #### Returns
 
-NUMBER — size in points. **See also:** [SetFont](#setfont)
+NUMBER — size in points.
 
 #### Example
 
@@ -1148,7 +1148,7 @@ FUNCTION PL_FPDF.GetCurrentFontStyle RETURN VARCHAR2;
 
 #### Returns
 
-VARCHAR2 — '', 'B', 'I', 'BI' or 'U', always **uppercase**. > `SetFont` normalises it: `'b'` goes in and `'B'` comes back. **See also:** [SetFont](#setfont)
+VARCHAR2 — '', 'B', 'I', 'BI' or 'U', always UPPERCASE. > SetFont normalises it: 'b' goes in and 'B' comes back.
 
 #### Example
 
@@ -1174,7 +1174,7 @@ FUNCTION PL_FPDF.GetLineSpacing RETURN NUMBER;
 
 #### Returns
 
-NUMBER — the configured spacing. **See also:** [SetLineSpacing](#setlinespacing)
+NUMBER — the configured spacing.
 
 #### Example
 
@@ -1841,7 +1841,7 @@ FUNCTION PL_FPDF.getImageFromUrl(
 
 #### Returns
 
-recImageBlob — record with the image's content and metadata. **See also:** [Image](#image)
+recImageBlob — record with the image's content and metadata.
 
 #### Note
 
@@ -1918,7 +1918,7 @@ PL_FPDF.Image('https://example.com/logo.png', 10, 10, 40);
 
 ### ImageFromBlob
 
-Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. `Image` fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission.
+Places an image you already hold — from a table, a BFILE or a variable — without going through a URL. Image fetches over the network, which needs an ACL granted to the schema; when the bytes are already in the database, this entry point needs neither the network nor the permission. The format is recognised by the first bytes of the file, not by its extension: PNG and JPEG; anything else is refused.
 
 *Since version 3.4.0*
 
@@ -1973,7 +1973,7 @@ PL_FPDF.ImageFromBlob(l_logo, 'LOGO', 10, 10, 40);
 
 ### AddLink
 
-Creates an internal link, still without a destination, and returns its identifier.
+Not supported: always raises -20601. It would create an internal link, and internal links are not implemented: the /Dest was never written to the file, so the identifier this function would return would lead nowhere -- and Link refuses it. Until September 2026 the call raised ORA-06531, "reference to uninitialized collection", because the internal collection was never initialised: it never worked, in any version. It now refuses with a message that says what to use instead. Use a URL.
 
 *Since version 0.9.4*
 
@@ -1985,7 +1985,7 @@ FUNCTION PL_FPDF.AddLink RETURN NUMBER;
 
 #### Returns
 
-NUMBER — the link identifier.
+NUMBER — never returns: it raises first.
 
 #### Errors
 
@@ -2053,7 +2053,7 @@ PL_FPDF.Link(20, 40, 60, 10, 'https://example.com');
 
 ### SetLink
 
-Sets the destination of an internal link created by AddLink.
+Not supported: always raises -20601, for the same reason as AddLink: storing the destination would achieve nothing, because the /Dest is not emitted and nothing reads it. Until September 2026 it raised ORA-06531. Use a URL.
 
 *Since version 0.9.4*
 
@@ -2070,8 +2070,8 @@ PROCEDURE PL_FPDF.SetLink(
 
 | Parameter | Type | Default | Description |
 |-----------|------|--------|-----------|
-| `plink` | NUMBER | — | Link identifier. The value returned by AddLink |
-| `py` | NUMBER | `0` | Vertical destination on the page. Number in the unit set by Init (mm, cm, pt or in); 0 (default) = top of the page |
+| `plink` | NUMBER | — | The identifier AddLink would return (AddLink always raises -20601) |
+| `py` | NUMBER | `0` | Vertical destination on the page; - 1 = the current position |
 | `ppage` | NUMBER | `-1` | Destination page. Page number; -1 (default) = the current page |
 
 #### Errors
@@ -2350,7 +2350,7 @@ FUNCTION PL_FPDF.GetDocumentMetadata RETURN JSON_OBJECT_T;
 
 #### Returns
 
-JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options. **See also:** [SetDocumentConfig](#setdocumentconfig)
+JSON_OBJECT_T — object with title, subject, author, keywords, creator and the remaining options.
 
 #### Note
 
@@ -2392,7 +2392,7 @@ FUNCTION PL_FPDF.GetPageInfo(
 
 #### Returns
 
-JSON_OBJECT_T — width, height, orientation and rotation of the page. **See also:** [GetCurrentPage](#getcurrentpage), [GetPDFInfo](#getpdfinfo)
+JSON_OBJECT_T — width, height, orientation and rotation of the page.
 
 #### Note
 
@@ -2725,7 +2725,7 @@ PL_FPDF.OpenPDF;
 
 ### Output
 
-Classic FPDF-style output (compatibility). Prefer OutputBlob or OutputFile.
+Closes the document and writes it to a file, in the PDF_DIR DIRECTORY. It is the legacy form: the browser delivery modes ('I', 'D', 'S') left together with OWA/HTP and now refuse with -20306, saying what to use instead. To get the bytes, use OutputBlob.
 
 *Since version 0.9.4*
 
@@ -2742,7 +2742,7 @@ PROCEDURE PL_FPDF.Output(
 | Parameter | Type | Default | Description |
 |-----------|------|--------|-----------|
 | `pname` | VARCHAR2 | `null` | File or document name. Any VARCHAR2 |
-| `pdest` | VARCHAR2 | `null` | Destination. 'S', 'D', 'I' or 'F' |
+| `pdest` | VARCHAR2 | `null` | Destination: 'F' (File) is the only one supported |
 
 #### Errors
 
@@ -2775,7 +2775,7 @@ FUNCTION PL_FPDF.OutputBlob RETURN BLOB;
 
 #### Returns
 
-BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)
+BLOB — the PDF content.
 
 #### Errors
 
@@ -2856,7 +2856,7 @@ FUNCTION PL_FPDF.ReturnBlob(
 
 #### Returns
 
-BLOB — the PDF content. **See also:** [OutputBlob](#outputblob)
+BLOB — the PDF content.
 
 #### Errors
 
@@ -3031,7 +3031,7 @@ FUNCTION PL_FPDF.FlateEncode(
 
 #### Returns
 
-BLOB — zlib stream: header, DEFLATE and Adler-32. **See also:** [FlateDecode](#flatedecode), [SetCompression](#setcompression)
+BLOB — zlib stream: header, DEFLATE and Adler-32.
 
 #### Example
 
@@ -3057,7 +3057,7 @@ FUNCTION PL_FPDF.GetActivePageCount RETURN PLS_INTEGER;
 
 #### Returns
 
-PLS_INTEGER — pages not marked for removal. **See also:** [RemovePage](#removepage), [GetPageCount](#getpagecount)
+PLS_INTEGER — pages not marked for removal.
 
 #### Note
 
@@ -3217,7 +3217,7 @@ FUNCTION PL_FPDF.IsPageRemoved(
 
 #### Returns
 
-BOOLEAN — TRUE if the page will be removed from the output. **See also:** [RemovePage](#removepage)
+BOOLEAN — TRUE if the page will be removed from the output.
 
 #### Example
 
@@ -3245,7 +3245,7 @@ FUNCTION PL_FPDF.IsPDFModified RETURN BOOLEAN;
 
 #### Returns
 
-BOOLEAN — TRUE if there are changes not yet applied. **See also:** [OutputModifiedPDF](#outputmodifiedpdf)
+BOOLEAN — TRUE if there are changes not yet applied.
 
 #### Note
 
@@ -3782,7 +3782,7 @@ FUNCTION PL_FPDF.GetLoadedPDFs RETURN JSON_ARRAY_T;
 
 #### Returns
 
-JSON_ARRAY_T — objects with the id and the information of each loaded PDF. **See also:** [LoadPDFWithID](#loadpdfwithid), [UnloadPDF](#unloadpdf)
+JSON_ARRAY_T — objects with the id and the information of each loaded PDF.
 
 #### Example
 
@@ -4134,7 +4134,13 @@ FUNCTION PL_FPDF.GetPDFVersion RETURN VARCHAR2;
 
 #### Returns
 
-VARCHAR2 — the version, e.g. '1.7'. **See also:** [SetPDFVersion](#setpdfversion)
+VARCHAR2 — the version, e.g. '1.7'.
+
+#### Example
+
+```sql
+DBMS_OUTPUT.PUT_LINE(PL_FPDF.GetPDFVersion);
+```
 
 **See also:** [SetPDFVersion](#setpdfversion)
 
@@ -4161,7 +4167,7 @@ FUNCTION PL_FPDF.GetSecurityInfo(
 
 #### Returns
 
-JSON_OBJECT_T — algorithm, key length and the permissions granted. **See also:** [IsEncrypted](#isencrypted), [EncryptPDF](#encryptpdf)
+JSON_OBJECT_T — algorithm, key length and the permissions granted.
 
 #### Example
 
@@ -4197,7 +4203,7 @@ FUNCTION PL_FPDF.IsEncrypted(
 
 #### Returns
 
-BOOLEAN — TRUE if the document carries encryption. **See also:** [GetSecurityInfo](#getsecurityinfo), [DecryptPDF](#decryptpdf)
+BOOLEAN — TRUE if the document carries encryption.
 
 #### Example
 
@@ -4396,7 +4402,7 @@ PL_FPDF.DebugEnabled;
 
 ### Error
 
-Raises a standard PL_FPDF error. For internal use and for extensions.
+Raises ORA-20100 with the given message, adding the trace of its origin and keeping the original stack (keeperrorstack) -- that is what keeps the real error behind the -20100 traceable. It is the library's internal error path; it is public by inheritance.
 
 *Since version 0.9.4*
 
@@ -4441,7 +4447,7 @@ FUNCTION PL_FPDF.GetLogLevel RETURN PLS_INTEGER;
 
 #### Returns
 
-PLS_INTEGER — the current level (0 to 4). **See also:** [SetLogLevel](#setloglevel)
+PLS_INTEGER — the current level (0 to 4).
 
 #### Example
 
@@ -4467,7 +4473,7 @@ FUNCTION PL_FPDF.GetScaleFactor RETURN NUMBER;
 
 #### Returns
 
-NUMBER — the scale factor, e.g. 2.8346 for millimetres. **See also:** [Init](#init)
+NUMBER — the scale factor, e.g. 2.8346 for millimetres.
 
 #### Example
 

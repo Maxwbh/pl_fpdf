@@ -321,6 +321,30 @@ def gerar_md(api, rot=gerar_html.ROTULOS_PT, cabeca=CABECA_PT,
     return '\n'.join(t).replace('\n\n\n', '\n\n') + '\n'
 
 
+# Marcação Markdown num texto que vira HTML aparece crua para o leitor: a
+# página em inglês chegou a publicar 25 "**See also:** [X](#x)" literais,
+# copiados para dentro do retorno quando o "veja também" já existia no
+# meta.py. O texto da referência é prosa simples; destaque e link são do
+# gerador.
+MARKDOWN = re.compile(r'\*\*[^*\n]+\*\*|\[[^\]\n]+\]\([^)\s]+\)|`[^`\n]+`')
+
+
+def conferir_marcacao(api, lingua):
+    achados = []
+    for a in api:
+        textos = [('descrição', a['descricao']), ('retorno', a['retorno'])]
+        textos += [(f'@param {p["nome"]}', x) for p in a['params']
+                   for x in [p['texto']] + list(p.get('itens') or [])]
+        textos += [('nota', n['texto']) for n in a['notas']]
+        textos += [('erro', e['texto']) for e in a['erros']]
+        for onde, x in textos:
+            for m in MARKDOWN.finditer(x or ''):
+                achados.append(f'{lingua} {a["nome"]} ({onde}): {m.group(0)[:60]}')
+    if achados:
+        raise SystemExit('Markdown em texto que vira HTML -- sairia cru na página:\n  '
+                         + '\n  '.join(achados))
+
+
 def main():
     api = ler_api()
     conferir_meta(api)
@@ -332,6 +356,8 @@ def main():
     # publicado seria trabalho por nada, e o gerador recusa texto sem par
     api_en = textos_en.traduzir([a for a in api if a['nome'] in na_pagina],
                                 parse_javadoc.repartir_subitens)
+    conferir_marcacao([x for x in api if x['nome'] in na_pagina], 'PT')
+    conferir_marcacao(api_en, 'EN')
 
     def em_ingles(cat):
         en = textos_en.CATEGORIAS_EN.get(cat)

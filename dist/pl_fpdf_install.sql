@@ -5413,6 +5413,8 @@ PROCEDURE SetPDFVersion(p_version IN VARCHAR2);
  *
  * @return VARCHAR2 - a versão de PDF corrente (por exemplo '1.4')
  * @since 3.0.0
+ * @example
+ *   DBMS_OUTPUT.PUT_LINE(PL_FPDF.GetPDFVersion);
  */
 FUNCTION GetPDFVersion RETURN VARCHAR2;
 

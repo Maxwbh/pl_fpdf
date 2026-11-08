@@ -4136,6 +4136,12 @@ FUNCTION PL_FPDF.GetPDFVersion RETURN VARCHAR2;
 
 VARCHAR2 - a versão de PDF corrente (por exemplo '1.4')
 
+#### Exemplo
+
+```sql
+DBMS_OUTPUT.PUT_LINE(PL_FPDF.GetPDFVersion);
+```
+
 **Veja também:** [SetPDFVersion](#setpdfversion)
 
 ---
