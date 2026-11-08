@@ -1451,7 +1451,7 @@ BEGIN
 
   -- A TABELA E DUAS LISTAS, e não uma árvore: `l_cont(c)` diz quantos códigos
   -- tem c bits, e `l_sim` traz os símbolos ordenados por (comprimento,
-  -- símbolo). E o que "canônico" quer dizer no DEFLATE (RFC 1951, secao 3.2.2):
+  -- símbolo). E o que "canônico" quer dizer no DEFLATE (RFC 1951, seção 3.2.2):
   -- o valor de cada código se deduz dessa ordem, e não precisa ser guardado.
   -- Decodificar vira somar bit a bit e comparar com a contagem, que e o que o
   -- `inf_sim` faz -- sem no de árvore, sem ponteiro, sem alocação por símbolo.
@@ -2351,7 +2351,7 @@ BEGIN
       END LOOP;
     END LOOP;
 
-    -- A ÚLTIMA RODADA NÃO TEM MixColumns (FIPS-197, secao 5.1). Não e
+    -- A ÚLTIMA RODADA NÃO TEM MixColumns (FIPS-197, seção 5.1). Não e
     -- economia: a simetria com a decifragem depende disso, e incluir o passo
     -- na última rodada produz saída que só o próprio código consegue desfazer.
     IF r != p_nr THEN                              -- MixColumns
@@ -12199,7 +12199,7 @@ BEGIN
     END IF;
   END IF;
 
-  -- A secao xref clássica cabe na janela?
+  -- A seção xref clássica cabe na janela?
   --
   -- read_blob_chunk entrega no máximo 32767 bytes e TRUNCA calado. Cada
   -- entrada ocupa 20 bytes, então acima de ~1638 objetos o resto da tabela
@@ -12209,7 +12209,7 @@ BEGIN
   --
   -- A guarda fica AQUI, e não junto de cada leitura, porque este e o ponto
   -- onde os dois caminhos (offset do startxref e busca para trás) convergem
-  -- com a secao já em mãos. A primeira tentativa de conserto ficou só no
+  -- com a seção já em mãos. A primeira tentativa de conserto ficou só no
   -- caminho de busca, que num PDF bem formado nunca e alcançado — e o teste
   -- de regressão continuou falhando com o mesmo -20804.
   --
@@ -14354,7 +14354,7 @@ BEGIN
 END pdf_stream_data;
 
 --------------------------------------------------------------------------------
--- pdf_xref_stream: lê uma secao de xref que é um objeto /Type /XRef
+-- pdf_xref_stream: lê uma seção de xref que é um objeto /Type /XRef
 --
 -- Os três tipos de entrada:
 --   0  objeto livre — ignorado
@@ -14451,7 +14451,7 @@ BEGIN
       l_p := l_p + l_larg;
       l_oid := l_ini + i;
 
-      -- a secao mais recente vence: não sobrescreve o que já foi lido
+      -- a seção mais recente vence: não sobrescreve o que já foi lido
       IF NOT p_src.xref.EXISTS(l_oid) THEN
         IF l_tipo = 1 THEN
           l_ent.offset     := l_a;
@@ -14668,7 +14668,7 @@ BEGIN
     l_sec := pdf_read(p_doc, l_off, 32767);
     l_n   := NVL(LENGTHB(l_sec), 0);
 
-    -- Uma secao que não começa em 'xref' e um objeto /Type /XRef: a xref em
+    -- Uma seção que não começa em 'xref' e um objeto /Type /XRef: a xref em
     -- stream do PDF 1.5+. O trailer dela e o próprio dicionário do objeto.
     IF SUBSTRB(l_sec, 1, 4) != 'xref' THEN
       pdf_xref_stream(p_doc, l_off, l_src, l_stm, l_trailer);
@@ -14699,7 +14699,7 @@ BEGIN
         l_type := SUBSTRB(l_sec, l_pos, 1);
         l_pos  := l_pos + 1;
         EXIT WHEN l_eoff IS NULL;
-        -- a secao mais recente vence: não sobrescreve o que já foi lido
+        -- a seção mais recente vence: não sobrescreve o que já foi lido
         IF l_type = 'n' AND NOT l_src.xref.EXISTS(l_start + i) THEN
           l_ent.offset     := l_eoff;
           l_ent.generation := l_gen;
@@ -14710,7 +14710,7 @@ BEGIN
     END LOOP;
 
     l_t := INSTRB(l_sec, 'trailer');
-    -- Sem 'trailer' na janela E com a janela cheia, a secao xref não coube nos
+    -- Sem 'trailer' na janela E com a janela cheia, a seção xref não coube nos
     -- 32767 bytes que o pdf_read entrega: acima de ~1638 entradas (20 bytes
     -- cada) o resto da tabela foi cortado calado. Antes disto o laço saia aqui,
     -- l_rootval ficava NULL e o erro que chegava ao chamador era um

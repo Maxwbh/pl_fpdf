@@ -181,7 +181,7 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 5. Secao xref clássica maior que a janela de 32767 bytes
+  -- 5. Seção xref clássica maior que a janela de 32767 bytes
   --
   -- pdf_read faz LEAST(p_len, 32767) e trunca calado: acima de ~1638 entradas
   -- (20 bytes cada) o resto da tabela sumia, o 'trailer' não era achado e o

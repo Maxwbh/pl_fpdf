@@ -51,7 +51,7 @@ class Source:
             off = self._parse_xref_section(off)
 
     def _parse_xref_section(self, off):
-        """Lê uma secao xref clássica; devolve o offset de /Prev (ou None)."""
+        """Lê uma seção xref clássica; devolve o offset de /Prev (ou None)."""
         sec = self.b[off:off + 32767]
         if not sec.startswith(b'xref'):
             raise ValueError('xref stream nao suportado (PDF 1.5 comprimido)')

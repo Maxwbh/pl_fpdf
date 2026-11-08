@@ -92,10 +92,10 @@ jobs:
       - name: Montar as notas e o checksum
         run: |
           set -e
-          # O CHANGELOG separa as versões com `---`, então a secao termina nele
+          # O CHANGELOG separa as versões com `---`, então a seção termina nele
           # -- e o bloco de instalação abaixo abre com o seu. Saiam dois
           # seguidos no corpo do release (visto no rc2). O END apara o fim da
-          # secao: linhas em branco e o separador.
+          # seção: linhas em branco e o separador.
           awk -v v="$VERSAO" '
             $0 ~ "^## \\["v"\\]" { dentro=1; next }
             dentro && /^## \[/    { exit }

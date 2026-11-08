@@ -1130,7 +1130,7 @@ BEGIN
 
   -- A TABELA E DUAS LISTAS, e não uma árvore: `l_cont(c)` diz quantos códigos
   -- tem c bits, e `l_sim` traz os símbolos ordenados por (comprimento,
-  -- símbolo). E o que "canônico" quer dizer no DEFLATE (RFC 1951, secao 3.2.2):
+  -- símbolo). E o que "canônico" quer dizer no DEFLATE (RFC 1951, seção 3.2.2):
   -- o valor de cada código se deduz dessa ordem, e não precisa ser guardado.
   -- Decodificar vira somar bit a bit e comparar com a contagem, que e o que o
   -- `inf_sim` faz -- sem no de árvore, sem ponteiro, sem alocação por símbolo.
@@ -2030,7 +2030,7 @@ BEGIN
       END LOOP;
     END LOOP;
 
-    -- A ÚLTIMA RODADA NÃO TEM MixColumns (FIPS-197, secao 5.1). Não e
+    -- A ÚLTIMA RODADA NÃO TEM MixColumns (FIPS-197, seção 5.1). Não e
     -- economia: a simetria com a decifragem depende disso, e incluir o passo
     -- na última rodada produz saída que só o próprio código consegue desfazer.
     IF r != p_nr THEN                              -- MixColumns

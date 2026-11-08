@@ -4,7 +4,7 @@
 
 ### Como ler este documento
 
-| Você quer saber | Secao |
+| Você quer saber | Seção |
 |-----------------|-------|
 | O que **já foi entregue**, por versão | "Versões Lançadas" |
 | Que defeitos existiram e como foram resolvidos | "Pendências resolvidas — histórico" |
@@ -30,7 +30,7 @@ funcionalidades que **não são** as que saíram com esses números; cinco
 verificações rodavam no CI sem constar da tabela que diz registrá-las; e as
 quatro correções de setembro não estavam nas pendências.
 
-A revisão trouxe também a secao **"Lacunas priorizadas por uso medido"** e o
+A revisão trouxe também a seção **"Lacunas priorizadas por uso medido"** e o
 **"Fora de escopo"**, que estavam num ramo a parte, com os números datados de
 8/09/2026 para que ninguém os tome por medição corrente. O **como** de cada
 lacuna — lógica, caso de uso e critério de aceite — esta em
@@ -41,21 +41,29 @@ concluídas.
 
 ## Versões Lançadas
 
+> **Declarado × comprovado.** As tabelas abaixo trazem duas datas. *Declarado
+> em* é a versão em que a API apareceu. *Comprovado desde* é a primeira versão
+> em que a suíte a exercita contra um banco de verdade, com o PDF lido de volta
+> por um leitor independente (MuPDF, zxing-cpp). Isso só existe desde a
+> validação de agosto/2026, publicada na **3.3.0**: nada antes dela foi
+> comprovado nesse sentido, e várias APIs "prontas" não funcionavam — as notas
+> de cada tabela dizem quais.
+
 ### v2.0.0 - Foundation (Dez 2025) ✅
 
-| Feature | Status |
-|---------|--------|
-| Init/Reset/IsInitialized | ✅ |
-| Multi-page documents | ✅ |
-| CLOB buffer (unlimited) | ✅ |
-| UTF-8 encoding | ✅ |
-| TrueType fonts | ✅ |
-| PNG/JPEG images | ✅ |
-| Text rotation | ✅ |
-| Native compilation | ✅ |
-| QR Code / Barcode | ✅ |
-| PIX QR Code (extension) | ✅ |
-| Boleto barcode (extension) | ✅ |
+| Recurso | Declarado em | Comprovado desde | Observação |
+|---------|--------------|------------------|------------|
+| Init/Reset/IsInitialized | 2.0.0 | 3.3.0 | até a 3.3.0 o `Reset` não limpava os metadados |
+| Documento de várias páginas | 2.0.0 | 3.3.0 | |
+| Buffer em CLOB | 2.0.0 | 3.3.0 | até a 3.3.0, estourar truncava em silêncio |
+| Texto acentuado (UTF-8 → WinAnsi) | 2.0.0 | 3.4.0 | até a 3.4.0 o acento saía como dois glifos |
+| Fonte TrueType | 2.0.0 | 3.4.0 | até a 3.4.0 a fonte registrada não era usada nem embutida |
+| Imagem PNG/JPEG | 2.0.0 | 3.4.0 | até a 3.4.0 o PNG era recusado em AL32UTF8 e o stream perdia o último byte |
+| Texto rotacionado | 2.0.0 | 3.3.0 | |
+| Compilação nativa | 2.0.0 | — | fora da suíte |
+| QR Code / código de barras | 2.0.0 | 3.3.0 | ver a nota abaixo |
+| PIX (extensão) | 2.0.0 | 3.4.0 | as suítes da extensão só passaram a compilar na 3.4.0 |
+| Boleto (extensão) | 2.0.0 | 3.4.0 | até a 3.4.0 recusava todo vencimento depois de 21/02/2025 |
 
 > **Nota da revisão.** QR Code e códigos de barras estavam marcados como
 > prontos, mas até a validação de agosto/2026 o QR preenchia a área de dados com
@@ -65,19 +73,19 @@ concluídas.
 
 ### v3.0.0 - PDF Manipulation (Fev 2026)
 
-| Feature | Status |
-|---------|--------|
-| LoadPDF - Carregar PDF existente | ✅ |
-| GetPageCount / GetPageInfo | ✅ |
-| RotatePage (0, 90, 180, 270) | ✅ |
-| RemovePage | ✅ |
-| AddWatermark (texto com opacidade) | ✅ *(só desenha desde ago/2026)* |
-| OverlayText | ✅ *(só desenha desde ago/2026; ver pendência das opções)* |
-| OverlayImage | ✅ *(só desenha desde ago/2026)* |
-| OutputModifiedPDF | ✅ |
-| MergePDFs | ✅ |
-| SplitPDF | ✅ |
-| ExtractPages | ✅ |
+| Recurso | Declarado em | Comprovado desde | Observação |
+|---------|--------------|------------------|------------|
+| LoadPDF — carregar PDF existente | 3.0.0 | 3.3.0 | PDF 1.5+ (xref em stream) desde a 3.3.0; PDF cifrado recusado desde a 3.4.0 |
+| GetPageCount / GetPageInfo | 3.0.0 | 3.3.0 | |
+| RotatePage (0, 90, 180, 270) | 3.0.0 | 3.3.0 | |
+| RemovePage | 3.0.0 | 3.3.0 | |
+| AddWatermark (texto com opacidade) | 3.0.0 | 3.3.0 | não desenhava nada até ago/2026 |
+| OverlayText | 3.0.0 | 3.3.0 | não desenhava nada até ago/2026 |
+| OverlayImage | 3.0.0 | 3.3.0 | não desenhava nada até ago/2026 |
+| OutputModifiedPDF | 3.0.0 | 3.3.0 | |
+| MergePDFs | 3.0.0 | 3.3.0 | |
+| SplitPDF | 3.0.0 | 3.3.0 | |
+| ExtractPages | 3.0.0 | 3.3.0 | |
 
 > **Correção da revisão.** Até agosto/2026 as três últimas linhas de sobreposição
 > registravam o pedido em memória e **nada era desenhado**; `OutputModifiedPDF`
@@ -86,21 +94,21 @@ concluídas.
 
 ### Criptografia — API desde a v3.0.0, cifragem de fato desde a v3.3.0
 
-> **Correção (nov/2026).** Esta secao se chamava "v3.2.0 - Security RC4 (Mar
+> **Correção (nov/2026).** Esta seção se chamava "v3.2.0 - Security RC4 (Mar
 > 2026)". As tags dizem outra coisa: a API abaixo já estava na 3.0.0, e entre a
 > 3.0.0 e a 3.2.0 o código só mudou o número de versão — a 3.2.0 (jul/2026)
 > trouxe apenas o gerador `docx_to_plfpdf`. E "pronto" só passou a ser verdade
 > na 3.3.0, como diz a correção no fim da tabela.
 
-| Feature | Status |
-|---------|--------|
-| RC4 40-bit encryption | ✅ *(só cifra desde ago/2026)* |
-| RC4 128-bit encryption | ✅ *(idem)* |
-| Password protection (user/owner) | ✅ |
-| Permission controls (8 flags) | ✅ |
-| DecryptPDF | ✅ *(só decifra desde ago/2026)* |
-| GetSecurityInfo | ✅ |
-| SetPDFVersion | ✅ |
+| Recurso | Declarado em | Comprovado desde | Observação |
+|---------|--------------|------------------|------------|
+| RC4 de 40 bits | 3.0.0 | 3.3.0 | até a 3.3.0 os fluxos saíam em claro |
+| RC4 de 128 bits | 3.0.0 | 3.3.0 | idem |
+| Senha de usuário e de proprietário | 3.0.0 | 3.3.0 | |
+| Permissões (8 flags) | 3.0.0 | 3.3.0 | |
+| DecryptPDF | 3.0.0 | 3.3.0 | até a 3.3.0 só apagava o `/Encrypt` |
+| GetSecurityInfo | 3.0.0 | 3.3.0 | |
+| SetPDFVersion | 3.0.0 | 3.3.0 | |
 
 > **Correção da revisão.** Mesmo padrão: o dicionário `/Encrypt`, as senhas e as
 > permissões estavam corretos, mas os fluxos de conteúdo saiam **em claro** — o
@@ -109,7 +117,11 @@ concluídas.
 
 ---
 
-### v3.2.1 - Security AES ✅ (ago/2026)
+### AES — etapa de ago/2026, publicada na v3.3.0 ✅
+
+> **Não houve release 3.2.1.** "3.2.1" foi o rótulo interno desta etapa de
+> desenvolvimento; o AES saiu ao público dentro da **3.3.0** (31/08/2026), e é
+> assim que o CHANGELOG o registra.
 
 Motivação: o RC4 está quebrado há anos e o **PDF 2.0 o removeu da
 especificação**; leitores novos avisam ou recusam. Concluída e verificada
@@ -254,7 +266,7 @@ passaram a ser conferidos por decodificadores reais.
 
 ### Bookmarks & Links — sem versão definida
 
-> **Corrigido na revisão de setembro.** Esta secao dizia "v3.3.0 (Q3 2026)", e
+> **Corrigido na revisão de setembro.** Esta seção dizia "v3.3.0 (Q3 2026)", e
 > a 3.3.0 **já saiu** — com instalação em um arquivo, separação do
 > `PL_FPDF_UTIL` e documentação em inglês, nada disto aqui. Número de versão
 > planejado que o lançamento não cumpre e pior que não ter número: quem lê
@@ -286,8 +298,8 @@ passaram a ser conferidos por decodificadores reais.
 
 > **Corrigido na revisão de setembro.** Dizia "v3.4.0 (Q4 2026)", e a 3.4.0
 > **já saiu** — com a conversão WinAnsi, o `ImageFromBlob` e o conserto do
-> caminho de imagem. A parte de LEITURA desta secao, marcada abaixo, entrou na
-> 3.2.1 de agosto; o que falta e a ESCRITA, e ela segue sem número.
+> caminho de imagem. A parte de LEITURA desta seção, marcada abaixo, entrou na
+> etapa de agosto, publicada na 3.3.0; o que falta é a ESCRITA, e ela segue sem número.
 
 **Prioridade:** Media
 
@@ -332,8 +344,8 @@ passaram a ser conferidos por decodificadores reais.
 
 | Feature | Status |
 |---------|--------|
-| PDF 2.0 header nativo | Pendente |
-| AES-256 sem extensions | Depende de v3.2.1 |
+| Cabeçalho PDF 2.0 | Parcial: `SetPDFVersion('2.0')` existe e só aceita AES-256; falta conferir o arquivo contra a ISO 32000-2 |
+| Cifra AES-256 (V5/R6, `AESV3`) | ✅ desde a 3.3.0 — é a única cifra que o PDF 2.0 admite, e já existe |
 | Digital signatures (PKCS#7) | Pendente |
 | PAdES compliance | Pendente |
 | PDF/A output | Pendente |
@@ -455,7 +467,7 @@ no banco, e existe para que ele não volte:
 
 DOCUMENTO DE MANUTENÇÃO.
 
-Esta secao existe para responder uma pergunta só: **entre o que falta, o que é
+Esta seção existe para responder uma pergunta só: **entre o que falta, o que é
 de fato usado?** A ordem abaixo não saiu de opinião — saiu de três medições
 independentes, e ela **contradisse** a ordem que este mesmo documento teria
 proposto por intuição. O item que a intuição punha em terceiro caiu para o
@@ -463,9 +475,9 @@ backlog quando o número apareceu.
 
 O **como** de cada item — lógica, caso de uso, critério de aceite e as
 armadilhas conhecidas — esta em `docs/HISTORIAS.md`, uma história por lacuna.
-Esta secao fica com o **o que** e o **em que ordem**.
+Esta seção fica com o **o que** e o **em que ordem**.
 
-> **Os números de DEMANDA desta secao são de 8 de setembro de 2026, e não
+> **Os números de DEMANDA desta seção são de 8 de setembro de 2026, e não
 > foram remedidos.** Servem para ordenar a fila, não como medição corrente:
 > quem precisar deles para decidir alguma coisa hoje refaz a contagem antes. O
 > que mudou desde então esta dito item a item — o item 1 saiu na 3.4.0.
@@ -656,7 +668,7 @@ recusa com o erro próprio: `LoadTTFFromFile` sem DIRECTORY, `OutputFile` e
 
 ## Backlog (Sem Versão Definida)
 
-Valor revisado em set/2026 pela medição da secao anterior; a coluna "casos"
+Valor revisado em set/2026 pela medição da seção anterior; a coluna "casos"
 traz a contagem da fonte A, que e o que sustenta a nota de valor.
 
 | Feature | Complexidade | Valor | Casos |
@@ -668,6 +680,7 @@ traz a contagem da fonte A, que e o que sustenta a nota de valor.
 | JavaScript actions | Alta | Baixo | 0 |
 | Layers (OCG) | Media | Baixo | 0 |
 | Operações avançadas de página (inserir de outro PDF, reordenar, substituir, duplicar) | Media | *não medido* | — |
+| Homologar a integração APEX numa instância real (download, e-mail, armazenamento) — os exemplos do guia rodaram contra stubs | Baixa | Médio | — |
 
 † **Itens separados, esforço conjunto.** Os dois são a **mesma maquina**:
 anotação e campo de formulário são entradas do mesmo `/Annots`, e a base já o

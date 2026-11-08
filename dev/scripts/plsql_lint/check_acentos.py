@@ -207,9 +207,9 @@ def main():
             return None
         if w in acentuada:
             return acentuada[w]
-        if len(w) > 5 and w.endswith('cao'):
+        if len(w) >= 5 and w.endswith('cao'):
             return w[:-3] + 'ção'
-        if len(w) > 6 and w.endswith('coes'):
+        if len(w) >= 6 and w.endswith('coes'):
             return w[:-4] + 'ções'
         return None
 

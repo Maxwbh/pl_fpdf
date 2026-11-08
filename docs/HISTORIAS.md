@@ -6,7 +6,7 @@ em `docs/DOCUMENTATION.md`.
 
 Aqui está o **como**: uma história por lacuna, com a lógica definida, o caso
 de uso que a justifica e o critério que diz quando acabou. O **o que** e o
-**em que ordem** ficam em `docs/ROADMAP.md`, secao "Lacunas priorizadas por
+**em que ordem** ficam em `docs/ROADMAP.md`, seção "Lacunas priorizadas por
 uso medido" — inclusive o peso de cada item e a medição que o sustenta.
 
 Cada história se pretende auto-suficiente: quem pegar uma não deveria precisar

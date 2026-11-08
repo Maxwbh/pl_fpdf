@@ -133,7 +133,7 @@ jobs:
 
       # A referência da API e GERADA do Javadoc da spec, em PT e em EN.
       # Enquanto foi escrita a mão, divergiu em silêncio: 38 APIs levantavam
-      # erro que a página não listava, o PL_FPDF_UTIL inteiro não tinha secao,
+      # erro que a página não listava, o PL_FPDF_UTIL inteiro não tinha seção,
       # e a versão em inglês descrevia o pborder da forma que já tinha sido
       # reescrita em português por ser incompreensível. O passo também recusa
       # texto em inglês escrito contra um português que mudou depois.
@@ -325,7 +325,7 @@ jobs:
       - name: As páginas do site em inglês acompanham as portuguesas
         run: python dev/scripts/gen_docs/check_paridade.py
 
-      # O mesmo para os guias em Markdown: o README_EN passou meses sem a secao
+      # O mesmo para os guias em Markdown: o README_EN passou meses sem a seção
       # de Limitações que o README tem, e nada reclamava.
       - name: Os guias em inglês acompanham os portugueses
         run: python dev/scripts/gen_docs/check_paridade_md.py
