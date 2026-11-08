@@ -31,9 +31,9 @@ import re
 import subprocess
 import sys
 
-# Ancorado na RAIZ do repositorio, calculada a partir deste arquivo. Caminho
-# relativo ao diretorio atual funciona enquanto todo mundo roda da raiz, e
-# quebra no primeiro que nao roda.
+# Ancorado na RAIZ do repositório, calculada a partir deste arquivo. Caminho
+# relativo ao diretório atual funciona enquanto todo mundo roda da raiz, e
+# quebra no primeiro que não roda.
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
@@ -128,11 +128,11 @@ def conta_args(src, pos):
 
 
 def args_de(src, pos):
-    """O texto de cada argumento de nivel 1, a partir do '(' em pos."""
+    """O texto de cada argumento de nível 1, a partir do '(' em pos."""
     depth, atual, fora, i = 0, [], [], pos
     while i < len(src):
         c = src[i]
-        if c == "'":                       # literal: copia inteiro
+        if c == "'":                       # literal: cópia inteiro
             j = i + 1
             while j < len(src) and src[j] != "'":
                 j += 1
@@ -159,8 +159,8 @@ def args_de(src, pos):
     return None
 
 
-# Familias que nunca aceitam um literal de texto nem de numero. Nao se tenta
-# inferir tipo de VARIAVEL — so de literal, que e onde a resposta e certa.
+# Famílias que nunca aceitam um literal de texto nem de número. Não se tenta
+# inferir tipo de VARIÁVEL — só de literal, que e onde a resposta e certa.
 NAO_ACEITA_TEXTO = ('BLOB', 'CLOB', 'NUMBER', 'PLS_INTEGER', 'INTEGER',
                     'BOOLEAN', 'JSON_OBJECT_T', 'JSON_ARRAY_T', 'DATE')
 NAO_ACEITA_NUMERO = ('BLOB', 'CLOB', 'BOOLEAN', 'JSON_OBJECT_T',
@@ -171,30 +171,30 @@ LITERAL_NUM = re.compile(r'^-?\d+(?:\.\d+)?$')
 
 
 def confere_tipos_posicionais(nome, args, info):
-    """Literal de texto num parametro BLOB (e vizinhos) — PLS-00306.
+    """Literal de texto num parâmetro BLOB (e vizinhos) — PLS-00306.
 
     Por que existe: o `check_test_calls` conferia ARIDADE e nada mais, e por
     isso aprovou `LoadPDFWithID(l_pdf, 'reg_split')`. A assinatura e
     (p_pdf_id VARCHAR2, p_pdf_blob BLOB): o ID vem PRIMEIRO. Dois argumentos,
-    aridade certa, tipos trocados — PLS-00306 em tempo de COMPILACAO, e o
-    bloco de teste inteiro nao executou.
+    aridade certa, tipos trocados — PLS-00306 em tempo de COMPILAÇÃO, e o
+    bloco de teste inteiro não executou.
 
-    So se olha LITERAL, nunca variavel: de um literal o tipo se sabe com
-    certeza, e uma regra que chuta tipo de variavel produziria ruido.
+    Só se olha LITERAL, nunca variável: de um literal o tipo se sabe com
+    certeza, e uma regra que chuta tipo de variável produziria ruído.
     """
     if any('=>' in a for a in args):
-        return []                      # nomeada: a ordem nao importa
+        return []                      # nomeada: a ordem não importa
     cands = [t for t in info['tipos'] if len(t) >= len(args)]
     if len(cands) != 1:
-        return []                      # sobrecarga ambigua: nao arrisca
+        return []                      # sobrecarga ambígua: não arrisca
     faltas = []
     for i, arg in enumerate(args):
         pnome, ptipo = cands[0][i]
         base = ptipo.split('(')[0].strip()
         if LITERAL_TEXTO.match(arg) and base in NAO_ACEITA_TEXTO:
-            # o conteudo do literal ja veio apagado por quem preparou o
+            # o conteúdo do literal já veio apagado por quem preparou o
             # fonte (e o que impede virgula dentro de string de bagunçar a
-            # contagem), entao a mensagem diz o TIPO, nao o valor
+            # contagem), então a mensagem diz o TIPO, não o valor
             faltas.append(f'{nome}: argumento {i + 1} e um literal de texto, '
                           f'mas {pnome} e {base}')
         elif LITERAL_NUM.match(arg) and base in NAO_ACEITA_NUMERO:
@@ -214,7 +214,7 @@ JSON_GET = re.compile(
 
 
 # Linha que emite [PASS] e [FAIL] de uma vez: e resumo, e o runner conta as
-# OCORRENCIAS dos marcadores na saida — um resumo assim vira um teste fantasma
+# OCORRÊNCIAS dos marcadores na saída — um resumo assim vira um teste fantasma
 # que passou e um que falhou. Aconteceu no diag_deflate: o arquivo dizia
 # "5 [PASS], 0 [FAIL]" e a rodada acusou "6 passou | 1 falhou".
 RESUMO = re.compile(r"PUT_LINE\s*\((?:[^;]*?\[PASS\][^;]*?\[FAIL\]"
@@ -222,7 +222,7 @@ RESUMO = re.compile(r"PUT_LINE\s*\((?:[^;]*?\[PASS\][^;]*?\[FAIL\]"
 
 
 def resumos_ambiguos(caminho, bruto):
-    """Linhas de saida que repetem os dois marcadores na mesma instrucao."""
+    """Linhas de saída que repetem os dois marcadores na mesma instrução."""
     fora = []
     for m in RESUMO.finditer(bruto):
         linha = bruto[:m.start()].count('\n') + 1
@@ -234,11 +234,11 @@ def resumos_ambiguos(caminho, bruto):
 
 
 def nomes_nao_subprograma():
-    """Tipos, subtipos, constantes e excecoes da spec.
+    """Tipos, subtipos, constantes e exceções da spec.
 
-    Aparecem como `PL_FPDF.x` num teste e sao legitimos — `PL_FPDF.tab_points`
-    numa declaracao, `PL_FPDF.co_version` num SELECT. Sem esta lista, a
-    verificacao de nome inexistente acusaria os tres tipos que os testes usam.
+    Aparecem como `PL_FPDF.x` num teste e são legítimos — `PL_FPDF.tab_points`
+    numa declaração, `PL_FPDF.co_version` num SELECT. Sem esta lista, a
+    verificação de nome inexistente acusaria os três tipos que os testes usam.
     """
     spec = io.open(do_repo('src', 'PL_FPDF.pks'), encoding='utf-8').read()
     fora = set()
@@ -255,8 +255,8 @@ def main():
     nao_subprogramas = nomes_nao_subprograma()
     chaves = chaves_json_do_package()
     problemas = []
-    # os exemplos entram junto: um exemplo que nao compila e pior que um teste
-    # que nao compila — ele e a primeira coisa que quem chega copia e cola
+    # os exemplos entram junto: um exemplo que não compila e pior que um teste
+    # que não compila — ele e a primeira coisa que quem chega cópia e cola
     for f in sorted(glob.glob(do_repo('dev', 'tests', '*.sql')) + glob.glob(do_repo('examples', '*.sql'))):
         if f.endswith('run_all_tests.sql'):
             continue
@@ -277,15 +277,15 @@ def main():
         for m in CALL.finditer(src):
             nome = m.group(1).lower()
             if nome not in api:
-                # Nome que a spec nao declara. Isso NAO passava batido por
+                # Nome que a spec não declara. Isso NÃO passava batido por
                 # acaso: o `continue` daqui deixava a chamada seguir, e o lint
-                # so conferia aridade e tipo do que ja conhecia. Custou uma
+                # só conferia aridade e tipo do que já conhecia. Custou uma
                 # rodada contra o banco -- dois testes chamavam uma API que
                 # tinha acabado de sair da spec, o lint aprovou, e o Oracle
-                # respondeu ORA-06550 na compilacao do bloco.
+                # respondeu ORA-06550 na compilação do bloco.
                 #
-                # Tipo e constante do package tambem aparecem como PL_FPDF.x e
-                # sao legitimos; so subprograma inexistente e erro.
+                # Tipo e constante do package também aparecem como PL_FPDF.x e
+                # são legítimos; só subprograma inexistente e erro.
                 if nome not in nao_subprogramas:
                     problemas.append(
                         (f, src[:m.start()].count('\n') + 1,

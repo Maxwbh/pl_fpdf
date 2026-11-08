@@ -160,7 +160,7 @@
     .side-group ul{display:flex;flex-wrap:wrap;gap:4px}
     .side-group li a{padding:3px 10px;border:1px solid var(--cardbd);border-radius:999px;font-size:12px}
   }
-  /* acessibilidade: o link de pular aparece so no foco; o foco e sempre visivel */
+  /* acessibilidade: o link de pular aparece só no foco; o foco e sempre visível */
   .skip{position:absolute;left:-9999px;top:8px;z-index:1000;padding:10px 14px;border-radius:10px;
         background:var(--accent);color:#fff;font-weight:700;text-decoration:none}
   .skip:focus{left:12px}
@@ -787,7 +787,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <tr><td class="pname">p_escape</td><td class="ptype">BOOLEAN</td><td><code>true</code></td><td>escapar os caracteres reservados</td></tr>
 </tbody></table></div>
 <h4>Retorno</h4><p class="d">VARCHAR2 - o texto pronto para ir entre parênteses num objeto PDF</p>
-<h4>Exemplo</h4><div class="code"><pre>l_txt := PL_FPDF.UTF8ToPDFString(<span class="s">&#x27;Total (liquido)&#x27;</span>);</pre></div>
+<h4>Exemplo</h4><div class="code"><pre>l_txt := PL_FPDF.UTF8ToPDFString(<span class="s">&#x27;Total (líquido)&#x27;</span>);</pre></div>
 </article>
 <h2 class="grp" id="grp-text">Escrita de texto</h2>
 <article class="api" id="cell">
@@ -1164,7 +1164,7 @@ PL_FPDF.SetDrawColor(0, 90, 160);     <span class="c">-- azul</span></pre></div>
 <tr><td class="pname">ORA-20501</td><td>componente fora de 0..255</td></tr>
 </tbody></table></div>
 <h4>Exemplo</h4><div class="code"><pre>PL_FPDF.SetFillColor(230, 230, 230);
-PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabecalho&#x27;</span>, <span class="s">&#x27;1&#x27;</span>, 0, <span class="s">&#x27;C&#x27;</span>, 1);</pre></div>
+PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabeçalho&#x27;</span>, <span class="s">&#x27;1&#x27;</span>, 0, <span class="s">&#x27;C&#x27;</span>, 1);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#cell">Cell</a>, <a href="#rect">Rect</a></p>
 </article>
 <article class="api" id="setlinedashpattern">
@@ -1586,7 +1586,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Pagina &#x27;</span> || PL_FPDF.PageNo
 <h4>Parâmetros</h4><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
 <tr><td class="pname">pcreator</td><td class="ptype">VARCHAR2</td><td>—</td><td>o sistema gerador</td></tr>
 </tbody></table></div>
-<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.SetCreator(<span class="s">&#x27;ERP - modulo de faturamento&#x27;</span>);</pre></div>
+<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.SetCreator(<span class="s">&#x27;ERP - módulo de faturamento&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
 </article>
 <article class="api" id="setdisplaymode">
@@ -1642,7 +1642,7 @@ PL_FPDF.Cell(0, 10, <span class="s">&#x27;Pagina &#x27;</span> || PL_FPDF.PageNo
 <h4>Parâmetros</h4><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
 <tr><td class="pname">pkeywords</td><td class="ptype">VARCHAR2</td><td>—</td><td>as palavras-chave</td></tr>
 </tbody></table></div>
-<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.SetKeywords(<span class="s">&#x27;relatorio producao 2026&#x27;</span>);</pre></div>
+<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.SetKeywords(<span class="s">&#x27;relatório produção 2026&#x27;</span>);</pre></div>
 <p class="see"><b>Veja também:</b> <a href="#setdocumentconfig">SetDocumentConfig</a></p>
 </article>
 <article class="api" id="setsubject">
@@ -2589,7 +2589,7 @@ PL_FPDF.SetPermissions(p_print => <span class="k">TRUE</span>, p_copy => <span c
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>sempre; é o que esta rotina faz</td></tr>
 </tbody></table></div>
-<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.Error(<span class="s">&#x27;nao foi possivel montar o documento&#x27;</span>);</pre></div>
+<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.Error(<span class="s">&#x27;não foi possível montar o documento&#x27;</span>);</pre></div>
 </article>
 <article class="api" id="getloglevel">
 <h3>GetLogLevel <span class="kind">Function</span><a class="anchor" href="#getloglevel" aria-label="Link permanente para GetLogLevel">#</a></h3>

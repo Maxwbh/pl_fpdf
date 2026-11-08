@@ -16,9 +16,9 @@ import io
 import os
 import sys
 
-# Ancorado na RAIZ do repositorio, calculada a partir deste arquivo. Caminho
-# relativo ao diretorio atual funciona enquanto todo mundo roda da raiz, e
-# quebra no primeiro que nao roda.
+# Ancorado na RAIZ do repositório, calculada a partir deste arquivo. Caminho
+# relativo ao diretório atual funciona enquanto todo mundo roda da raiz, e
+# quebra no primeiro que não roda.
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 
@@ -30,9 +30,9 @@ SAIDA = do_repo('dev', 'tests', 'run_all_tests.sql')
 
 # Ordem de execução, por assunto: primeiro gerar, depois ler e manipular o
 # que veio de fora, depois a segurança, e por fim o que guarda regressão.
-# Ate setembro/2026 a ordem e os nomes eram por 'fase' de um roadmap de
-# fevereiro que nao existe mais -- 'test_phase_4_1b' tinha ate a letra de
-# uma subdivisao. Assunto envelhece menos que cronograma.
+# Até setembro/2026 a ordem e os nomes eram por 'fase' de um roadmap de
+# fevereiro que não existe mais -- 'test_phase_4_1b' tinha até a letra de
+# uma subdivisão. Assunto envelhece menos que cronograma.
 TESTES = [
     # Geração: do documento em branco ao arquivo pronto
     ('test_geracao_basica.sql',        'Geração: páginas, texto, desenho, imagem'),

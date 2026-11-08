@@ -3,13 +3,13 @@
 Valida o copiador de objetos (pdfmerge_reference.py) contra o MuPDF.
 
 Gera PDFs de origem variados (com stream comprimido, /Length indireto,
-arvore de paginas aninhada com heranca de /MediaBox e /Resources, imagem
-compartilhada entre paginas) e confere merge / extract / split:
+árvore de páginas aninhada com herança de /MediaBox e /Resources, imagem
+compartilhada entre páginas) e confere merge / extract / split:
 
   - o MuPDF abre o resultado sem erro
-  - a contagem de paginas bate
-  - o texto de cada pagina bate com o da pagina de origem correspondente
-  - a caixa da pagina (heranca preservada) bate
+  - a contagem de páginas bate
+  - o texto de cada página bate com o da página de origem correspondente
+  - a caixa da página (herança preservada) bate
   - as imagens referenciadas continuam presentes
 
 Uso:  python scripts/pdfmerge_reference/validate.py
@@ -25,7 +25,7 @@ from pdfmerge_reference import Source, merge, extract, split, parse_pages  # noq
 # ─────────────────────────── geradores de PDF de origem ──────────────────────
 def build_pdf(pages, *, nested=False, indirect_length=False, compress=False,
               shared_image=False):
-    """Monta um PDF de teste a mao. pages = [(texto, largura, altura), ...]."""
+    """Monta um PDF de teste a mão. pages = [(texto, largura, altura), ...]."""
     objs = {}                                          # id -> bytes do corpo
     nid = 3                                            # 1 Catalog, 2 Pages raiz
 
@@ -66,7 +66,7 @@ def build_pdf(pages, *, nested=False, indirect_length=False, compress=False,
         objs[cid] = head + payload + b'\nendstream'
         pid = nid; nid += 1
         body = b'<</Type/Page/Parent 2 0 R/Contents %d 0 R' % cid
-        if not nested:                                 # sem heranca: tudo na pagina
+        if not nested:                                 # sem herança: tudo na página
             body += b'/MediaBox[0 0 %d %d]/Resources %d 0 R' % (w, h, res_id)
         body += b'>>'
         objs[pid] = body
@@ -74,7 +74,7 @@ def build_pdf(pages, *, nested=False, indirect_length=False, compress=False,
         extra.append((w, h))
 
     if nested:
-        # duas paginas por no intermediario; MediaBox e Resources herdados da raiz
+        # duas páginas por no intermediário; MediaBox e Resources herdados da raiz
         mids, i = [], 0
         while i < len(page_ids):
             grp = page_ids[i:i + 2]
@@ -108,7 +108,7 @@ def build_pdf(pages, *, nested=False, indirect_length=False, compress=False,
     return bytes(out)
 
 
-# ──────────────────────────────── verificacoes ───────────────────────────────
+# ──────────────────────────────── verificações ───────────────────────────────
 FAIL = []
 
 
@@ -121,7 +121,7 @@ def check(cond, msg):
 
 
 def page_facts(data):
-    """(texto, (largura, altura), n_imagens) de cada pagina, pelo MuPDF."""
+    """(texto, (largura, altura), n_imagens) de cada página, pelo MuPDF."""
     doc = fitz.open(stream=data, filetype='pdf')
     facts = []
     for p in doc:

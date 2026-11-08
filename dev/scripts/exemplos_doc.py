@@ -49,7 +49,7 @@ INICIO = re.compile(r'(?is)^(?:\s*--[^\n]*\n)*\s*(DECLARE|BEGIN)\b')
 
 
 def blocos(rel):
-    """[{arquivo, linha, codigo, motivo}] dos blocos anônimos de um guia.
+    """[{arquivo, linha, código, motivo}] dos blocos anônimos de um guia.
 
     `motivo` é o texto da marca, ou None quando o bloco deve rodar. Um trecho
     ```sql com vários blocos separados por `/` dá um item por bloco.

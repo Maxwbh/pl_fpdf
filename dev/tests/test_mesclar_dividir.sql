@@ -26,10 +26,10 @@ DECLARE
   l_pdfs JSON_ARRAY_T;
   l_pdf_obj JSON_OBJECT_T;
 
-  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- Vocabulário canônico da suite. ATÉ SETEMBRO/2026 ESTE ARQUIVO NÃO ERA
   -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
   -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
-  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  -- aqui dentro não chegava ao total. Sessenta e cinco aferições invisíveis.
   PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
   BEGIN
     l_test_count := l_test_count + 1;
@@ -42,7 +42,7 @@ DECLARE
     END IF;
   END confere;
 
-  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  -- O erro esperado NÃO veio: o caso pedia recusa e a chamada passou.
   PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;

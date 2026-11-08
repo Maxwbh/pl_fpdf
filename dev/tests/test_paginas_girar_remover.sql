@@ -224,7 +224,7 @@ BEGIN
     -- Try to check modification status after clearing - should fail
     BEGIN
       l_is_modified := PL_FPDF.IsPDFModified();
-      -- IsPDFModified doesn't validate PDF loaded, so it will return FALSE
+      -- IsPDFModified doesn't validate PDF loaded, só it will return FALSE
       IF NOT l_is_modified THEN
         passou('Modification flag cleared after cache clear');
       ELSE

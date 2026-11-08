@@ -95,9 +95,9 @@ def testes():
 def montar():
     ts = {n: chamadas(t) for n, t in testes().items()}
     am = {n: chamadas(t) for n, t in amostras().items()}
-    # O utilitario e chamado por DENTRO do PL_FPDF: a AES e exercitada pelo
+    # O utilitário e chamado por DENTRO do PL_FPDF: a AES e exercitada pelo
     # EncryptPDF, o inflate pelo LoadPDF. Sem esta coluna, a lista "sem teste"
-    # misturaria o que nao tem teste nenhum com o que so nao tem teste DIRETO.
+    # misturaria o que não tem teste nenhum com o que só não tem teste DIRETO.
     via = chamadas(sem_comentarios(ler('src', 'PL_FPDF.pkb')))
     linhas = ["""# Rastreabilidade: API × testes · Traceability: API × tests
 

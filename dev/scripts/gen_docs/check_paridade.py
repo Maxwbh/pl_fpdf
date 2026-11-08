@@ -61,7 +61,7 @@ import sys
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.dirname(os.path.abspath(__file__)))))
 
-# (portugues, ingles) — relativos à raiz do repositório. Uma página entra aqui
+# (português, inglês) — relativos à raiz do repositório. Uma página entra aqui
 # no mesmo commit em que a sua tradução nasce.
 PARES = [
     (os.path.join('site', 'api.html'), os.path.join('site', 'en', 'api.html')),
@@ -82,7 +82,7 @@ IGUAIS_OK = {
     'v<versao> · Oracle 19c+',
     'Oracle 19c+',
     'PIX &amp; Boleto',
-    # ficou igual quando a licenca deixou de ser "em revisao"/"under review":
+    # ficou igual quando a licença deixou de ser "em revisão"/"under review":
     # "Open source (MIT)" e a mesma frase nos dois idiomas.
     'Open source (MIT)',
 }

@@ -248,10 +248,10 @@ def pagina(api, categorias, veja_tambem, sintaxe, compativel=None,
             lateral.append(f'<li><a href="#{n.lower()}">{esc(n)}</a></li>')
         lateral.append('</ul></div>')
 
-    # o titulo do grupo sai AQUI, um por categoria. Ja saiu do molde uma vez,
-    # e como o molde trazia o primeiro ("Ciclo de vida") escrito a mao, a
-    # pagina gerada ficou com UM titulo e 15 grupos sem nenhum -- os artigos
-    # seguiam em fila, e so a barra lateral dizia onde um grupo acabava.
+    # o título do grupo sai AQUI, um por categoria. Já saiu do molde uma vez,
+    # e como o molde trazia o primeiro ("Ciclo de vida") escrito a mão, a
+    # página gerada ficou com UM título e 15 grupos sem nenhum -- os artigos
+    # seguiam em fila, e só a barra lateral dizia onde um grupo acabava.
     artigos = []
     for cat, apis in categorias:
         ident = slug.get(cat, 'grp-' + re.sub(r'[^a-z0-9]+', '-',
@@ -288,12 +288,12 @@ def conferir_tags(t, onde='a página'):
 
 
 def conferir_estrutura(t, n_artigos, n_grupos=None):
-    """A pagina fecha o que abre, e todo link do indice tem destino.
+    """A página fecha o que abre, e todo link do índice tem destino.
 
-    Existe porque a primeira versao do molde foi extraida cortando do ultimo
+    Existe porque a primeira versão do molde foi extraída cortando do ultimo
     grupo da lateral direto para o `<main>`, e com isso o `</div></aside>` que
     fechava a barra ficou de fora. O HTML continuou "valido" para o navegador
-    -- ele fecha sozinho -- mas a navegacao saiu do lugar, e nada acusou.
+    -- ele fecha sozinho -- mas a navegação saiu do lugar, e nada acusou.
     """
     conferir_tags(t)
 
@@ -305,8 +305,8 @@ def conferir_estrutura(t, n_artigos, n_grupos=None):
     if orfaos:
         raise SystemExit(f'link do indice sem artigo: {orfaos[:6]}')
 
-    # um titulo por grupo. A pagina gerada ja saiu com 1 de 16, e nada acusou:
-    # o HTML estava valido e os 119 artigos estavam la, so que em fila unica.
+    # um título por grupo. A página gerada já saiu com 1 de 16, e nada acusou:
+    # o HTML estava valido e os 119 artigos estavam lá, só que em fila única.
     if n_grupos is not None:
         titulos = re.findall(r'<h2 class="grp" id="([^"]+)"', t)
         if len(titulos) != n_grupos or len(set(titulos)) != n_grupos:

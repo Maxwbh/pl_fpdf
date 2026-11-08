@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 """
-Valida os codigos de barras de referencia contra um decodificador real.
+Valida os códigos de barras de referência contra um decodificador real.
 
 O PL_FPDF implementa as mesmas simbologias em PL/SQL (procedure AddBarcode).
-Esta referencia prova o algoritmo e gera os vetores usados em
+Esta referência prova o algoritmo e gera os vetores usados em
 tests/test_core.sql.
 
 Uso:
@@ -42,10 +42,10 @@ FIXOS = [('PL-FPDF-123', 'CODE39'), ('PL FPDF 2026', 'CODE39'),
          ('ABC123abc', 'CODE128'), ('12345678', 'CODE128'),
          ('789123456789', 'EAN13'), ('7891234567895', 'EAN13'),
          ('1234567', 'EAN8'), ('1234567890123', 'ITF14'),
-         # o codigo de barras do boleto: ITF puro, 44 digitos, sem verificador
-         # de simbologia. E o caso que o ITF14 nao cobre — e o que o
+         # o código de barras do boleto: ITF puro, 44 dígitos, sem verificador
+         # de simbologia. E o caso que o ITF14 não cobre — e o que o
          # AddBarcodeBoleto precisava.
-         # 44 digitos exatos, montado da linha digitavel de um boleto Itau real
+         # 44 dígitos exatos, montado da linha digitavel de um boleto Itau real
          ('34197167700000150001090000012323073123451000', 'ITF'),
          ('00190000090123456789012345678901234567890123', 'ITF')]
 
@@ -78,7 +78,7 @@ def main():
         modulos = bc.make(dado, tipo)
         lido = zxingcpp.read_barcode(render(modulos))
         texto = lido.text if lido else None
-        # EAN e ITF devolvem o codigo com o digito verificador incluido
+        # EAN e ITF devolvem o código com o digito verificador incluído
         if texto and (texto == dado or texto.startswith(dado)):
             ok += 1
         else:
@@ -88,7 +88,7 @@ def main():
 
 
 def vetores():
-    """Vetores para tests/test_core.sql: numero de barras por codigo."""
+    """Vetores para tests/test_core.sql: número de barras por código."""
     for dado, tipo in [('PL-FPDF-123', 'CODE39'), ('ABC123abc', 'CODE128'),
                        ('12345678', 'CODE128'), ('789123456789', 'EAN13'),
                        ('1234567', 'EAN8'), ('1234567890123', 'ITF14')]:

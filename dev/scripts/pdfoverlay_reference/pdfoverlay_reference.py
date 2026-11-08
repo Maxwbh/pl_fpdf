@@ -14,7 +14,7 @@ Três coisas precisam acontecer para o desenho aparecer, e é isso que esta
 referência resolve:
 
   1. **os operadores certos.** O que está no package hoje não é PDF válido:
-     `TO_CHAR(rotacao) || ' rotate'` não existe como operador (rotação é uma
+     `TO_CHAR(rotação) || ' rotate'` não existe como operador (rotação é uma
      matriz em `Tm`/`cm`), e a cor é fixa em cinza.
 
   2. **o fluxo de conteúdo.** O desenho tem de virar um objeto de stream novo,

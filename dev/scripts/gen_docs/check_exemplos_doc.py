@@ -28,7 +28,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import exemplos_doc  # noqa: E402
 
-# bind de APEX/ORDS (:P10_ID), mas nao atribuicao (:=) nem hora ('HH24:MI')
+# bind de APEX/ORDS (:P10_ID), mas não atribuição (:=) nem hora ('HH24:MI')
 BIND = re.compile(r"(?<![\w'])\:(?!=)[A-Za-z_]\w*")
 FORA_DO_SCHEMA = re.compile(r'\b(apex_\w+|owa_util|htp\s*\.|wpg_docload)', re.I)
 

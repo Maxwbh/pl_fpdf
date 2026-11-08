@@ -67,8 +67,8 @@ BEGIN
                        ' R=' || l_info.get_number('revision') ||
                        ' keyLength=' || l_info.get_number('keyLength'));
 
-  -- Despeja o dicionario /Encrypt e o trailer em hexadecimal. Com /O, /U, /P e
-  -- /ID em maos da para refazer os algoritmos 2, 5 e 7 fora do banco e comparar
+  -- Despeja o dicionário /Encrypt e o trailer em hexadecimal. Com /O, /U, /P e
+  -- /ID em mãos da para refazer os algoritmos 2, 5 e 7 fora do banco e comparar
   -- passo a passo com o que o package calcula.
   DECLARE
     l_tam  PLS_INTEGER := DBMS_LOB.GETLENGTH(l_enc);

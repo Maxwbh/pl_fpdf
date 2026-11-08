@@ -26,9 +26,9 @@ DECLARE
   v_tests_failed PLS_INTEGER := 0;
   v_test_name VARCHAR2(200);
 
-  -- As variaveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
+  -- As variáveis vem ANTES dos procedimentos auxiliares: em PL/SQL, item
   -- declarado depois de subprograma e PLS-00103. Estavam depois, e o bloco
-  -- nao compilava em versao nenhuma do Oracle -- os testes nunca rodaram.
+  -- não compilava em versão nenhuma do Oracle -- os testes nunca rodaram.
   -- Test variables
   l_pix_data JSON_OBJECT_T;
   l_payload VARCHAR2(32767);

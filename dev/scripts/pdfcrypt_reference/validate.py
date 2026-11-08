@@ -185,7 +185,7 @@ def main():
         um_so = rc4(chave, dados)
         check(rc4_em_lotes(chave, dados, 8000) == um_so,
               f'{tam} bytes em lotes de 8000 == uma passada so')
-    # e a prova do contrario: reiniciar a cifra a cada lote NAO da o mesmo
+    # e a prova do contrário: reiniciar a cifra a cada lote NÃO da o mesmo
     partido = b''.join(rc4(chave, dados[i:i + 8000])
                        for i in range(0, len(dados), 8000))
     check(partido != rc4(chave, dados),

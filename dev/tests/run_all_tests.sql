@@ -120,7 +120,7 @@ BEGIN
 
   -- Test: UTF-8 encoding
   --
-  -- O IsUTF8Enabled saiu da spec: a flag era escrita e lida, e ninguem a
+  -- O IsUTF8Enabled saiu da spec: a flag era escrita e lida, e ninguém a
   -- consultava. O que se afere agora e o que importa -- que o Init aceite o
   -- encoding e que texto acentuado atravesse sem levantar.
   BEGIN
@@ -136,13 +136,13 @@ BEGIN
 
   -- Test: Unicode characters in document
   --
-  -- Este caso escrevia 'Sao Paulo - Zurich - Moscou' com acentos e cirilico
-  -- numa fonte core, e aferia so que o PDF tinha mais de zero bytes. Passava
-  -- -- e aprovava saida quebrada: o cirilico virava glifo errado, porque as
-  -- fontes padrao do PDF alcancam WinAnsi e nada alem.
+  -- Este caso escrevia 'São Paulo - Zurich - Moscou' com acentos e cirílico
+  -- numa fonte core, e aferia só que o PDF tinha mais de zero bytes. Passava
+  -- -- e aprovava saída quebrada: o cirílico virava glifo errado, porque as
+  -- fontes padrão do PDF alcançam WinAnsi e nada além.
   --
-  -- Agora sao dois casos, e cada um afere o contrato de verdade: o que cabe em
-  -- WinAnsi sai; o que nao cabe e RECUSADO, em vez de desenhado errado.
+  -- Agora são dois casos, e cada um afere o contrato de verdade: o que cabe em
+  -- WinAnsi sai; o que não cabe e RECUSADO, em vez de desenhado errado.
   DECLARE
     l_pdf BLOB;
   BEGIN
@@ -157,7 +157,7 @@ BEGIN
     confere('Unicode text rendering', FALSE, SQLERRM);
   END;
 
-  -- Test: fora de WinAnsi e recusado, nao desenhado errado
+  -- Test: fora de WinAnsi e recusado, não desenhado errado
   DECLARE
     l_pdf BLOB;
   BEGIN
@@ -476,25 +476,25 @@ END;
 -- origem: tests/test_winansi.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Texto acentuado nas fontes padrao (conversao WinAnsi)
+-- PL_FPDF - Texto acentuado nas fontes padrão (conversão WinAnsi)
 --
--- O dicionario da fonte declara /Encoding /WinAnsiEncoding e o texto sai do
--- banco em AL32UTF8. Sem conversao, cada acentuado chegava ao leitor como DOIS
--- bytes e ele desenhava dois glifos: 'cobranca' com cedilha virava 'cobranA§a'.
--- Sem erro nenhum, num arquivo que abre normalmente -- so se percebia olhando.
+-- O dicionário da fonte declara /Encoding /WinAnsiEncoding e o texto sai do
+-- banco em AL32UTF8. Sem conversão, cada acentuado chegava ao leitor como DOIS
+-- bytes e ele desenhava dois glifos: 'cobrança' com cedilha virava 'cobranA§a'.
+-- Sem erro nenhum, num arquivo que abre normalmente -- só se percebia olhando.
 --
--- Medido antes do conserto, e vale registrar porque nenhuma das duas suposicoes
+-- Medido antes do conserto, e vale registrar porque nenhuma das duas suposições
 -- do relato se confirmou:
 --
---   CHR(231) e 1 byte (E7); SUBSTR('c cedilha',1,1) sao 2 (C3A7)
---   GetStringWidth('Sao Paulo') = 19.5326
---   GetStringWidth('Sao Paulo' com til) levantava ORA-06502 -- nao
---     NO_DATA_FOUND: o subtipo car tem UM byte e o caractere tem dois, entao
+--   CHR(231) e 1 byte (E7); SUBSTR('c cedilha',1,1) são 2 (C3A7)
+--   GetStringWidth('São Paulo') = 19.5326
+--   GetStringWidth('São Paulo' com til) levantava ORA-06502 -- não
+--     NO_DATA_FOUND: o subtipo car tem UM byte e o caractere tem dois, então
 --     estourava antes de consultar a tabela
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -553,7 +553,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O acentuado sai como escape octal, nao como UTF-8 cru');
   --------------------------------------------------------------------------
-  -- O byte convertido NAO pode ir cru: o documento e montado num CLOB e
+  -- O byte convertido NÃO pode ir cru: o documento e montado num CLOB e
   -- convertido no fim por CONVERTTOBLOB, que recodifica pelo charset do banco.
   -- Medido no diag: 256 bytes entram, 422 saem. O escape octal e ASCII e
   -- atravessa intacto.
@@ -574,8 +574,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Texto sem acento nao mudou');
   --------------------------------------------------------------------------
-  -- O ASCII coincide nas duas codificacoes, entao o caminho comum tem de sair
-  -- exatamente como saia. E onde uma regressao passaria despercebida.
+  -- O ASCII coincide nas duas codificações, então o caminho comum tem de sair
+  -- exatamente como saia. E onde uma regressão passaria despercebida.
   l_pdf := pdf_com('Sao Paulo');
   IF acha(l_pdf, 'Sao Paulo') > 0 THEN
     passou('o texto ASCII continua legivel no arquivo, sem escape');
@@ -586,7 +586,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Parenteses e barra seguem escapados');
   --------------------------------------------------------------------------
-  -- Sao o escape que o PDF ja exigia, e a conversao nao pode ter comido.
+  -- São o escape que o PDF já exigia, e a conversão não pode ter comido.
   l_pdf := pdf_com('Total (liquido) \ 50%');
   IF acha(l_pdf, '\(liquido\)') > 0 THEN
     passou('parenteses escapados');
@@ -599,16 +599,16 @@ BEGIN
   --------------------------------------------------------------------------
   -- Antes levantava ORA-06502, e agora mede.
   --
-  -- A primeira versao deste caso exigia que as duas medidas DIFERISSEM, no
+  -- A primeira versão deste caso exigia que as duas medidas DIFERISSEM, no
   -- palpite de que o 'a' com til seria mais largo. Errado: nas 14 fontes
-  -- padrao do PDF o glifo acentuado tem a MESMA largura de avanco do glifo
-  -- base. Conferido na propria tabela do package: 'a' e 'a til' medem 556,
+  -- padrão do PDF o glifo acentuado tem a MESMA largura de avanço do glifo
+  -- base. Conferido na própria tabela do package: 'a' e 'a til' medem 556,
   -- 'c' e 'c cedilha' medem 500. Medir igual e o certo.
   --
-  -- Entao afere-se o que de fato distingue: que nao levanta, e que um
-  -- caractere de largura reconhecidamente diferente -- o travessao, 1000
-  -- contra 333 do hifen -- e medido como tal. Se a conversao caisse num
-  -- caractere so, essa comparacao denunciaria.
+  -- Então afere-se o que de fato distingue: que não levanta, e que um
+  -- caractere de largura reconhecidamente diferente -- o travessão, 1000
+  -- contra 333 do hífen -- e medido como tal. Se a conversão caísse num
+  -- caractere só, essa comparação denunciaria.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.AddPage;
@@ -627,7 +627,7 @@ BEGIN
              || TO_CHAR(l_larg2) || ') - o acentuado caiu na posicao errada');
     END IF;
 
-    -- travessao contra hifen: 1000 contra 333 em Helvetica
+    -- travessão contra hífen: 1000 contra 333 em Helvetica
     IF PL_FPDF.GetStringWidth(UNISTR('\2014')) >
        PL_FPDF.GetStringWidth('-') * 2 THEN
       passou('o travessao mede mais que o dobro do hifen, como na tabela');
@@ -642,7 +642,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Alinhamento a direita com acento nao levanta mais');
   --------------------------------------------------------------------------
-  -- O Cell so chama GetStringWidth para align C e R. Era ai que o ORA-06502
+  -- O Cell só chama GetStringWidth para align C e R. Era aí que o ORA-06502
   -- aparecia, enquanto o alinhamento a esquerda desenhava errado calado.
   BEGIN
     PL_FPDF.Reset;
@@ -663,9 +663,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Caractere fora do WinAnsi e recusado com erro proprio');
   --------------------------------------------------------------------------
-  -- O criterio: recusar, e nao virar '?' em silencio. E o erro tem de ser o
-  -- nosso, com a posicao -- se voltar ORA-06502, o conserto so trocou de
-  -- sintoma. Ideograma escolhido por nao existir em WinAnsi de forma alguma.
+  -- O critério: recusar, e não virar '?' em silêncio. E o erro tem de ser o
+  -- nosso, com a posição -- se voltar ORA-06502, o conserto só trocou de
+  -- sintoma. Ideograma escolhido por não existir em WinAnsi de forma alguma.
   BEGIN
     l_pdf := pdf_com('Relatorio ' || UNISTR('\4E2D') || ' final');
     falhou('aceitou o caractere fora da tabela');
@@ -689,9 +689,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('As 27 excecoes do cp1252 atravessam');
   --------------------------------------------------------------------------
-  -- De 0xA0 a 0xFF o cp1252 e o Latin-1, e o byte e o proprio ponto de codigo.
-  -- As 27 posicoes entre 0x80 e 0x9F sao as unicas que precisam de tabela, e
-  -- sao as que um teste de acento comum nao alcanca: travessao, aspas curvas,
+  -- De 0xA0 a 0xFF o cp1252 e o Latin-1, e o byte e o próprio ponto de código.
+  -- As 27 posições entre 0x80 e 0x9F são as únicas que precisam de tabela, e
+  -- são as que um teste de acento comum não alcança: travessão, aspas curvas,
   -- euro, reticencias.
   l_txt := UNISTR('\20AC \2014 \201C \201D \2026 \2122');   -- EUR - " " ... TM
   BEGIN
@@ -710,12 +710,12 @@ BEGIN
   --------------------------------------------------------------------------
   caso('MultiCell e Write medem acentuado sem levantar');
   --------------------------------------------------------------------------
-  -- REGRESSAO. A tabela de larguras e indexada pelo BYTE WinAnsi. O
+  -- REGRESSÃO. A tabela de larguras e indexada pelo BYTE WinAnsi. O
   -- GetStringWidth convertia o caractere antes de consultar; o MultiCell, o
   -- Write e o overlay consultavam com o caractere CRU, e em AL32UTF8 um
-  -- acentuado tem dois bytes: a chave nao existia e a consulta levantava
+  -- acentuado tem dois bytes: a chave não existia e a consulta levantava
   -- NO_DATA_FOUND na PRIMEIRA palavra acentuada. Nenhum teste passava texto
-  -- com acento por esses dois caminhos, entao o defeito atravessou a suite.
+  -- com acento por esses dois caminhos, então o defeito atravessou a suite.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -741,8 +741,8 @@ BEGIN
   caso('O acentuado mede como a letra base, nao como zero');
   --------------------------------------------------------------------------
   -- Em Helvetica o cedilha tem a largura do 'c' e o til a do 'a' -- conferido
-  -- contra o AFM. Entao as duas frases medem IGUAL. O valor prova mais do que
-  -- a ausencia de erro: se a consulta errasse a chave e caisse no zero, a
+  -- contra o AFM. Então as duas frases medem IGUAL. O valor prova mais do que
+  -- a ausência de erro: se a consulta errasse a chave e caísse no zero, a
   -- frase acentuada mediria MENOS, e o texto sairia desalinhado sem avisar.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
@@ -785,18 +785,18 @@ END;
 --
 -- O p_putstream lia o BLOB para um buffer VARCHAR2. Com um BLOB no primeiro
 -- argumento o DBMS_LOB.READ resolve para a sobrecarga cujo buffer e RAW, e a
--- conversao implicita devolve a representacao hexadecimal: 2000 bytes viravam
--- 4000 caracteres, que nao cabiam no varchar2(2000).
+-- conversão implícita devolve a representação hexadecimal: 2000 bytes viravam
+-- 4000 caracteres, que não cabiam no varchar2(2000).
 --
--- Ele e privado, entao os casos 1 a 3 exercitam as duas formas do laco e as duas
--- codificacoes lado a lado, sobre um BLOB controlado: medem o comportamento em
+-- Ele e privado, então os casos 1 a 3 exercitam as duas formas do laço e as duas
+-- codificações lado a lado, sobre um BLOB controlado: medem o comportamento em
 -- vez de inferi-lo de um arquivo gerado. Os casos 5 e 6 percorrem o caminho
 -- completo da imagem pelo ImageFromBlob, que recebe os bytes prontos e por isso
--- nao precisa da ACL de rede que o Image() exige.
+-- não precisa da ACL de rede que o Image() exige.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -873,7 +873,7 @@ DECLARE
     RETURN l_b;
   END ida_e_volta;
 
-  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
+  -- Procura um texto no BLOB. Devolve 0 quando não acha.
   FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
   BEGIN
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
@@ -886,10 +886,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O laco le ate o ultimo byte');
   --------------------------------------------------------------------------
-  -- O teste era offset < tamanho. Quando o ultimo pedaco comeca exatamente no
-  -- byte final, o laco termina sem le-lo: o stream sai um byte curto enquanto
+  -- O teste era offset < tamanho. Quando o ultimo pedaço começa exatamente no
+  -- byte final, o laço termina sem lê-lo: o stream sai um byte curto enquanto
   -- o /Length continua prometendo o total. 2001 bytes e o menor caso que
-  -- mostra isso com pedaco de 2000.
+  -- mostra isso com pedaço de 2000.
   l_blob := blob_de(2001);
   l_tam  := DBMS_LOB.GETLENGTH(l_blob);
 
@@ -927,8 +927,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O tamanho do pedaco e IN OUT');
   --------------------------------------------------------------------------
-  -- O DBMS_LOB.READ devolve no parametro de quantidade o que leu de fato. Se a
-  -- variavel for inicializada uma vez so, em vez de atribuida a cada passagem,
+  -- O DBMS_LOB.READ devolve no parâmetro de quantidade o que leu de fato. Se a
+  -- variável for inicializada uma vez só, em vez de atribuída a cada passagem,
   -- uma leitura curta vira o tamanho de todas as seguintes.
   l_blob := blob_de(500);
   l_qtd  := 2000;
@@ -944,7 +944,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Por que o stream sai em hexadecimal');
   --------------------------------------------------------------------------
-  -- O documento e montado como CLOB e convertido no fim, entao tudo o que se
+  -- O documento e montado como CLOB e convertido no fim, então tudo o que se
   -- escreve nele faz um percurso de ida e volta pelo charset do banco. Este
   -- caso manda os 256 valores de byte pelos dois caminhos e compara.
   SELECT value INTO l_charset
@@ -987,7 +987,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O package segue gerando documento');
   --------------------------------------------------------------------------
-  -- O p_out esta no caminho de toda linha do documento, entao qualquer mexida
+  -- O p_out esta no caminho de toda linha do documento, então qualquer mexida
   -- na escrita de stream passa por aqui.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
@@ -1007,7 +1007,7 @@ BEGIN
   --------------------------------------------------------------------------
   -- Pelo ImageFromBlob, que recebe os bytes prontos: sem HTTP, sem ACL, nada
   -- fora do schema. O PNG abaixo tem 2x2 pixels e paleta de quatro cores,
-  -- indexado de proposito, porque a paleta e a parte que o percurso binario
+  -- indexado de propósito, porque a paleta e a parte que o percurso binário
   -- mais toca.
   l_hex := '89504E470D0A1A0A0000000D494844520000000200000002080300000045';
   l_hex := l_hex || '68FD160000000C504C5445FF000000FF000000FFFFFF00D6028F7B000000';
@@ -1041,8 +1041,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Formato nao suportado e recusado, nao aceito em silencio');
   --------------------------------------------------------------------------
-  -- Um SVG comeca com '<?xml' ou '<svg': nao tem assinatura binaria de PNG nem
-  -- marcador SOI de JPEG. Recusar com erro proprio vale mais que gravar um
+  -- Um SVG começa com '<?xml' ou '<svg': não tem assinatura binária de PNG nem
+  -- marcador SOI de JPEG. Recusar com erro próprio vale mais que gravar um
   -- objeto de imagem que nenhum leitor desenha.
   BEGIN
     PL_FPDF.Reset;
@@ -1286,8 +1286,8 @@ BEGIN
     l_params('titulo') := 'Relatorio';
     PL_FPDF.SetFooterProc('meu_pkg.rodape', l_params);
     passou('Nomes qualificados aceitos na configuração');
-    -- meu_pkg nao existe: sem limpar, todo AddPage seguinte falharia ao
-    -- executar o bloco dinamico do header.
+    -- meu_pkg não existe: sem limpar, todo AddPage seguinte falharia ao
+    -- executar o bloco dinâmico do header.
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
@@ -1298,9 +1298,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Reset limpa os callbacks de header e rodapé');
   --------------------------------------------------------------------------
-  -- Regressao: os callbacks sobreviviam ao Reset (e ao Init, que chama Reset).
-  -- Um nome invalido configurado uma vez deixava a sessao inutilizavel: todo
-  -- AddPage seguinte estourava ao executar o bloco dinamico do header.
+  -- Regressão: os callbacks sobreviviam ao Reset (e ao Init, que chama Reset).
+  -- Um nome inválido configurado uma vez deixava a sessão inutilizável: todo
+  -- AddPage seguinte estourava ao executar o bloco dinâmico do header.
   DECLARE
     l_pdf BLOB;
   BEGIN
@@ -1503,11 +1503,11 @@ BEGIN
         WHEN 5  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, NULL);
         WHEN 6  THEN PL_FPDF.AddBarcode(10, 10, 0, 20, 'ABC');
         WHEN 7  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, 'ABC', 'PDF417');
-        -- 'abc' NAO serve: bc_code39 faz upper(), e 'ABC' e valido. O '#' nao
+        -- 'abc' NÃO serve: bc_code39 faz upper(), e 'ABC' e valido. O '#' não
         -- esta em co_bc39_chars nem depois do upper.
         WHEN 8  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, 'AB#C', 'CODE39');
         -- CHR(9) e determinístico em qualquer charset; CHR(200) dependeria da
-        -- codificacao da sessao, e o teste anterior passava por isso.
+        -- codificação da sessão, e o teste anterior passava por isso.
         WHEN 9  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, 'A' || CHR(9) || 'B',
                                         'CODE128');
         WHEN 10 THEN PL_FPDF.AddBarcode(10, 10, 100, 20, '123', 'EAN13');
@@ -2535,7 +2535,7 @@ BEGIN
     -- Try to check modification status after clearing - should fail
     BEGIN
       l_is_modified := PL_FPDF.IsPDFModified();
-      -- IsPDFModified doesn't validate PDF loaded, so it will return FALSE
+      -- IsPDFModified doesn't validate PDF loaded, só it will return FALSE
       IF NOT l_is_modified THEN
         passou('Modification flag cleared after cache clear');
       ELSE
@@ -2941,10 +2941,10 @@ DECLARE
   l_options JSON_OBJECT_T;
   l_overlay_id VARCHAR2(50);
 
-  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- Vocabulário canônico da suite. ATÉ SETEMBRO/2026 ESTE ARQUIVO NÃO ERA
   -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
   -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
-  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  -- aqui dentro não chegava ao total. Sessenta e cinco aferições invisíveis.
   PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
   BEGIN
     l_test_count := l_test_count + 1;
@@ -2957,7 +2957,7 @@ DECLARE
     END IF;
   END confere;
 
-  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  -- O erro esperado NÃO veio: o caso pedia recusa e a chamada passou.
   PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;
@@ -3328,10 +3328,10 @@ DECLARE
   l_pdfs JSON_ARRAY_T;
   l_pdf_obj JSON_OBJECT_T;
 
-  -- Vocabulario canonico da suite. ATE SETEMBRO/2026 ESTE ARQUIVO NAO ERA
+  -- Vocabulário canônico da suite. ATÉ SETEMBRO/2026 ESTE ARQUIVO NÃO ERA
   -- CONTADO: ele imprimia "✓ Test 1: nome - PASS", e o runner conta [PASS] e
   -- [FAIL]. Resultado: o arquivo aparecia como "ok 0/0" -- rodava, e uma falha
-  -- aqui dentro nao chegava ao total. Sessenta e cinco afericoes invisiveis.
+  -- aqui dentro não chegava ao total. Sessenta e cinco aferições invisíveis.
   PROCEDURE confere(p_nome VARCHAR2, p_cond BOOLEAN) IS
   BEGIN
     l_test_count := l_test_count + 1;
@@ -3344,7 +3344,7 @@ DECLARE
     END IF;
   END confere;
 
-  -- O erro esperado NAO veio: o caso pedia recusa e a chamada passou.
+  -- O erro esperado NÃO veio: o caso pedia recusa e a chamada passou.
   PROCEDURE faltou_erro(p_nome VARCHAR2, p_codigo NUMBER) IS
   BEGIN
     l_test_count := l_test_count + 1;
@@ -4126,7 +4126,7 @@ BEGIN
   END;
 
   -- Test: PDF carregado
-  -- Nao existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
+  -- Não existe IsPDFLoaded na API; GetPageCount levanta -20809 sem PDF carregado.
   BEGIN
     confere('PDF carregado - GetPageCount responde', PL_FPDF.GetPageCount > 0);
   EXCEPTION WHEN OTHERS THEN
@@ -4218,9 +4218,9 @@ BEGIN
     confere('GetWatermarks', FALSE, SQLERRM);
   END;
 
-  -- RemoveWatermark e ClearWatermarks nao existem na API: o teste antigo as
-  -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A unica forma
-  -- publica de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
+  -- RemoveWatermark e ClearWatermarks não existem na API: o teste antigo as
+  -- chamava e impedia o bloco inteiro de compilar (ORA-06550). A única forma
+  -- pública de descartar marcas d'agua e ClearPDFCache, que limpa tudo.
   DECLARE
     l_watermarks JSON_ARRAY_T;
   BEGIN
@@ -4875,7 +4875,7 @@ BEGIN
       falhou('Error: ' || SQLERRM);
   END;
 
-  -- TEST 3.5: o conteudo sai realmente cifrado
+  -- TEST 3.5: o conteúdo sai realmente cifrado
   caso('EncryptPDF - conteudo deixa de aparecer em claro');
   DECLARE
     co_marca CONSTANT VARCHAR2(60) := 'FraseSecretaParaConferirCifragem';
@@ -4896,7 +4896,7 @@ BEGIN
     l_claro := PL_FPDF.OutputBlob();
     PL_FPDF.Reset;
 
-    -- pre-condicao: sem cifrar, a marca ESTA legivel nos bytes. Sem isto o
+    -- pre-condicao: sem cifrar, a marca ESTA legível nos bytes. Sem isto o
     -- teste passaria por engano se o texto nunca chegasse ao arquivo.
     IF NOT contem(l_claro, co_marca) THEN
       l_erros := l_erros + 1;
@@ -4929,7 +4929,7 @@ BEGIN
       falhou('Error: ' || SQLERRM);
   END;
 
-  -- TEST 3.5b: AES cifra de verdade, nas duas revisoes
+  -- TEST 3.5b: AES cifra de verdade, nas duas revisões
   FOR r IN (SELECT 'AES-128' m, 'AESV2' cfm, 4 v FROM dual
             UNION ALL
             SELECT 'AES-256', 'AESV3', 5 FROM dual) LOOP
@@ -4957,7 +4957,7 @@ BEGIN
         falhou(r.m || ': o texto continua em claro nos bytes');
       ELSIF DBMS_LOB.INSTR(l_cif,
               UTL_RAW.CAST_TO_RAW('/CFM /' || r.cfm), 1, 1) = 0 THEN
-        -- sem /CF, /StmF e /StrF o leitor supoe /Identity e mostra o conteudo
+        -- sem /CF, /StmF e /StrF o leitor supõe /Identity e mostra o conteúdo
         -- cifrado como se fosse texto
         falhou(r.m || ': /CFM /' || r.cfm || ' nao foi declarado');
       ELSIF DBMS_LOB.INSTR(l_cif, UTL_RAW.CAST_TO_RAW('/StmF /StdCF'), 1, 1) = 0
@@ -4977,7 +4977,7 @@ BEGIN
     END;
   END LOOP;
 
-  -- TEST 3.5c: ida e volta do AES, nas duas revisoes
+  -- TEST 3.5c: ida e volta do AES, nas duas revisões
   FOR r IN (SELECT 'AES-128' m FROM dual UNION ALL SELECT 'AES-256' FROM dual)
   LOOP
     caso('EncryptPDF + DecryptPDF - ida e volta em ' || r.m);
@@ -5012,8 +5012,8 @@ BEGIN
         falhou(r.m || ' - Error: ' || SQLERRM);
     END;
 
-    -- a senha de proprietario tambem abre, e por outro caminho: no R6 ela usa
-    -- os 48 bytes do /U no hash e desembrulha a chave de /OE, nao de /UE
+    -- a senha de proprietário também abre, e por outro caminho: no R6 ela usa
+    -- os 48 bytes do /U no hash e desembrulha a chave de /OE, não de /UE
     caso('DecryptPDF - senha de proprietario em ' || r.m);
     DECLARE
       l_claro BLOB;
@@ -5043,7 +5043,7 @@ BEGIN
         falhou(r.m || ' (proprietario) - Error: ' || SQLERRM);
     END;
 
-    -- senha errada tem de ser RECUSADA, e nao devolver lixo
+    -- senha errada tem de ser RECUSADA, e não devolver lixo
     caso('DecryptPDF - senha errada em ' || r.m);
     DECLARE
       l_claro BLOB;
@@ -5531,8 +5531,8 @@ BEGIN
   --------------------------------------------------------------------------------
   -- SECTION 7: Loading an Encrypted PDF
   --
-  -- O LoadPDF le a estrutura e nao decifra os streams. Antes ele aceitava o PDF
-  -- cifrado sem avisar, e o OutputModifiedPDF saia com as paginas EM BRANCO --
+  -- O LoadPDF lê a estrutura e não decifra os streams. Antes ele aceitava o PDF
+  -- cifrado sem avisar, e o OutputModifiedPDF saia com as páginas EM BRANCO --
   -- medido no 26ai com AES-256 e RC4-128. Agora recusa com -20867.
   --------------------------------------------------------------------------------
   secao('SECTION 7: Loading an Encrypted PDF');
@@ -5566,7 +5566,7 @@ BEGIN
       END IF;
   END;
 
-  -- TEST 7.3: a recusa nao deixa o documento anterior misturado com o recusado
+  -- TEST 7.3: a recusa não deixa o documento anterior misturado com o recusado
   caso('After the refusal, nothing is left half-loaded');
   BEGIN
     PL_FPDF.LoadPDF(generate_test_pdf());
@@ -5589,7 +5589,7 @@ BEGIN
       END IF;
   END;
 
-  -- TEST 7.4: LoadPDFWithID recusa e nao registra o ID
+  -- TEST 7.4: LoadPDFWithID recusa e não registra o ID
   caso('LoadPDFWithID refuses an encrypted PDF and does not register the ID');
   BEGIN
     BEGIN
@@ -5683,19 +5683,19 @@ END;
 -- origem: tests/test_regressoes_revisao.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Regressoes da revisao de agosto/2026
+-- PL_FPDF - Regressões da revisão de agosto/2026
 --
--- Um caso por defeito encontrado na revisao da branch. Cada um FALHA se o
+-- Um caso por defeito encontrado na revisão da branch. Cada um FALHA se o
 -- defeito voltar; nenhum passa por acidente.
 --
--- Regra deste arquivo: quando o ambiente nao permite concluir (o fixture nao
+-- Regra deste arquivo: quando o ambiente não permite concluir (o fixture não
 -- montou, o stream saiu comprimido), o caso imprime [SKIP] com o motivo.
--- Passar sem ter olhado e pior que falhar, porque ninguem desconfia.
+-- Passar sem ter olhado e pior que falhar, porque ninguém desconfia.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
--- Defeito que so se observa de fora vira lint estatico, nao caso de teste.
+-- Defeito que só se observa de fora vira lint estático, não caso de teste.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -5733,13 +5733,13 @@ DECLARE
     DBMS_OUTPUT.PUT_LINE('  [SKIP] ' || p_msg);
   END;
 
-  -- Procura um texto no BLOB. Devolve 0 quando nao acha.
+  -- Procura um texto no BLOB. Devolve 0 quando não acha.
   FUNCTION acha(p_blob IN BLOB, p_txt IN VARCHAR2) RETURN PLS_INTEGER IS
   BEGIN
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
   END acha;
 
-  -- Um PDF de n paginas, gerado pelo proprio package.
+  -- Um PDF de n páginas, gerado pelo próprio package.
   FUNCTION pdf_de(p_paginas IN PLS_INTEGER) RETURN BLOB IS
     l_b BLOB;
   BEGIN
@@ -5760,12 +5760,12 @@ BEGIN
   DBMS_OUTPUT.PUT_LINE(RPAD('=', 80, '='));
 
   --------------------------------------------------------------------------
-  -- 1. A marca d'agua referenciava uma fonte que ninguem declara
+  -- 1. A marca d'agua referenciava uma fonte que ninguém declara
   --
-  -- ovl_marca_dagua emitia o literal '/FwmPLFPDF'. Esse nome nao sai de
-  -- ovl_fonte_nome e nao entra no /Font de pagina nenhuma: o operador Tf
-  -- ficava sem fonte e a marca NAO DESENHAVA. O nome certo e /FwmH, que e o
-  -- que a largura ja media (Helvetica nao-negrito).
+  -- ovl_marca_dagua emitia o literal '/FwmPLFPDF'. Esse nome não sai de
+  -- ovl_fonte_nome e não entra no /Font de página nenhuma: o operador Tf
+  -- ficava sem fonte e a marca NÃO DESENHAVA. O nome certo e /FwmH, que e o
+  -- que a largura já media (Helvetica não-negrito).
   --------------------------------------------------------------------------
   caso('AddWatermark referencia uma fonte declarada (nao /FwmPLFPDF)');
   BEGIN
@@ -5780,8 +5780,8 @@ BEGIN
     ELSIF acha(l_out, 'FwmH') > 0 THEN
       passou('a marca usa /FwmH, que o /Font da pagina declara');
     ELSE
-      -- nenhum dos dois no claro: o stream saiu comprimido e este caso nao
-      -- consegue afirmar nada. Nao e um PASS.
+      -- nenhum dos dois no claro: o stream saiu comprimido e este caso não
+      -- consegue afirmar nada. Não e um PASS.
       pulou('nem /FwmH nem /FwmPLFPDF no claro — stream comprimido, ' ||
             'caso inconclusivo');
     END IF;
@@ -5791,10 +5791,10 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 2. cor() estourava na DECLARACAO
+  -- 2. cor() estourava na DECLARAÇÃO
   --
   -- l_h era VARCHAR2(10). Uma cor de 11+ caracteres levantava ORA-06502
-  -- ANTES do CASE — que trataria o nome desconhecido caindo no padrao — e
+  -- ANTES do CASE — que trataria o nome desconhecido caindo no padrão — e
   -- derrubava o OutputModifiedPDF inteiro.
   --------------------------------------------------------------------------
   caso('AddWatermark aceita nome de cor longo sem ORA-06502');
@@ -5820,27 +5820,27 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 3. SplitPDF vazava um CLOB temporario por intervalo
+  -- 3. SplitPDF vazava um CLOB temporário por intervalo
   --
-  -- NAO TEM CASO AQUI, DE PROPOSITO.
+  -- NÃO TEM CASO AQUI, DE PROPÓSITO.
   --
-  -- O vazamento nao e observavel de dentro do proprio schema: USER_* nao
-  -- expoe contagem de LOB temporario, e as instancias vazadas nao tem
-  -- locator que se possa passar ao DBMS_LOB.ISTEMPORARY. A primeira versao
+  -- O vazamento não e observável de dentro do próprio schema: USER_* não
+  -- expõe contagem de LOB temporário, e as instâncias vazadas não tem
+  -- locator que se possa passar ao DBMS_LOB.ISTEMPORARY. A primeira versão
   -- deste arquivo media V$TEMPORARY_LOBS, o que exige GRANT de DBA — e um
-  -- caso que so sabe pular vira cobertura de mentira.
+  -- caso que só sabe pular vira cobertura de mentira.
   --
-  -- Quem guarda este defeito e o check_lob_temp.py, que le o fonte: toda
-  -- variavel que recebe LOB temporario de uma funcao tem de passar por
+  -- Quem guarda este defeito e o check_lob_temp.py, que lê o fonte: toda
+  -- variável que recebe LOB temporário de uma função tem de passar por
   -- FREETEMPORARY, a menos que seja devolvida. Roda sem banco, sem
-  -- privilegio e sem rede, que e o que este projeto pode exigir.
+  -- privilégio e sem rede, que e o que este projeto pode exigir.
   --------------------------------------------------------------------------
 
   --------------------------------------------------------------------------
-  -- 4. buildPlsqlStatment: o default so existia na declaracao antecipada
+  -- 4. buildPlsqlStatment: o default só existia na declaração antecipada
   --
-  -- Se a definicao e a antecipada divergirem, o Oracle nao compila o body
-  -- (PLS-00593) — entao este caso e, na pratica, "o package esta VALID e o
+  -- Se a definição e a antecipada divergirem, o Oracle não compila o body
+  -- (PLS-00593) — então este caso e, na pratica, "o package esta VALID e o
   -- caminho sem paramTable funciona".
   --------------------------------------------------------------------------
   caso('SetFooterProc sem paramTable usa o default e o package esta VALID');
@@ -5865,14 +5865,14 @@ BEGIN
   END;
 
   --------------------------------------------------------------------------
-  -- 5. Secao xref classica maior que a janela de 32767 bytes
+  -- 5. Secao xref clássica maior que a janela de 32767 bytes
   --
   -- pdf_read faz LEAST(p_len, 32767) e trunca calado: acima de ~1638 entradas
-  -- (20 bytes cada) o resto da tabela sumia, o 'trailer' nao era achado e o
-  -- chamador recebia '-20803 /Root nao encontrado' — que aponta para o lugar
+  -- (20 bytes cada) o resto da tabela sumia, o 'trailer' não era achado e o
+  -- chamador recebia '-20803 /Root não encontrado' — que aponta para o lugar
   -- errado. Agora se recusa com -20841 e mensagem que diz o que aconteceu.
   --
-  -- O que se cobra aqui e o CODIGO do erro, nao o sucesso: se o PDF couber na
+  -- O que se cobra aqui e o CÓDIGO do erro, não o sucesso: se o PDF couber na
   -- janela, ele carrega normalmente e o caso registra isso.
   --------------------------------------------------------------------------
   caso('xref classica grande: erro claro (-20841), nunca -20803 enganoso');
@@ -5880,7 +5880,7 @@ BEGIN
     l_grande BLOB;
     l_cod    PLS_INTEGER;
   BEGIN
-    -- ~900 paginas: cada uma rende objeto de pagina e stream de conteudo,
+    -- ~900 páginas: cada uma rende objeto de página e stream de conteúdo,
     -- o que passa folgado das ~1638 entradas de uma janela.
     l_grande := pdf_de(900);
     BEGIN
@@ -5902,20 +5902,20 @@ BEGIN
     END;
   EXCEPTION
     WHEN OTHERS THEN
-      -- nao conseguir GERAR 900 paginas e limite de ambiente, nao a regressao
+      -- não conseguir GERAR 900 páginas e limite de ambiente, não a regressão
       pulou('nao foi possivel montar o PDF de 900 paginas: ' || SQLERRM);
   END;
 
   --------------------------------------------------------------------------
-  -- 6. Reset deixava metadado para tras
+  -- 6. Reset deixava metadado para trás
   --
-  -- O package tem estado de SESSAO. O Reset zerava fontes, imagens, links,
+  -- O package tem estado de SESSÃO. O Reset zerava fontes, imagens, links,
   -- callbacks e criptografia — e esquecia title, subject, author, keywords e
   -- creator. O /Keywords de um documento reaparecia em todos os seguintes.
   --
-  -- Custou uma rodada inteira de diagnostico: um SetKeywords grande num teste
+  -- Custou uma rodada inteira de diagnóstico: um SetKeywords grande num teste
   -- fez cada PDF da suite nascer com 32 KB a mais, a cifragem recusar todos, e
-  -- o sintoma nao apontava para o Reset em momento nenhum.
+  -- o sintoma não apontava para o Reset em momento nenhum.
   --------------------------------------------------------------------------
   caso('Reset limpa os metadados do documento');
   DECLARE
@@ -5953,14 +5953,14 @@ BEGIN
   -- Antes: sec_cifrar_strings acumulava o hexadecimal num VARCHAR2(32767),
   -- dois caracteres por byte, e estourava ORA-06502 — que o EncryptPDF
   -- rebatizava como '-20852 Encryption failed', escondendo a causa. Pior:
-  -- sec_cifrar_objetos truncava o dicionario calado e devolvia arquivo
+  -- sec_cifrar_objetos truncava o dicionário calado e devolvia arquivo
   -- quebrado REPORTANDO SUCESSO.
   --
-  -- Agora recusa, e o codigo certo e -20866: e o erro que o proprio package
-  -- ja usava na SAIDA do escape, com a mesma mensagem e o mesmo teto de
-  -- 16000 bytes. A primeira versao deste caso esperava -20841, que e o erro
-  -- de LEITURA truncada — outro assunto. Expectativa errada minha, nao
-  -- defeito do codigo: o -20866 e o mais preciso dos dois.
+  -- Agora recusa, e o código certo e -20866: e o erro que o próprio package
+  -- já usava na SAÍDA do escape, com a mesma mensagem e o mesmo teto de
+  -- 16000 bytes. A primeira versão deste caso esperava -20841, que e o erro
+  -- de LEITURA truncada — outro assunto. Expectativa errada minha, não
+  -- defeito do código: o -20866 e o mais preciso dos dois.
   --------------------------------------------------------------------------
   caso('EncryptPDF recusa objeto com dicionario acima de 32 KB');
   DECLARE
@@ -5969,12 +5969,12 @@ BEGIN
     l_perm    JSON_OBJECT_T := JSON_OBJECT_T();
     l_grande  BLOB;
   BEGIN
-    -- Palavras-chave enormes entram no /Info, que e um objeto de dicionario.
-    -- 17000 e o minimo que passa do teto de 16000 do escape. A versao
-    -- anterior usava 32000 sem necessidade, e como o Reset nao limpava
+    -- Palavras-chave enormes entram no /Info, que e um objeto de dicionário.
+    -- 17000 e o mínimo que passa do teto de 16000 do escape. A versão
+    -- anterior usava 32000 sem necessidade, e como o Reset não limpava
     -- metadado (defeito consertado nesta mesma rodada), aquilo vazava para
-    -- TODA amostra seguinte da sessao: cada PDF nascia com 32 KB a mais e a
-    -- cifragem recusava todos. Fixture de teste nao pode sujar o que vem
+    -- TODA amostra seguinte da sessão: cada PDF nascia com 32 KB a mais e a
+    -- cifragem recusava todos. Fixture de teste não pode sujar o que vem
     -- depois — nem quando o package tem defeito.
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.SetKeywords(RPAD('a', 17000, 'a'));
@@ -5989,8 +5989,8 @@ BEGIN
                                       p_user_password  => 'x',
                                       p_permissions    => l_perm,
                                       p_encryption     => 'AES-128');
-      -- Chegou aqui: ou o dicionario coube, ou o guard nao disparou. Para
-      -- distinguir, confere se a saida ainda tem o /Info inteiro.
+      -- Chegou aqui: ou o dicionário coube, ou o guard não disparou. Para
+      -- distinguir, confere se a saída ainda tem o /Info inteiro.
       IF acha(l_cifrado, 'Encrypt') > 0 THEN
         pulou('o dicionario ficou abaixo de 32 KB e a cifragem passou — ' ||
               'este caso nao exercitou o limite');
@@ -6001,7 +6001,7 @@ BEGIN
       WHEN OTHERS THEN
         l_cod := SQLCODE;
         -- -20866: literal de string acima do teto do escape (o preciso).
-        -- -20841: leitura truncada do objeto — tambem e recusa honesta, e
+        -- -20841: leitura truncada do objeto — também e recusa honesta, e
         --         vale para um fixture que chegue por aquele caminho.
         IF l_cod IN (-20866, -20841) THEN
           passou('recusou com ' || l_cod ||
@@ -6020,36 +6020,36 @@ BEGIN
 
   --------------------------------------------------------------------------
   -- O caso que existia aqui conferia que SetUTF8Enabled e IsUTF8Enabled eram
-  -- coerentes entre si -- o unico contrato que aquela API cumpria, porque a
-  -- flag nao era consultada em lugar nenhum. As duas sairam da spec quando a
-  -- conversao WinAnsi passou a ser sempre feita, e o caso saiu com elas.
+  -- coerentes entre si -- o único contrato que aquela API cumpria, porque a
+  -- flag não era consultada em lugar nenhum. As duas saíram da spec quando a
+  -- conversão WinAnsi passou a ser sempre feita, e o caso saiu com elas.
   --
   -- O que ele registrava em texto agora e aferido de verdade, em
   -- test_winansi.sql: o acentuado convertido, o alinhamento que antes
-  -- levantava ORA-06502, e a recusa do que nao existe em WinAnsi.
+  -- levantava ORA-06502, e a recusa do que não existe em WinAnsi.
   --------------------------------------------------------------------------
 
   --------------------------------------------------------------------------
   caso('Documento em paisagem nao contamina o seguinte');
   --------------------------------------------------------------------------
-  -- O Reset limpava fontes, imagens, links e metadados, mas NAO o
-  -- OrientationChanges -- a tabela que diz quais paginas tem orientacao
-  -- diferente do padrao, e que faz cada uma delas ganhar MediaBox proprio.
+  -- O Reset limpava fontes, imagens, links e metadados, mas NÃO o
+  -- OrientationChanges -- a tabela que diz quais páginas tem orientação
+  -- diferente do padrão, e que faz cada uma delas ganhar MediaBox próprio.
   --
-  -- Como ela e indexada pelo NUMERO da pagina, o indice 1 de um documento
-  -- virava o indice 1 do proximo: quem gerasse um documento com a pagina 1 em
-  -- paisagem deixava TODO documento posterior da mesma sessao com a pagina 1
-  -- em paisagem. MediaBox trocado, conteudo desenhado fora do papel, arquivo
+  -- Como ela e indexada pelo NÚMERO da página, o índice 1 de um documento
+  -- virava o índice 1 do próximo: quem gerasse um documento com a página 1 em
+  -- paisagem deixava TODO documento posterior da mesma sessão com a página 1
+  -- em paisagem. MediaBox trocado, conteúdo desenhado fora do papel, arquivo
   -- que abre EM BRANCO -- sem erro nenhum.
   --
-  -- O sintoma nao acusa a causa: a pagina 1 sai errada e as demais certas,
-  -- porque so o indice reaproveitado colide. Foi assim que apareceu: doze
-  -- amostras com o texto nao extraido, e o codigo de barras sem decodificar.
+  -- O sintoma não acusa a causa: a página 1 sai errada e as demais certas,
+  -- porque só o índice reaproveitado colide. Foi assim que apareceu: doze
+  -- amostras com o texto não extraído, e o código de barras sem decodificar.
   DECLARE
     l_paisagem BLOB;
     l_retrato  BLOB;
   BEGIN
-    -- primeiro documento: pagina 1 em PAISAGEM
+    -- primeiro documento: página 1 em PAISAGEM
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage('L');
@@ -6058,7 +6058,7 @@ BEGIN
     l_paisagem := PL_FPDF.OutputBlob;
     PL_FPDF.Reset;
 
-    -- segundo documento: tudo RETRATO, sem tocar em orientacao
+    -- segundo documento: tudo RETRATO, sem tocar em orientação
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage;
     PL_FPDF.SetFont('Arial', '', 12);
@@ -6067,7 +6067,7 @@ BEGIN
     PL_FPDF.Reset;
 
     -- A4 retrato: 595.28 x 841.89. Paisagem inverte os dois. O segundo
-    -- documento nao pode ter MediaBox proprio em pagina nenhuma.
+    -- documento não pode ter MediaBox próprio em página nenhuma.
     IF acha(l_retrato, '/MediaBox [0 0 841.89 595.28]') = 0 THEN
       passou('o documento retrato nao herdou a paisagem do anterior');
     ELSE
@@ -6089,16 +6089,16 @@ BEGIN
   caso('Link so aceita URL, e recusa o link interno em vez de gravar quebrado');
   --------------------------------------------------------------------------
   -- O ramo que escreveria o /Dest do link INTERNO saiu comentado no porte
-  -- original e nunca voltou. Com plink numerico o dicionario do /Annot ficava
+  -- original e nunca voltou. Com plink numérico o dicionário do /Annot ficava
   -- ABERTO -- sai "<</Type /Annot ... /Border [0 0 0] ]", sem o >> que fecha.
-  -- Nao e link que nao navega: e PDF que o leitor recusa.
+  -- Não e link que não navega: e PDF que o leitor recusa.
   --
-  -- Ninguem reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
+  -- Ninguém reparou porque nenhum teste chamava AddLink ou SetLink. Foi ao
   -- escrever este caso que apareceu o terceiro lado do mesmo defeito: o
   -- AddLink levantava ORA-06531, "reference to uninitialized collection", na
-  -- linha da propria declaracao. A colecao "links" e nested table e ninguem a
-  -- inicializa, entao o AddLink NUNCA funcionou -- nem uma vez, em nenhuma
-  -- versao. Os tres passam a recusar com ORA-20601 e mensagem que diz o que
+  -- linha da própria declaração. A coleção "links" e nested table e ninguém a
+  -- inicializa, então o AddLink NUNCA funcionou -- nem uma vez, em nenhuma
+  -- versão. Os três passam a recusar com ORA-20601 e mensagem que diz o que
   -- usar no lugar.
   DECLARE
     l_pdf   BLOB;
@@ -6159,10 +6159,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Link na pagina 3 nao estraga as paginas 1 e 2');
   --------------------------------------------------------------------------
-  -- O Link estende a colecao ate a pagina corrente, e as paginas anteriores
-  -- ficavam com entrada VAZIA. O emissor so testava .exists(i), entao essas
-  -- paginas ganhavam um /Annots com /Rect vazio e o dicionario aberto -- sem
-  -- que ninguem tivesse pedido link nenhum nelas.
+  -- O Link estende a coleção até a página corrente, e as páginas anteriores
+  -- ficavam com entrada VAZIA. O emissor só testava .exists(i), então essas
+  -- páginas ganhavam um /Annots com /Rect vazio e o dicionário aberto -- sem
+  -- que ninguém tivesse pedido link nenhum nelas.
   DECLARE
     l_pdf BLOB;
     l_n   PLS_INTEGER;
@@ -6177,7 +6177,7 @@ BEGIN
     l_pdf := PL_FPDF.OutputBlob;
     PL_FPDF.Reset;
 
-    -- tres paginas, UM /Annots so
+    -- três páginas, UM /Annots só
     l_n := 0;
     FOR i IN 1 .. 3 LOOP
       IF DBMS_LOB.INSTR(l_pdf, UTL_RAW.CAST_TO_RAW('/Annots ['), 1, i) > 0 THEN
@@ -6190,7 +6190,7 @@ BEGIN
       falhou('ha ' || l_n || ' /Annots no arquivo, e so uma pagina tem link');
     END IF;
 
-    -- e nenhum dicionario de anotacao ficou aberto
+    -- e nenhum dicionário de anotação ficou aberto
     IF acha(l_pdf, '/Border [0 0 0] ]') = 0 THEN
       passou('nenhum /Annot com o dicionario aberto');
     ELSE
@@ -6204,14 +6204,14 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Link funciona no SEGUNDO documento da sessao');
   --------------------------------------------------------------------------
-  -- O Link media o quanto estender pelo .last, e .last de colecao VAZIA e
-  -- NULL. Depois de um Reset a colecao fica exatamente assim: o delete zera a
-  -- contagem e nao anula a colecao. Entao "page - NULL" dava NULL, o IF nao
+  -- O Link media o quanto estender pelo .last, e .last de coleção VAZIA e
+  -- NULL. Depois de um Reset a coleção fica exatamente assim: o delete zera a
+  -- contagem e não anula a coleção. Então "page - NULL" dava NULL, o IF não
   -- disparava e o PageLinks(page) estourava com ORA-06533 -- no primeiro Link
-  -- do segundo documento, e o erro nao fala de link nenhum.
+  -- do segundo documento, e o erro não fala de link nenhum.
   --
   -- Atinge o caminho COMUM, com URL, e quem gera documento em lote passa por
-  -- ele em toda emissao a partir da segunda.
+  -- ele em toda emissão a partir da segunda.
   DECLARE
     l_um    BLOB;
     l_dois  BLOB;
@@ -6224,7 +6224,7 @@ BEGIN
     l_um := PL_FPDF.OutputBlob;
     PL_FPDF.Reset;
 
-    -- segundo documento na MESMA sessao: e aqui que estourava
+    -- segundo documento na MESMA sessão: e aqui que estourava
     PL_FPDF.Init('P', 'mm', 'A4');
     PL_FPDF.AddPage;
     PL_FPDF.SetFont('Helvetica', '', 12);
@@ -6276,31 +6276,31 @@ END;
 -- origem: tests/test_compat_legado.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Compatibilidade com codigo escrito para a 0.9.4 e a 2.0.0
+-- PL_FPDF - Compatibilidade com código escrito para a 0.9.4 e a 2.0.0
 --
--- A pergunta de quem migra e sempre a mesma: o que eu ja tenho escrito continua
--- funcionando? Este arquivo responde executando, nao afirmando.
+-- A pergunta de quem migra e sempre a mesma: o que eu já tenho escrito continua
+-- funcionando? Este arquivo responde executando, não afirmando.
 --
--- O levantamento da superficie publica das tres versoes diz o seguinte:
+-- O levantamento da superfície pública das três versões diz o seguinte:
 --
---   0.9.4:  70 publicos    2.0.0: 94    3.4.0: 119
+--   0.9.4:  70 públicos    2.0.0: 94    3.4.0: 119
 --
---   Da 0.9.4 para a 3.4.0 sumiram SETE nomes, e os sete sao rotinas de
---   demonstracao do porte original -- helloworld, test, testImg, testheader,
+--   Da 0.9.4 para a 3.4.0 sumiram SETE nomes, e os sete são rotinas de
+--   demonstração do porte original -- helloworld, test, testImg, testheader,
 --   myRepetitiveHeader, myRepetitiveFooter, lpc_footer. Nenhuma delas e API:
---   sao os exemplos que vinham dentro do package.
+--   são os exemplos que vinham dentro do package.
 --
 --   Da 2.0.0 para a 3.4.0 sumiram DUAS: SetUTF8Enabled e IsUTF8Enabled, que
---   nao faziam nada -- a flag era escrita e lida, e ninguem a consultava.
+--   não faziam nada -- a flag era escrita e lida, e ninguém a consultava.
 --
---   Das 133 assinaturas em comum, UMA mudou, e nao foi nesta versao: o
---   parametro do AddPage passou de 'orientation' para 'p_orientation' na
---   2.0.0. Chamada posicional nao sente; chamada NOMEADA quebra, e e o unico
+--   Das 133 assinaturas em comum, UMA mudou, e não foi nesta versão: o
+--   parâmetro do AddPage passou de 'orientation' para 'p_orientation' na
+--   2.0.0. Chamada posicional não sente; chamada NOMEADA quebra, e e o único
 --   ponto de atrito real da 0.9.4 para ca. O caso 4 exercita os dois.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -6344,10 +6344,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O helloworld da 0.9.4, chamada a chamada');
   --------------------------------------------------------------------------
-  -- Copiado do corpo do procedure helloworld do porte de 2017, com uma unica
-  -- substituicao: OutputBlob() no lugar de Output(), porque o Output escreve
-  -- pelo directory PDF_DIR e schema comum nao tem um. A substituicao nao muda
-  -- o que se testa -- o que interessa e a sequencia de chamadas atravessar.
+  -- Copiado do corpo do procedure helloworld do porte de 2017, com uma única
+  -- substituição: OutputBlob() no lugar de Output(), porque o Output escreve
+  -- pelo directory PDF_DIR e schema comum não tem um. A substituição não muda
+  -- o que se testa -- o que interessa e a sequência de chamadas atravessar.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.FPDF('P', 'cm', 'A4');
@@ -6372,8 +6372,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O construtor legado dispensa o Init');
   --------------------------------------------------------------------------
-  -- Codigo de 2017 nunca chamou Init: ele nao existia. O fpdf() precisa deixar
-  -- o package pronto sozinho, senao o AddPage seguinte recusa com ORA-20005.
+  -- Código de 2017 nunca chamou Init: ele não existia. O fpdf() precisa deixar
+  -- o package pronto sozinho, senão o AddPage seguinte recusa com ORA-20005.
   -- Esse foi o defeito relatado contra a 2.0.0; aqui nunca existiu, e este
   -- caso e o que impede que volte.
   BEGIN
@@ -6394,8 +6394,8 @@ BEGIN
   caso('O openpdf continua aceito, e deixou de ser obrigatorio');
   --------------------------------------------------------------------------
   -- Todo exemplo antigo chama openpdf depois do construtor. Hoje o AddPage o
-  -- chama sozinho quando o documento ainda nao foi aberto, mas o codigo velho
-  -- nao pode quebrar por chamar duas vezes.
+  -- chama sozinho quando o documento ainda não foi aberto, mas o código velho
+  -- não pode quebrar por chamar duas vezes.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.FPDF('P', 'cm', 'A4');
@@ -6421,8 +6421,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('AddPage: o unico atrito real da 0.9.4 para ca');
   --------------------------------------------------------------------------
-  -- Das 133 assinaturas em comum, so esta mudou -- e na 2.0.0, nao aqui. O
-  -- parametro passou de 'orientation' para 'p_orientation'.
+  -- Das 133 assinaturas em comum, só esta mudou -- e na 2.0.0, não aqui. O
+  -- parâmetro passou de 'orientation' para 'p_orientation'.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'cm', 'A4');
@@ -6456,7 +6456,7 @@ BEGIN
   caso('Cabecalho e rodape por procedure, como a 0.9.4 fazia');
   --------------------------------------------------------------------------
   -- O SetHeaderProc/SetFooterProc e o mecanismo do porte original, e continua.
-  -- Nao se chama a procedure aqui: confere-se que os dois pontos de entrada
+  -- Não se chama a procedure aqui: confere-se que os dois pontos de entrada
   -- existem e aceitam o que aceitavam.
   BEGIN
     PL_FPDF.Reset;
@@ -6473,8 +6473,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('As saidas legadas: Output e ReturnBlob');
   --------------------------------------------------------------------------
-  -- O ReturnBlob e da 0.9.4 e continua; o Output escreve por directory e nao
-  -- se exercita aqui, porque schema comum nao tem PDF_DIR -- registrar o
+  -- O ReturnBlob e da 0.9.4 e continua; o Output escreve por directory e não
+  -- se exercita aqui, porque schema comum não tem PDF_DIR -- registrar o
   -- motivo vale mais que fingir que cobriu.
   BEGIN
     PL_FPDF.Reset;
@@ -6502,27 +6502,27 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O que saiu, e por que nao quebra codigo de verdade');
   --------------------------------------------------------------------------
-  -- Os sete nomes que sumiram da 0.9.4 sao rotinas de demonstracao, e o
-  -- proprio package as trazia como exemplo. Quem chamava PL_FPDF.helloworld
-  -- num sistema estava rodando a demo, nao a biblioteca.
+  -- Os sete nomes que sumiram da 0.9.4 são rotinas de demonstração, e o
+  -- próprio package as trazia como exemplo. Quem chamava PL_FPDF.helloworld
+  -- num sistema estava rodando a demo, não a biblioteca.
   --
-  -- Este caso nao tem como aferir ausencia sem nao compilar -- referencia a
-  -- procedure inexistente e erro de COMPILACAO, e derrubaria o arquivo
+  -- Este caso não tem como aferir ausência sem não compilar -- referencia a
+  -- procedure inexistente e erro de COMPILAÇÃO, e derrubaria o arquivo
   -- inteiro. Fica registrado, e o check_test_calls guarda o outro lado: ele
-  -- acusa qualquer teste que chame nome que a spec nao declara.
+  -- acusa qualquer teste que chame nome que a spec não declara.
   pulou('as sete rotinas de demonstracao sairam; conferir a ausencia aqui '
         || 'derrubaria a compilacao do bloco');
 
   --------------------------------------------------------------------------
-  -- Devolve a sessao ao estado de partida.
+  -- Devolve a sessão ao estado de partida.
   --
-  -- O caso 4 cria pagina em PAISAGEM, e o Reset zera state e page mas NAO
+  -- O caso 4 cria página em PAISAGEM, e o Reset zera state e page mas NÃO
   -- restaura a geometria: DefOrientation, w e h sobrevivem. Numa suite que
-  -- roda tudo na mesma sessao, e este arquivo e o primeiro da ordem
-  -- alfabetica, o que ficar aqui vaza para todos os testes seguintes.
+  -- roda tudo na mesma sessão, e este arquivo e o primeiro da ordem
+  -- alfabética, o que ficar aqui vaza para todos os testes seguintes.
   --
-  -- Um Init em retrato, com o formato padrao, e a ultima coisa que este
-  -- arquivo faz. Teste que suja a sessao do vizinho e pior que teste que
+  -- Um Init em retrato, com o formato padrão, e a última coisa que este
+  -- arquivo faz. Teste que suja a sessão do vizinho e pior que teste que
   -- falha: a falha aparece longe da causa.
   --------------------------------------------------------------------------
   PL_FPDF.Reset;
@@ -6547,26 +6547,26 @@ END;
 -- origem: tests/test_cursor_margens.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Cursor, margens e quebra de pagina
+-- PL_FPDF - Cursor, margens e quebra de página
 --
--- Onde o proximo desenho vai cair. E a metade da biblioteca que nao aparece
--- no arquivo: o cursor, as margens e a quebra automatica decidem a posicao de
--- tudo, e erram em silencio -- o texto sai, so que no lugar errado.
+-- Onde o próximo desenho vai cair. E a metade da biblioteca que não aparece
+-- no arquivo: o cursor, as margens e a quebra automática decidem a posição de
+-- tudo, e erram em silêncio -- o texto sai, só que no lugar errado.
 --
--- Duas regras aqui nao estao no nome da rotina, e sao as que mordem:
+-- Duas regras aqui não estão no nome da rotina, e são as que mordem:
 -- coordenada NEGATIVA conta a partir da borda oposta, e o SetY devolve o x
 -- para a margem esquerda.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -6626,9 +6626,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('GetX/SetX: negativo conta a partir da borda direita');
   --------------------------------------------------------------------------
-  -- A regra do SetX nao esta no nome dele: px negativo NAO e erro, e sim
-  -- medida a partir da direita. Quem nao sabe disso passa -10 achando que
-  -- volta dez para tras e o texto vai parar do outro lado da pagina.
+  -- A regra do SetX não esta no nome dele: px negativo NÃO e erro, e sim
+  -- medida a partir da direita. Quem não sabe disso passa -10 achando que
+  -- volta dez para trás e o texto vai parar do outro lado da página.
   novo_doc;
   PL_FPDF.SetX(30);
   IF PL_FPDF.GetX = 30 THEN
@@ -6650,7 +6650,7 @@ BEGIN
   caso('SetY devolve o x para a margem, e o SetXY nao');
   --------------------------------------------------------------------------
   -- Esta e a surpresa do SetY, e o motivo de o SetXY existir. Quem chama
-  -- SetY(100) achando que so desce perde a coluna em que estava.
+  -- SetY(100) achando que só desce perde a coluna em que estava.
   novo_doc;
   PL_FPDF.SetX(80);
   PL_FPDF.SetY(100);
@@ -6706,7 +6706,7 @@ BEGIN
   caso('GetScaleFactor converte a unidade corrente em pontos');
   --------------------------------------------------------------------------
   -- E o numero que traduz o que o chamador pede para o que o arquivo guarda.
-  -- Uma polegada tem 72 pontos e 25,4 mm, entao o milimetro vale 2,8346...
+  -- Uma polegada tem 72 pontos e 25,4 mm, então o milímetro vale 2,8346...
   novo_doc;
   IF ROUND(PL_FPDF.GetScaleFactor, 4) = ROUND(72 / 25.4, 4) THEN
     passou('em mm o fator e 72/25,4 = '
@@ -6728,8 +6728,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Margens: o Cell de largura 0 vai ate a margem direita');
   --------------------------------------------------------------------------
-  -- As margens so se provam pelo efeito. Largura 0 significa "ate a margem
-  -- direita", entao mexer na margem TEM de mexer onde o cursor para.
+  -- As margens só se provam pelo efeito. Largura 0 significa "até a margem
+  -- direita", então mexer na margem TEM de mexer onde o cursor para.
   novo_doc;
   PL_FPDF.SetMargins(20, 20, 20);
   PL_FPDF.Cell(0, 8, 'ate a margem');
@@ -6780,7 +6780,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('SetAutoPageBreak liga e desliga a quebra, e o AcceptPageBreak conta');
   --------------------------------------------------------------------------
-  -- Desligada, o conteudo que passa do fim da pagina e escrito fora dela e
+  -- Desligada, o conteúdo que passa do fim da página e escrito fora dela e
   -- SOME, sem erro nenhum. Vale saber qual e o estado.
   novo_doc;
   PL_FPDF.SetAutoPageBreak(TRUE, 20);
@@ -6797,7 +6797,7 @@ BEGIN
     falhou('desligada, o AcceptPageBreak continuou dizendo que sim');
   END IF;
 
-  -- e o efeito: com a quebra ligada, encher a pagina cria a segunda
+  -- e o efeito: com a quebra ligada, encher a página cria a segunda
   novo_doc;
   PL_FPDF.SetAutoPageBreak(TRUE, 20);
   FOR i IN 1 .. 40 LOOP
@@ -6839,24 +6839,24 @@ END;
 --------------------------------------------------------------------------------
 -- PL_FPDF - Fonte corrente, entrelinha e escrita de texto
 --
--- A fonte que esta valendo, e o texto escrito com ela fora da celula.
+-- A fonte que esta valendo, e o texto escrito com ela fora da célula.
 --
--- O que distingue estas rotinas: o SetFont NORMALIZA -- familia em minuscula,
--- estilo em maiuscula --, entao comparar o retorno com o que se passou nunca
--- casa; o Text escreve num ponto e NAO move o cursor; e o giro tem dois erros
--- diferentes, um para o angulo que nao existe e outro para o que existe e a
--- rotina nao faz.
+-- O que distingue estas rotinas: o SetFont NORMALIZA -- família em minúscula,
+-- estilo em maiúscula --, então comparar o retorno com o que se passou nunca
+-- casa; o Text escreve num ponto e NÃO move o cursor; e o giro tem dois erros
+-- diferentes, um para o ângulo que não existe e outro para o que existe e a
+-- rotina não faz.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -6916,10 +6916,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Fonte: corpo, familia e estilo sao lidos de volta');
   --------------------------------------------------------------------------
-  -- O que se le de volta NAO e o eco do que se passou: o package NORMALIZA a
-  -- familia para minuscula e o estilo para maiuscula, como o FPDF original.
-  -- Entao "IF GetCurrentFontFamily = 'Times'" nunca casa, e o teste afere a
-  -- normalizacao de proposito -- foi assim que ela apareceu, com este caso
+  -- O que se lê de volta NÃO e o eco do que se passou: o package NORMALIZA a
+  -- família para minúscula e o estilo para maiúscula, como o FPDF original.
+  -- Então "IF GetCurrentFontFamily = 'Times'" nunca casa, e o teste afere a
+  -- normalização de propósito -- foi assim que ela apareceu, com este caso
   -- falhando contra a expectativa errada de quem o escreveu.
   novo_doc;
   PL_FPDF.SetFont('Times', 'b', 14);
@@ -6968,7 +6968,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Text escreve no ponto, sem mover o cursor');
   --------------------------------------------------------------------------
-  -- E o que distingue o Text do Cell: nao ha celula, nao ha quebra e o cursor
+  -- E o que distingue o Text do Cell: não há célula, não há quebra e o cursor
   -- fica onde estava.
   novo_doc;
   PL_FPDF.SetXY(50, 60);
@@ -7021,8 +7021,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('WriteRotated: so giro zero, e os outros dizem o porque');
   --------------------------------------------------------------------------
-  -- Aqui ha DOIS erros diferentes, e a diferenca importa: -20110 e giro que
-  -- nao existe, -20111 e giro que existe mas esta rotina nao faz.
+  -- Aqui há DOIS erros diferentes, e a diferença importa: -20110 e giro que
+  -- não existe, -20111 e giro que existe mas esta rotina não faz.
   novo_doc;
   BEGIN
     PL_FPDF.WriteRotated(6, 'teste', NULL, 45);
@@ -7061,7 +7061,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('UTF8ToPDFString escapa o que a sintaxe do PDF reserva');
   --------------------------------------------------------------------------
-  -- Parentese e barra invertida terminam a string do PDF antes da hora, e o
+  -- Parêntese e barra invertida terminam a string do PDF antes da hora, e o
   -- arquivo quebra a partir dali.
   l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido) 50\%');
   IF INSTR(l_txt, '\(') > 0 AND INSTR(l_txt, '\)') > 0 THEN
@@ -7079,8 +7079,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('AddFont registra sem ler arquivo nenhum');
   --------------------------------------------------------------------------
-  -- O AddFont so registra na colecao de fontes e deriva o nome do arquivo de
-  -- metricas quando nao recebe um. Nao le disco, entao roda em qualquer
+  -- O AddFont só registra na coleção de fontes e deriva o nome do arquivo de
+  -- métricas quando não recebe um. Não lê disco, então roda em qualquer
   -- ambiente -- foi engano meu te-lo posto na lista dos que precisam de grant.
   novo_doc;
   BEGIN
@@ -7120,26 +7120,26 @@ END;
 -- origem: tests/test_desenho.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Tracejado e triangulo
+-- PL_FPDF - Tracejado e triângulo
 --
--- O desenho vetorial que o test_geracao_basica nao cobre: o padrao de
--- tracejado e o triangulo.
+-- O desenho vetorial que o test_geracao_basica não cobre: o padrão de
+-- tracejado e o triângulo.
 --
--- Os dois se aferem pelo operador que sai no fluxo de conteudo -- '[] 0 d'
--- para linha cheia, 'm' e 'l' para o caminho --, porque "nao levantou" nao
+-- Os dois se aferem pelo operador que sai no fluxo de conteúdo -- '[] 0 d'
+-- para linha cheia, 'm' e 'l' para o caminho --, porque "não levantou" não
 -- prova desenho nenhum. Foi assim que a marca d'agua passou meses marcada
 -- como pronta sem desenhar nada.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -7200,7 +7200,7 @@ BEGIN
   caso('Tracejado: SetDash liga, e sem argumento volta a linha cheia');
   --------------------------------------------------------------------------
   -- O operador 'd' do PDF: '[] 0 d' e linha cheia, qualquer outra coisa e
-  -- tracejado. Sem isto a linha sai continua e ninguem nota ate imprimir.
+  -- tracejado. Sem isto a linha sai continua e ninguém nota até imprimir.
   novo_doc;
   PL_FPDF.SetDash(2, 2);
   PL_FPDF.Line(20, 50, 190, 50);
@@ -7243,7 +7243,7 @@ BEGIN
   PL_FPDF.Triangle(20, 20, 5, 'up', 'F');
   l_pdf := PL_FPDF.OutputBlob;
   PL_FPDF.Reset;
-  -- tres vertices: um 'm' para o primeiro e 'l' para os outros dois
+  -- três vértices: um 'm' para o primeiro e 'l' para os outros dois
   IF acha(l_pdf, ' m') > 0 AND acha(l_pdf, ' l') > 0 THEN
     passou('o triangulo saiu como caminho no fluxo de conteudo');
   ELSE
@@ -7280,39 +7280,39 @@ END;
 --------------------------------------------------------------------------------
 -- PL_FPDF - Sublinhado
 --
--- O `p_dounderline` nao tinha um so chamador em teste nem em exemplo, e desenha
--- em TODO documento que use estilo 'U'. E o caminho em que "nao levantou" prova
--- menos que em qualquer outro: o sublinhado e um retangulo preenchido, entao um
--- erro de largura ou de profundidade nao levanta nada -- sai um risco no lugar
--- errado, e so quem olha o PDF percebe.
+-- O `p_dounderline` não tinha um só chamador em teste nem em exemplo, e desenha
+-- em TODO documento que use estilo 'U'. E o caminho em que "não levantou" prova
+-- menos que em qualquer outro: o sublinhado e um retângulo preenchido, então um
+-- erro de largura ou de profundidade não levanta nada -- sai um risco no lugar
+-- errado, e só quem olha o PDF percebe.
 --
 -- Afere-se pelo operador que sai no fluxo: `x y w h re f`. O que se confere:
 --
---   1. com 'U' sai o retangulo, sem 'U' nao sai;
---   2. a LARGURA e a do texto, medida pela propria fonte (GetStringWidth
---      vezes o fator de escala), e nao um chute;
---   3. a profundidade e NEGATIVA e menor que o corpo -- o retangulo desce da
---      linha de base, e nao sobe por cima da letra;
---   4. em texto JUSTIFICADO o sublinhado acompanha o espacamento entre
---      palavras. E o unico caminho em que o `ws` e diferente de zero, e o
---      termo que o usa (`ws * numero de espacos`) nao existia em teste nenhum;
---   5. texto nulo nao desenha sublinhado nenhum.
+--   1. com 'U' sai o retângulo, sem 'U' não sai;
+--   2. a LARGURA e a do texto, medida pela própria fonte (GetStringWidth
+--      vezes o fator de escala), e não um chute;
+--   3. a profundidade e NEGATIVA e menor que o corpo -- o retângulo desce da
+--      linha de base, e não sobe por cima da letra;
+--   4. em texto JUSTIFICADO o sublinhado acompanha o espaçamento entre
+--      palavras. E o único caminho em que o `ws` e diferente de zero, e o
+--      termo que o usa (`ws * número de espacos`) não existia em teste nenhum;
+--   5. texto nulo não desenha sublinhado nenhum.
 --
--- A comparacao do caso 4 e entre DOIS documentos com a mesma largura, a mesma
--- fonte e o mesmo texto -- um justificado e outro nao. Assim a primeira linha
--- quebra igual nos dois, e a diferenca de largura so pode vir do `ws`. Nenhuma
+-- A comparação do caso 4 e entre DOIS documentos com a mesma largura, a mesma
+-- fonte e o mesmo texto -- um justificado e outro não. Assim a primeira linha
+-- quebra igual nos dois, e a diferença de largura só pode vir do `ws`. Nenhuma
 -- constante privada do package entra na conta.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -7360,13 +7360,13 @@ DECLARE
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
   END acha;
 
-  -- O n-esimo numero do operador `x y w h re f`, contando da esquerda.
+  -- O n-esimo número do operador `x y w h re f`, contando da esquerda.
   --
-  -- Le a janela de bytes ANTES do ' re f' e devolve o numero pedido. A leitura
-  -- e em RAW e a conversao e pelo UTL_RAW, que nao mexe no charset: montar
-  -- isso com SUBSTR sobre o BLOB traria byte do meio de caractere e nao volta
+  -- Lê a janela de bytes ANTES do ' re f' e devolve o número pedido. A leitura
+  -- e em RAW e a conversão e pelo UTL_RAW, que não mexe no charset: montar
+  -- isso com SUBSTR sobre o BLOB traria byte do meio de caractere e não volta
   -- como ele. O separador decimal vai declarado no TO_NUMBER porque o fluxo do
-  -- PDF usa ponto, e a sessao pode estar em virgula.
+  -- PDF usa ponto, e a sessão pode estar em vírgula.
   FUNCTION num_do_retangulo(p_pdf IN BLOB, p_qual IN PLS_INTEGER)
     RETURN NUMBER IS
     l_p    PLS_INTEGER;
@@ -7383,15 +7383,15 @@ DECLARE
     l_ini := GREATEST(l_p - 80, 1);
     l_win := UTL_RAW.CAST_TO_VARCHAR2(
                DBMS_LOB.SUBSTR(p_pdf, l_p - l_ini, l_ini));
-    -- Os quatro ultimos numeros da janela sao o x, o y, a largura e a
+    -- Os quatro últimos números da janela são o x, o y, a largura e a
     -- profundidade, nessa ordem.
     --
     -- O digito antes do ponto e OPCIONAL, e isto custou a primeira rodada: o
-    -- `tochar` do package formata com a mascara `TM9`, que NAO escreve o zero
-    -- da parte inteira. A profundidade do sublinhado, que e uma fracao de
-    -- ponto, sai como `-.72` -- valido no PDF, e fora de um padrao que exija
-    -- digito antes do ponto. Exigindo-o, o quarto numero nao casava e a
-    -- expressao inteira falhava, sem dizer por que.
+    -- `tochar` do package formata com a máscara `TM9`, que NÃO escreve o zero
+    -- da parte inteira. A profundidade do sublinhado, que e uma fração de
+    -- ponto, sai como `-.72` -- valido no PDF, e fora de um padrão que exija
+    -- digito antes do ponto. Exigindo-o, o quarto número não casava e a
+    -- expressão inteira falhava, sem dizer por que.
     l_str := REGEXP_SUBSTR(
                l_win,
                '(-?[0-9]*\.?[0-9]+) +(-?[0-9]*\.?[0-9]+) +'
@@ -7400,8 +7400,8 @@ DECLARE
     IF l_str IS NULL THEN
       RETURN NULL;
     END IF;
-    -- O sinal e a parte inteira vao na mao, e nao por mascara: `TO_NUMBER`
-    -- com mascara que declare o sinal exige que ele ESTEJA la, e o x e a
+    -- O sinal e a parte inteira vão na mão, e não por máscara: `TO_NUMBER`
+    -- com mascara que declare o sinal exige que ele ESTEJA lá, e o x e a
     -- largura vem sem sinal. Tratado aqui, os dois formatos entram.
     l_neg := SUBSTR(l_str, 1, 1) = '-';
     l_str := LTRIM(l_str, '-');
@@ -7428,7 +7428,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O estilo U desenha o retangulo, e sem ele nao sai nada');
   --------------------------------------------------------------------------
-  -- A celula vai SEM borda e SEM preenchimento de proposito: assim o unico
+  -- A célula vai SEM borda e SEM preenchimento de propósito: assim o único
   -- `re f` que pode existir no fluxo e o do sublinhado.
   novo_doc('');
   PL_FPDF.Cell(80, 8, 'sem sublinhado', '0', 1, 'L');
@@ -7477,10 +7477,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('A profundidade desce da linha de base, e nao cobre a letra');
   --------------------------------------------------------------------------
-  -- O quarto numero e a altura do retangulo. Ela e negativa porque o
+  -- O quarto número e a altura do retângulo. Ela e negativa porque o
   -- sublinhado se desenha PARA BAIXO da linha de base; positiva, o risco
   -- sairia por cima do texto. E tem de ser menor que o corpo da fonte --
-  -- uma altura da ordem do corpo seria uma tarja, nao um sublinhado.
+  -- uma altura da ordem do corpo seria uma tarja, não um sublinhado.
   IF l_larg IS NULL THEN
     pulou('sem retangulo no caso anterior, nao ha o que medir aqui');
   ELSE
@@ -7504,8 +7504,8 @@ BEGIN
   --------------------------------------------------------------------------
   -- Dois documentos, mesma largura de coluna, mesma fonte, mesmo texto: a
   -- primeira linha quebra no mesmo ponto nos dois. No justificado o `ws`
-  -- afasta as palavras, e o sublinhado tem de acompanhar -- se nao
-  -- acompanhasse, o risco terminaria antes da ultima palavra da linha.
+  -- afasta as palavras, e o sublinhado tem de acompanhar -- se não
+  -- acompanhasse, o risco terminaria antes da última palavra da linha.
   novo_doc('U');
   l_esp := PL_FPDF.MultiCell(60, 6, l_frase, '0', 'L');
   l_pdf := PL_FPDF.OutputBlob;
@@ -7533,9 +7533,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Texto nulo nao desenha sublinhado');
   --------------------------------------------------------------------------
-  -- A celula vazia existe para fechar tabela e reservar espaco, e e comum.
+  -- A célula vazia existe para fechar tabela e reservar espaço, e e comum.
   -- Um sublinhado de largura zero -- ou pior, de largura indefinida -- num
-  -- documento inteiro de celulas vazias nao levanta erro nenhum.
+  -- documento inteiro de células vazias não levanta erro nenhum.
   novo_doc('U');
   PL_FPDF.Cell(80, 8, NULL, '0', 1, 'L');
   l_pdf := PL_FPDF.OutputBlob;
@@ -7575,25 +7575,25 @@ END;
 -- origem: tests/test_metadados_config.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Metadados, preferencias de exibicao e configuracao
+-- PL_FPDF - Metadados, preferências de exibição e configuração
 --
 -- O que o documento diz sobre si mesmo, e o que o leitor recebe como
--- preferencia de abertura.
+-- preferência de abertura.
 --
--- Tudo aqui se afere no BLOB gerado, e nao no retorno da chamada: um
--- SetSubject que nao chega ao dicionario nao levanta erro nenhum, e so
--- aparece quando alguem procura o assunto do arquivo e nao acha.
+-- Tudo aqui se afere no BLOB gerado, e não no retorno da chamada: um
+-- SetSubject que não chega ao dicionário não levanta erro nenhum, e só
+-- aparece quando alguém procura o assunto do arquivo e não acha.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -7709,9 +7709,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('SetCompression: o conteudo sai comprimido, e declarado');
   --------------------------------------------------------------------------
-  -- Ate agosto/2026 isto era um no-op: perguntava por uma funcao de zlib que o
-  -- Oracle nao tem e desligava a compressao sempre. O teste afere o efeito, e
-  -- nao a chamada: o texto deixa de aparecer cru E o filtro e declarado.
+  -- Até agosto/2026 isto era um no-op: perguntava por uma função de zlib que o
+  -- Oracle não tem e desligava a compressão sempre. O teste afere o efeito, e
+  -- não a chamada: o texto deixa de aparecer cru E o filtro e declarado.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.SetCompression(TRUE);
@@ -7767,7 +7767,7 @@ BEGIN
     falhou('SetLogLevel(1) e GetLogLevel devolveu '
            || TO_CHAR(PL_FPDF.GetLogLevel));
   END IF;
-  PL_FPDF.SetLogLevel(l_n);   -- devolve como estava, para nao sujar o resto
+  PL_FPDF.SetLogLevel(l_n);   -- devolve como estava, para não sujar o resto
 
   --------------------------------------------------------------------------
   caso('SetDocumentConfig configura o documento por JSON');
@@ -7842,31 +7842,31 @@ END;
 -- origem: tests/test_fontes_truetype.sql
 --------------------------------------------------------------------------------
 --------------------------------------------------------------------------------
--- PL_FPDF - Fonte TrueType: registro, metricas e embutimento
+-- PL_FPDF - Fonte TrueType: registro, métricas e embutimento
 --
 -- Registrar uma fonte, medir por ela e embuti-la no arquivo.
 --
--- Ate setembro/2026 nada disto funcionava: o cache de fontes NAO TINHA
+-- Até setembro/2026 nada disto funcionava: o cache de fontes NÃO TINHA
 -- CONSUMIDOR -- o SetFont nunca o consultava e os bytes nunca iam para o PDF --
--- e o parser conferia o magic number e INVENTAVA as metricas, com upm 1000 e
--- ascendente 800 literais no codigo.
+-- e o parser conferia o magic number e INVENTAVA as métricas, com upm 1000 e
+-- ascendente 800 literais no código.
 --
--- Por isso a fonte deste teste tem 2048 unidades por em e metricas que nao sao
--- numero redondo: com upm 1000 nao se distinguiria "leu do arquivo" de "chutou
+-- Por isso a fonte deste teste tem 2048 unidades por em e métricas que não são
+-- número redondo: com upm 1000 não se distinguiria "leu do arquivo" de "chutou
 -- a constante de sempre". Ela e gerada por dev/scripts/ttf_reference/gerar.py e
 -- conferida reabrindo no fontTools; a estrutura que sai daqui e validada no
 -- MuPDF por dev/scripts/ttfembed_reference/.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -7926,7 +7926,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Fontes TrueType: cache responde sem fonte carregada');
   --------------------------------------------------------------------------
-  -- Sem arquivo de fonte a mao nao da para carregar nada, mas as consultas
+  -- Sem arquivo de fonte a mão não da para carregar nada, mas as consultas
   -- precisam responder em vez de levantar -- e o GetTTFFontInfo precisa
   -- recusar com o erro dele.
   PL_FPDF.ClearTTFFontCache;
@@ -7937,8 +7937,8 @@ BEGIN
   END IF;
 
   BEGIN
-    -- o retorno vai para uma variavel: o PL/SQL nao aceita selecionar campo
-    -- direto do retorno de funcao
+    -- o retorno vai para uma variável: o PL/SQL não aceita selecionar campo
+    -- direto do retorno de função
     l_fonte := PL_FPDF.GetTTFFontInfo('NaoExiste');
     falhou('GetTTFFontInfo devolveu dados de fonte inexistente: '
            || NVL(l_fonte.font_name, 'sem nome'));
@@ -7966,15 +7966,15 @@ BEGIN
   --------------------------------------------------------------------------
   caso('TTF por BLOB: as metricas saem do ARQUIVO, nao de constante');
   --------------------------------------------------------------------------
-  -- O LoadTTFFromFile exige READ num DIRECTORY, e este projeto nao depende de
-  -- concessao extra. O caminho equivalente e o AddTTFFont, que recebe BLOB --
-  -- e o BLOB vem daqui, de uma TTF minima gerada por
+  -- O LoadTTFFromFile exige READ num DIRECTORY, e este projeto não depende de
+  -- concessão extra. O caminho equivalente e o AddTTFFont, que recebe BLOB --
+  -- e o BLOB vem daqui, de uma TTF mínima gerada por
   -- dev/scripts/ttf_reference/gerar.py e conferida reabrindo no fontTools.
   --
-  -- A fonte tem 2048 unidades por em DE PROPOSITO. Ate setembro/2026 o parser
+  -- A fonte tem 2048 unidades por em DE PROPÓSITO. Até setembro/2026 o parser
   -- conferia o magic number e inventava o resto -- upm 1000, ascent 800,
-  -- descent -200 eram literais no codigo. Com metricas incomuns, cada numero
-  -- abaixo so pode ter vindo do arquivo.
+  -- descent -200 eram literais no código. Com métricas incomuns, cada número
+  -- abaixo só pode ter vindo do arquivo.
   -- fonte gerada por dev/scripts/ttf_reference/gerar.py
   -- 716 bytes, upm 2048, ascent 1900, descent -500, glifos ['.notdef', 'A']
   DECLARE
@@ -8050,8 +8050,8 @@ BEGIN
              || ' ' || TO_CHAR(l_fonte.bbox_ymax) || '], esperado [59 0 479 698]');
     END IF;
 
-    -- a largura e o que separa "a fonte esta la" de "o leitor usa a fonte que
-    -- esta la": o A avanca 1234/2048 = 603, e o B nao tem glifo nenhum
+    -- a largura e o que separa "a fonte esta lá" de "o leitor usa a fonte que
+    -- esta lá": o A avança 1234/2048 = 603, e o B não tem glifo nenhum
     IF TO_NUMBER(SUBSTR(l_fonte.larguras, ASCII('A') * 4 + 1, 4)) = 603 THEN
       passou('a largura do A e 603, do hmtx pelo cmap');
     ELSE
@@ -8078,8 +8078,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('TTF: o SetFont a usa, e o programa da fonte vai para o arquivo');
   --------------------------------------------------------------------------
-  -- Este e o caso que nao existia: o cache era consultavel e NADA o consumia.
-  -- O SetFont nunca olhava para ele, entao registrar uma fonte e pedi-la dava
+  -- Este e o caso que não existia: o cache era consultável e NADA o consumia.
+  -- O SetFont nunca olhava para ele, então registrar uma fonte e pedi-la dava
   -- "Undefined font"; e nada emitia os bytes no PDF.
   -- fonte gerada por dev/scripts/ttf_reference/gerar.py
   -- 716 bytes, upm 2048, ascent 1900, descent -500, glifos ['.notdef', 'A']
@@ -8139,7 +8139,7 @@ BEGIN
       falhou('a fonte corrente e "' || PL_FPDF.GetCurrentFontFamily || '"');
     END IF;
 
-    -- o A mede 603 milesimos do corpo: 14 * 603 / 1000 = 8,442 pt, e em mm
+    -- o A mede 603 milésimos do corpo: 14 * 603 / 1000 = 8,442 pt, e em mm
     -- isso e 8,442 / 2,8346 = 2,978
     IF ROUND(PL_FPDF.GetStringWidth('A'), 2) = ROUND(14 * 603 / 1000 / (72/25.4), 2) THEN
       passou('o GetStringWidth mede pela tabela da TTF');
@@ -8179,7 +8179,7 @@ BEGIN
       falhou('sem /ASCIIHexDecode: byte cru nao atravessa o CLOB de montagem');
     END IF;
 
-    -- 0603 na posicao do A dentro do /Widths
+    -- 0603 na posição do A dentro do /Widths
     IF acha(l_doc, ' 603 ') > 0 THEN
       passou('a largura 603 do A esta no /Widths');
     ELSE
@@ -8193,9 +8193,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('TTF sem tabela obrigatoria e recusada, em vez de inventada');
   --------------------------------------------------------------------------
-  -- Ate setembro/2026 um BLOB de 28 bytes com o magic number certo e mais nada
-  -- era ACEITO, e devolvia upm 1000 e ascent 800 -- as constantes. Agora nao
-  -- ha de onde tirar metrica, e recusar vale mais que inventar.
+  -- Até setembro/2026 um BLOB de 28 bytes com o magic number certo e mais nada
+  -- era ACEITO, e devolvia upm 1000 e ascent 800 -- as constantes. Agora não
+  -- há de onde tirar métrica, e recusar vale mais que inventar.
   BEGIN
     PL_FPDF.ClearTTFFontCache;
     PL_FPDF.AddTTFFont('TesteVazia', HEXTORAW('0001000000000000'
@@ -8257,24 +8257,24 @@ END;
 --------------------------------------------------------------------------------
 -- PL_FPDF - Fechar o documento, callbacks, erro e os caminhos que exigem grant
 --
--- As bordas do documento: fecha-lo, os callbacks de cabecalho e rodape, o
--- caminho interno de erro, e as saidas que dependem de recurso de fora.
+-- As bordas do documento: fecha-lo, os callbacks de cabeçalho e rodapé, o
+-- caminho interno de erro, e as saídas que dependem de recurso de fora.
 --
--- Os tres ultimos casos existem para provar que a RECUSA funciona sem
--- concessao nenhuma -- diretorio inexistente e URL que nao responde --, e para
--- apontar a alternativa que nao precisa de grant: o OutputBlob devolve os
+-- Os três últimos casos existem para provar que a RECUSA funciona sem
+-- concessão nenhuma -- diretório inexistente e URL que não responde --, e para
+-- apontar a alternativa que não precisa de grant: o OutputBlob devolve os
 -- mesmos bytes que o OutputFile gravaria, e o ImageFromBlob dispensa a rede.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -8334,7 +8334,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('ClosePDF fecha, e fechar de novo nao estraga');
   --------------------------------------------------------------------------
-  -- As rotinas de saida ja chamam o ClosePDF. Chamar antes, a mao, nao pode
+  -- As rotinas de saída já chamam o ClosePDF. Chamar antes, a mão, não pode
   -- gerar documento diferente nem levantar.
   novo_doc;
   PL_FPDF.Cell(50, 10, 'fechado a mao');
@@ -8358,8 +8358,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Header e Footer sem callback registrado nao fazem nada');
   --------------------------------------------------------------------------
-  -- Sao chamadas pelo proprio motor a cada pagina. Sem SetHeaderProc, a
-  -- chamada tem de ser inocua -- nao levantar e nao escrever.
+  -- São chamadas pelo próprio motor a cada página. Sem SetHeaderProc, a
+  -- chamada tem de ser inócua -- não levantar e não escrever.
   novo_doc;
   BEGIN
     PL_FPDF.Header;
@@ -8374,7 +8374,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Error levanta ORA-20100 com a mensagem dada');
   --------------------------------------------------------------------------
-  -- E o caminho interno de erro da biblioteca, publico por heranca. Se ele
+  -- E o caminho interno de erro da biblioteca, publico por herança. Se ele
   -- deixar de levantar, sessenta handlers do package passam a engolir erro.
   BEGIN
     PL_FPDF.Error('mensagem de teste');
@@ -8394,8 +8394,8 @@ BEGIN
   caso('Saida em arquivo: recusa sem DIRECTORY, e o BLOB e a alternativa');
   --------------------------------------------------------------------------
   -- OutputFile e Output gravam em DIRECTORY do banco, que exige WRITE
-  -- concedido. O caminho de RECUSA nao exige nada: diretorio inexistente da
-  -- ORA-29280, que o package traduz para -20401. E quem nao tem o grant tem o
+  -- concedido. O caminho de RECUSA não exige nada: diretório inexistente da
+  -- ORA-29280, que o package traduz para -20401. E quem não tem o grant tem o
   -- OutputBlob, que devolve os mesmos bytes.
   novo_doc;
   PL_FPDF.Cell(50, 10, 'conteudo');
@@ -8447,11 +8447,11 @@ BEGIN
   --------------------------------------------------------------------------
   -- Image e getImageFromUrl saem pela rede e exigem ACL concedida ao schema.
   -- Sem ela o UTL_HTTP levanta ORA-24247, que o package embrulha em -20100 --
-  -- o MESMO codigo de uma URL invalida, entao o teste nao consegue distinguir
-  -- os dois casos, e nao finge que consegue.
+  -- o MESMO código de uma URL invalida, então o teste não consegue distinguir
+  -- os dois casos, e não finge que consegue.
   --
   -- O que da para afirmar sem ACL nenhuma: que a recusa acontece, e que o
-  -- caminho equivalente por BLOB funciona. Esse ja tem cobertura propria em
+  -- caminho equivalente por BLOB funciona. Esse já tem cobertura própria em
   -- test_stream_imagem.sql.
   novo_doc;
   BEGIN

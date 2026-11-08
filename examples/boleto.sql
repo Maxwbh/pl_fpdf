@@ -1,30 +1,30 @@
 --------------------------------------------------------------------------------
--- PL_FPDF — exemplo: o LAYOUT de um boleto (ficha de compensacao)
+-- PL_FPDF — exemplo: o LAYOUT de um boleto (ficha de compensação)
 --
--- Um documento dificil de verdade, desenhado inteiramente em PL/SQL: A4, tres
+-- Um documento difícil de verdade, desenhado inteiramente em PL/SQL: A4, três
 -- variantes de Helvetica em quatro corpos, 50 caixas numa grade fechada, duas
--- vias com linha de corte e o codigo de barras ITF de 44 digitos que um leitor
+-- vias com linha de corte e o código de barras ITF de 44 dígitos que um leitor
 -- de banco consegue ler.
 --
--- Nao ha imagem nenhuma: o logotipo, as reguas e as barras sao desenho
+-- Não há imagem nenhuma: o logotipo, as réguas e as barras são desenho
 -- vetorial, que e como um boleto de verdade e feito.
 --
--- Medidas da ficha de compensacao (FEBRABAN): 177 mm de largura centralizada
--- em A4, coluna de valores com 40 mm a direita, codigo de barras 103 x 13 mm.
+-- Medidas da ficha de compensação (FEBRABAN): 177 mm de largura centralizada
+-- em A4, coluna de valores com 40 mm a direita, código de barras 103 x 13 mm.
 --
 -- Como rodar: abra na SQL Window do PL/SQL Developer e execute com F8. O PDF
--- fica no BLOB `l_pdf` — grave numa tabela, devolva por uma funcao ou escreva
+-- fica no BLOB `l_pdf` — grave numa tabela, devolva por uma função ou escreva
 -- com UTL_FILE, conforme o seu caso.
 --
--- O PL_FPDF DESENHA; ele nao calcula cobranca. Os 44 digitos do codigo de
+-- O PL_FPDF DESENHA; ele não calcula cobrança. Os 44 dígitos do código de
 -- barras e a linha digitavel entram prontos, como qualquer outro dado que o
 -- chamador passa — monta-los a partir de banco, vencimento, valor e campo
 -- livre (verificador, fator de vencimento, regra de cada banco) e assunto de
--- um projeto de cobranca, nao de uma biblioteca de PDF.
+-- um projeto de cobrança, não de uma biblioteca de PDF.
 --
--- Os dados aqui sao ficticios. Troque-os pelos seus e o desenho nao muda: e a
+-- Os dados aqui são fictícios. Troque-os pelos seus e o desenho não muda: e a
 -- mesma grade que serve para nota fiscal, guia de recolhimento ou qualquer
--- formulario de campos fechados.
+-- formulário de campos fechados.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -39,9 +39,9 @@ DECLARE
   co_cb   CONSTANT VARCHAR2(44) :=
             '34197167700000150001090000012323073123451000';
 
-  -- Uma caixa com rotulo miudo em cima e valor embaixo. A Cell ja tem
-  -- margem interna de 1 mm dos dois lados, entao a largura passada e a
-  -- da caixa INTEIRA: o recuo vem de graca, igual nos dois lados, e o
+  -- Uma caixa com rótulo miúdo em cima e valor embaixo. A Cell já tem
+  -- margem interna de 1 mm dos dois lados, então a largura passada e a
+  -- da caixa INTEIRA: o recuo vem de graça, igual nos dois lados, e o
   -- alinhado a direita encosta a 1 mm da borda.
   PROCEDURE campo(px NUMBER, py NUMBER, pw NUMBER, ph NUMBER,
                   protulo VARCHAR2, pvalor VARCHAR2 DEFAULT NULL,
@@ -59,7 +59,7 @@ DECLARE
     END IF;
   END campo;
 
-  -- texto de 7 pt: instrucoes, endereco do pagador e rodape
+  -- texto de 7 pt: instruções, endereço do pagador e rodapé
   PROCEDURE miudo(px NUMBER, py NUMBER, pw NUMBER, ptxt VARCHAR2,
                   pest VARCHAR2 DEFAULT NULL,
                   palin VARCHAR2 DEFAULT 'L') IS
@@ -69,11 +69,11 @@ DECLARE
     PL_FPDF.Cell(pw, 3, ptxt, '0', 0, palin);
   END miudo;
 
-  -- uma via: recibo do pagador ou ficha de compensacao
+  -- uma via: recibo do pagador ou ficha de compensação
   PROCEDURE via(py NUMBER, protulo VARCHAR2, pcompleta BOOLEAN) IS
     y NUMBER := py + 8;
   BEGIN
-    -- cabecalho: logotipo, codigo do banco e linha digitavel
+    -- cabeçalho: logotipo, código do banco e linha digitavel
     PL_FPDF.SetLineWidth(0.5);
     PL_FPDF.SetFont('Arial', 'B', 15);
     PL_FPDF.SetXY(co_x0, py);
@@ -141,7 +141,7 @@ DECLARE
           NULL, FALSE, 'R');
     y := y + 28;
 
-    -- o nome vai na linha do valor e o endereco 6,6 mm abaixo do topo
+    -- o nome vai na linha do valor e o endereço 6,6 mm abaixo do topo
     -- da caixa: menos que isso empilha um texto sobre o outro
     campo(co_x0, y, co_larg, 11, 'Pagador',
           'Joao da Silva - 529.982.247-25', TRUE);
@@ -167,14 +167,14 @@ BEGIN
 
   via(20, 'Recibo do Pagador', FALSE);
 
-  -- linha de corte, no meio do vao entre as duas vias
+  -- linha de corte, no meio do vão entre as duas vias
   FOR i IN 0 .. 43 LOOP
     PL_FPDF.Line(co_x0 + i * 4, 125, co_x0 + i * 4 + 2.4, 125);
   END LOOP;
 
   via(138, 'Ficha de Compensacao', TRUE);
 
-  -- codigo de barras do boleto: ITF de 44 digitos, sem verificador de
+  -- código de barras do boleto: ITF de 44 dígitos, sem verificador de
   -- simbologia (o de controle do boleto fica DENTRO dos 44)
   PL_FPDF.AddBarcode(co_x0, 233, 103, 13, co_cb, 'ITF', FALSE);
 

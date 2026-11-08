@@ -1,41 +1,41 @@
 # -*- coding: utf-8 -*-
 """
-Todo LOB temporario que uma funcao devolve e liberado por quem a chama.
+Todo LOB temporário que uma função devolve e liberado por quem a chama.
 
 DOCUMENTO DE MANUTENÇÃO.
 
 Por que existe
 --------------
 O `SplitPDF` chamava `blob_to_base64` uma vez por intervalo, guardava o
-resultado numa variavel, copiava o valor para o JSON e nunca liberava. O
-`blob_to_base64` faz `DBMS_LOB.CREATETEMPORARY`, e reatribuir a variavel na
-volta do laco **nao libera** o anterior: cada intervalo deixava para tras um
-LOB de duracao de SESSAO.
+resultado numa variável, copiava o valor para o JSON e nunca liberava. O
+`blob_to_base64` faz `DBMS_LOB.CREATETEMPORARY`, e reatribuir a variável na
+volta do laço **não libera** o anterior: cada intervalo deixava para trás um
+LOB de duração de SESSÃO.
 
 A primeira tentativa de cobrir isso foi um caso de teste medindo
-`V$TEMPORARY_LOBS` antes e depois. Nao serve: V$ nao esta no schema de quem
+`V$TEMPORARY_LOBS` antes e depois. Não serve: V$ não esta no schema de quem
 roda os testes, e um teste que exige `GRANT` de DBA vira um [SKIP] permanente —
-cobertura de mentira. Pior, o vazamento **nao e observavel** de dentro do
-proprio schema: `USER_*` nao expoe contagem de LOB temporario, e as instancias
-vazadas nao tem locator que se possa passar ao `DBMS_LOB.ISTEMPORARY`.
+cobertura de mentira. Pior, o vazamento **não e observável** de dentro do
+próprio schema: `USER_*` não expõe contagem de LOB temporário, e as instâncias
+vazadas não tem locator que se possa passar ao `DBMS_LOB.ISTEMPORARY`.
 
-O que nao da para observar em execucao da para ler no fonte. Esta verificacao
-roda sem banco, sem privilegio e sem rede.
+O que não da para observar em execução da para ler no fonte. Esta verificação
+roda sem banco, sem privilégio e sem rede.
 
 O que cobra
 -----------
-1. Descobre as funcoes **produtoras**: as que fazem `DBMS_LOB.CREATETEMPORARY`
-   sobre a variavel que devolvem.
+1. Descobre as funções **produtoras**: as que fazem `DBMS_LOB.CREATETEMPORARY`
+   sobre a variável que devolvem.
 2. Em cada `l_x := produtora(...)`, exige um `DBMS_LOB.FREETEMPORARY(l_x)` no
    mesmo subprograma.
 
-O que NAO cobra
+O que NÃO cobra
 ---------------
-Variavel DEVOLVIDA pela funcao: ali o LOB passa a ser do chamador, e liberar
+Variável DEVOLVIDA pela função: ali o LOB passa a ser do chamador, e liberar
 entregaria um locator morto. E o caso do `MergePDFs` e do `ExtractPages`.
 
-Caminho de excecao: se o `FREETEMPORARY` existe mas fica depois de um `RAISE`,
-isto aprova. Fluxo completo e analise que esta verificacao nao faz — ela pega
+Caminho de exceção: se o `FREETEMPORARY` existe mas fica depois de um `RAISE`,
+isto aprova. Fluxo completo e analise que esta verificação não faz — ela pega
 o esquecimento, que e o caso comum.
 
 Uso:  python dev/scripts/plsql_lint/check_lob_temp.py src/PL_FPDF.pkb
@@ -59,7 +59,7 @@ def sem_comentarios(texto):
 
 
 def subprogramas(texto):
-    """(nome, inicio, fim) de cada subprograma, pelo proximo cabecalho."""
+    """(nome, início, fim) de cada subprograma, pelo próximo cabeçalho."""
     marcas = [(m.start(), m.group(1).lower()) for m in CABECA.finditer(texto)]
     fora = []
     for i, (ini, nome) in enumerate(marcas):
@@ -69,15 +69,15 @@ def subprogramas(texto):
 
 
 def produtoras(subs):
-    """Funcoes que criam LOB temporario e o devolvem."""
+    """Funções que criam LOB temporário e o devolvem."""
     nomes = set()
     for nome, _i, _f, corpo in subs:
         if not re.search(r'^\s*FUNCTION\b', corpo, re.I | re.M):
             continue
-        # O RETURN tem de ser BLOB ou CLOB. Sem esta exigencia a regra pegava
+        # O RETURN tem de ser BLOB ou CLOB. Sem esta exigência a regra pegava
         # o getImageFromUrl, que devolve um RECORD com um BLOB dentro: ali o
-        # que se libera e o CAMPO (myImg.image_blob), nao a variavel, e cobrar
-        # FREETEMPORARY(myImg) seria pedir codigo que nem compila.
+        # que se libera e o CAMPO (myImg.image_blob), não a variável, e cobrar
+        # FREETEMPORARY(myImg) seria pedir código que nem compila.
         tipo = re.search(r'\)\s*RETURN\s+(\w+)\s+IS\b|'
                          r'^\s*FUNCTION\s+\w+\s+RETURN\s+(\w+)\s+IS\b',
                          corpo, re.I | re.M)
@@ -108,15 +108,15 @@ def confere(caminho):
     faltas = []
     for nome, ini, _f, corpo in subs:
         if nome in prods:
-            continue                    # a produtora devolve o seu; nao libera
+            continue                    # a produtora devolve o seu; não libera
         for m in alvo.finditer(corpo):
             var, prod = m.group(1), m.group(2).lower()
             livre = re.search(r'DBMS_LOB\.FREETEMPORARY\s*\(\s*' + var + r'\s*\)',
                               corpo, re.I)
-            # Variavel DEVOLVIDA nao se libera: o LOB passa a ser do chamador,
+            # Variável DEVOLVIDA não se libera: o LOB passa a ser do chamador,
             # e um FREETEMPORARY aqui entregaria um locator morto. Sem esta
-            # excecao a regra acusava MergePDFs e ExtractPages, que estao
-            # certos — e uma lint que grita em codigo correto e ignorada.
+            # exceção a regra acusava MergePDFs e ExtractPages, que estão
+            # certos — e uma lint que grita em código correto e ignorada.
             devolvida = re.search(r'\bRETURN\s+' + var + r'\s*;', corpo, re.I)
             if not livre and not devolvida:
                 linha = texto.count('\n', 0, ini + m.start()) + 1

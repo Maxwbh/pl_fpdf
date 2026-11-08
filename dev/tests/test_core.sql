@@ -206,8 +206,8 @@ BEGIN
     l_params('titulo') := 'Relatorio';
     PL_FPDF.SetFooterProc('meu_pkg.rodape', l_params);
     passou('Nomes qualificados aceitos na configuração');
-    -- meu_pkg nao existe: sem limpar, todo AddPage seguinte falharia ao
-    -- executar o bloco dinamico do header.
+    -- meu_pkg não existe: sem limpar, todo AddPage seguinte falharia ao
+    -- executar o bloco dinâmico do header.
     PL_FPDF.Reset;
   EXCEPTION
     WHEN OTHERS THEN
@@ -218,9 +218,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Reset limpa os callbacks de header e rodapé');
   --------------------------------------------------------------------------
-  -- Regressao: os callbacks sobreviviam ao Reset (e ao Init, que chama Reset).
-  -- Um nome invalido configurado uma vez deixava a sessao inutilizavel: todo
-  -- AddPage seguinte estourava ao executar o bloco dinamico do header.
+  -- Regressão: os callbacks sobreviviam ao Reset (e ao Init, que chama Reset).
+  -- Um nome inválido configurado uma vez deixava a sessão inutilizável: todo
+  -- AddPage seguinte estourava ao executar o bloco dinâmico do header.
   DECLARE
     l_pdf BLOB;
   BEGIN
@@ -423,11 +423,11 @@ BEGIN
         WHEN 5  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, NULL);
         WHEN 6  THEN PL_FPDF.AddBarcode(10, 10, 0, 20, 'ABC');
         WHEN 7  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, 'ABC', 'PDF417');
-        -- 'abc' NAO serve: bc_code39 faz upper(), e 'ABC' e valido. O '#' nao
+        -- 'abc' NÃO serve: bc_code39 faz upper(), e 'ABC' e valido. O '#' não
         -- esta em co_bc39_chars nem depois do upper.
         WHEN 8  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, 'AB#C', 'CODE39');
         -- CHR(9) e determinístico em qualquer charset; CHR(200) dependeria da
-        -- codificacao da sessao, e o teste anterior passava por isso.
+        -- codificação da sessão, e o teste anterior passava por isso.
         WHEN 9  THEN PL_FPDF.AddBarcode(10, 10, 100, 20, 'A' || CHR(9) || 'B',
                                         'CODE128');
         WHEN 10 THEN PL_FPDF.AddBarcode(10, 10, 100, 20, '123', 'EAN13');

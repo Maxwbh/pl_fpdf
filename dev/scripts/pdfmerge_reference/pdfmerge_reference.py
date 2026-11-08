@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 """
-Referencia do copiador de objetos PDF em nivel de bytes que sera portado para
+Referência do copiador de objetos PDF em nível de bytes que será portado para
 PL/SQL (PL_FPDF.MergePDFs / SplitPDF / ExtractPages / OutputModifiedPDF).
 
-Escrito com as mesmas operacoes disponiveis no PL/SQL:
+Escrito com as mesmas operações disponíveis no PL/SQL:
   - leitura do PDF de origem apenas por offsets de bytes (DBMS_LOB.SUBSTR)
   - busca de literais ASCII no BLOB (DBMS_LOB.INSTR)
   - o payload de stream e copiado byte a byte, sem passar por VARCHAR2
-  - so a porcao ASCII do dicionario e reescrita (renumeracao de referencias)
+  - só a porção ASCII do dicionário e reescrita (renumeração de referências)
 
 Algoritmo:
-  1. le a xref de cada origem  -> id do objeto => offset
-  2. para cada pagina escolhida, faz o fecho transitivo das referencias
-     (ignorando /Parent, que sera reescrito)
-  3. copia os objetos necessarios deslocando os ids por um offset fixo
+  1. lê a xref de cada origem  -> id do objeto => offset
+  2. para cada página escolhida, faz o fecho transitivo das referências
+     (ignorando /Parent, que será reescrito)
+  3. copia os objetos necessários deslocando os ids por um offset fixo
      por documento de origem
   4. emite Catalog (1 0 obj) + Pages (2 0 obj) novos, xref e trailer
 """
@@ -24,7 +24,7 @@ EOL = b'\n'
 
 # ───────────────────────────────── leitura da origem ─────────────────────────
 class Source:
-    """Um PDF de origem ja carregado em memoria (equivale ao BLOB no PL/SQL)."""
+    """Um PDF de origem já carregado em memória (equivale ao BLOB no PL/SQL)."""
 
     def __init__(self, data: bytes):
         self.b = data
@@ -51,7 +51,7 @@ class Source:
             off = self._parse_xref_section(off)
 
     def _parse_xref_section(self, off):
-        """Le uma secao xref classica; devolve o offset de /Prev (ou None)."""
+        """Lê uma secao xref clássica; devolve o offset de /Prev (ou None)."""
         sec = self.b[off:off + 32767]
         if not sec.startswith(b'xref'):
             raise ValueError('xref stream nao suportado (PDF 1.5 comprimido)')
@@ -87,9 +87,9 @@ class Source:
 
     # -- objetos ------------------------------------------------------------
     def obj_extent(self, oid):
-        """(inicio, fim, fim_do_dicionario) do objeto, em bytes.
+        """(início, fim, fim_do_dicionario) do objeto, em bytes.
 
-        fim_do_dicionario e onde comeca o payload do stream (ou == fim).
+        fim_do_dicionario e onde começa o payload do stream (ou == fim).
         """
         off = self.xref[oid]
         head = self.b[off:off + 32767]
@@ -126,13 +126,13 @@ class Source:
         return int(m.group(1))
 
     def obj_dict(self, oid):
-        """Porcao ASCII do objeto, sem o cabecalho 'N G obj'."""
+        """Porção ASCII do objeto, sem o cabeçalho 'N G obj'."""
         start, _, dict_end = self.obj_extent(oid)
         raw = self.b[start:dict_end]
         m = re.match(rb'\s*\d+\s+\d+\s+obj', raw)
         return raw[m.end():] if m else raw
 
-    # -- arvore de paginas --------------------------------------------------
+    # -- árvore de páginas --------------------------------------------------
     def _walk_pages(self):
         root = self.obj_dict(self.root)
         m = re.search(rb'/Pages\s+(\d+)\s+\d+\s+R', root)
@@ -161,7 +161,7 @@ class Source:
 
 
 def dict_value(d, key):
-    """Valor bruto de uma chave do dicionario (array, nome, numero ou ref)."""
+    """Valor bruto de uma chave do dicionário (array, nome, número ou ref)."""
     i = d.find(key)
     while i >= 0:
         nxt = d[i + len(key):i + len(key) + 1]
@@ -203,12 +203,12 @@ def dict_value(d, key):
     return m.group(0) if m else None
 
 
-# ─────────────────────────── renumeracao de referencias ──────────────────────
+# ─────────────────────────── renumeração de referências ──────────────────────
 REF = re.compile(rb'(\d+)([ \t\r\n]+)(\d+)([ \t\r\n]+)R(?![A-Za-z0-9])')
 
 
 def shift_refs(text: bytes, shift: int) -> bytes:
-    """Soma `shift` ao id de toda referencia indireta 'N G R' do texto ASCII."""
+    """Soma `shift` ao id de toda referência indireta 'N G R' do texto ASCII."""
     return REF.sub(lambda m: b'%d %s R' % (int(m.group(1)) + shift, m.group(3)), text)
 
 
@@ -218,7 +218,7 @@ def collect_refs(text: bytes):
 
 # ────────────────────────────────── montagem ─────────────────────────────────
 def strip_key(d: bytes, key: bytes) -> bytes:
-    """Remove `key` e seu valor do dicionario."""
+    """Remove `key` e seu valor do dicionário."""
     v = dict_value(d, key)
     if v is None:
         return d
@@ -228,10 +228,10 @@ def strip_key(d: bytes, key: bytes) -> bytes:
 
 
 def page_body(src, oid):
-    """Dicionario final da pagina: /Parent removido e heranca materializada.
+    """Dicionário final da página: /Parent removido e herança materializada.
 
-    A referencia ao novo no /Pages nao entra aqui: ela e inserida depois da
-    renumeracao, senao o proprio '2 0 R' seria deslocado junto.
+    A referência ao novo no /Pages não entra aqui: ela e inserida depois da
+    renumeração, senão o próprio '2 0 R' seria deslocado junto.
     """
     body = strip_key(src.obj_dict(oid), b'/Parent')
     for key, val in src.inherited[oid].items():
@@ -241,7 +241,7 @@ def page_body(src, oid):
 
 
 def assemble(selection):
-    """selection = [(Source, [indices de pagina 0-based]), ...] -> bytes do PDF."""
+    """selection = [(Source, [índices de página 0-based]), ...] -> bytes do PDF."""
     out = bytearray(b'%PDF-1.7\n%\xe2\xe3\xcf\xd3\n')
     offsets = {}                                 # novo id -> offset
     next_id = 3                                  # 1 = Catalog, 2 = Pages
@@ -252,7 +252,7 @@ def assemble(selection):
         max_id = max(src.xref) if src.xref else 0
         next_id += max_id
 
-        # 1. fecho transitivo a partir das paginas escolhidas
+        # 1. fecho transitivo a partir das páginas escolhidas
         page_ids = [src.pages[i] for i in page_idx]
         needed, queue = set(page_ids), list(page_ids)
         page_set = set(page_ids)
@@ -266,7 +266,7 @@ def assemble(selection):
                     needed.add(r)
                     queue.append(r)
 
-        # 2. copia os objetos necessarios
+        # 2. copia os objetos necessários
         for oid in sorted(needed):
             start, end, dict_end = src.obj_extent(oid)
             raw = src.b[start:dict_end]
@@ -318,7 +318,7 @@ def merge(datas):
 
 
 def parse_pages(spec: str, total: int):
-    """'1,3,5-7' ou 'ALL' -> lista de indices 0-based, na ordem pedida."""
+    """'1,3,5-7' ou 'ALL' -> lista de índices 0-based, na ordem pedida."""
     if spec.strip().upper() == 'ALL':
         return list(range(total))
     out = []

@@ -5,8 +5,8 @@ As páginas do índice de utilização, PT e EN, a partir de `conteudo_api.py`.
 DOCUMENTO DE MANUTENÇÃO.
 
 O **desenho** — cabeçalho, SEO, CSS, navegação e rodapé — fica em
-`api_molde.html` e `api_molde_en.html`, com três marcadores: `{{INDICE}}`,
-`{{NOTA}}` e `{{SECOES}}`. Mexer no desenho é editar o molde; mexer no conteúdo
+`api_molde.html` e `api_molde_en.html`, com três marcadores: `{{ÍNDICE}}`,
+`{{NOTA}}` e `{{SEÇÕES}}`. Mexer no desenho é editar o molde; mexer no conteúdo
 é editar `conteudo_api.py`.
 
 O realce do SQL é o mesmo da referência (`gerar_html.realcar`), com um acréscimo
@@ -33,10 +33,10 @@ NUMERO = re.compile(r'(?<![\w.])(\d+(?:\.\d+)?)(?![\w.])')
 def realcar(codigo):
     """Realce da referência, mais o número.
 
-    A varredura e feita no texto INTEIRO, e nao linha a linha: um literal pode
-    ocupar varias linhas -- o JSON de opcoes do OverlayText ocupa tres --, e
-    linha a linha o `<span>` dele nao casa, entao os numeros de dentro da
-    string acabavam realcados como numero, dentro do span de string.
+    A varredura e feita no texto INTEIRO, e não linha a linha: um literal pode
+    ocupar várias linhas -- o JSON de opções do OverlayText ocupa três --, e
+    linha a linha o `<span>` dele não casa, então os números de dentro da
+    string acabavam realçados como número, dentro do span de string.
     """
     marcado = gerar_html.realcar(codigo)
     pedacos = re.split(r'(<span class="[ksc]">.*?</span>)', marcado, flags=re.S)
@@ -103,10 +103,10 @@ def secao(s, k):
         elif b[0] == 'tabela':
             o.append('  <div class="tbl"><table><thead><tr><th>API</th>'
                      f'<th>{esc(coluna[k])}</th></tr></thead><tbody>')
-            # a celula sai COMO ESTA, sem escapar: a coluna "o que faz" leva
-            # marcacao de vez em quando (`<b>novo</b>`), e escapar aqui a
-            # transformava em texto -- o sentido ficava, o destaque nao. Quem
-            # escreve o conteudo escreve HTML, como no `desc` e no `nota`.
+            # a célula sai COMO ESTA, sem escapar: a coluna "o que faz" leva
+            # marcação de vez em quando (`<b>novo</b>`), e escapar aqui a
+            # transformava em texto -- o sentido ficava, o destaque não. Quem
+            # escreve o conteúdo escreve HTML, como no `desc` e no `nota`.
             for api, faz in b[1]:
                 o.append(f'    <tr><td>{api[k]}</td><td>{faz[k]}</td></tr>')
             o.append('  </tbody></table></div>')

@@ -28,7 +28,7 @@ Cinco nomes, e o quinto é feito dos outros:
 `caso(nome)`                          abre um caso, com o cabeçalho
 `passou(msg)` / `falhou(msg)`         a asserção, quando ela tem duas saídas
 `pulou(msg)`                          o caso não pôde ser concluído
-`confere(nome, condicao, msg_falha)`  a forma condensada, quando a condição
+`confere(nome, condição, msg_falha)`  a forma condensada, quando a condição
                                       cabe numa expressão
 ===================================== ======================================
 

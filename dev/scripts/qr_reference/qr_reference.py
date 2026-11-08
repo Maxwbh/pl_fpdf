@@ -1,20 +1,20 @@
 # -*- coding: utf-8 -*-
 """
-Referencia do codificador QR (modo byte) que sera portado para PL/SQL.
-Escrito com as mesmas estruturas que o PL/SQL usara (tabelas simples, aritmetica
-inteira), para que a portabilidade seja mecanica e verificavel.
+Referência do codificador QR (modo byte) que será portado para PL/SQL.
+Escrito com as mesmas estruturas que o PL/SQL usará (tabelas simples, aritmética
+inteira), para que a portabilidade seja mecânica e verificável.
 
 Validado contra segno em qr_validate.py.
 """
 
 # ---------------------------------------------------------------- tabelas ----
-# Total de codewords (dados + correcao) por versao 1..40
+# Total de codewords (dados + correção) por versão 1..40
 TOTAL_CW = [None,
     26,44,70,100,134,172,196,242,292,346,404,466,532,581,655,733,815,901,991,1085,
     1156,1258,1364,1474,1588,1706,1828,1921,2051,2185,2323,2465,2611,2761,2876,3034,
     3196,3362,3532,3706]
 
-# (ec_cw_por_bloco, blocos_g1, dados_g1, blocos_g2, dados_g2) por versao e nivel
+# (ec_cw_por_bloco, blocos_g1, dados_g1, blocos_g2, dados_g2) por versão e nível
 ECC = {
  'L': [None,(7,1,19,0,0),(10,1,34,0,0),(15,1,55,0,0),(20,1,80,0,0),(26,1,108,0,0),
        (18,2,68,0,0),(20,2,78,0,0),(24,2,97,0,0),(30,2,116,0,0),(18,2,68,2,69),
@@ -33,9 +33,9 @@ ECC = {
        (24,3,12,8,13),(28,7,14,4,15),(22,12,11,4,12),(24,11,12,5,13),(24,11,12,7,13),
        (30,3,15,13,16),(28,2,14,17,15),(28,2,14,19,15),(26,9,13,16,14),(28,15,15,10,16)],
 }
-MAX_VER = 20   # cobre ate ~858 bytes (nivel L); PIX cabe com folga
+MAX_VER = 20   # cobre até ~858 bytes (nível L); PIX cabe com folga
 
-# Posicoes dos padroes de alinhamento por versao
+# Posições dos padrões de alinhamento por versão
 ALIGN = [None,[],[6,18],[6,22],[6,26],[6,30],[6,34],[6,22,38],[6,24,42],[6,26,46],
     [6,28,50],[6,30,54],[6,32,58],[6,34,62],[6,26,46,66],[6,26,48,70],[6,26,50,74],
     [6,30,54,78],[6,30,56,82],[6,30,58,86],[6,34,62,90]]
@@ -76,7 +76,7 @@ def rs_ecc(data, n):
                 res[i+j] ^= gf_mul(c,f)
     return res[len(data):]
 
-# ------------------------------------------------------------ codificacao ----
+# ------------------------------------------------------------ codificação ----
 def choose_version(nbytes, ecl):
     for v in range(1, MAX_VER+1):
         ec,g1,d1,g2,d2 = ECC[ecl][v]
@@ -108,7 +108,7 @@ def encode_data(data_bytes, ver, ecl):
         for _ in range(cnt):
             blk=cws[pos:pos+dcw]; pos+=dcw
             blocks.append(blk); eccs.append(rs_ecc(blk, ec))
-    # intercalacao
+    # intercalação
     out=[]
     for i in range(max(len(b) for b in blocks)):
         for b in blocks:
@@ -121,7 +121,7 @@ def encode_data(data_bytes, ver, ecl):
 def build_matrix(ver, ecl, codewords, mask=None):
     size = 17 + 4*ver
     m=[[None]*size for _ in range(size)]
-    res=[[False]*size for _ in range(size)]   # posicao reservada (funcional)
+    res=[[False]*size for _ in range(size)]   # posição reservada (funcional)
 
     def finder(r,c):
         for i in range(-1,8):
@@ -141,8 +141,8 @@ def build_matrix(ver, ecl, codewords, mask=None):
 
     for r in ALIGN[ver]:                  # alinhamento
         for c in ALIGN[ver]:
-            # pula apenas os que colidem com os tres finders; os que cruzam a
-            # linha de temporizacao DEVEM ser desenhados (sobrepoem o timing)
+            # pula apenas os que colidem com os três finders; os que cruzam a
+            # linha de temporização DEVEM ser desenhados (sobrepõem o timing)
             if (r <= 8 and c <= 8) or (r <= 8 and c >= size-9) or (r >= size-9 and c <= 8):
                 continue
             for i in range(-2,3):
@@ -151,16 +151,16 @@ def build_matrix(ver, ecl, codewords, mask=None):
                     m[r+i][c+j]= 1 if dark else 0
                     res[r+i][c+j]=True
 
-    m[size-8][8]=1; res[size-8][8]=True   # modulo escuro
+    m[size-8][8]=1; res[size-8][8]=True   # módulo escuro
 
-    for i in range(9):                    # area reservada de formato
+    for i in range(9):                    # área reservada de formato
         if not res[8][i]: m[8][i]=0; res[8][i]=True
         if not res[i][8]: m[i][8]=0; res[i][8]=True
     for i in range(8):
         if not res[8][size-1-i]: m[8][size-1-i]=0; res[8][size-1-i]=True
         if not res[size-1-i][8]: m[size-1-i][8]=0; res[size-1-i][8]=True
 
-    if ver>=7:                            # area reservada de versao
+    if ver>=7:                            # área reservada de versão
         for i in range(6):
             for j in range(3):
                 m[size-11+j][i]=0; res[size-11+j][i]=True
@@ -207,8 +207,8 @@ def bch_version(ver):
     return (ver<<12)|v
 
 def place_format(m, ecl, mask):
-    # Bit i (LSB primeiro). Copia 1: desce a coluna 8 e vira na linha 8.
-    # Copia 2: percorre a linha 8 pela direita e desce a coluna 8 no rodape.
+    # Bit i (LSB primeiro). Cópia 1: desce a coluna 8 e vira na linha 8.
+    # Cópia 2: percorre a linha 8 pela direita e desce a coluna 8 no rodapé.
     size=len(m)
     bits=bch_format((ECC_BITS[ecl]<<3)|mask)
     for i in range(15):

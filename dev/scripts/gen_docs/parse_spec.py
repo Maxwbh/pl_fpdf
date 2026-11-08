@@ -1,9 +1,9 @@
 """Extrai as declarações públicas de src/PL_FPDF.pks (nome, params, tipos, defaults, retorno)."""
 import re, json, sys
 
-# Ancorado na RAIZ do repositorio, calculada a partir deste arquivo. Caminho
-# relativo ao diretorio atual funciona enquanto todo mundo roda da raiz, e
-# quebra no primeiro que nao roda.
+# Ancorado na RAIZ do repositório, calculada a partir deste arquivo. Caminho
+# relativo ao diretório atual funciona enquanto todo mundo roda da raiz, e
+# quebra no primeiro que não roda.
 import os
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -13,9 +13,9 @@ def do_repo(*partes):
     return os.path.join(RAIZ, *partes)
 
 
-# As DUAS specs. Ate outubro de 2026 so o PL_FPDF era lido, e por isso as 18
-# APIs do PL_FPDF_UTIL saiam na referencia SEM assinatura e SEM tipo -- um
-# `PROCEDURE PL_FPDF_UTIL.qr_matriz;` sem parametro nenhum.
+# As DUAS specs. Até outubro de 2026 só o PL_FPDF era lido, e por isso as 18
+# APIs do PL_FPDF_UTIL saiam na referência SEM assinatura e SEM tipo -- um
+# `PROCEDURE PL_FPDF_UTIL.qr_matriz;` sem parâmetro nenhum.
 SRCS = [do_repo('src', 'PL_FPDF.pks'), do_repo('src', 'PL_FPDF_UTIL.pks')]
 
 def strip_comments(text):
@@ -45,7 +45,7 @@ def parse_param(p):
     default = dm.group(1).strip() if dm else None
     typ = rest[:dm.start()].strip() if dm else rest
     typ = re.sub(r'\s+', ' ', typ).strip()
-    # NOCOPY e modo de passagem, nao tipo: sem isto a tabela da referencia
+    # NOCOPY e modo de passagem, não tipo: sem isto a tabela da referência
     # mostrava "NOCOPY TQR" na coluna Tipo
     m2 = re.match(r'^nocopy\s+(.*)$', typ, re.I)
     if m2:

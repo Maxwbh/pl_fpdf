@@ -1,29 +1,29 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Compatibilidade com codigo escrito para a 0.9.4 e a 2.0.0
+-- PL_FPDF - Compatibilidade com código escrito para a 0.9.4 e a 2.0.0
 --
--- A pergunta de quem migra e sempre a mesma: o que eu ja tenho escrito continua
--- funcionando? Este arquivo responde executando, nao afirmando.
+-- A pergunta de quem migra e sempre a mesma: o que eu já tenho escrito continua
+-- funcionando? Este arquivo responde executando, não afirmando.
 --
--- O levantamento da superficie publica das tres versoes diz o seguinte:
+-- O levantamento da superfície pública das três versões diz o seguinte:
 --
---   0.9.4:  70 publicos    2.0.0: 94    3.4.0: 119
+--   0.9.4:  70 públicos    2.0.0: 94    3.4.0: 119
 --
---   Da 0.9.4 para a 3.4.0 sumiram SETE nomes, e os sete sao rotinas de
---   demonstracao do porte original -- helloworld, test, testImg, testheader,
+--   Da 0.9.4 para a 3.4.0 sumiram SETE nomes, e os sete são rotinas de
+--   demonstração do porte original -- helloworld, test, testImg, testheader,
 --   myRepetitiveHeader, myRepetitiveFooter, lpc_footer. Nenhuma delas e API:
---   sao os exemplos que vinham dentro do package.
+--   são os exemplos que vinham dentro do package.
 --
 --   Da 2.0.0 para a 3.4.0 sumiram DUAS: SetUTF8Enabled e IsUTF8Enabled, que
---   nao faziam nada -- a flag era escrita e lida, e ninguem a consultava.
+--   não faziam nada -- a flag era escrita e lida, e ninguém a consultava.
 --
---   Das 133 assinaturas em comum, UMA mudou, e nao foi nesta versao: o
---   parametro do AddPage passou de 'orientation' para 'p_orientation' na
---   2.0.0. Chamada posicional nao sente; chamada NOMEADA quebra, e e o unico
+--   Das 133 assinaturas em comum, UMA mudou, e não foi nesta versão: o
+--   parâmetro do AddPage passou de 'orientation' para 'p_orientation' na
+--   2.0.0. Chamada posicional não sente; chamada NOMEADA quebra, e e o único
 --   ponto de atrito real da 0.9.4 para ca. O caso 4 exercita os dois.
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -67,10 +67,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O helloworld da 0.9.4, chamada a chamada');
   --------------------------------------------------------------------------
-  -- Copiado do corpo do procedure helloworld do porte de 2017, com uma unica
-  -- substituicao: OutputBlob() no lugar de Output(), porque o Output escreve
-  -- pelo directory PDF_DIR e schema comum nao tem um. A substituicao nao muda
-  -- o que se testa -- o que interessa e a sequencia de chamadas atravessar.
+  -- Copiado do corpo do procedure helloworld do porte de 2017, com uma única
+  -- substituição: OutputBlob() no lugar de Output(), porque o Output escreve
+  -- pelo directory PDF_DIR e schema comum não tem um. A substituição não muda
+  -- o que se testa -- o que interessa e a sequência de chamadas atravessar.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.FPDF('P', 'cm', 'A4');
@@ -95,8 +95,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O construtor legado dispensa o Init');
   --------------------------------------------------------------------------
-  -- Codigo de 2017 nunca chamou Init: ele nao existia. O fpdf() precisa deixar
-  -- o package pronto sozinho, senao o AddPage seguinte recusa com ORA-20005.
+  -- Código de 2017 nunca chamou Init: ele não existia. O fpdf() precisa deixar
+  -- o package pronto sozinho, senão o AddPage seguinte recusa com ORA-20005.
   -- Esse foi o defeito relatado contra a 2.0.0; aqui nunca existiu, e este
   -- caso e o que impede que volte.
   BEGIN
@@ -117,8 +117,8 @@ BEGIN
   caso('O openpdf continua aceito, e deixou de ser obrigatorio');
   --------------------------------------------------------------------------
   -- Todo exemplo antigo chama openpdf depois do construtor. Hoje o AddPage o
-  -- chama sozinho quando o documento ainda nao foi aberto, mas o codigo velho
-  -- nao pode quebrar por chamar duas vezes.
+  -- chama sozinho quando o documento ainda não foi aberto, mas o código velho
+  -- não pode quebrar por chamar duas vezes.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.FPDF('P', 'cm', 'A4');
@@ -144,8 +144,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('AddPage: o unico atrito real da 0.9.4 para ca');
   --------------------------------------------------------------------------
-  -- Das 133 assinaturas em comum, so esta mudou -- e na 2.0.0, nao aqui. O
-  -- parametro passou de 'orientation' para 'p_orientation'.
+  -- Das 133 assinaturas em comum, só esta mudou -- e na 2.0.0, não aqui. O
+  -- parâmetro passou de 'orientation' para 'p_orientation'.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'cm', 'A4');
@@ -179,7 +179,7 @@ BEGIN
   caso('Cabecalho e rodape por procedure, como a 0.9.4 fazia');
   --------------------------------------------------------------------------
   -- O SetHeaderProc/SetFooterProc e o mecanismo do porte original, e continua.
-  -- Nao se chama a procedure aqui: confere-se que os dois pontos de entrada
+  -- Não se chama a procedure aqui: confere-se que os dois pontos de entrada
   -- existem e aceitam o que aceitavam.
   BEGIN
     PL_FPDF.Reset;
@@ -196,8 +196,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('As saidas legadas: Output e ReturnBlob');
   --------------------------------------------------------------------------
-  -- O ReturnBlob e da 0.9.4 e continua; o Output escreve por directory e nao
-  -- se exercita aqui, porque schema comum nao tem PDF_DIR -- registrar o
+  -- O ReturnBlob e da 0.9.4 e continua; o Output escreve por directory e não
+  -- se exercita aqui, porque schema comum não tem PDF_DIR -- registrar o
   -- motivo vale mais que fingir que cobriu.
   BEGIN
     PL_FPDF.Reset;
@@ -225,27 +225,27 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O que saiu, e por que nao quebra codigo de verdade');
   --------------------------------------------------------------------------
-  -- Os sete nomes que sumiram da 0.9.4 sao rotinas de demonstracao, e o
-  -- proprio package as trazia como exemplo. Quem chamava PL_FPDF.helloworld
-  -- num sistema estava rodando a demo, nao a biblioteca.
+  -- Os sete nomes que sumiram da 0.9.4 são rotinas de demonstração, e o
+  -- próprio package as trazia como exemplo. Quem chamava PL_FPDF.helloworld
+  -- num sistema estava rodando a demo, não a biblioteca.
   --
-  -- Este caso nao tem como aferir ausencia sem nao compilar -- referencia a
-  -- procedure inexistente e erro de COMPILACAO, e derrubaria o arquivo
+  -- Este caso não tem como aferir ausência sem não compilar -- referencia a
+  -- procedure inexistente e erro de COMPILAÇÃO, e derrubaria o arquivo
   -- inteiro. Fica registrado, e o check_test_calls guarda o outro lado: ele
-  -- acusa qualquer teste que chame nome que a spec nao declara.
+  -- acusa qualquer teste que chame nome que a spec não declara.
   pulou('as sete rotinas de demonstracao sairam; conferir a ausencia aqui '
         || 'derrubaria a compilacao do bloco');
 
   --------------------------------------------------------------------------
-  -- Devolve a sessao ao estado de partida.
+  -- Devolve a sessão ao estado de partida.
   --
-  -- O caso 4 cria pagina em PAISAGEM, e o Reset zera state e page mas NAO
+  -- O caso 4 cria página em PAISAGEM, e o Reset zera state e page mas NÃO
   -- restaura a geometria: DefOrientation, w e h sobrevivem. Numa suite que
-  -- roda tudo na mesma sessao, e este arquivo e o primeiro da ordem
-  -- alfabetica, o que ficar aqui vaza para todos os testes seguintes.
+  -- roda tudo na mesma sessão, e este arquivo e o primeiro da ordem
+  -- alfabética, o que ficar aqui vaza para todos os testes seguintes.
   --
-  -- Um Init em retrato, com o formato padrao, e a ultima coisa que este
-  -- arquivo faz. Teste que suja a sessao do vizinho e pior que teste que
+  -- Um Init em retrato, com o formato padrão, e a última coisa que este
+  -- arquivo faz. Teste que suja a sessão do vizinho e pior que teste que
   -- falha: a falha aparece longe da causa.
   --------------------------------------------------------------------------
   PL_FPDF.Reset;

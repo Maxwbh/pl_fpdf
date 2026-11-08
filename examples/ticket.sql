@@ -1,29 +1,29 @@
 --------------------------------------------------------------------------------
 -- PL_FPDF — exemplo: o LAYOUT de um ingresso de evento
 --
--- O irmao colorido do examples/boleto.sql. O boleto prova grade: 50 caixas ao
--- milimetro, preto no branco, uma pagina. Este prova o resto:
+-- O irmão colorido do examples/boleto.sql. O boleto prova grade: 50 caixas ao
+-- milímetro, preto no branco, uma página. Este prova o resto:
 --
---   * COR — faixa de cabecalho preenchida, texto branco sobre ela, paineis
+--   * COR — faixa de cabeçalho preenchida, texto branco sobre ela, painéis
 --     cinzas com miolo branco (SetFillColor + Rect 'F' + SetTextColor);
---   * QR CODE e CODE 39 na mesma pagina, os dois dizendo o mesmo codigo;
---   * DUAS PAGINAS, cada uma com o seu participante e o seu codigo;
---   * uma forma que NAO e retangulo — o rabinho do balao, com Poly.
+--   * QR CODE e CODE 39 na mesma página, os dois dizendo o mesmo código;
+--   * DUAS PÁGINAS, cada uma com o seu participante e o seu código;
+--   * uma forma que NÃO e retângulo — o rabinho do balão, com Poly.
 --
 -- Sem imagem nenhuma: e tudo desenho vetorial e texto.
 --
 -- Como rodar: abra na SQL Window do PL/SQL Developer e execute com F8. O PDF
--- fica no BLOB `l_pdf` — grave numa tabela, devolva por uma funcao ou escreva
+-- fica no BLOB `l_pdf` — grave numa tabela, devolva por uma função ou escreva
 -- com UTL_FILE, conforme o seu caso.
 --
--- O PL_FPDF DESENHA. O codigo do ingresso chega pronto, como qualquer outro
--- dado que o chamador passa: emitir, reservar assento e validar entrada sao
--- regras de negocio, e nao de uma biblioteca de PDF.
+-- O PL_FPDF DESENHA. O código do ingresso chega pronto, como qualquer outro
+-- dado que o chamador passa: emitir, reservar assento e validar entrada são
+-- regras de negócio, e não de uma biblioteca de PDF.
 --------------------------------------------------------------------------------
 
 DECLARE
   l_pdf   BLOB;
-  -- Cores: o azul-marinho e o laranja do proprio projeto.
+  -- Cores: o azul-marinho e o laranja do próprio projeto.
   co_az_r CONSTANT NUMBER := 13;   co_az_g CONSTANT NUMBER := 25;
   co_az_b CONSTANT NUMBER := 44;
   co_lj_r CONSTANT NUMBER := 232;  co_lj_g CONSTANT NUMBER := 80;
@@ -45,8 +45,8 @@ DECLARE
     PL_FPDF.Rect(px, py, pw, ph, 'F');
   END painel;
 
-  -- Escreve uma linha. A Cell ja tem margem interna de 1 mm dos dois lados,
-  -- entao a largura passada e a da caixa inteira.
+  -- Escreve uma linha. A Cell já tem margem interna de 1 mm dos dois lados,
+  -- então a largura passada e a da caixa inteira.
   PROCEDURE linha(px NUMBER, py NUMBER, pw NUMBER, ph NUMBER, ptxt VARCHAR2,
                   pcorpo NUMBER, pest VARCHAR2 := NULL,
                   palin VARCHAR2 := 'L', pr NUMBER := 0,
@@ -64,7 +64,7 @@ DECLARE
   BEGIN
     PL_FPDF.AddPage();
 
-    -- faixa do cabecalho, e o texto em branco sobre ela
+    -- faixa do cabeçalho, e o texto em branco sobre ela
     painel(co_x0, 13.5, co_larg, 36, co_az_r, co_az_g, co_az_b);
     linha(16, 18,   178, 9, 'Orquestra Sinfonica - Concerto de Gala', 17, 'B',
           'L', 255);
@@ -89,7 +89,7 @@ DECLARE
     linha(co_x0, 88, co_esq, 5, 'Participante', 10, NULL, 'L', co_grafite);
     linha(14.8,  95, 124.4, 7, pnome, 16, 'B');
 
-    -- painel do QR, com o codigo embaixo
+    -- painel do QR, com o código embaixo
     painel(co_xqr, 52,   co_lqr, 57.5, co_cinza);
     painel(148.8,  54.8, 46.4,   51.9, 255);
     PL_FPDF.AddQRCode(p_x => 156, p_y => 58, p_size => 32,
@@ -97,15 +97,15 @@ DECLARE
                       p_error_correction => 'M');
     linha(co_xqr, 97.5, co_lqr, 5, pcodigo, 12, 'B', 'C');
 
-    -- faixa do codigo de barras
+    -- faixa do código de barras
     painel(co_x0, 112.5, co_larg, 19,   co_cinza);
     painel(14.8,  115.3, 180.4,   13.4, 255);
     PL_FPDF.AddBarcode(45, 117, 120, 10, pcodigo, 'CODE39', FALSE);
 
-    -- balao de aviso: retangulo mais o rabinho, que nao e retangulo
+    -- balão de aviso: retângulo mais o rabinho, que não e retângulo
     painel(32, 138.5, 142, 17, co_cinza_c, 241, 241);
     -- o registro vai montado: atribuir l_pts(0).x num elemento que ainda
-    -- nao existe levanta ORA-01403 em tempo de execucao
+    -- não existe levanta ORA-01403 em tempo de execução
     l_pt.x := 38;  l_pt.y := 155.5;  l_pts(0) := l_pt;
     l_pt.x := 38;  l_pt.y := 160;    l_pts(1) := l_pt;
     l_pt.x := 44;  l_pt.y := 155.5;  l_pts(2) := l_pt;
@@ -114,7 +114,7 @@ DECLARE
           'Apresente este ingresso na entrada, impresso ou na tela do celular.',
           8, NULL, 'C');
 
-    -- aba e caixa da mensagem da organizacao
+    -- aba e caixa da mensagem da organização
     painel(72.5, 165.5, 65, 8.5, co_cinza_c, 241, 241);
     linha(72.5, 167, 65, 4, 'Mensagem da organizacao', 7, NULL, 'C',
           co_grafite);
@@ -124,9 +124,9 @@ DECLARE
           'Obrigado por vir. A casa abre as 19h, e a entrada com bebida nao e '
           || 'permitida no teatro.', 8);
 
-    -- Rodape em 262, e nao em 276: a Cell abre PAGINA NOVA quando y + altura
-    -- passa de 277 (A4 menos a margem inferior de 20 mm). Nao e erro, e quebra
-    -- automatica — dois ingressos viravam seis paginas, e o sintoma aparecia
+    -- Rodapé em 262, e não em 276: a Cell abre PÁGINA NOVA quando y + altura
+    -- passa de 277 (A4 menos a margem inferior de 20 mm). Não e erro, e quebra
+    -- automática — dois ingressos viravam seis páginas, e o sintoma aparecia
     -- longe da causa.
     linha(co_x0, 262, co_larg, 9, 'M&S Eventos', 14, 'B', 'C',
           co_lj_r, co_lj_g, co_lj_b);
@@ -139,7 +139,7 @@ BEGIN
   PL_FPDF.SetAuthor('M&S Eventos');
   PL_FPDF.SetLineWidth(0.2);
 
-  -- um ingresso por pagina, cada um com o seu participante e o seu codigo
+  -- um ingresso por página, cada um com o seu participante e o seu código
   ingresso('Maria Aparecida de Souza', 'UDV2259QK5');
   ingresso('Joao Pedro Nogueira',      'PLF7731ZT2');
 

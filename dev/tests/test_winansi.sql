@@ -1,23 +1,23 @@
 --------------------------------------------------------------------------------
--- PL_FPDF - Texto acentuado nas fontes padrao (conversao WinAnsi)
+-- PL_FPDF - Texto acentuado nas fontes padrão (conversão WinAnsi)
 --
--- O dicionario da fonte declara /Encoding /WinAnsiEncoding e o texto sai do
--- banco em AL32UTF8. Sem conversao, cada acentuado chegava ao leitor como DOIS
--- bytes e ele desenhava dois glifos: 'cobranca' com cedilha virava 'cobranA§a'.
--- Sem erro nenhum, num arquivo que abre normalmente -- so se percebia olhando.
+-- O dicionário da fonte declara /Encoding /WinAnsiEncoding e o texto sai do
+-- banco em AL32UTF8. Sem conversão, cada acentuado chegava ao leitor como DOIS
+-- bytes e ele desenhava dois glifos: 'cobrança' com cedilha virava 'cobranA§a'.
+-- Sem erro nenhum, num arquivo que abre normalmente -- só se percebia olhando.
 --
--- Medido antes do conserto, e vale registrar porque nenhuma das duas suposicoes
+-- Medido antes do conserto, e vale registrar porque nenhuma das duas suposições
 -- do relato se confirmou:
 --
---   CHR(231) e 1 byte (E7); SUBSTR('c cedilha',1,1) sao 2 (C3A7)
---   GetStringWidth('Sao Paulo') = 19.5326
---   GetStringWidth('Sao Paulo' com til) levantava ORA-06502 -- nao
---     NO_DATA_FOUND: o subtipo car tem UM byte e o caractere tem dois, entao
+--   CHR(231) e 1 byte (E7); SUBSTR('c cedilha',1,1) são 2 (C3A7)
+--   GetStringWidth('São Paulo') = 19.5326
+--   GetStringWidth('São Paulo' com til) levantava ORA-06502 -- não
+--     NO_DATA_FOUND: o subtipo car tem UM byte e o caractere tem dois, então
 --     estourava antes de consultar a tabela
 --
 -- E: NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
@@ -76,7 +76,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O acentuado sai como escape octal, nao como UTF-8 cru');
   --------------------------------------------------------------------------
-  -- O byte convertido NAO pode ir cru: o documento e montado num CLOB e
+  -- O byte convertido NÃO pode ir cru: o documento e montado num CLOB e
   -- convertido no fim por CONVERTTOBLOB, que recodifica pelo charset do banco.
   -- Medido no diag: 256 bytes entram, 422 saem. O escape octal e ASCII e
   -- atravessa intacto.
@@ -97,8 +97,8 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Texto sem acento nao mudou');
   --------------------------------------------------------------------------
-  -- O ASCII coincide nas duas codificacoes, entao o caminho comum tem de sair
-  -- exatamente como saia. E onde uma regressao passaria despercebida.
+  -- O ASCII coincide nas duas codificações, então o caminho comum tem de sair
+  -- exatamente como saia. E onde uma regressão passaria despercebida.
   l_pdf := pdf_com('Sao Paulo');
   IF acha(l_pdf, 'Sao Paulo') > 0 THEN
     passou('o texto ASCII continua legivel no arquivo, sem escape');
@@ -109,7 +109,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Parenteses e barra seguem escapados');
   --------------------------------------------------------------------------
-  -- Sao o escape que o PDF ja exigia, e a conversao nao pode ter comido.
+  -- São o escape que o PDF já exigia, e a conversão não pode ter comido.
   l_pdf := pdf_com('Total (liquido) \ 50%');
   IF acha(l_pdf, '\(liquido\)') > 0 THEN
     passou('parenteses escapados');
@@ -122,16 +122,16 @@ BEGIN
   --------------------------------------------------------------------------
   -- Antes levantava ORA-06502, e agora mede.
   --
-  -- A primeira versao deste caso exigia que as duas medidas DIFERISSEM, no
+  -- A primeira versão deste caso exigia que as duas medidas DIFERISSEM, no
   -- palpite de que o 'a' com til seria mais largo. Errado: nas 14 fontes
-  -- padrao do PDF o glifo acentuado tem a MESMA largura de avanco do glifo
-  -- base. Conferido na propria tabela do package: 'a' e 'a til' medem 556,
+  -- padrão do PDF o glifo acentuado tem a MESMA largura de avanço do glifo
+  -- base. Conferido na própria tabela do package: 'a' e 'a til' medem 556,
   -- 'c' e 'c cedilha' medem 500. Medir igual e o certo.
   --
-  -- Entao afere-se o que de fato distingue: que nao levanta, e que um
-  -- caractere de largura reconhecidamente diferente -- o travessao, 1000
-  -- contra 333 do hifen -- e medido como tal. Se a conversao caisse num
-  -- caractere so, essa comparacao denunciaria.
+  -- Então afere-se o que de fato distingue: que não levanta, e que um
+  -- caractere de largura reconhecidamente diferente -- o travessão, 1000
+  -- contra 333 do hífen -- e medido como tal. Se a conversão caísse num
+  -- caractere só, essa comparação denunciaria.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');
   PL_FPDF.AddPage;
@@ -150,7 +150,7 @@ BEGIN
              || TO_CHAR(l_larg2) || ') - o acentuado caiu na posicao errada');
     END IF;
 
-    -- travessao contra hifen: 1000 contra 333 em Helvetica
+    -- travessão contra hífen: 1000 contra 333 em Helvetica
     IF PL_FPDF.GetStringWidth(UNISTR('\2014')) >
        PL_FPDF.GetStringWidth('-') * 2 THEN
       passou('o travessao mede mais que o dobro do hifen, como na tabela');
@@ -165,7 +165,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Alinhamento a direita com acento nao levanta mais');
   --------------------------------------------------------------------------
-  -- O Cell so chama GetStringWidth para align C e R. Era ai que o ORA-06502
+  -- O Cell só chama GetStringWidth para align C e R. Era aí que o ORA-06502
   -- aparecia, enquanto o alinhamento a esquerda desenhava errado calado.
   BEGIN
     PL_FPDF.Reset;
@@ -186,9 +186,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Caractere fora do WinAnsi e recusado com erro proprio');
   --------------------------------------------------------------------------
-  -- O criterio: recusar, e nao virar '?' em silencio. E o erro tem de ser o
-  -- nosso, com a posicao -- se voltar ORA-06502, o conserto so trocou de
-  -- sintoma. Ideograma escolhido por nao existir em WinAnsi de forma alguma.
+  -- O critério: recusar, e não virar '?' em silêncio. E o erro tem de ser o
+  -- nosso, com a posição -- se voltar ORA-06502, o conserto só trocou de
+  -- sintoma. Ideograma escolhido por não existir em WinAnsi de forma alguma.
   BEGIN
     l_pdf := pdf_com('Relatorio ' || UNISTR('\4E2D') || ' final');
     falhou('aceitou o caractere fora da tabela');
@@ -212,9 +212,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('As 27 excecoes do cp1252 atravessam');
   --------------------------------------------------------------------------
-  -- De 0xA0 a 0xFF o cp1252 e o Latin-1, e o byte e o proprio ponto de codigo.
-  -- As 27 posicoes entre 0x80 e 0x9F sao as unicas que precisam de tabela, e
-  -- sao as que um teste de acento comum nao alcanca: travessao, aspas curvas,
+  -- De 0xA0 a 0xFF o cp1252 e o Latin-1, e o byte e o próprio ponto de código.
+  -- As 27 posições entre 0x80 e 0x9F são as únicas que precisam de tabela, e
+  -- são as que um teste de acento comum não alcança: travessão, aspas curvas,
   -- euro, reticencias.
   l_txt := UNISTR('\20AC \2014 \201C \201D \2026 \2122');   -- EUR - " " ... TM
   BEGIN
@@ -233,12 +233,12 @@ BEGIN
   --------------------------------------------------------------------------
   caso('MultiCell e Write medem acentuado sem levantar');
   --------------------------------------------------------------------------
-  -- REGRESSAO. A tabela de larguras e indexada pelo BYTE WinAnsi. O
+  -- REGRESSÃO. A tabela de larguras e indexada pelo BYTE WinAnsi. O
   -- GetStringWidth convertia o caractere antes de consultar; o MultiCell, o
   -- Write e o overlay consultavam com o caractere CRU, e em AL32UTF8 um
-  -- acentuado tem dois bytes: a chave nao existia e a consulta levantava
+  -- acentuado tem dois bytes: a chave não existia e a consulta levantava
   -- NO_DATA_FOUND na PRIMEIRA palavra acentuada. Nenhum teste passava texto
-  -- com acento por esses dois caminhos, entao o defeito atravessou a suite.
+  -- com acento por esses dois caminhos, então o defeito atravessou a suite.
   BEGIN
     PL_FPDF.Reset;
     PL_FPDF.Init('P', 'mm', 'A4');
@@ -264,8 +264,8 @@ BEGIN
   caso('O acentuado mede como a letra base, nao como zero');
   --------------------------------------------------------------------------
   -- Em Helvetica o cedilha tem a largura do 'c' e o til a do 'a' -- conferido
-  -- contra o AFM. Entao as duas frases medem IGUAL. O valor prova mais do que
-  -- a ausencia de erro: se a consulta errasse a chave e caisse no zero, a
+  -- contra o AFM. Então as duas frases medem IGUAL. O valor prova mais do que
+  -- a ausência de erro: se a consulta errasse a chave e caísse no zero, a
   -- frase acentuada mediria MENOS, e o texto sairia desalinhado sem avisar.
   PL_FPDF.Reset;
   PL_FPDF.Init('P', 'mm', 'A4');

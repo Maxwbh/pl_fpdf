@@ -1,20 +1,20 @@
-# Historias de desenvolvimento — lacunas priorizadas
+# Histórias de desenvolvimento — lacunas priorizadas
 
-**DOCUMENTO DE MANUTENCAO.** Nao e documentacao de quem usa a biblioteca.
+**DOCUMENTO DE MANUTENÇÃO.** Não e documentação de quem usa a biblioteca.
 Quem usa quer saber o que a API faz, e isso esta em `docs/API_REFERENCE.md` e
 em `docs/DOCUMENTATION.md`.
 
-Aqui esta o **como**: uma historia por lacuna, com a logica definida, o caso
-de uso que a justifica e o criterio que diz quando acabou. O **o que** e o
+Aqui esta o **como**: uma história por lacuna, com a lógica definida, o caso
+de uso que a justifica e o critério que diz quando acabou. O **o que** e o
 **em que ordem** ficam em `docs/ROADMAP.md`, secao "Lacunas priorizadas por
-uso medido" — inclusive o peso de cada item e a medicao que o sustenta.
+uso medido" — inclusive o peso de cada item e a medição que o sustenta.
 
-Cada historia se pretende auto-suficiente: quem pegar uma nao deveria precisar
-reconstruir o raciocinio, so ler e executar.
+Cada história se pretende auto-suficiente: quem pegar uma não deveria precisar
+reconstruir o raciocínio, só ler e executar.
 
 ---
 
-## Ordem e dependencias
+## Ordem e dependências
 
 ```
 HU-00 (medicao)      CONCLUIDA
@@ -29,34 +29,34 @@ HU-05  levantamento; nao bloqueia ninguem
 ```
 
 HU-00 vinha antes porque podia **mudar o tamanho** da HU-01: se a tabela de
-larguras tambem estivesse errada, a HU-01 cresceria e deixaria de ser so
-conversao de saida. A medicao respondeu que nao — a tabela estava intacta —, e
+larguras também estivesse errada, a HU-01 cresceria e deixaria de ser só
+conversão de saída. A medição respondeu que não — a tabela estava intacta —, e
 a HU-01 saiu no tamanho previsto.
 
-**Registro de setembro/2026:** as duas primeiras historias estao concluidas, e
+**Registro de setembro/2026:** as duas primeiras histórias estão concluídas, e
 vale dizer **como**: nenhuma das duas premissas que as originaram se
-confirmou. A HU-00 supunha colisao de chaves na tabela de larguras, e nao
+confirmou. A HU-00 supunha colisão de chaves na tabela de larguras, e não
 havia; a HU-01 supunha `ORA-29275` na escrita do texto, e o erro era
-`ORA-06502`, por outro motivo. As historias continuam aqui inteiras, com o que
-se mediu ao lado do que se supos, porque e esse par que ensina alguma coisa —
-apagar a suposicao deixa so o resultado, que qualquer um refaz.
+`ORA-06502`, por outro motivo. As histórias continuam aqui inteiras, com o que
+se mediu ao lado do que se supôs, porque e esse par que ensina alguma coisa —
+apagar a suposição deixa só o resultado, que qualquer um refaz.
 
 ---
 
 ## HU-00 — Medir a tabela de larguras antes de mexer em qualquer coisa
 
-**CONCLUIDA.** Medida em setembro/2026, e o resultado **contradisse a
-suposicao**: a tabela de larguras estava correta. Ver "O que a medicao
-respondeu", no fim desta historia.
+**CONCLUÍDA.** Medida em setembro/2026, e o resultado **contradisse a
+suposição**: a tabela de larguras estava correta. Ver "O que a medição
+respondeu", no fim desta história.
 
-**Tipo:** investigacao (spike). Nao entrega funcionalidade; entrega uma
+**Tipo:** investigação (spike). Não entrega funcionalidade; entrega uma
 resposta que decide o tamanho da HU-01.
 
 **Como** mantenedor,
 **quero** saber se `GetStringWidth` erra a largura de caractere acentuado,
-**para** dimensionar a HU-01 antes de comecar, em vez de descobrir no meio.
+**para** dimensionar a HU-01 antes de começar, em vez de descobrir no meio.
 
-### A duvida, precisamente
+### A dúvida, precisamente
 
 `p_larguras_de` (`src/PL_FPDF.pkb:693`) monta a tabela de larguras assim:
 
@@ -66,68 +66,68 @@ for i in 0..255 loop
 end loop;
 ```
 
-A chave e `chr(i)`. O `docs/MANUTENCAO.md` desta base ja documenta que **`CHR(n)` nao
-devolve um byte**: devolve o caractere daquele ponto de codigo no charset do
+A chave e `chr(i)`. O `docs/MANUTENCAO.md` desta base já documenta que **`CHR(n)` não
+devolve um byte**: devolve o caractere daquele ponto de código no charset do
 banco, e em AL32UTF8 todo valor de 128 a 255 sai com dois bytes — ou nem sai,
-porque 0x80..0xFF sozinho nao e UTF-8 valido.
+porque 0x80..0xFF sozinho não e UTF-8 valido.
 
-Se as 128 chaves altas saem invalidas, colididas ou iguais entre si, entao
-`GetStringWidth` de qualquer texto acentuado devolve numero errado. E largura
-errada nao erra so a largura: **alinhamento a direita, centralizacao,
+Se as 128 chaves altas saem invalidas, colididas ou iguais entre si, então
+`GetStringWidth` de qualquer texto acentuado devolve número errado. E largura
+errada não erra só a largura: **alinhamento a direita, centralização,
 `MultiCell` e quebra de linha** saem todos do lugar, porque todos dependem
 dela.
 
 ### Como medir
 
-Bloco anonimo na SQL Window, alcancavel pelo runner Python, comparando o que
+Bloco anônimo na SQL Window, alcançável pelo runner Python, comparando o que
 `GetStringWidth` devolve com o valor que a tabela deveria ter para as 128
-posicoes de 128 a 255. Os valores de referencia saem dos AFM da Adobe, que
-`dev/scripts/font_reference/` ja usa.
+posições de 128 a 255. Os valores de referência saem dos AFM da Adobe, que
+`dev/scripts/font_reference/` já usa.
 
-Tres perguntas a responder, nessa ordem:
+Três perguntas a responder, nessa ordem:
 
 1. `chr(i)` para `i` de 128 a 255 devolve 128 valores **distintos**?
    (`SELECT COUNT(DISTINCT chr(i))` sobre a faixa.)
-2. `GetStringWidth` de cada caractere acentuado do portugues bate com o AFM?
-3. Se nao bate: erra por colisao de chave, ou por `NO_DATA_FOUND` silenciado
+2. `GetStringWidth` de cada caractere acentuado do português bate com o AFM?
+3. Se não bate: erra por colisão de chave, ou por `NO_DATA_FOUND` silenciado
    em algum lugar?
 
-### Criterio de aceite
+### Critério de aceite
 
-- [x] Um diagnostico que imprime a resposta das tres perguntas e roda pelo
+- [x] Um diagnóstico que imprime a resposta das três perguntas e roda pelo
       `run_tests.py` — saiu como `dev/tests/diag_winansi.sql`, que mede a
-      conversao inteira e nao so a tabela
+      conversão inteira e não só a tabela
 - [x] O resultado registrado na HU-01, que passou a ter escopo definido
-- [x] Havendo defeito: teste de regressao antes do conserto — `test_winansi.sql`
+- [x] Havendo defeito: teste de regressão antes do conserto — `test_winansi.sql`
 
-**Estimativa:** 1 dia. E barato e evita comecar a HU-01 pelo lado errado.
-**Real:** menos que isso, e pagou o preco previsto: a HU-01 nao comecou pelo
+**Estimativa:** 1 dia. E barato e evita começar a HU-01 pelo lado errado.
+**Real:** menos que isso, e pagou o preço previsto: a HU-01 não começou pelo
 lado errado.
 
-### O que a medicao respondeu
+### O que a medição respondeu
 
-As tres perguntas, na ordem em que foram feitas:
+As três perguntas, na ordem em que foram feitas:
 
 1. **`chr(i)` de 128 a 255 devolve 128 valores distintos?** Sim. Os 256
-   devolvem 256 chaves distintas, e nenhuma colide. A suposicao de que
-   `0x80..0xFF` sairia invalido em AL32UTF8 confundiu **byte** com **ponto de
-   codigo**: `CHR(231)` nao pede o byte `0xE7`, pede o caractere U+00E7, que
-   existe e e um so. O que o `docs/MANUTENCAO.md` documenta e que ele nao
-   devolve *um byte* — nao que devolva chave invalida.
+   devolvem 256 chaves distintas, e nenhuma colide. A suposição de que
+   `0x80..0xFF` sairia inválido em AL32UTF8 confundiu **byte** com **ponto de
+   código**: `CHR(231)` não pede o byte `0xE7`, pede o caractere U+00E7, que
+   existe e e um só. O que o `docs/MANUTENCAO.md` documenta e que ele não
+   devolve *um byte* — não que devolva chave invalida.
 2. **`GetStringWidth` do acentuado bate com o AFM?** Sim, quando chega a
    consultar. E o valor certo e o **mesmo do glifo base**: nas 14 fontes
-   padrao o acentuado tem a largura de avanco do caractere que acentua — `a` e
-   `a` com til medem 556, `c` e cedilha medem 500. Uma versao anterior do teste
+   padrão o acentuado tem a largura de avanço do caractere que acentua — `a` e
+   `a` com til medem 556, `c` e cedilha medem 500. Uma versão anterior do teste
    exigia que diferissem, no palpite de que o acentuado seria mais largo, e
    falhava por estar errada ela.
-3. **Erra por colisao ou por `NO_DATA_FOUND` silenciado?** Por nenhum dos dois.
+3. **Erra por colisão ou por `NO_DATA_FOUND` silenciado?** Por nenhum dos dois.
    `GetStringWidth('Sao Paulo')` com til levantava **`ORA-06502`**, e a causa
-   estava tres linhas antes da tabela: o `subtype car is varchar2(1)` guarda
+   estava três linhas antes da tabela: o `subtype car is varchar2(1)` guarda
    **um byte**, e o caractere tem dois em AL32UTF8. Estourava ao recortar a
    string, antes de qualquer consulta.
 
 **O que isso mudou na HU-01:** nada a acrescentar, e uma armadilha a menos.
-A HU-01 seguiu sendo conversao de saida, e o `subtype car` entrou junto no
+A HU-01 seguiu sendo conversão de saída, e o `subtype car` entrou junto no
 conserto, por ser o mesmo defeito de origem — tratar byte e caractere como a
 mesma coisa.
 
@@ -135,28 +135,28 @@ mesma coisa.
 
 ## HU-01 — Texto com acento sai correto nas fontes core
 
-**CONCLUIDA na 3.4.0.** Entregue em setembro/2026, com **uma diferenca de
-projeto** em relacao ao que esta escrito abaixo: a conversao nao pode sair em
+**CONCLUÍDA na 3.4.0.** Entregue em setembro/2026, com **uma diferença de
+projeto** em relação ao que esta escrito abaixo: a conversão não pode sair em
 RAW, e o texto vai para o PDF em **escape octal**. Ver "Como ficou", no fim
-desta historia — o motivo foi medido, nao escolhido.
+desta história — o motivo foi medido, não escolhido.
 
-**Peso: o mais alto da fila.** Nao e funcionalidade que falta — e defeito na
-superficie mais usada da biblioteca.
+**Peso: o mais alto da fila.** Não e funcionalidade que falta — e defeito na
+superfície mais usada da biblioteca.
 
-**Como** desenvolvedor que gera boleto, nota e relatorio em portugues,
+**Como** desenvolvedor que gera boleto, nota e relatório em português,
 **quero** que `Cell`, `MultiCell`, `Write`, `Text` e os overlays escrevam
-acento corretamente com as fontes padrao,
-**para** nao precisar embutir uma fonte TrueType de 380 KB so para escrever
-"Endereco de cobranca".
+acento corretamente com as fontes padrão,
+**para** não precisar embutir uma fonte TrueType de 380 KB só para escrever
+"Endereço de cobrança".
 
 ### O defeito
 
-O dicionario da fonte declara `/Encoding /WinAnsiEncoding`
+O dicionário da fonte declara `/Encoding /WinAnsiEncoding`
 (`src/PL_FPDF.pkb:1821`, `1838`, `9165`), mas **nada converte o texto** de
-AL32UTF8 para WinAnsi antes de escrever no stream de conteudo.
+AL32UTF8 para WinAnsi antes de escrever no stream de conteúdo.
 
 O `a` com acento agudo e U+00E1. Em AL32UTF8 ele sai do banco como **dois
-bytes**, C3 A1. Esses dois bytes vao crus para o PDF. O leitor, que foi
+bytes**, C3 A1. Esses dois bytes vão crus para o PDF. O leitor, que foi
 avisado de que aquele stream esta em WinAnsi, resolve C3 como `A` com til e
 A1 como `¡` — e desenha **dois glifos errados** no lugar de um certo.
 
@@ -164,134 +164,134 @@ Esta mascarado hoje porque os exemplos da base evitam acento.
 
 ### Casos de uso
 
-1. **Boleto brasileiro.** "Nome do Sacado", "Instrucoes", "Nao receber apos o
-   vencimento" — endereco com acento e o caso comum, nao o excepcional.
-2. **Relatorio administrativo.** Cabecalho "Relatorio de Producao — Marco" com
+1. **Boleto brasileiro.** "Nome do Sacado", "Instruções", "Não receber após o
+   vencimento" — endereço com acento e o caso comum, não o excepcional.
+2. **Relatório administrativo.** Cabeçalho "Relatório de Produção — Marco" com
    `Cell` centralizada: hoje sai com dois glifos errados **e** desalinhada, se
    a HU-00 confirmar o defeito de largura.
-3. **Recusa explicita.** Um titulo que traga travessao `—` ou aspas curvas
-   `""` — caracteres que **nao existem** no cp1252 na posicao esperada. O
-   sistema deve **avisar**, nao desenhar lixo em silencio.
+3. **Recusa explicita.** Um título que traga travessão `—` ou aspas curvas
+   `""` — caracteres que **não existem** no cp1252 na posição esperada. O
+   sistema deve **avisar**, não desenhar lixo em silêncio.
 
-### Definicao da logica
+### Definição da lógica
 
-**Passo 1 — referencia em Python antes da porta.** E o metodo desta base, e
-foi o que separou "desenha um simbolo" de "um leitor decodifica" no QR Code.
+**Passo 1 — referência em Python antes da porta.** E o método desta base, e
+foi o que separou "desenha um símbolo" de "um leitor decodifica" no QR Code.
 
 Em `dev/scripts/winansi_reference/`:
-- tabela Unicode -> WinAnsi (cp1252) das 224 posicoes imprimiveis, gerada de
-  fonte primaria, nao digitada a mao;
-- um PDF de prova produzido por biblioteca externa, com as 224 posicoes;
+- tabela Unicode -> WinAnsi (cp1252) das 224 posições imprimíveis, gerada de
+  fonte primária, não digitada a mão;
+- um PDF de prova produzido por biblioteca externa, com as 224 posições;
 - leitura de volta com **MuPDF** conferindo caractere a caractere.
 
-So depois disso a tabela vai para o PL/SQL, e vai **gerada**, com o cabecalho
-"NAO EDITE A MAO" que as tabelas de fonte desta base ja usam.
+Só depois disso a tabela vai para o PL/SQL, e vai **gerada**, com o cabeçalho
+"NÃO EDITE A MÃO" que as tabelas de fonte desta base já usam.
 
-**Passo 2 — a conversao, em RAW.**
+**Passo 2 — a conversão, em RAW.**
 
 ```
 p_para_winansi(p_texto in varchar2) return raw
 ```
 
-Trabalhar em RAW do inicio ao fim: `UTL_RAW.CAST_TO_RAW` na entrada,
-`UTL_RAW.CONCAT` para montar. Nao remontar byte a byte num VARCHAR2 — a
-armadilha ja paga desta base: `SUBSTRB(x, k, 1)` extrai um byte, e um byte do
-meio de um caractere multibyte nao volta como ele.
+Trabalhar em RAW do início ao fim: `UTL_RAW.CAST_TO_RAW` na entrada,
+`UTL_RAW.CONCAT` para montar. Não remontar byte a byte num VARCHAR2 — a
+armadilha já paga desta base: `SUBSTRB(x, k, 1)` extrai um byte, e um byte do
+meio de um caractere multibyte não volta como ele.
 
 **Passo 3 — a recusa.** Caractere sem correspondente no cp1252 levanta erro
-proprio, com o caractere e a posicao na mensagem. Nao trocar por `?` nem
-descartar. E o principio 2 da base: recusar em vez de entregar errado. Um
-travessao virando `?` em silencio e o tipo de defeito que so aparece quando o
-documento ja foi assinado.
+próprio, com o caractere e a posição na mensagem. Não trocar por `?` nem
+descartar. E o princípio 2 da base: recusar em vez de entregar errado. Um
+travessão virando `?` em silêncio e o tipo de defeito que só aparece quando o
+documento já foi assinado.
 
-**Passo 4 — onde chamar.** Na saida de texto, e **so quando a fonte for
-core**. Fonte TrueType embutida tem a propria codificacao e nao passa por
+**Passo 4 — onde chamar.** Na saída de texto, e **só quando a fonte for
+core**. Fonte TrueType embutida tem a própria codificação e não passa por
 aqui — passar quebraria o que hoje funciona.
 
 **Passo 5 — `SetUTF8Enabled` passa a significar alguma coisa.** Hoje
 `g_utf8_enabled` (`src/PL_FPDF.pkb:303`) e escrito pelo setter, lido pelo
-getter, e **nada mais o consulta**: o ajuste nao tem efeito nenhum. Duas
-saidas honestas — ou ele governa esta conversao, ou sai da spec. Nao deixar
-como esta, que e o pior dos tres.
+getter, e **nada mais o consulta**: o ajuste não tem efeito nenhum. Duas
+saídas honestas — ou ele governa esta conversão, ou sai da spec. Não deixar
+como esta, que e o pior dos três.
 
-**Passo 6 — lint que impeca a volta.** Nenhuma escrita de texto com fonte core
-sem passar pela conversao. Em `dev/scripts/plsql_lint/`, no padrao dos outros:
-cabecalho explicando o defeito que ele guarda.
+**Passo 6 — lint que impeça a volta.** Nenhuma escrita de texto com fonte core
+sem passar pela conversão. Em `dev/scripts/plsql_lint/`, no padrão dos outros:
+cabeçalho explicando o defeito que ele guarda.
 
-### Criterio de aceite
+### Critério de aceite
 
-- [x] Referencia Python validada contra MuPDF — **217/217** posicoes, nao 224;
-      ver "Como ficou" para o motivo do numero
-- [x] Tabela no PL/SQL gerada, nao digitada — `dev/scripts/winansi_reference/`
+- [x] Referência Python validada contra MuPDF — **217/217** posições, não 224;
+      ver "Como ficou" para o motivo do número
+- [x] Tabela no PL/SQL gerada, não digitada — `dev/scripts/winansi_reference/`
 - [x] `Cell`, `MultiCell`, `Write`, `Text` e overlays convertem com fonte core
-- [x] Fonte TrueType embutida **nao** passa pela conversao (nao regride)
-- [x] Caractere fora do cp1252 levanta erro proprio com posicao na mensagem
+- [x] Fonte TrueType embutida **não** passa pela conversão (não regride)
+- [x] Caractere fora do cp1252 levanta erro próprio com posição na mensagem
       (`ORA-20203`)
-- [x] `SetUTF8Enabled` **saiu da spec** — das duas saidas honestas, a que
-      corresponde ao que a biblioteca faz: a conversao nao e opcional
+- [x] `SetUTF8Enabled` **saiu da spec** — das duas saídas honestas, a que
+      corresponde ao que a biblioteca faz: a conversão não e opcional
 - [x] Lint no CI — `check_byte_chars.py`, regras 3 e 4
-- [x] `CHANGELOG` com uma linha; o relato longo no comentario do codigo
+- [x] `CHANGELOG` com uma linha; o relato longo no comentário do código
 
 ### Como testar
 
-- PDF com as posicoes do cp1252, extraido e comparado caractere a caractere
+- PDF com as posições do cp1252, extraído e comparado caractere a caractere
   com o esperado
 - Um caso que confirme a **recusa** do caractere fora da tabela — e que falhe
-  se voltar `ORA-06502` em vez do erro proprio
-- Regressao: um documento com fonte TrueType embutida continua identico
+  se voltar `ORA-06502` em vez do erro próprio
+- Regressão: um documento com fonte TrueType embutida continua idêntico
 
-**Estimativa:** 3 a 5 dias, mais o que a HU-00 acrescentar. A HU-00 nao
+**Estimativa:** 3 a 5 dias, mais o que a HU-00 acrescentar. A HU-00 não
 acrescentou nada.
 
 ### Como ficou
 
-Tres coisas sairam diferentes do que esta escrito acima, e as tres por
-medicao.
+Três coisas saíram diferentes do que esta escrito acima, e as três por
+medição.
 
-**1. A saida nao e RAW — e escape octal.** O passo 2 mandava trabalhar em RAW
-do inicio ao fim, e esta certo *para a conversao*; errado para a **escrita**.
+**1. A saída não e RAW — e escape octal.** O passo 2 mandava trabalhar em RAW
+do início ao fim, e esta certo *para a conversão*; errado para a **escrita**.
 O documento desta base e montado num CLOB e convertido no fim por
 `DBMS_LOB.CONVERTTOBLOB`, que recodifica pelo charset do banco: qualquer byte
-acima de `0x7F` colocado ali e reescrito na saida. Medido no diagnostico:
-**256 bytes entram, 422 saem**. Entao o byte convertido nao pode ir cru. Vai
-como `\ddd`, o escape octal que o proprio PDF define para string — que e ASCII
-e atravessa o CLOB intacto. `p_texto_pdf` converte e escapa numa passagem so.
+acima de `0x7F` colocado ali e reescrito na saída. Medido no diagnóstico:
+**256 bytes entram, 422 saem**. Então o byte convertido não pode ir cru. Vai
+como `\ddd`, o escape octal que o próprio PDF define para string — que e ASCII
+e atravessa o CLOB intacto. `p_texto_pdf` converte e escapa numa passagem só.
 
-Isto vale para todo binario que sair por este caminho, nao so para texto: e o
+Isto vale para todo binário que sair por este caminho, não só para texto: e o
 mesmo motivo pelo qual o stream de imagem sai em hexadecimal com
 `/ASCIIHexDecode` declarado.
 
-**2. Sao 27 excecoes, nao 224 posicoes.** O cp1252 tem **251** posicoes
-definidas, nao 224, e cinco indefinidas (`0x81`, `0x8D`, `0x8F`, `0x90`,
+**2. São 27 exceções, não 224 posições.** O cp1252 tem **251** posições
+definidas, não 224, e cinco indefinidas (`0x81`, `0x8D`, `0x8F`, `0x90`,
 `0x9D`). De `0xA0` a `0xFF` ele coincide com o Latin-1, e ali o byte **e** o
-ponto de codigo — nao precisa de tabela, precisa de identidade. So as 27
-posicoes de `0x80` a `0x9F` exigem mapa: travessao, aspas curvas, euro,
+ponto de código — não precisa de tabela, precisa de identidade. Só as 27
+posições de `0x80` a `0x9F` exigem mapa: travessão, aspas curvas, euro,
 reticencias. A tabela no PL/SQL e um `CASE` de 27 ramos mais a identidade, e
-nao um vetor de 224 entradas.
+não um vetor de 224 entradas.
 
-A validacao contra MuPDF fechou **217/217**, com duas diferencas conhecidas e
-esperadas: `0xA0` volta como espaco e `0xAD` como hifen, que e o que o Anexo D
+A validação contra MuPDF fechou **217/217**, com duas diferenças conhecidas e
+esperadas: `0xA0` volta como espaço e `0xAD` como hífen, que e o que o Anexo D
 do ISO 32000 manda.
 
 **3. O `ORA-06502` da HU-00 entrou no mesmo conserto.** O `subtype car is
 varchar2(1)` da tabela de larguras guarda um byte; a consulta passou a ser
-feita por `chr(p_winansi_byte(...))`, que devolve o caractere de um so byte
-que a tabela indexa. O `.exists` voltou, para que posicao ausente nao levante
+feita por `chr(p_winansi_byte(...))`, que devolve o caractere de um só byte
+que a tabela indexa. O `.exists` voltou, para que posição ausente não levante
 `NO_DATA_FOUND` de dentro de uma medida.
 
 **Onde esta:** `p_winansi_byte` e `p_texto_pdf` em `src/PL_FPDF.pkb`;
-referencia em `dev/scripts/winansi_reference/`; testes em
+referência em `dev/scripts/winansi_reference/`; testes em
 `dev/tests/test_winansi.sql` e `dev/tests/diag_winansi.sql`.
 
 ---
 
 ## HU-02 — Fonte embutida sem carregar a fonte inteira
 
-**Peso: alto, e o unico item da fila com impacto medido em numero.**
+**Peso: alto, e o único item da fila com impacto medido em número.**
 
 **Como** desenvolvedor que embute uma fonte para ter a tipografia da marca,
-**quero** que so os glifos usados entrem no PDF,
-**para** que o arquivo nao fique 27 vezes maior por causa de uma fonte da qual
+**quero** que só os glifos usados entrem no PDF,
+**para** que o arquivo não fique 27 vezes maior por causa de uma fonte da qual
 uso 106 caracteres.
 
 ### A medida
@@ -299,7 +299,7 @@ uso 106 caracteres.
 `fontTools`, sobre os 106 caracteres distintos que os exemplos desta base de
 fato usam:
 
-| Fonte | Inteira | Subset | Reducao | Dentro do PDF (deflate) |
+| Fonte | Inteira | Subset | Redução | Dentro do PDF (deflate) |
 |-------|--------:|-------:|--------:|------------------------:|
 | DejaVuSans     | 759.720 B | 20.700 B | **97,3%** | 381.835 -> **14.343 B** |
 | LiberationSans | 410.820 B | 24.312 B | **94,1%** | 210.802 -> **15.421 B** |
@@ -309,102 +309,102 @@ soma **382 KB** — a fonte vira 95% do arquivo. Com subset, 14 KB.
 
 ### Casos de uso
 
-1. **Boleto com a fonte da instituicao.** Emissao em lote de milhares por dia:
-   382 KB por boleto sao centenas de MB de rede e de armazenamento que nao
+1. **Boleto com a fonte da instituição.** Emissão em lote de milhares por dia:
+   382 KB por boleto são centenas de MB de rede e de armazenamento que não
    precisavam existir.
 2. **Anexo de e-mail.** Muito servidor corporativo corta anexo em 10 MB. Com a
    fonte inteira, vinte e seis documentos estouram; com subset, mais de
    setecentos.
-3. **Documento com tipografia propria e pouco texto.** Um certificado de uma
-   pagina, com trinta caracteres distintos, carregando 380 KB de fonte.
+3. **Documento com tipografia própria e pouco texto.** Um certificado de uma
+   página, com trinta caracteres distintos, carregando 380 KB de fonte.
 
-### Definicao da logica
+### Definição da lógica
 
-**Passo 1 — nao escrever leitor novo.** O parse das tabelas TrueType ja existe
-nesta base. O subset acrescenta a **poda**; nao comece do zero.
+**Passo 1 — não escrever leitor novo.** O parse das tabelas TrueType já existe
+nesta base. O subset acrescenta a **poda**; não comece do zero.
 
-**Passo 2 — referencia em Python.** Montar o subset com `fontTools`, gravar
+**Passo 2 — referência em Python.** Montar o subset com `fontTools`, gravar
 num PDF, e confirmar com **MuPDF** que os mesmos glifos saem do arquivo
 podado. E o mesmo procedimento do QR Code e do AES: validar contra
 decodificador independente antes da porta.
 
-**Passo 3 — o subset minimo util**, na ordem em que as tabelas dependem umas
+**Passo 3 — o subset mínimo util**, na ordem em que as tabelas dependem umas
 das outras:
 
-1. `glyf` e `loca`: manter so os glifos usados, mais o `.notdef`, que nao pode
-   faltar. Glifo composto referencia outros — **inclua os componentes**, ou o
+1. `glyf` e `loca`: manter só os glifos usados, mais o `.notdef`, que não pode
+   faltar. Glifo composto referência outros — **inclua os componentes**, ou o
    caractere sai vazio.
 2. `cmap`: remapear para os glifos que sobraram.
 3. `hmtx` e `hhea.numberOfHMetrics`: recalcular, porque contam entradas.
 4. `head.checkSumAdjustment`: **regravar**. Leitor rigoroso recusa a fonte
-   com a soma errada, e o sintoma e "a fonte nao carrega", que nao aponta
+   com a soma errada, e o sintoma e "a fonte não carrega", que não aponta
    para aqui.
 
-**Passo 4 — duas armadilhas que esta base ja pagou noutro contexto.**
+**Passo 4 — duas armadilhas que esta base já pagou noutro contexto.**
 
 - `checkSumAdjustment` e conta de **32 bits sem sinal** e estoura
-  `PLS_INTEGER` (`ORA-01426`, erro de execucao, sem nome de variavel). Faca em
+  `PLS_INTEGER` (`ORA-01426`, erro de execução, sem nome de variável). Faça em
   `NUMBER`. Foi exatamente assim com o Adler-32 do deflate.
-- Corte de tabela e binario: trabalhe em **RAW**, nunca VARCHAR2.
+- Corte de tabela e binário: trabalhe em **RAW**, nunca VARCHAR2.
 
 **Passo 5 — saber quais glifos entram.** Exige conhecer o texto **antes** de
-fechar o documento. Como o `Output` desta base ja monta no fim, da para
-acumular um conjunto de caracteres por fonte durante a escrita e podar so na
-hora de emitir o `/FontFile2`. Nao exija que o chamador declare os glifos —
-isso e o tipo de API que ninguem usa certo.
+fechar o documento. Como o `Output` desta base já monta no fim, da para
+acumular um conjunto de caracteres por fonte durante a escrita e podar só na
+hora de emitir o `/FontFile2`. Não exija que o chamador declare os glifos —
+isso e o tipo de API que ninguém usa certo.
 
 **Passo 6 — poder desligar.** Um `SetFontSubset(FALSE)` para o caso raro de
-alguem precisar da fonte inteira (formulario preenchivel por outro programa,
-por exemplo). Padrao ligado.
+alguém precisar da fonte inteira (formulário preenchivel por outro programa,
+por exemplo). Padrão ligado.
 
-### Criterio de aceite
+### Critério de aceite
 
-- [ ] Referencia Python validada contra MuPDF
+- [ ] Referência Python validada contra MuPDF
 - [ ] Glifo composto traz os componentes (teste com caractere acentuado de
-      fonte que use composicao)
+      fonte que use composição)
 - [ ] `checkSumAdjustment` recalculado, em `NUMBER`
-- [ ] Texto extraido do PDF com subset **identico** ao sem subset
-- [ ] Reducao na ordem medida acima, verificada no teste
+- [ ] Texto extraído do PDF com subset **idêntico** ao sem subset
+- [ ] Redução na ordem medida acima, verificada no teste
 - [ ] `SetFontSubset` documentado
 
 ### Como testar
 
-- Mesmo documento com e sem subset: texto extraido identico, arquivo
+- Mesmo documento com e sem subset: texto extraído idêntico, arquivo
   encolhido na ordem esperada
 - Um caractere acentuado de fonte com glifo composto, conferido visualmente e
-  por extracao
-- Abrir em mais de um leitor: o `checkSumAdjustment` errado so aparece nos
+  por extração
+- Abrir em mais de um leitor: o `checkSumAdjustment` errado só aparece nos
   rigorosos
 
-**Estimativa:** 5 a 8 dias. E a mais tecnica da fila.
+**Estimativa:** 5 a 8 dias. E a mais técnica da fila.
 
 ---
 
-## HU-03 — Sumario e marcadores de navegacao
+## HU-03 — Sumario e marcadores de navegação
 
-**Peso: medio-alto.** 9 casos na fonte A, e a unica estrutura da fila que o
-PDF resolve com dicionario simples — sem binario, sem codificacao.
+**Peso: médio-alto.** 9 casos na fonte A, e a única estrutura da fila que o
+PDF resolve com dicionário simples — sem binário, sem codificação.
 
-**Como** leitor de um relatorio de oitenta paginas,
+**Como** leitor de um relatório de oitenta páginas,
 **quero** o painel de marcadores do leitor de PDF preenchido,
-**para** ir direto ao capitulo em vez de rolar procurando.
+**para** ir direto ao capítulo em vez de rolar procurando.
 
 ### Casos de uso
 
-1. **Relatorio gerencial longo.** Capitulos e secoes no painel lateral.
-2. **Manual ou contrato.** Clausulas como marcadores de segundo nivel.
-3. **Lote consolidado.** Varios documentos mesclados num PDF so, com um
-   marcador por documento — encaixa no `MergePDFs` que ja existe.
+1. **Relatório gerencial longo.** Capítulos e seções no painel lateral.
+2. **Manual ou contrato.** Cláusulas como marcadores de segundo nível.
+3. **Lote consolidado.** Vários documentos mesclados num PDF só, com um
+   marcador por documento — encaixa no `MergePDFs` que já existe.
 
-### Definicao da logica
+### Definição da lógica
 
 **Passo 1 — a estrutura.** `/Outlines` do ISO 32000 e uma **lista duplamente
-encadeada** de dicionarios. Cada item tem `/Title`, `/Parent`, `/Prev`,
-`/Next`, `/First`, `/Last`, `/Count` e um `/Dest` apontando para a pagina. O
-catalogo ganha `/Outlines` e, se quiser que o leitor abra com o painel
-visivel, `/PageMode /UseOutlines`.
+encadeada** de dicionários. Cada item tem `/Title`, `/Parent`, `/Prev`,
+`/Next`, `/First`, `/Last`, `/Count` e um `/Dest` apontando para a página. O
+catálogo ganha `/Outlines` e, se quiser que o leitor abra com o painel
+visível, `/PageMode /UseOutlines`.
 
-**Passo 2 — a API**, no estilo que a base ja usa:
+**Passo 2 — a API**, no estilo que a base já usa:
 
 ```
 AddBookmark(p_titulo  in varchar2,
@@ -412,94 +412,94 @@ AddBookmark(p_titulo  in varchar2,
             p_pagina  in pls_integer default null)   -- null = pagina corrente
 ```
 
-**Passo 3 — encadear so na emissao.** Guarde os itens numa tabela indexada
+**Passo 3 — encadear só na emissão.** Guarde os itens numa tabela indexada
 durante a escrita e monte `/Prev`, `/Next`, `/First`, `/Last` e `/Count` **no
-fim**, quando todos os destinos ja sao conhecidos. Tentar encadear na hora da
-chamada obriga a reescrever objeto ja emitido.
+fim**, quando todos os destinos já são conhecidos. Tentar encadear na hora da
+chamada obriga a reescrever objeto já emitido.
 
-**Passo 4 — o acento do titulo.** `/Title` e string PDF e sofre do **mesmo**
+**Passo 4 — o acento do título.** `/Title` e string PDF e sofre do **mesmo**
 defeito da HU-01: ou converte para WinAnsi, ou emite em UTF-16BE com BOM. Por
 isso esta HU vem **depois** da HU-01 — feita antes, nasce com o mesmo defeito
 que a outra esta consertando.
 
-Com a HU-01 concluida a dependencia esta paga, e o caminho ficou mais curto do
-que se previa: o `p_texto_pdf` ja converte e escapa qualquer string que va para
-o arquivo, entao o `/Title` do marcador passa por ele e nao precisa de
-tratamento proprio.
+Com a HU-01 concluída a dependência esta paga, e o caminho ficou mais curto do
+que se previa: o `p_texto_pdf` já converte e escapa qualquer string que vá para
+o arquivo, então o `/Title` do marcador passa por ele e não precisa de
+tratamento próprio.
 
-**Passo 5 — o sumario visivel e outro problema, e o mais chato.** A pagina com
-os titulos e os numeros exige saber o numero da pagina de cada capitulo, que
-so se sabe depois de paginar tudo. O caminho conhecido e o que o `{nb}` desta
-base ja usa: escrever um marcador no lugar e substituir na emissao. **Sugestao
-de escopo:** entregar os marcadores primeiro (que sao baratos e ja resolvem
-navegacao) e tratar o sumario visivel como historia separada.
+**Passo 5 — o sumario visível e outro problema, e o mais chato.** A página com
+os títulos e os números exige saber o número da página de cada capítulo, que
+só se sabe depois de paginar tudo. O caminho conhecido e o que o `{nb}` desta
+base já usa: escrever um marcador no lugar e substituir na emissão. **Sugestão
+de escopo:** entregar os marcadores primeiro (que são baratos e já resolvem
+navegação) e tratar o sumario visível como história separada.
 
-### Criterio de aceite
+### Critério de aceite
 
-- [ ] Tres niveis de hierarquia, encadeamento correto nos dois sentidos
-- [ ] `/Dest` aponta para a pagina certa, conferido reabrindo o arquivo
+- [ ] Três níveis de hierarquia, encadeamento correto nos dois sentidos
+- [ ] `/Dest` aponta para a página certa, conferido reabrindo o arquivo
 - [ ] `/Count` com o sinal certo (negativo = no fechado)
-- [ ] Titulo com acento correto (depende da HU-01)
-- [ ] Documento sem nenhum marcador continua sem `/Outlines` no catalogo
-- [ ] Marcador sobrevive ao `MergePDFs`, ou a limitacao esta documentada
+- [ ] Título com acento correto (depende da HU-01)
+- [ ] Documento sem nenhum marcador continua sem `/Outlines` no catálogo
+- [ ] Marcador sobrevive ao `MergePDFs`, ou a limitação esta documentada
 
 ### Como testar
 
-Gerar com tres niveis, reabrir, conferir a arvore e o destino de cada item.
+Gerar com três níveis, reabrir, conferir a árvore e o destino de cada item.
 Um caso com zero marcadores confirmando que nada e emitido a toa.
 
-**Estimativa:** 3 a 4 dias para os marcadores. O sumario visivel e outra
-historia, de tamanho parecido.
+**Estimativa:** 3 a 4 dias para os marcadores. O sumario visível e outra
+história, de tamanho parecido.
 
 ---
 
 ## HU-04 — PDF marcado (tagged / PDF-UA) — fora da fila
 
-**Nao esta priorizada.** Registrada para nao se perder, e para que a proxima
-pessoa a levantar o assunto encontre a analise em vez de refaze-la.
+**Não esta priorizada.** Registrada para não se perder, e para que a próxima
+pessoa a levantar o assunto encontre a análise em vez de refazê-la.
 
-**Por que saiu:** era o terceiro item por argumento de licitacao publica. A
-medicao o poe em **1 caso de 174** na fonte A — penultimo, empatado com o
-ultimo. E a norma nao sustentou o argumento: a Lei Brasileira de Inclusao
-(art. 63), o eMAG e o Decreto 5.296 obrigam acessibilidade de **sitio web**;
-nao se localizou exigencia de PDF/UA em documento de licitacao.
+**Por que saiu:** era o terceiro item por argumento de licitação pública. A
+medição o põe em **1 caso de 174** na fonte A — penúltimo, empatado com o
+ultimo. E a norma não sustentou o argumento: a Lei Brasileira de Inclusão
+(art. 63), o eMAG e o Decreto 5.296 obrigam acessibilidade de **sítio web**;
+não se localizou exigência de PDF/UA em documento de licitação.
 
-**O que seria preciso**, para quando houver demanda: arvore de estrutura
-(`/StructTreeRoot`), marcacao do conteudo com `BDC`/`EMC` por bloco, `/Lang`,
+**O que seria preciso**, para quando houver demanda: árvore de estrutura
+(`/StructTreeRoot`), marcação do conteúdo com `BDC`/`EMC` por bloco, `/Lang`,
 `/MarkInfo`, ordem de leitura explicita e texto alternativo de imagem. E
-trabalho grande e **espalhado por todo o gerador de conteudo** — nao e um
-modulo que se acrescenta ao lado, e essa e a diferenca entre ele e os outros
-tres.
+trabalho grande e **espalhado por todo o gerador de conteúdo** — não e um
+módulo que se acrescenta ao lado, e essa e a diferença entre ele e os outros
+três.
 
-**Gatilho para reavaliar:** exigencia contratual concreta, ou norma que se
+**Gatilho para reavaliar:** exigência contratual concreta, ou norma que se
 possa citar. Nesse caso ele sobe direto, porque nenhuma biblioteca PL/SQL
 livre faz isso — deixa de ser paridade e vira diferencial.
 
 ---
 
-## HU-05 — Metade da API publica nao tem chamador
+## HU-05 — Metade da API pública não tem chamador
 
-**Achado da propria medicao, nao veio de fora.**
+**Achado da própria medição, não veio de fora.**
 
-69 das 138 APIs publicas sao exercitadas por `examples/` e `dev/tests/`. As
-outras 69 compilam, e ninguem as chama neste repositorio.
+69 das 138 APIs públicas são exercitadas por `examples/` e `dev/tests/`. As
+outras 69 compilam, e ninguém as chama neste repositório.
 
-Nao e o mesmo que estarem quebradas. Mas e **exatamente a situacao** em que
+Não e o mesmo que estarem quebradas. Mas e **exatamente a situação** em que
 `AddWatermark` passou meses marcado como pronto sem desenhar nada: sem
-chamador, nao ha como saber.
+chamador, não há como saber.
 
 **Como** mantenedor,
-**quero** saber quais APIs publicas nao tem nenhum chamador,
+**quero** saber quais APIs públicas não tem nenhum chamador,
 **para** decidir entre testar, documentar como experimental, ou remover.
 
-**Logica:** um lint que cruze os identificadores das specs com as chamadas em
-`examples/` e `dev/tests/`, e liste o que sobrar. A base ja tem
+**Lógica:** um lint que cruze os identificadores das specs com as chamadas em
+`examples/` e `dev/tests/`, e liste o que sobrar. A base já tem
 `check_dead_code.py`, que resolve o problema vizinho — provavelmente e
-extensao dele, nao script novo.
+extensão dele, não script novo.
 
-**Criterio de aceite:** a lista existe, e cada item nela foi classificado em
-testar / experimental / remover. Nao e preciso testar todos de uma vez; e
-preciso **saber quais sao**.
+**Critério de aceite:** a lista existe, e cada item nela foi classificado em
+testar / experimental / remover. Não e preciso testar todos de uma vez; e
+preciso **saber quais são**.
 
 ### O que a lista produziu, em setembro/2026
 
@@ -507,24 +507,24 @@ A lista saiu, e a primeira API dela que ganhou teste devolveu **quatro
 defeitos** no mesmo subprograma -- o `Link`, um por rodada:
 
 1. o `/Dest` do link interno nunca foi escrito, e o `/Annot` saia com o
-   dicionario ABERTO: arquivo malformado, nao apenas link que nao navega;
-2. o `Link` estendia a colecao ate a pagina corrente e deixava entrada vazia
+   dicionário ABERTO: arquivo malformado, não apenas link que não navega;
+2. o `Link` estendia a coleção até a página corrente e deixava entrada vazia
    nas anteriores, que ganhavam `/Annots` quebrado sem terem pedido link;
-3. o `AddLink` levantava `ORA-06531` na linha da propria declaracao -- a
-   colecao `links` e nested table e ninguem a inicializa. **Nunca funcionou**;
-4. o `Link` media o quanto estender pelo `.last`, que e NULL em colecao vazia,
-   entao o primeiro `Link` do SEGUNDO documento da sessao estourava com
+3. o `AddLink` levantava `ORA-06531` na linha da própria declaração -- a
+   coleção `links` e nested table e ninguém a inicializa. **Nunca funcionou**;
+4. o `Link` media o quanto estender pelo `.last`, que e NULL em coleção vazia,
+   então o primeiro `Link` do SEGUNDO documento da sessão estourava com
    `ORA-06533`.
 
-Nenhum deles aparecia em revisao de codigo: os quatro foram achados
-**escrevendo a chamada**. Vale como medida do que "compila e ninguem chama"
+Nenhum deles aparecia em revisão de código: os quatro foram achados
+**escrevendo a chamada**. Vale como medida do que "compila e ninguém chama"
 esconde.
 
 Depois disso, `dev/tests/test_fontes_truetype.sql` escreveu a primeira chamada
-de tudo o que nao depende de recurso externo. **De 48 sem chamador para 6**, e
+de tudo o que não depende de recurso externo. **De 48 sem chamador para 6**, e
 os 6 que sobram precisam de DIRECTORY (`LoadTTFFromFile`, `OutputFile`,
 `Output`) ou de ACL de rede (`Image` por URL, `getImageFromUrl`), fora o
-`AddFont`, que espera arquivo de metricas.
+`AddFont`, que espera arquivo de métricas.
 
 **Estimativa:** 2 dias para o levantamento. O que fazer com o resultado e
-decisao, nao implementacao.
+decisão, não implementação.

@@ -423,7 +423,7 @@ BEGIN
       falhou('Error: ' || SQLERRM);
   END;
 
-  -- TEST 3.5: o conteudo sai realmente cifrado
+  -- TEST 3.5: o conteúdo sai realmente cifrado
   caso('EncryptPDF - conteudo deixa de aparecer em claro');
   DECLARE
     co_marca CONSTANT VARCHAR2(60) := 'FraseSecretaParaConferirCifragem';
@@ -444,7 +444,7 @@ BEGIN
     l_claro := PL_FPDF.OutputBlob();
     PL_FPDF.Reset;
 
-    -- pre-condicao: sem cifrar, a marca ESTA legivel nos bytes. Sem isto o
+    -- pre-condicao: sem cifrar, a marca ESTA legível nos bytes. Sem isto o
     -- teste passaria por engano se o texto nunca chegasse ao arquivo.
     IF NOT contem(l_claro, co_marca) THEN
       l_erros := l_erros + 1;
@@ -477,7 +477,7 @@ BEGIN
       falhou('Error: ' || SQLERRM);
   END;
 
-  -- TEST 3.5b: AES cifra de verdade, nas duas revisoes
+  -- TEST 3.5b: AES cifra de verdade, nas duas revisões
   FOR r IN (SELECT 'AES-128' m, 'AESV2' cfm, 4 v FROM dual
             UNION ALL
             SELECT 'AES-256', 'AESV3', 5 FROM dual) LOOP
@@ -505,7 +505,7 @@ BEGIN
         falhou(r.m || ': o texto continua em claro nos bytes');
       ELSIF DBMS_LOB.INSTR(l_cif,
               UTL_RAW.CAST_TO_RAW('/CFM /' || r.cfm), 1, 1) = 0 THEN
-        -- sem /CF, /StmF e /StrF o leitor supoe /Identity e mostra o conteudo
+        -- sem /CF, /StmF e /StrF o leitor supõe /Identity e mostra o conteúdo
         -- cifrado como se fosse texto
         falhou(r.m || ': /CFM /' || r.cfm || ' nao foi declarado');
       ELSIF DBMS_LOB.INSTR(l_cif, UTL_RAW.CAST_TO_RAW('/StmF /StdCF'), 1, 1) = 0
@@ -525,7 +525,7 @@ BEGIN
     END;
   END LOOP;
 
-  -- TEST 3.5c: ida e volta do AES, nas duas revisoes
+  -- TEST 3.5c: ida e volta do AES, nas duas revisões
   FOR r IN (SELECT 'AES-128' m FROM dual UNION ALL SELECT 'AES-256' FROM dual)
   LOOP
     caso('EncryptPDF + DecryptPDF - ida e volta em ' || r.m);
@@ -560,8 +560,8 @@ BEGIN
         falhou(r.m || ' - Error: ' || SQLERRM);
     END;
 
-    -- a senha de proprietario tambem abre, e por outro caminho: no R6 ela usa
-    -- os 48 bytes do /U no hash e desembrulha a chave de /OE, nao de /UE
+    -- a senha de proprietário também abre, e por outro caminho: no R6 ela usa
+    -- os 48 bytes do /U no hash e desembrulha a chave de /OE, não de /UE
     caso('DecryptPDF - senha de proprietario em ' || r.m);
     DECLARE
       l_claro BLOB;
@@ -591,7 +591,7 @@ BEGIN
         falhou(r.m || ' (proprietario) - Error: ' || SQLERRM);
     END;
 
-    -- senha errada tem de ser RECUSADA, e nao devolver lixo
+    -- senha errada tem de ser RECUSADA, e não devolver lixo
     caso('DecryptPDF - senha errada em ' || r.m);
     DECLARE
       l_claro BLOB;
@@ -1079,8 +1079,8 @@ BEGIN
   --------------------------------------------------------------------------------
   -- SECTION 7: Loading an Encrypted PDF
   --
-  -- O LoadPDF le a estrutura e nao decifra os streams. Antes ele aceitava o PDF
-  -- cifrado sem avisar, e o OutputModifiedPDF saia com as paginas EM BRANCO --
+  -- O LoadPDF lê a estrutura e não decifra os streams. Antes ele aceitava o PDF
+  -- cifrado sem avisar, e o OutputModifiedPDF saia com as páginas EM BRANCO --
   -- medido no 26ai com AES-256 e RC4-128. Agora recusa com -20867.
   --------------------------------------------------------------------------------
   secao('SECTION 7: Loading an Encrypted PDF');
@@ -1114,7 +1114,7 @@ BEGIN
       END IF;
   END;
 
-  -- TEST 7.3: a recusa nao deixa o documento anterior misturado com o recusado
+  -- TEST 7.3: a recusa não deixa o documento anterior misturado com o recusado
   caso('After the refusal, nothing is left half-loaded');
   BEGIN
     PL_FPDF.LoadPDF(generate_test_pdf());
@@ -1137,7 +1137,7 @@ BEGIN
       END IF;
   END;
 
-  -- TEST 7.4: LoadPDFWithID recusa e nao registra o ID
+  -- TEST 7.4: LoadPDFWithID recusa e não registra o ID
   caso('LoadPDFWithID refuses an encrypted PDF and does not register the ID');
   BEGIN
     BEGIN

@@ -1,39 +1,39 @@
 --------------------------------------------------------------------------------
 -- PL_FPDF - Sublinhado
 --
--- O `p_dounderline` nao tinha um so chamador em teste nem em exemplo, e desenha
--- em TODO documento que use estilo 'U'. E o caminho em que "nao levantou" prova
--- menos que em qualquer outro: o sublinhado e um retangulo preenchido, entao um
--- erro de largura ou de profundidade nao levanta nada -- sai um risco no lugar
--- errado, e so quem olha o PDF percebe.
+-- O `p_dounderline` não tinha um só chamador em teste nem em exemplo, e desenha
+-- em TODO documento que use estilo 'U'. E o caminho em que "não levantou" prova
+-- menos que em qualquer outro: o sublinhado e um retângulo preenchido, então um
+-- erro de largura ou de profundidade não levanta nada -- sai um risco no lugar
+-- errado, e só quem olha o PDF percebe.
 --
 -- Afere-se pelo operador que sai no fluxo: `x y w h re f`. O que se confere:
 --
---   1. com 'U' sai o retangulo, sem 'U' nao sai;
---   2. a LARGURA e a do texto, medida pela propria fonte (GetStringWidth
---      vezes o fator de escala), e nao um chute;
---   3. a profundidade e NEGATIVA e menor que o corpo -- o retangulo desce da
---      linha de base, e nao sobe por cima da letra;
---   4. em texto JUSTIFICADO o sublinhado acompanha o espacamento entre
---      palavras. E o unico caminho em que o `ws` e diferente de zero, e o
---      termo que o usa (`ws * numero de espacos`) nao existia em teste nenhum;
---   5. texto nulo nao desenha sublinhado nenhum.
+--   1. com 'U' sai o retângulo, sem 'U' não sai;
+--   2. a LARGURA e a do texto, medida pela própria fonte (GetStringWidth
+--      vezes o fator de escala), e não um chute;
+--   3. a profundidade e NEGATIVA e menor que o corpo -- o retângulo desce da
+--      linha de base, e não sobe por cima da letra;
+--   4. em texto JUSTIFICADO o sublinhado acompanha o espaçamento entre
+--      palavras. E o único caminho em que o `ws` e diferente de zero, e o
+--      termo que o usa (`ws * número de espacos`) não existia em teste nenhum;
+--   5. texto nulo não desenha sublinhado nenhum.
 --
--- A comparacao do caso 4 e entre DOIS documentos com a mesma largura, a mesma
--- fonte e o mesmo texto -- um justificado e outro nao. Assim a primeira linha
--- quebra igual nos dois, e a diferenca de largura so pode vir do `ws`. Nenhuma
+-- A comparação do caso 4 e entre DOIS documentos com a mesma largura, a mesma
+-- fonte e o mesmo texto -- um justificado e outro não. Assim a primeira linha
+-- quebra igual nos dois, e a diferença de largura só pode vir do `ws`. Nenhuma
 -- constante privada do package entra na conta.
 --
 -- NADA aqui depende de coisa fora do schema. Sem V$, sem DBA, sem rede.
 --
--- Roda na SQL Window do PL/SQL Developer (F8). So SQL e PL/SQL.
+-- Roda na SQL Window do PL/SQL Developer (F8). Só SQL e PL/SQL.
 --------------------------------------------------------------------------------
 
 DECLARE
-  -- TODAS as variaveis vem ANTES do primeiro subprograma local. Num DECLARE,
-  -- depois do corpo do primeiro subprograma nao se declara mais nada, e o
-  -- ORA-06550 aponta a linha da DECLARACAO -- nao a do subprograma que a
-  -- invalidou --, entao se procura no lugar errado.
+  -- TODAS as variáveis vem ANTES do primeiro subprograma local. Num DECLARE,
+  -- depois do corpo do primeiro subprograma não se declara mais nada, e o
+  -- ORA-06550 aponta a linha da DECLARAÇÃO -- não a do subprograma que a
+  -- invalidou --, então se procura no lugar errado.
   l_total  PLS_INTEGER := 0;
   l_ok     PLS_INTEGER := 0;
   l_falhas PLS_INTEGER := 0;
@@ -81,13 +81,13 @@ DECLARE
     RETURN DBMS_LOB.INSTR(p_blob, UTL_RAW.CAST_TO_RAW(p_txt), 1, 1);
   END acha;
 
-  -- O n-esimo numero do operador `x y w h re f`, contando da esquerda.
+  -- O n-esimo número do operador `x y w h re f`, contando da esquerda.
   --
-  -- Le a janela de bytes ANTES do ' re f' e devolve o numero pedido. A leitura
-  -- e em RAW e a conversao e pelo UTL_RAW, que nao mexe no charset: montar
-  -- isso com SUBSTR sobre o BLOB traria byte do meio de caractere e nao volta
+  -- Lê a janela de bytes ANTES do ' re f' e devolve o número pedido. A leitura
+  -- e em RAW e a conversão e pelo UTL_RAW, que não mexe no charset: montar
+  -- isso com SUBSTR sobre o BLOB traria byte do meio de caractere e não volta
   -- como ele. O separador decimal vai declarado no TO_NUMBER porque o fluxo do
-  -- PDF usa ponto, e a sessao pode estar em virgula.
+  -- PDF usa ponto, e a sessão pode estar em vírgula.
   FUNCTION num_do_retangulo(p_pdf IN BLOB, p_qual IN PLS_INTEGER)
     RETURN NUMBER IS
     l_p    PLS_INTEGER;
@@ -104,15 +104,15 @@ DECLARE
     l_ini := GREATEST(l_p - 80, 1);
     l_win := UTL_RAW.CAST_TO_VARCHAR2(
                DBMS_LOB.SUBSTR(p_pdf, l_p - l_ini, l_ini));
-    -- Os quatro ultimos numeros da janela sao o x, o y, a largura e a
+    -- Os quatro últimos números da janela são o x, o y, a largura e a
     -- profundidade, nessa ordem.
     --
     -- O digito antes do ponto e OPCIONAL, e isto custou a primeira rodada: o
-    -- `tochar` do package formata com a mascara `TM9`, que NAO escreve o zero
-    -- da parte inteira. A profundidade do sublinhado, que e uma fracao de
-    -- ponto, sai como `-.72` -- valido no PDF, e fora de um padrao que exija
-    -- digito antes do ponto. Exigindo-o, o quarto numero nao casava e a
-    -- expressao inteira falhava, sem dizer por que.
+    -- `tochar` do package formata com a máscara `TM9`, que NÃO escreve o zero
+    -- da parte inteira. A profundidade do sublinhado, que e uma fração de
+    -- ponto, sai como `-.72` -- valido no PDF, e fora de um padrão que exija
+    -- digito antes do ponto. Exigindo-o, o quarto número não casava e a
+    -- expressão inteira falhava, sem dizer por que.
     l_str := REGEXP_SUBSTR(
                l_win,
                '(-?[0-9]*\.?[0-9]+) +(-?[0-9]*\.?[0-9]+) +'
@@ -121,8 +121,8 @@ DECLARE
     IF l_str IS NULL THEN
       RETURN NULL;
     END IF;
-    -- O sinal e a parte inteira vao na mao, e nao por mascara: `TO_NUMBER`
-    -- com mascara que declare o sinal exige que ele ESTEJA la, e o x e a
+    -- O sinal e a parte inteira vão na mão, e não por máscara: `TO_NUMBER`
+    -- com mascara que declare o sinal exige que ele ESTEJA lá, e o x e a
     -- largura vem sem sinal. Tratado aqui, os dois formatos entram.
     l_neg := SUBSTR(l_str, 1, 1) = '-';
     l_str := LTRIM(l_str, '-');
@@ -149,7 +149,7 @@ BEGIN
   --------------------------------------------------------------------------
   caso('O estilo U desenha o retangulo, e sem ele nao sai nada');
   --------------------------------------------------------------------------
-  -- A celula vai SEM borda e SEM preenchimento de proposito: assim o unico
+  -- A célula vai SEM borda e SEM preenchimento de propósito: assim o único
   -- `re f` que pode existir no fluxo e o do sublinhado.
   novo_doc('');
   PL_FPDF.Cell(80, 8, 'sem sublinhado', '0', 1, 'L');
@@ -198,10 +198,10 @@ BEGIN
   --------------------------------------------------------------------------
   caso('A profundidade desce da linha de base, e nao cobre a letra');
   --------------------------------------------------------------------------
-  -- O quarto numero e a altura do retangulo. Ela e negativa porque o
+  -- O quarto número e a altura do retângulo. Ela e negativa porque o
   -- sublinhado se desenha PARA BAIXO da linha de base; positiva, o risco
   -- sairia por cima do texto. E tem de ser menor que o corpo da fonte --
-  -- uma altura da ordem do corpo seria uma tarja, nao um sublinhado.
+  -- uma altura da ordem do corpo seria uma tarja, não um sublinhado.
   IF l_larg IS NULL THEN
     pulou('sem retangulo no caso anterior, nao ha o que medir aqui');
   ELSE
@@ -225,8 +225,8 @@ BEGIN
   --------------------------------------------------------------------------
   -- Dois documentos, mesma largura de coluna, mesma fonte, mesmo texto: a
   -- primeira linha quebra no mesmo ponto nos dois. No justificado o `ws`
-  -- afasta as palavras, e o sublinhado tem de acompanhar -- se nao
-  -- acompanhasse, o risco terminaria antes da ultima palavra da linha.
+  -- afasta as palavras, e o sublinhado tem de acompanhar -- se não
+  -- acompanhasse, o risco terminaria antes da última palavra da linha.
   novo_doc('U');
   l_esp := PL_FPDF.MultiCell(60, 6, l_frase, '0', 'L');
   l_pdf := PL_FPDF.OutputBlob;
@@ -254,9 +254,9 @@ BEGIN
   --------------------------------------------------------------------------
   caso('Texto nulo nao desenha sublinhado');
   --------------------------------------------------------------------------
-  -- A celula vazia existe para fechar tabela e reservar espaco, e e comum.
+  -- A célula vazia existe para fechar tabela e reservar espaço, e e comum.
   -- Um sublinhado de largura zero -- ou pior, de largura indefinida -- num
-  -- documento inteiro de celulas vazias nao levanta erro nenhum.
+  -- documento inteiro de células vazias não levanta erro nenhum.
   novo_doc('U');
   PL_FPDF.Cell(80, 8, NULL, '0', 1, 'L');
   l_pdf := PL_FPDF.OutputBlob;

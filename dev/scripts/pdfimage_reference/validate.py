@@ -281,7 +281,7 @@ def main():
     check(img.tobytes() == bytes(pixels),
           'o Pillow lê o fixture entrelaçado com os pixels certos')
 
-    # 2. o desentrelacar concorda com o Pillow, que é decodificador independente
+    # 2. o desentrelaçar concorda com o Pillow, que é decodificador independente
     cru = zlib.decompress(b''.join(
         c for t, c in __import__('pdfimage_reference').blocos_png(entre)
         if t == b'IDAT'))

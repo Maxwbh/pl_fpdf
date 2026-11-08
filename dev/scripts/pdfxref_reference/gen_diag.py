@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Gera `tests/diag_xrefstm.sql` a partir dos mesmos construtores que a referência
-valida.
+válida.
 
 Por que gerado
 --------------

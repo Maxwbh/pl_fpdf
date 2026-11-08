@@ -47,8 +47,8 @@ def do_repo(*partes):
 
 
 def main():
-    # Todos os workflows, e nao so o ci.yml: a verificacao de links externos
-    # roda num workflow proprio, semanal, e continua sendo rede que a tabela
+    # Todos os workflows, e não só o ci.yml: a verificação de links externos
+    # roda num workflow próprio, semanal, e continua sendo rede que a tabela
     # tem de registrar.
     ci = ''.join(io.open(w, encoding='utf-8').read() for w in sorted(
         glob.glob(do_repo('.github', 'workflows', '*.yml'))))

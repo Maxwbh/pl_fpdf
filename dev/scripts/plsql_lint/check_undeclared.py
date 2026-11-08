@@ -76,20 +76,20 @@ NATIVAS = {
     'inline', 'udf', 'deterministic', 'parallel_enable', 'result_cache',
 }
 
-# [ \t]* e nao \s*: com re.M o \s inclui a quebra de linha, e uma
-# correspondencia iniciada linhas acima engole a declaracao seguinte. Foi o
-# que escondeu 'l_ord tv32k;' na primeira versao deste script.
+# [ \t]* e não \s*: com re.M o \s inclui a quebra de linha, e uma
+# correspondência iniciada linhas acima engole a declaração seguinte. Foi o
+# que escondeu 'l_ord tv32k;' na primeira versão deste script.
 DEFINE_SUB = re.compile(
     r'^[ \t]*(?:procedure|function)\s+([a-z_][a-z0-9_]*)', re.I | re.M)
 # declarações: 'nome tipo;' / 'nome constant tipo := ...' / 'nome tipo := ...'
-# Nao basta ancorar no inicio da linha: duas declaracoes cabem numa
-# ('g_inf_cl_c tpi;  g_inf_cl_s tpi;') e uma pode vir logo apos DECLARE
-# ('declare l_ng tqr;'). Aceita tambem depois de ';' e de 'declare'.
+# Não basta ancorar no início da linha: duas declarações cabem numa
+# ('g_inf_cl_c tpi;  g_inf_cl_s tpi;') e uma pode vir logo após DECLARE
+# ('declare l_ng tqr;'). Aceita também depois de ';' e de 'declare'.
 DEFINE_VAR = re.compile(
     r'(?:^|;)[ \t]*([a-z_][a-z0-9_]*)[ \t]+'
     r'(?:constant[ \t]+)?[a-z_][a-z0-9_.%]*',
     re.I | re.M)
-# 'declare l_ng tqr;' precisa de regra propria: na de cima o ^ vence, captura
+# 'declare l_ng tqr;' precisa de regra própria: na de cima o ^ vence, captura
 # 'declare' como se fosse o nome e engole 'l_ng' como se fosse o tipo.
 DEFINE_DECLARE = re.compile(r'\bdeclare[ \t]+([a-z_][a-z0-9_]*)[ \t]+[a-z_]',
                             re.I)

@@ -104,10 +104,10 @@ def ler_api():
         sig.setdefault(a['name'].lower(), []).append(a)
     for a in doc:
         cands = sig.get(a['nome'].lower(), [])
-        # casa pelos nomes da ASSINATURA, nao pelos do @param: a sobrecarga
-        # compartilha o bloco (e portanto os @param) mas tem nomes proprios --
+        # casa pelos nomes da ASSINATURA, não pelos do @param: a sobrecarga
+        # compartilha o bloco (e portanto os @param) mas tem nomes próprios --
         # o MultiCell procedure e pwidth/ptext onde a function e pw/ptxt. Pelo
-        # @param as duas casavam com a mesma assinatura, e a pagina mostrava a
+        # @param as duas casavam com a mesma assinatura, e a página mostrava a
         # primeira duas vezes.
         nomes = [p.lower() for p in a['assinatura_params']]
         a['assinatura'] = next(
@@ -219,7 +219,7 @@ def secao_md(a, sobrecargas=(), rot=gerar_html.ROTULOS_PT):
 
 def agrupar(api):
     """{nome: [entrada principal, sobrecargas...]} -- a sobrecarga compartilha
-    o texto do bloco, mas tem assinatura propria e precisa aparecer."""
+    o texto do bloco, mas tem assinatura própria e precisa aparecer."""
     d = {}
     for a in api:
         d.setdefault(a['nome'], []).append(a)
@@ -229,9 +229,9 @@ def agrupar(api):
 def sobrecarga_compativel(base, outra):
     """A sobrecarga pode reusar o texto dos @param da principal?
 
-    So quando a aridade e os tipos batem posicao a posicao. O MultiCell tem
+    Só quando a aridade e os tipos batem posição a posição. O MultiCell tem
     duas assinaturas com os MESMOS tipos e nomes diferentes (pw/pwidth,
-    ptxt/ptext), e ai o texto vale para as duas. Se um dia surgir sobrecarga
+    ptxt/ptext), e aí o texto vale para as duas. Se um dia surgir sobrecarga
     com aridade diferente, ela sai sem tabela em vez de sair com a tabela
     errada.
     """
@@ -246,9 +246,9 @@ def conferir_meta(api):
     nos_grupos = {x for _, v in meta.CATEGORIAS for x in v}
     fora = set(meta.FORA_DA_REFERENCIA)
     faltam = [n for n in nos_grupos if n not in porNome]
-    # API que nao esta em grupo nenhum E nao foi declarada fora: alguem tem de
-    # decidir. Sem isto ela sumiria da pagina em silencio, que foi como as 18
-    # do PL_FPDF_UTIL entraram sem ninguem perguntar para quem a pagina e.
+    # API que não esta em grupo nenhum E não foi declarada fora: alguém tem de
+    # decidir. Sem isto ela sumiria da página em silêncio, que foi como as 18
+    # do PL_FPDF_UTIL entraram sem ninguém perguntar para quem a página e.
     sobram = [n for n in porNome if n not in nos_grupos and n not in fora]
     ambos = sorted(nos_grupos & fora)
     if faltam or sobram or ambos:
@@ -318,11 +318,11 @@ def gerar_md(api, rot=gerar_html.ROTULOS_PT, cabeca=CABECA_PT,
 def main():
     api = ler_api()
     conferir_meta(api)
-    # o que a PAGINA tem, nao o que a spec tem: as APIs declaradas em
-    # FORA_DA_REFERENCIA sao lidas e nao entram
+    # o que a PÁGINA tem, não o que a spec tem: as APIs declaradas em
+    # FORA_DA_REFERENCIA são lidas e não entram
     na_pagina = {x for _, v in meta.CATEGORIAS for x in v}
     n_api = len(na_pagina)
-    # a traducao so ve o que sai na pagina: pedir ingles para o que nao e
+    # a tradução só vê o que sai na página: pedir inglês para o que não e
     # publicado seria trabalho por nada, e o gerador recusa texto sem par
     api_en = textos_en.traduzir([a for a in api if a['nome'] in na_pagina],
                                 parse_javadoc.repartir_subitens)

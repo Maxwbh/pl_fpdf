@@ -64,14 +64,14 @@ jobs:
       # comentário acidental) — o código parecia normal e o Oracle via comentário.
       - name: Todo subprograma da spec tem corpo no body (PLS-00323)
         run: python dev/scripts/plsql_lint/check_spec_body.py src/PL_FPDF.pks src/PL_FPDF.pkb
-        # e o utilitario, que tem spec propria
+        # e o utilitário, que tem spec própria
       - name: Todo subprograma da spec do utilitario tem corpo no body
         run: python dev/scripts/plsql_lint/check_spec_body.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
 
-      # O vizinho do de baixo, e faltava: chamada a algo que NAO EXISTE. A
-      # etapa que unificou as metricas removeu as onze getFontXxx e deixou um
-      # chamador para tras, 7900 linhas abaixo dos outros. Os onze lints
-      # passaram, o CI ficou verde nas tres vagas, e o PLS-00201 so apareceu no
+      # O vizinho do de baixo, e faltava: chamada a algo que NÃO EXISTE. A
+      # etapa que unificou as métricas removeu as onze getFontXxx e deixou um
+      # chamador para trás, 7900 linhas abaixo dos outros. Os onze lints
+      # passaram, o CI ficou verde nas três vagas, e o PLS-00201 só apareceu no
       # COMPILE contra o banco — o lugar mais caro de descobrir.
       - name: Nada é chamado sem existir (PLS-00201)
         run: |
@@ -107,81 +107,81 @@ jobs:
         run: python dev/scripts/plsql_lint/check_byte_chars.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
       # Um teste fora da lista do build_run_all.py existe, compila, tem
-      # afericao -- e nunca roda. E a suite falava quatro dialetos para a mesma
-      # asercao. Dois deles nem emitiam [PASS]/[FAIL], entao o runner contava
-      # zero verificacao e uma falha ali era invisivel.
+      # aferição -- e nunca roda. E a suite falava quatro dialetos para a mesma
+      # asserção. Dois deles nem emitiam [PASS]/[FAIL], então o runner contava
+      # zero verificação e uma falha ali era invisível.
       - name: A suite tem um vocabulario so, e ninguem fica de fora
         run: python dev/scripts/plsql_lint/check_suite.py
 
       # Um gerador emitia "l_hex := '...'" em toda linha, sem terminador em
-      # nenhuma menos a ultima. Nao e PL/SQL, e o Oracle recusa o BLOCO INTEIRO
+      # nenhuma menos a última. Não e PL/SQL, e o Oracle recusa o BLOCO INTEIRO
       # com ORA-06550 apontando a linha de baixo -- 60 casos que passavam
-      # deixaram de rodar por causa de uma linha. Nenhuma outra verificacao
-      # daqui analisa sintaxe, entao so a rodada contra o banco pegava.
+      # deixaram de rodar por causa de uma linha. Nenhuma outra verificação
+      # daqui analisa sintaxe, então só a rodada contra o banco pegava.
       - name: Nenhuma atribuicao comecando antes de a anterior terminar
         run: python dev/scripts/plsql_lint/check_atribuicao.py
 
-      # Metade da API publica da spec nao tinha bloco de documentacao — e a
+      # Metade da API pública da spec não tinha bloco de documentação — e a
       # metade sem bloco era a mais usada: Cell, SetFont, Text, Line, Output.
-      # O que tinha vinha em tres dialetos. A spec e a documentacao que se le
-      # sem sair do banco, e nao cumpria esse papel.
+      # O que tinha vinha em três dialetos. A spec e a documentação que se lê
+      # sem sair do banco, e não cumpria esse papel.
       - name: Toda API publica documentada, no padrao Javadoc e em PT-BR
         run: python dev/scripts/plsql_lint/check_spec_comments.py
 
       - name: Comentários do body (privado documentado, PT-BR, sem código morto)
         run: python dev/scripts/plsql_lint/check_body_comments.py
 
-      # A referencia da API e GERADA do Javadoc da spec, em PT e em EN.
-      # Enquanto foi escrita a mao, divergiu em silencio: 38 APIs levantavam
-      # erro que a pagina nao listava, o PL_FPDF_UTIL inteiro nao tinha secao,
-      # e a versao em ingles descrevia o pborder da forma que ja tinha sido
-      # reescrita em portugues por ser incompreensivel. O passo tambem recusa
-      # texto em ingles escrito contra um portugues que mudou depois.
+      # A referência da API e GERADA do Javadoc da spec, em PT e em EN.
+      # Enquanto foi escrita a mão, divergiu em silêncio: 38 APIs levantavam
+      # erro que a página não listava, o PL_FPDF_UTIL inteiro não tinha secao,
+      # e a versão em inglês descrevia o pborder da forma que já tinha sido
+      # reescrita em português por ser incompreensível. O passo também recusa
+      # texto em inglês escrito contra um português que mudou depois.
       - name: Referencia da API (PT e EN) em dia com o Javadoc da spec
         run: python dev/scripts/gen_docs/generate.py --check
 
       # A tabela do ROADMAP se apresenta como o registro do que roda aqui. Na
-      # revisao de setembro ela tinha 16 entradas para 21 passos: cinco
-      # verificacoes rodavam sem constar de lugar nenhum. Quem le a tabela para
-      # saber se um defeito ja tem rede acreditava que nao tinha.
+      # revisão de setembro ela tinha 16 entradas para 21 passos: cinco
+      # verificações rodavam sem constar de lugar nenhum. Quem lê a tabela para
+      # saber se um defeito já tem rede acreditava que não tinha.
       - name: A tabela do ROADMAP corresponde ao que roda no CI
         run: python dev/scripts/plsql_lint/check_roadmap_ci.py
 
-      # Num DECLARE, uma vez que aparece o corpo de um subprograma local, nao
-      # se declara mais nada. O ORA-06550 aponta a linha da declaracao, nao a
-      # do subprograma que a invalidou, entao se procura no lugar errado.
+      # Num DECLARE, uma vez que aparece o corpo de um subprograma local, não
+      # se declara mais nada. O ORA-06550 aponta a linha da declaração, não a
+      # do subprograma que a invalidou, então se procura no lugar errado.
       # Custou uma rodada contra o banco: o arquivo passou por todos os lints
       # porque nenhum olhava para dev/tests/*.sql.
       - name: Nenhuma declaracao depois de subprograma local nos testes
         run: python dev/scripts/plsql_lint/check_block_declarations.py dev/tests/*.sql
 
-      # NVL(tabela(i), x) NAO evita NO_DATA_FOUND: o indice e lido primeiro. A
-      # linha parece defensiva e falha na primeira posicao nao visitada.
+      # NVL(tabela(i), x) NÃO evita NO_DATA_FOUND: o índice e lido primeiro. A
+      # linha parece defensiva e falha na primeira posição não visitada.
       - name: Nenhum NVL sobre elemento de tabela indexada
         run: python dev/scripts/plsql_lint/check_assoc_nvl.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
       # PLS_INTEGER tem sinal e estoura em 2147483647. Valor de 32 bits SEM
-      # sinal passa disso, e o ORA-01426 e de EXECUCAO: chega sem nome de
-      # variavel e embrulhado no WHEN OTHERS de quem chamou.
+      # sinal passa disso, e o ORA-01426 e de EXECUÇÃO: chega sem nome de
+      # variável e embrulhado no WHEN OTHERS de quem chamou.
       - name: Nenhuma multiplicação de PLS_INTEGER por constante grande
         run: python dev/scripts/plsql_lint/check_pls_overflow.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
-      # A xref em stream lida errado nao estoura: devolve um offset plausivel, e
-      # o objeto que sai de la e OUTRO objeto, com dicionario valido. Quem pega
+      # A xref em stream lida errado não estoura: devolve um offset plausível, e
+      # o objeto que sai de lá e OUTRO objeto, com dicionário valido. Quem pega
       # isso e o MuPDF, comparando objeto a objeto.
       # zxing-cpp e Pillow entram junto: a régua do boleto renderiza a página e
       # exige que um leitor externo leia os 44 dígitos. Sem eles a etapa morre
       # no import, DEPOIS de todas as verificações de geometria passarem.
       # matplotlib e reportlab entram por causa das larguras das fontes: o
-      # primeiro distribui os AFM da Adobe, o segundo traz as mesmas metricas
-      # por outro caminho, e a referencia so gera se os dois concordarem.
+      # primeiro distribui os AFM da Adobe, o segundo traz as mesmas métricas
+      # por outro caminho, e a referência só gera se os dois concordarem.
       - name: Instalar o MuPDF, o leitor e as fontes para as referências
         run: pip install "pymupdf>=1.24" zxing-cpp pillow matplotlib reportlab fonttools
 
-      # A fonte embutida so vale se o LEITOR a usar. O MuPDF confere os tres
+      # A fonte embutida só vale se o LEITOR a usar. O MuPDF confere os três
       # lados: o texto sai, a fonte esta embutida, e a largura que ele mede
       # bate com a que o /Widths declara -- um /Widths errado desenha com o
-      # espacamento de outra fonte, e o arquivo abre perfeitamente.
+      # espaçamento de outra fonte, e o arquivo abre perfeitamente.
       - name: Referência da fonte embutida confere com o MuPDF
         run: python dev/scripts/ttfembed_reference/validate.py
 
@@ -193,20 +193,20 @@ jobs:
 
       # O outro lado: sem um deflate, SetCompression era um no-op. O que sai
       # daqui e comparado BYTE A BYTE com o que o banco produz — um deflate
-      # "equivalente mas diferente" so seria conferido descomprimindo, e o
+      # "equivalente mas diferente" só seria conferido descomprimindo, e o
       # inflate desta mesma casa toleraria o erro.
       - name: Referência do DEFLATE confere com o zlib
         run: python dev/scripts/pdfdeflate_reference/validate.py
 
-      # Texto certo nao e desenho certo: valor que transborda a caixa, corpo
+      # Texto certo não e desenho certo: valor que transborda a caixa, corpo
       # trocado, coluna desalinhada e dois textos empilhados passam por
-      # qualquer conferencia de conteudo. A regua confere geometria, e e a
+      # qualquer conferência de conteúdo. A régua confere geometria, e e a
       # mesma que o runner aplica ao PDF que sai do banco.
       - name: Régua do boleto fecha (métricas do Helvetica e zxing)
         run: python dev/scripts/boleto_reference/validate.py
 
-      # O ingresso cobre o que o boleto nao cobre: cor de painel, cor de texto,
-      # duas simbologias na mesma pagina e mais de uma pagina. Painel que saiu
+      # O ingresso cobre o que o boleto não cobre: cor de painel, cor de texto,
+      # duas simbologias na mesma página e mais de uma página. Painel que saiu
       # branco continua "desenhado", e texto claro sobre fundo claro some.
       - name: Régua do ingresso fecha (cor, QR e Code 39)
         run: python dev/scripts/ticket_reference/validate.py
@@ -219,24 +219,24 @@ jobs:
       - name: Nada declarado no utilitario sem ninguém usar
         run: python dev/scripts/plsql_lint/check_dead_code.py src/PL_FPDF_UTIL.pks src/PL_FPDF_UTIL.pkb
 
-      # O fonte de 2017 era GPL e o projeto e MIT. Enquanto houver codigo de la
-      # aqui, as duas coisas nao fecham, e a reimplementacao leva meses. Este
-      # numero so pode descer: um copiar-e-colar bem-intencionado devolveria em
-      # uma tarde o que se ganhou num mes, e nada acusaria — compila, os testes
-      # passam, a regua fecha.
-      # As larguras das 14 fontes sao DADO, e dado tem fonte primaria. Duas,
+      # O fonte de 2017 era GPL e o projeto e MIT. Enquanto houver código de lá
+      # aqui, as duas coisas não fecham, e a reimplementação leva meses. Este
+      # número só pode descer: um copiar-e-colar bem-intencionado devolveria em
+      # uma tarde o que se ganhou num mês, e nada acusaria — compila, os testes
+      # passam, a régua fecha.
+      # As larguras das 14 fontes são DADO, e dado tem fonte primária. Duas,
       # aqui, que se conferem glifo a glifo: os AFM da Adobe e as tabelas do
-      # reportlab. Uma so nao bastaria — os AFM da URW sao anteriores ao Euro.
+      # reportlab. Uma só não bastaria — os AFM da URW são anteriores ao Euro.
       - name: As larguras das fontes conferem com o AFM da Adobe
         run: PYTHONPATH=dev/scripts/font_reference python dev/scripts/font_reference/validate.py
       - name: O bloco de larguras no .pkb esta em dia
         run: PYTHONPATH=dev/scripts/font_reference python dev/scripts/font_reference/gerar.py --check
 
-      # Dentro de (...) num fluxo de conteudo, a barra invertida inicia
-      # sequencia de escape. A operacao estava escrita CINCO vezes, e TRES
+      # Dentro de (...) num fluxo de conteúdo, a barra invertida inicia
+      # sequência de escape. A operação estava escrita CINCO vezes, e TRÊS
       # procuravam por '\\' trocando por '\\\\' — que em PL/SQL e procurar DUAS
       # barras e trocar por QUATRO. Uma barra sozinha passava intacta, e o PDF
-      # continuava abrindo: so o texto saia trocado. Pegava PL_FPDF.Text e os
+      # continuava abrindo: só o texto saia trocado. Pegava PL_FPDF.Text e os
       # metadados do documento.
       - name: Uma só rotina escapa string de PDF, e está certa
         run: python dev/scripts/plsql_lint/check_escape_pdf.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
@@ -244,12 +244,12 @@ jobs:
       - name: A heranca do fonte original nao aumentou
         run: python dev/scripts/plsql_lint/check_heranca.py
 
-      # Os scripts resolviam caminho relativo ao diretorio ATUAL. Funcionava
+      # Os scripts resolviam caminho relativo ao diretório ATUAL. Funcionava
       # porque o CI e todo mundo rodavam da raiz — e quebrou no primeiro que
-      # nao rodou: FileNotFoundError em 'examples/boleto.sql' ao chamar o
+      # não rodou: FileNotFoundError em 'examples/boleto.sql' ao chamar o
       # runner de dentro de dev/scripts. Pior: o check_links passava dizendo
       # "0 links em 0 arquivos", aprovando sem verificar nada.
-      # Este passo roda de OUTRO diretorio, que e a condicao que expunha os dois.
+      # Este passo roda de OUTRO diretório, que e a condição que expunha os dois.
       - name: Os scripts funcionam de qualquer diretório
         run: |
           set -e
@@ -298,60 +298,68 @@ jobs:
       - name: Chamadas a PL_FPDF.* nos testes batem com a spec
         run: python dev/scripts/plsql_lint/check_test_calls.py
 
-      # Role nao vale dentro de PL/SQL: V$ em SQL estatico e PLS-00201 em tempo
-      # de COMPILACAO, e o EXCEPTION que deveria pular o caso nunca roda. Custou
+      # Role não vale dentro de PL/SQL: V$ em SQL estático e PLS-00201 em tempo
+      # de COMPILAÇÃO, e o EXCEPTION que deveria pular o caso nunca roda. Custou
       # uma rodada no test_regressoes_revisao.sql.
       - name: Nenhuma view V$/DBA_ em SQL estático dentro de PL/SQL
         run: |
           python dev/scripts/plsql_lint/check_v_estatico.py
           python dev/scripts/plsql_lint/check_v_estatico.py src/PL_FPDF.pkb src/PL_FPDF_UTIL.pkb
 
-      # Vazamento de LOB temporario nao se observa de dentro do schema: USER_*
-      # nao expoe a contagem e as instancias vazadas nao tem locator. Entao a
-      # guarda le o FONTE — sem banco, sem privilegio, sem rede. O SplitPDF
-      # deixava um CLOB de duracao de sessao por intervalo.
+      # Vazamento de LOB temporário não se observa de dentro do schema: USER_*
+      # não expõe a contagem e as instâncias vazadas não tem locator. Então a
+      # guarda lê o FONTE — sem banco, sem privilégio, sem rede. O SplitPDF
+      # deixava um CLOB de duração de sessão por intervalo.
       - name: Todo LOB temporário recebido de uma função é liberado
         run: python dev/scripts/plsql_lint/check_lob_temp.py
 
-      # O mesmo desenho vive no exemplo (documentacao) e na amostra do runner
-      # (o que roda contra o banco). Eles ja divergiram: o conserto do rodape
+      # O mesmo desenho vive no exemplo (documentação) e na amostra do runner
+      # (o que roda contra o banco). Eles já divergiram: o conserto do rodapé
       # do ingresso teve de ser aplicado nos dois, e nada garantia que fosse.
       - name: Exemplos desenham igual à amostra que os testa
         run: python dev/scripts/plsql_lint/check_examples_sync.py
 
-      # As paginas escritas a mao nao tem gerador que as mantenha juntas: aqui
-      # se cobra que a EN tenha as mesmas secoes, as mesmas linhas de tabela e
+      # As páginas escritas a mão não tem gerador que as mantenha juntas: aqui
+      # se cobra que a EN tenha as mesmas seções, as mesmas linhas de tabela e
       # os mesmos exemplos chamando as mesmas APIs que a PT.
       - name: As páginas do site em inglês acompanham as portuguesas
         run: python dev/scripts/gen_docs/check_paridade.py
 
       # O mesmo para os guias em Markdown: o README_EN passou meses sem a secao
-      # de Limitacoes que o README tem, e nada reclamava.
+      # de Limitações que o README tem, e nada reclamava.
       - name: Os guias em inglês acompanham os portugueses
         run: python dev/scripts/gen_docs/check_paridade_md.py
 
-      # A referencia da extensao e escrita a mao nos READMEs dela, e chegou a
-      # documentar uma funcao com outro nome, outro parametro e outro retorno.
+      # A referência da extensão e escrita a mão nos READMEs dela, e chegou a
+      # documentar uma função com outro nome, outro parâmetro e outro retorno.
       - name: A referência da extensão bate com a spec dela
         run: python dev/scripts/gen_docs/check_extensao_api.py
 
       # Quem EXECUTA os exemplos e o run_tests.py, contra o Oracle. Aqui, sem
-      # banco, so o previsivel: bloco que nao tem como rodar sem a marca.
+      # banco, só o previsível: bloco que não tem como rodar sem a marca.
       - name: Os exemplos da documentação estão prontos para o runner
         run: python dev/scripts/gen_docs/check_exemplos_doc.py
 
       - name: docs/TRACEABILITY.md em dia, e a tabela de cobertura completa
         run: python dev/scripts/gen_docs/rastreabilidade.py --check
 
-      # O que o site anuncia (chip, versao estavel, JSON-LD, aviso de
-      # candidata, selos do README) contra o co_version e a estrategia de
-      # distribuicao. A parte que consulta os releases roda antes de publicar.
+      # O que o site anuncia (chip, versão estável, JSON-LD, aviso de
+      # candidata, selos do README) contra o co_version e a estratégia de
+      # distribuição. A parte que consulta os releases roda antes de publicar.
       - name: O site anuncia a versão que o código e a estratégia dizem
         run: python dev/scripts/gen_docs/check_publicacao.py
 
-      # Versoes antigas do README da extensao se declaravam GPL v2, com selo.
+      # Versões antigas do README da extensão se declaravam GPL v2, com selo.
       - name: Toda declaração de licença diz MIT
         run: python dev/scripts/plsql_lint/check_licencas.py
+
+      # Duas levas inteiras entraram sem acento (3.3.0 e 3.4.0): o texto nascia
+      # sem acento no comentário e migrava para a documentação. O dicionário
+      # acusa palavra que não existe sem acento e existe com (`nao`, `versao`).
+      - name: Português do Brasil com acento, nos .md e nos comentários
+        run: |
+          pip install -q pyspellchecker==0.9.1
+          python dev/scripts/plsql_lint/check_acentos.py
 
   package-sanity:
     name: Package version consistency
@@ -378,8 +386,8 @@ jobs:
           check "README.md (badge PT)"   README.md       "badge/versão-$ver"
           check "README_EN.md (badge EN)" README_EN.md   "badge/version-$ver"
           # o chip pode trazer o sufixo de candidata (v3.4.0-rc2 · pre-lancamento),
-          # e o JSON-LD anuncia a ESTAVEL: os dois sao cobrados por inteiro no
-          # check_publicacao.py, a partir da estrategia do conteudo_index.
+          # e o JSON-LD anuncia a ESTÁVEL: os dois são cobrados por inteiro no
+          # check_publicacao.py, a partir da estratégia do conteudo_index.
           check "site/index.html (chip hero)" site/index.html      ">v$ver"
 
           # O caminho inverso, e por que ele existe: o cabeçalho do .pkb

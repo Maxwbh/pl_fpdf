@@ -113,7 +113,7 @@ CABECALHO = re.compile(r'^[ \t]{0,2}(?:FUNCTION|PROCEDURE)\s+([a-z_][a-z_0-9$#]*
 DE_BYTE = re.compile(r'\b([a-z_][a-z_0-9$#]*)\s*:=\s*TO_NUMBER\s*\(\s*RAWTOHEX',
                      re.I)
 CHR_VAR = re.compile(r'\bCHR\s*\(\s*([a-z_][a-z_0-9$#]*)\s*\)', re.I)
-# 'chr(137)' — literal acima de 127, que em AL32UTF8 nunca e um byte so
+# 'chr(137)' — literal acima de 127, que em AL32UTF8 nunca e um byte só
 CHR_LITERAL = re.compile(r'\bCHR\s*\(\s*(\d+)\s*\)', re.I)
 
 # 'l_c := SUBSTRB(qualquer, qualquer, 1)' — a variável passa a carregar UM byte
@@ -162,7 +162,7 @@ def main(caminho):
                 linha = texto.count('\n', 0, marcas[i] + m.start()) + 1
                 problemas.append((linha, m.group(1), 'raw'))
 
-        # regra 4: assinatura binaria montada com CHR de literal alto
+        # regra 4: assinatura binária montada com CHR de literal alto
         for m in CHR_LITERAL.finditer(trecho):
             if int(m.group(1)) >= 128:
                 linha = texto.count('\n', 0, marcas[i] + m.start()) + 1
@@ -223,7 +223,7 @@ def main(caminho):
 
 
 if __name__ == '__main__':
-    # aceita varios arquivos: desde a separacao do utilitario, o codigo que
+    # aceita vários arquivos: desde a separação do utilitário, o código que
     # mexe em byte esta nos dois bodies
     caminhos = sys.argv[1:] or ['src/PL_FPDF.pkb']
     sys.exit(max(main(c) for c in caminhos))

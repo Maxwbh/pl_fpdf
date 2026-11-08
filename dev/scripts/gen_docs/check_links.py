@@ -35,13 +35,13 @@ import sys
 
 LINK = re.compile(r'\]\((?!https?:|mailto:)([^)#]+)')
 IMG = re.compile(r'<img\s[^>]*src="(?!https?:|data:)([^"#]+)', re.I)
-# href/src de HTML. O (?!#) descarta a ancora pura (href="#init"), que e um
-# alvo dentro da propria pagina e nao um arquivo.
+# href/src de HTML. O (?!#) descarta a âncora pura (href="#init"), que e um
+# alvo dentro da própria página e não um arquivo.
 HREF = re.compile(r'(?:href|src)="(?!https?:|mailto:|data:|#)([^"#]+)', re.I)
-# Ancorado na RAIZ, calculada deste arquivo: com padrao relativo ao diretorio
-# atual, rodar de outro lugar nao dava erro — dava "0 links em 0 arquivos", e
-# passava. Verificacao que aprova sem olhar nada e pior que verificacao que
-# falha, porque ninguem desconfia.
+# Ancorado na RAIZ, calculada deste arquivo: com padrão relativo ao diretório
+# atual, rodar de outro lugar não dava erro — dava "0 links em 0 arquivos", e
+# passava. Verificação que aprova sem olhar nada e pior que verificação que
+# falha, porque ninguém desconfia.
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 ARQUIVOS = [os.path.join(RAIZ, p) for p in

@@ -22,13 +22,13 @@ RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(
     os.path.abspath(__file__)))))
 PKB = os.path.join(RAIZ, 'src', 'PL_FPDF.pkb')
 
-# As tabelas geradas vivem no p_digitos_da_familia, um ramo por familia, cada
-# um com 256 campos de 4 digitos partidos em varios literais concatenados.
+# As tabelas geradas vivem no p_digitos_da_familia, um ramo por família, cada
+# um com 256 campos de 4 dígitos partidos em vários literais concatenados.
 GERADA = re.compile(r"when\s+'(\w+)'\s+then\s+return\s+((?:\s*'[0-9]*'\s*\|?\|?)+);",
                     re.I)
 LITERAL = re.compile(r"'([0-9]*)'")
 
-# O mapa chave->familia, que antes existia duas vezes escrito a mao. Conferir
+# O mapa chave->família, que antes existia duas vezes escrito a mão. Conferir
 # que ele cobre as 14 chaves importa tanto quanto conferir as larguras: foi
 # ali que o 'timesB' virou um segundo 'timesI' e o ramo do negrito sumiu.
 MAPA = re.compile(r"when\s+'([a-z]+)'\s+then\s+'(\w+)'", re.I)
@@ -43,7 +43,7 @@ CHAVES_ESPERADAS = {
 
 
 def tabelas_do_package():
-    """{'Helvetica': {codigo: largura}} lido do body."""
+    """{'Helvetica': {código: largura}} lido do body."""
     texto = io.open(PKB, encoding='utf-8').read()
     fora = {}
     for m in GERADA.finditer(texto):
@@ -60,7 +60,7 @@ def tabelas_do_package():
 
 
 def conferir_mapa():
-    """As 14 chaves resolvem para a familia certa, sem duplicata nem falta."""
+    """As 14 chaves resolvem para a família certa, sem duplicata nem falta."""
     texto = io.open(PKB, encoding='utf-8').read()
     ini = texto.find('function p_larguras_da_fonte')
     if ini < 0:

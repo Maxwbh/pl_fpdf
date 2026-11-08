@@ -201,7 +201,7 @@ procedure ClearTTFFontCache;
  * @return VARCHAR2 - o texto pronto para ir entre parênteses num objeto PDF
  * @since 2.0.0
  * @example
- *   l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido)');
+ *   l_txt := PL_FPDF.UTF8ToPDFString('Total (líquido)');
  */
 function UTF8ToPDFString(
   p_text varchar2,
@@ -587,7 +587,7 @@ procedure SetAuthor(pauthor in varchar2);
  * @param pkeywords as palavras-chave
  * @since 0.9.4
  * @example
- *   PL_FPDF.SetKeywords('relatorio producao 2026');
+ *   PL_FPDF.SetKeywords('relatório produção 2026');
  */
 procedure SetKeywords(pkeywords in varchar2);
 
@@ -597,7 +597,7 @@ procedure SetKeywords(pkeywords in varchar2);
  * @param pcreator o sistema gerador
  * @since 0.9.4
  * @example
- *   PL_FPDF.SetCreator('ERP - modulo de faturamento');
+ *   PL_FPDF.SetCreator('ERP - módulo de faturamento');
  */
 procedure SetCreator(pcreator in varchar2);
 
@@ -671,7 +671,7 @@ procedure SetDrawColor(r in number, g in number default -1, b in number default 
  * @since 0.9.4
  * @example
  *   PL_FPDF.SetFillColor(230, 230, 230);
- *   PL_FPDF.Cell(40, 8, 'Cabecalho', '1', 0, 'C', 1);
+ *   PL_FPDF.Cell(40, 8, 'Cabeçalho', '1', 0, 'C', 1);
  */
 procedure SetFillColor (r in number, g in number default -1, b in number default -1);
 
@@ -1274,7 +1274,7 @@ procedure fpdf  (orientation in varchar2 default 'P', unit in varchar2 default '
  * @raises -20100 sempre; é o que esta rotina faz
  * @since 0.9.4
  * @example
- *   PL_FPDF.Error('nao foi possivel montar o documento');
+ *   PL_FPDF.Error('não foi possível montar o documento');
  */
 procedure Error(pmsg in varchar2);
 

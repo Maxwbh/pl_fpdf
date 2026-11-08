@@ -135,8 +135,8 @@ BEGIN
     nota('primeiros 20 bytes: ' || RAWTOHEX(DBMS_LOB.SUBSTR(l_tmp, 20, 1)));
     nota('ultimos 12 bytes:   '
          || RAWTOHEX(DBMS_LOB.SUBSTR(l_tmp, 12, GREATEST(1, l_n - 11))));
-    -- gzip padrao comeca com 1F8B08; se comecar diferente, o Oracle usa
-    -- formato proprio e o envelope de gzip provavelmente nao serve
+    -- gzip padrão começa com 1F8B08; se começar diferente, o Oracle usa
+    -- formato próprio e o envelope de gzip provavelmente não serve
     nota('comeca com 1F8B08 (gzip padrao)? '
          || CASE WHEN DBMS_LOB.SUBSTR(l_tmp, 3, 1) = HEXTORAW('1F8B08')
                  THEN 'SIM' ELSE 'NAO' END);
@@ -147,7 +147,7 @@ BEGIN
   ------------------------------------------------------------------------------
   cabecalho('3. O zlib do PDF, sem alteracao nenhuma');
   ------------------------------------------------------------------------------
-  -- Se isto funcionar, nao ha nada a fazer: passa o stream direto.
+  -- Se isto funcionar, não há nada a fazer: passa o stream direto.
   tentar('zlib puro (78DA...)', blob_de(co_zlib));
 
   ------------------------------------------------------------------------------
@@ -160,8 +160,8 @@ BEGIN
   ------------------------------------------------------------------------------
   cabecalho('5. O mesmo, com CRC-32 e tamanho ZERADOS');
   ------------------------------------------------------------------------------
-  -- Decide se seria preciso implementar CRC-32 em PL/SQL. Se o Oracle nao
-  -- confere, o porte fica bem mais barato — e o PDF ja traz como conferir o
+  -- Decide se seria preciso implementar CRC-32 em PL/SQL. Se o Oracle não
+  -- confere, o porte fica bem mais barato — e o PDF já traz como conferir o
   -- resultado (/W, /Size e /N dizem o tamanho esperado).
   tentar('gzip com crc e tamanho zerados',
          blob_de(UTL_RAW.CONCAT(co_gzip_hdr, co_deflate, co_zeros, co_zeros)));

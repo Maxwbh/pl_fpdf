@@ -1672,7 +1672,7 @@ EXEMPLOS = {
      '  PL_FPDF.SetY(-20);   -- 20 above the foot of the page',
  ('SetTitle', "  PL_FPDF.SetTitle('Relatório de Produção');"):
      "  PL_FPDF.SetTitle('Production Report');",
- ('SetCreator', "  PL_FPDF.SetCreator('ERP - modulo de faturamento');"):
+ ('SetCreator', "  PL_FPDF.SetCreator('ERP - módulo de faturamento');"):
      "  PL_FPDF.SetCreator('ERP - billing module');",
  ('SetAliasNbPages',
   "  PL_FPDF.Cell(0, 10, 'Pagina ' || PL_FPDF.PageNo || ' de {nb}');"):
@@ -1707,7 +1707,7 @@ EXEMPLOS = {
      '  -- no border at all, which is the usual case in body text',
  ('MultiCell', '  -- só as laterais, para um bloco dentro de uma tabela'):
      '  -- only the sides, for a block inside a table',
- ('Error', "  PL_FPDF.Error('nao foi possivel montar o documento');"):
+ ('Error', "  PL_FPDF.Error('não foi possível montar o documento');"):
      "  PL_FPDF.Error('could not assemble the document');",
  ('LoadPDF', "    DBMS_OUTPUT.PUT_LINE('Páginas:' || PL_FPDF.GetPageCount());"):
      "    DBMS_OUTPUT.PUT_LINE('Pages:' || PL_FPDF.GetPageCount());",
@@ -1757,7 +1757,7 @@ EXEMPLOS = {
      '    -- extract pages 1, 5-10 and 15',
  # literais em português dentro do exemplo: o código é o mesmo, o texto do
  # documento é que muda de língua
- ('UTF8ToPDFString', "  l_txt := PL_FPDF.UTF8ToPDFString('Total (liquido)');"):
+ ('UTF8ToPDFString', "  l_txt := PL_FPDF.UTF8ToPDFString('Total (líquido)');"):
      "  l_txt := PL_FPDF.UTF8ToPDFString('Total (net)');",
  ('Ln', "  PL_FPDF.Cell(40, 10, 'Primeira');"):
      "  PL_FPDF.Cell(40, 10, 'First');",
@@ -1769,9 +1769,9 @@ EXEMPLOS = {
      "  PL_FPDF.SetSubject('Monthly close');",
  ('SetAuthor', "  PL_FPDF.SetAuthor('Departamento Financeiro');"):
      "  PL_FPDF.SetAuthor('Finance Department');",
- ('SetKeywords', "  PL_FPDF.SetKeywords('relatorio producao 2026');"):
+ ('SetKeywords', "  PL_FPDF.SetKeywords('relatório produção 2026');"):
      "  PL_FPDF.SetKeywords('production report 2026');",
- ('SetFillColor', "  PL_FPDF.Cell(40, 8, 'Cabecalho', '1', 0, 'C', 1);"):
+ ('SetFillColor', "  PL_FPDF.Cell(40, 8, 'Cabeçalho', '1', 0, 'C', 1);"):
      "  PL_FPDF.Cell(40, 8, 'Heading', '1', 0, 'C', 1);",
  ('Cell', "  PL_FPDF.Cell(100, 8, 'Produto', 'B', 1, 'L');"):
      "  PL_FPDF.Cell(100, 8, 'Product', 'B', 1, 'L');",

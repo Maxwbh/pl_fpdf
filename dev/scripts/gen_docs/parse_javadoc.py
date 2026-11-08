@@ -56,7 +56,7 @@ DECL = re.compile(r'^\s{0,2}(procedure|function)\s+([A-Za-z_][A-Za-z_0-9]*)',
 TAG = re.compile(r'^\s*\*\s*(@[a-z]+)\s?(.*)$')
 CONT = re.compile(r'^\s*\*\s{2,}(\S.*)$')
 LINHA = re.compile(r'^\s*\*\s?(.*)$')
-# `0 = `, `'up' = `: abre enumeracao dentro de um @param
+# `0 = `, `'up' = `: abre enumeração dentro de um @param
 SUBITEM = re.compile(r"\b(\d+|'[^']*'|[A-Za-z_]\w*)\s*=\s")
 
 
@@ -177,9 +177,9 @@ def ler_bloco(bloco):
             tag, buf = m.group(1), [m.group(2)]
             continue
         if tag == '@example':
-            # exemplo e CODIGO: sai literal, sem reenrolar. A linha EM BRANCO
-            # fica: e ela que separa um caso do outro, e sem ela os tres casos
-            # de borda do Cell viravam um bloco so.
+            # exemplo e CÓDIGO: sai literal, sem reenrolar. A linha EM BRANCO
+            # fica: e ela que separa um caso do outro, e sem ela os três casos
+            # de borda do Cell viravam um bloco só.
             mm = LINHA.match(l)
             if mm:
                 doc['exemplo'].append(mm.group(1).rstrip())
@@ -226,9 +226,9 @@ def ler(caminho):
         if bloco is None:
             # sobrecarga: compartilha o bloco da primeira, como na spec
             if anterior and anterior['nome'].lower() == nome.lower():
-                # herda o TEXTO do bloco, mas nao a assinatura: a sobrecarga
+                # herda o TEXTO do bloco, mas não a assinatura: a sobrecarga
                 # pode ser procedure onde a primeira e function, e tem nomes
-                # de parametro proprios
+                # de parâmetro próprios
                 saida.append(dict(anterior, tipo=tipo, nome=nome, linha=n + 1,
                                   assinatura_params=
                                   parametros_da_assinatura(linhas, n),

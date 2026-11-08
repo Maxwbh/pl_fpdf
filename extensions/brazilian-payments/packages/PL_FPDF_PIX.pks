@@ -66,7 +66,7 @@ FUNCTION CalculateCRC16(
 *     l_pix.put('pixKey', 'user@example.com');
 *     l_pix.put('pixKeyType', 'EMAIL');
 *     l_pix.put('merchantName', 'My Store');
-*     l_pix.put('merchantCity', 'Sao Paulo');
+*     l_pix.put('merchantCity', 'São Paulo');
 *     l_pix.put('amount', 99.90);
 *     DBMS_OUTPUT.PUT_LINE(PL_FPDF_PIX.GetPixPayload(l_pix));
 *   END;
@@ -116,7 +116,7 @@ FUNCTION FormatPixKey(
 *     l_pix.put('pixKey', 'user@example.com');
 *     l_pix.put('pixKeyType', 'EMAIL');
 *     l_pix.put('merchantName', 'My Store');
-*     l_pix.put('merchantCity', 'Sao Paulo');
+*     l_pix.put('merchantCity', 'São Paulo');
 *     l_pix.put('amount', 99.90);
 *     PL_FPDF_PIX.AddQRCodePIX(80, 50, 50, l_pix);
 *   END;

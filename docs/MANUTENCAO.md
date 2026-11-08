@@ -258,7 +258,14 @@ python dev/scripts/gen_docs/check_extensao_api.py
 python dev/scripts/gen_docs/check_exemplos_doc.py
 python dev/scripts/gen_docs/rastreabilidade.py --check
 python dev/scripts/plsql_lint/check_licencas.py
+python dev/scripts/plsql_lint/check_acentos.py      # pip install pyspellchecker==0.9.1
 ```
+
+**Português do Brasil, com acento, em tudo que é texto:** documentação,
+comentários do código, docstrings e mensagens de commit. O `check_acentos.py`
+cobra os três primeiros; a mensagem de commit não tem como, e é justamente por
+onde o texto sem acento costumava entrar — dela para o ROADMAP, do comentário
+para o HISTORIAS.
 
 Fora do push, num workflow próprio (`links-externos.yml`, semanal e a cada
 release): `check_links_externos.py`, que pede cada link da documentação para os

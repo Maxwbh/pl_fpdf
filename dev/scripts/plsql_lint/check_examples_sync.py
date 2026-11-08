@@ -28,9 +28,9 @@ import io
 import os
 import sys
 
-# Ancorado na RAIZ do repositorio, calculada a partir deste arquivo. Caminho
-# relativo ao diretorio atual funciona enquanto todo mundo roda da raiz, e
-# quebra no primeiro que nao roda.
+# Ancorado na RAIZ do repositório, calculada a partir deste arquivo. Caminho
+# relativo ao diretório atual funciona enquanto todo mundo roda da raiz, e
+# quebra no primeiro que não roda.
 RAIZ = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 
@@ -39,10 +39,10 @@ def do_repo(*partes):
 
 
 def _raiz():
-    """A raiz do repositorio, achada subindo ate encontrar o src/.
+    """A raiz do repositório, achada subindo até encontrar o src/.
 
-    Contar diretorios com dirname aninhado quebrou quando os scripts foram para
-    dev/scripts/: o numero de niveis mudou e o erro so aparece em execucao.
+    Contar diretórios com dirname aninhado quebrou quando os scripts foram para
+    dev/scripts/: o número de níveis mudou e o erro só aparece em execução.
     """
     d = os.path.dirname(os.path.abspath(__file__))
     while d != os.path.dirname(d):

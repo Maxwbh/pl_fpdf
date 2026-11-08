@@ -44,7 +44,7 @@ DECLARE
       l_mau := l_mau + 1;
       DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome || ': ' || l_t
                            || ' bytes, esperado ' || DBMS_LOB.GETLENGTH(l_exp));
-    -- DBMS_LOB.COMPARE, e nao STANDARD_HASH: aquele nao aceita LOB (ORA-00902)
+    -- DBMS_LOB.COMPARE, e não STANDARD_HASH: aquele não aceita LOB (ORA-00902)
     ELSIF DBMS_LOB.COMPARE(l_out, l_exp) != 0 THEN
       l_mau := l_mau + 1;
       DBMS_OUTPUT.PUT_LINE('  [FAIL] ' || p_nome

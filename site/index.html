@@ -131,13 +131,13 @@
     mask-image:radial-gradient(1200px 700px at 50% 0%, #000 30%, transparent 75%);
     -webkit-mask-image:radial-gradient(1200px 700px at 50% 0%, #000 30%, transparent 75%);
   }
-  /* As tres esferas eram cor chapada com filter:blur(70px): desfoque de
+  /* As três esferas eram cor chapada com filter:blur(70px): desfoque de
      70 px sobre caixas de 380 a 520 px, refeito a cada pintura. O
-     Lighthouse movel media 300 a 450 ms de estilo e layout so na home, e
-     tarefas longas de ate 355 ms -- a api.html, sem elas, dava 0 ms de
-     TBT. O degrade radial ja nasce esmaecido e custa nada. A caixa cresce
-     2 x 140 px, o alcance de um blur(70px) (o valor e desvio-padrao, nao
-     raio), e o centro fica onde estava; a cor plena vai ate onde o disco
+     Lighthouse móvel media 300 a 450 ms de estilo e layout só na home, e
+     tarefas longas de até 355 ms -- a api.html, sem elas, dava 0 ms de
+     TBT. O degrade radial já nasce esmaecido e custa nada. A caixa cresce
+     2 x 140 px, o alcance de um blur(70px) (o valor e desvio-padrao, não
+     raio), e o centro fica onde estava; a cor plena vai até onde o disco
      desfocado ainda era opaco. */
   .orb{position:absolute;border-radius:50%}
   .orb.a{width:800px;height:800px;top:-320px;right:-260px;
@@ -254,7 +254,7 @@
   .stat{background:var(--cardbg);padding:24px 18px;text-align:center}
   .stat b{display:block;font-size:28px;font-weight:900;letter-spacing:-.6px}
   .stat b em{color:var(--accent);font-style:normal}
-  /* --muted, e nao --faint: no tema escuro o --faint sobre o cartao dava 4,28:1 */
+  /* --muted, e não --faint: no tema escuro o --faint sobre o cartão dava 4,28:1 */
   .stat span{font-size:13px;color:var(--muted)}
 
   /* ============ seções ============ */
@@ -310,20 +310,20 @@
   .step h3{margin:0 0 8px;font-size:16px}
   .step p{margin:0 0 12px;font-size:13.5px;color:var(--muted)}
   .step a{color:var(--fg)}
-  /* Sem o escopo `.step`: o bloco do `curl`, na area de download, fica FORA de
+  /* Sem o escopo `.step`: o bloco do `curl`, na área de download, fica FORA de
      um .step — e sem a regra ele saia como texto corrido, no fundo claro, com
-     as tres linhas coladas numa so. */
+     as três linhas coladas numa só. */
   code.block{
     display:block;background:var(--panel);border:1px solid #223a5a;border-radius:9px;
     padding:11px 14px;font-size:12.5px;color:var(--code);
     /* `pre` + `overflow-x:auto` ESCONDIA: o SELECT do 3o passo estourava 19px
        no desktop e o `curl` pedia 683px num visor de 370. Uma barra de rolagem
-       dentro de um cartao ninguem ve — o leitor copia o comando pela metade.
+       dentro de um cartão ninguém vê — o leitor copia o comando pela metade.
        `pre-wrap` preserva as quebras reais e ainda quebra a linha comprida.
-       Quebrar dentro da URL nao estraga o copiar: nada e inserido.
-       Tentei um recuo pendente para a continuacao se distinguir, e nao serve:
-       `text-indent` vale so para a PRIMEIRA linha do bloco, nao para cada
-       linha depois de um \n — as tres linhas do `curl` sairam desalinhadas
+       Quebrar dentro da URL não estraga o copiar: nada e inserido.
+       Tentei um recuo pendente para a continuação se distinguir, e não serve:
+       `text-indent` vale só para a PRIMEIRA linha do bloco, não para cada
+       linha depois de um \n — as três linhas do `curl` saíram desalinhadas
        entre si, que e pior que o problema que ia resolver. */
     white-space:pre-wrap;overflow-wrap:anywhere;
   }
@@ -391,7 +391,7 @@
     .gh-btn{display:none}
     .pdf-sheet{width:110px;top:-24px}
   }
-  /* acessibilidade: o link de pular aparece so no foco; o foco e sempre visivel */
+  /* acessibilidade: o link de pular aparece só no foco; o foco e sempre visível */
   .skip{position:absolute;left:-9999px;top:8px;z-index:1000;padding:10px 14px;border-radius:10px;
         background:var(--accent);color:#fff;font-weight:700;text-decoration:none}
   .skip:focus{left:12px}
@@ -703,7 +703,7 @@ Ver o exemplo do ingresso</a>
     </p>
   </section>
 
-  <!-- INSTALACAO -->
+  <!-- INSTALAÇÃO -->
   <section id="instalacao">
     <p class="kicker">Instalação</p>
     <h2>Três passos e está no ar</h2>

@@ -12,12 +12,12 @@ on:
     paths:
       - 'site/**'
       - '.github/workflows/pages.yml'
-  # Publicado um release estavel, o release.yml dispara este workflow por
-  # workflow_dispatch: a validacao abaixo recusa anunciar como estavel uma
-  # versao cujo release ainda nao existe, entao o push que traz a versao nova
-  # chega antes da tag e so o release a publica. (Um `release: published`
-  # aqui nao serviria: o release e criado com o token do Actions, e evento
-  # desse token nao dispara outro workflow.)
+  # Publicado um release estável, o release.yml dispara este workflow por
+  # workflow_dispatch: a validação abaixo recusa anunciar como estável uma
+  # versão cujo release ainda não existe, então o push que traz a versão nova
+  # chega antes da tag e só o release a pública. (Um `release: published`
+  # aqui não serviria: o release e criado com o token do Actions, e evento
+  # desse token não dispara outro workflow.)
   workflow_dispatch:
 
 permissions:
@@ -44,10 +44,10 @@ jobs:
         with:
           python-version: "3.11"
 
-      # Antes de publicar, fecha o ciclo spec -> documentacao gerada -> release
+      # Antes de publicar, fecha o ciclo spec -> documentação gerada -> release
       # -> site: o HTML esta em dia com a spec, todo link interno existe, a
-      # versao anunciada bate com o codigo e com os releases do GitHub, e os
-      # links de download respondem. Falhou, nao publica.
+      # versão anunciada bate com o código e com os releases do GitHub, e os
+      # links de download respondem. Falhou, não pública.
       - name: O site em dia com a spec
         run: python dev/scripts/gen_docs/generate.py --check
       - name: Links internos
