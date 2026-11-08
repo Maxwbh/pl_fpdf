@@ -119,6 +119,11 @@
   .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
   .api p.since{margin:-2px 0 10px;font-size:12.5px;color:var(--faint)}
   .api p.since .novo{color:var(--accent);font-weight:600}
+  .unsup{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;
+         text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);
+         border-radius:999px;padding:2px 10px}
+  .api p.limit{margin:10px 0 0;padding:10px 12px;font-size:14px;color:var(--muted);
+               border-left:3px solid var(--accent);background:var(--chipbg)}
   .api p.see a{color:var(--blue);text-decoration:none}
   .api p.see a:hover{text-decoration:underline}
 
@@ -348,7 +353,10 @@
       <p class="kicker">v3.4.0 · Oracle 19c+</p>
       <h1>Referência da API</h1>
       <p class="lead">Documentação detalhada de cada função e procedure pública do package <code>PL_FPDF</code>: sintaxe, parâmetros com valores possíveis, retorno, erros e exemplo.
-      Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>.</p>
+      Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>. Instalação, compatibilidade e problemas comuns estão nos
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/docs/README.md">guias</a>; as 18 APIs do <code>PL_FPDF_UTIL</code> (QR, códigos de barras,
+      compressão e cifra, usadas por dentro do <code>PL_FPDF</code>) estão documentadas na própria
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/src/PL_FPDF_UTIL.pks">spec</a>.</p>
     </header>
 <h2 class="grp" id="grp-lifecycle">Ciclo de vida</h2>
 <article class="api" id="fpdf">
@@ -812,7 +820,7 @@ PL_FPDF.AddTTFFont(<span class="s">&#x27;Roboto&#x27;</span>, l_ttf);</pre></div
 <tr><td class="pname">pln</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>para onde vai o cursor:<br>0 = à direita da célula<br>1 = próxima linha, na margem esquerda<br>2 = abaixo, mantendo o x</td></tr>
 <tr><td class="pname">palign</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>&#x27;L&#x27; (Left, esquerda), &#x27;C&#x27; (Center, centro), &#x27;R&#x27; (Right, direita)</td></tr>
 <tr><td class="pname">pfill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>1 pinta o fundo com a cor de SetFillColor, 0 não</td></tr>
-<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>URL ou identificador de link interno</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>URL do link (opcional). Link interno não é suportado: veja AddLink</td></tr>
 </tbody></table></div>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>qualquer falha na escrita da célula. O Cell embrulha o erro original neste código, mas preserva a pilha (keeperrorstack), de modo que a causa -- um ORA-20203 de caractere fora do WinAnsi, por exemplo -- continua visível no rastro.</td></tr>
@@ -857,7 +865,7 @@ PL_FPDF.Cell(100, 0, <span class="s">&#x27;&#x27;</span>, <span class="s">&#x27;
 <tr><td class="pname">p_ln</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>0 à direita, 1 próxima linha na margem esquerda, 2 abaixo mantendo o x</td></tr>
 <tr><td class="pname">p_align</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>&#x27;L&#x27; (Left, esquerda), &#x27;C&#x27; (Center, centro), &#x27;R&#x27; (Right, direita)</td></tr>
 <tr><td class="pname">p_fill</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>1 pinta o fundo, 0 não</td></tr>
-<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>URL ou link interno</td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>&#x27;&#x27;</code></td><td>URL do link (opcional). Link interno não é suportado: veja AddLink</td></tr>
 <tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td><code>0</code></td><td>giro do texto em graus (0, 90, 180, 270)</td></tr>
 </tbody></table></div>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
@@ -1013,7 +1021,7 @@ l_linhas := PL_FPDF.MultiCell(120, 5, l_observacao, <span class="s">&#x27;LR&#x2
 <h4>Parâmetros</h4><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
 <tr><td class="pname">pH</td><td class="ptype">VARCHAR2</td><td>—</td><td>altura da linha, na unidade corrente</td></tr>
 <tr><td class="pname">ptxt</td><td class="ptype">VARCHAR2</td><td>—</td><td>o texto</td></tr>
-<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>URL ou identificador de link interno</td></tr>
+<tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>URL do link (opcional). Link interno não é suportado: veja AddLink</td></tr>
 </tbody></table></div>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>qualquer falha na escrita, com a pilha original preservada</td></tr>
@@ -1026,7 +1034,7 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 </article>
 <article class="api" id="writerotated">
 <h3>WriteRotated <span class="kind">Procedure</span><a class="anchor" href="#writerotated" aria-label="Link permanente para WriteRotated">#</a></h3>
-<p class="d">O mesmo que Write, com o texto girado.</p>
+<p class="d">O mesmo que Write, com um parâmetro de giro -- mas só o giro de 0 grau é aceito: qualquer outro levanta -20111. Para texto girado, use CellRotated.</p>
 <p class="since">Desde a versão <b>2.0.0</b></p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.WriteRotated(
@@ -1037,14 +1045,15 @@ PL_FPDF.Write(5, <span class="s">&#x27;manual&#x27;</span>, <span class="s">&#x2
 <h4>Parâmetros</h4><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
 <tr><td class="pname">p_height</td><td class="ptype">NUMBER</td><td>—</td><td>altura da linha</td></tr>
 <tr><td class="pname">p_text</td><td class="ptype">VARCHAR2</td><td>—</td><td>o texto</td></tr>
-<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>URL ou link interno</td></tr>
-<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td><code>0</code></td><td>giro em graus (0, 90, 180, 270)</td></tr>
+<tr><td class="pname">p_link</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>URL do link (opcional). Link interno não é suportado: veja AddLink</td></tr>
+<tr><td class="pname">p_rotation</td><td class="ptype">PLS_INTEGER</td><td><code>0</code></td><td>giro em graus; só 0 é aceito</td></tr>
 </tbody></table></div>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20110</td><td>giro inválido</td></tr>
 <tr><td class="pname">ORA-20111</td><td>só o giro de 0 grau é suportado; use CellRotated</td></tr>
 </tbody></table></div>
-<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.WriteRotated(5, <span class="s">&#x27;CONFIDENCIAL&#x27;</span>, <span class="k">NULL</span>, 90);</pre></div>
+<h4>Exemplo</h4><div class="code"><pre>PL_FPDF.WriteRotated(5, <span class="s">&#x27;Texto na linha&#x27;</span>, <span class="k">NULL</span>, 0);
+<span class="c">-- girado: PL_FPDF.CellRotated(10, 40, &#x27;CONFIDENCIAL&#x27;, &#x27;0&#x27;, 0, &#x27;C&#x27;, 0, &#x27;&#x27;, 90);</span></pre></div>
 <p class="see"><b>Veja também:</b> <a href="#write">Write</a>, <a href="#cellrotated">CellRotated</a></p>
 </article>
 <h2 class="grp" id="grp-draw">Cores e desenho</h2>
@@ -1275,13 +1284,13 @@ PL_FPDF.Cell(40, 8, <span class="s">&#x27;Cabeçalho&#x27;</span>, <span class="
     pType   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>,
     pLink   <span class="k">varchar2</span> <span class="k">DEFAULT</span> <span class="k">null</span>);</pre></div>
 <h4>Parâmetros</h4><div class="tbl"><table><thead><tr><th>Parâmetro</th><th>Tipo</th><th>Padrão</th><th>Descrição</th></tr></thead><tbody>
-<tr><td class="pname">pFile</td><td class="ptype">VARCHAR2</td><td>—</td><td>URL da imagem</td></tr>
+<tr><td class="pname">pFile</td><td class="ptype">VARCHAR2</td><td>—</td><td>URL da imagem (http/https), buscada pela rede: exige ACL concedida ao schema. Não é caminho de arquivo local</td></tr>
 <tr><td class="pname">pX</td><td class="ptype">NUMBER</td><td>—</td><td>canto superior esquerdo</td></tr>
 <tr><td class="pname">pY</td><td class="ptype">NUMBER</td><td>—</td><td>canto superior esquerdo</td></tr>
 <tr><td class="pname">pWidth</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>largura (<br>0 = derivada)</td></tr>
 <tr><td class="pname">pHeight</td><td class="ptype">NUMBER</td><td><code>0</code></td><td>altura (<br>0 = derivada)</td></tr>
 <tr><td class="pname">pType</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>formato, quando não se quer deduzir do arquivo</td></tr>
-<tr><td class="pname">pLink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>URL ou identificador de link interno sobre a imagem</td></tr>
+<tr><td class="pname">pLink</td><td class="ptype">VARCHAR2</td><td><code>null</code></td><td>URL do link sobre a imagem (opcional). Link interno não é suportado: veja AddLink</td></tr>
 </tbody></table></div>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20100</td><td>falha ao buscar ou interpretar a imagem, com a pilha original preservada</td></tr>
@@ -1321,7 +1330,7 @@ PL_FPDF.ImageFromBlob(l_logo, <span class="s">&#x27;LOGO&#x27;</span>, 10, 10, 4
 </article>
 <h2 class="grp" id="grp-links">Links</h2>
 <article class="api" id="addlink">
-<h3>AddLink <span class="kind">Function</span><a class="anchor" href="#addlink" aria-label="Link permanente para AddLink">#</a></h3>
+<h3>AddLink <span class="kind">Function</span> <span class="unsup">não suportada</span><a class="anchor" href="#addlink" aria-label="Link permanente para AddLink">#</a></h3>
 <p class="d">RECUSA com -20601. Criaria um link interno, e link interno não está implementado: o /Dest nunca chegou a ser escrito no arquivo, então o identificador que esta função devolveria não levaria a lugar nenhum -- e o Link o recusa. Até setembro/2026 a chamada levantava ORA-06531, &quot;reference to uninitialized collection&quot;, porque a coleção interna nunca foi inicializada: nunca funcionou, em nenhuma versão. Passa a recusar com mensagem que diz o que usar no lugar.</p>
 <p class="since">Desde a versão <b>0.9.4</b></p>
 <h4>Sintaxe</h4>
@@ -1338,6 +1347,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <h3>Link <span class="kind">Procedure</span><a class="anchor" href="#link" aria-label="Link permanente para Link">#</a></h3>
 <p class="d">Marca uma área retangular como clicável, levando a uma URL.</p>
 <p class="since">Desde a versão <b>0.9.4</b></p>
+<p class="limit"><b>Limitação:</b> 1. Uma área por página. Uma segunda chamada na mesma página substitui a primeira, em silêncio -- a estrutura guarda um registro por página. Documentado por ser assim, não por ser o desejável. 2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que escreveria o /Dest saiu comentado no porte original e nunca voltou; emiti-lo assim produzia um /Annot com o dicionário aberto, isto é, arquivo malformado. Desde setembro/2026 a chamada levanta erro em vez de gravar o arquivo quebrado. Use URL.</p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.Link(
     px    <span class="k">number</span>,
@@ -1352,7 +1362,6 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <tr><td class="pname">ph</td><td class="ptype">NUMBER</td><td>—</td><td>altura</td></tr>
 <tr><td class="pname">plink</td><td class="ptype">VARCHAR2</td><td>—</td><td>a URL</td></tr>
 </tbody></table></div>
-<h4>Limitação</h4><p class="d">1. Uma área por página. Uma segunda chamada na mesma página substitui a primeira, em silêncio -- a estrutura guarda um registro por página. Documentado por ser assim, não por ser o desejável. 2. Link interno não é suportado, e é RECUSADO com -20601. O ramo que escreveria o /Dest saiu comentado no porte original e nunca voltou; emiti-lo assim produzia um /Annot com o dicionário aberto, isto é, arquivo malformado. Desde setembro/2026 a chamada levanta erro em vez de gravar o arquivo quebrado. Use URL.</p>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20601</td><td>destino não é URL -- link interno ou NULL</td></tr>
 </tbody></table></div>
@@ -1360,7 +1369,7 @@ PL_FPDF.Cell(60, 8, <span class="s">&#x27;Site&#x27;</span>, plink => <span clas
 <p class="see"><b>Veja também:</b> <a href="#addlink">AddLink</a>, <a href="#setlink">SetLink</a></p>
 </article>
 <article class="api" id="setlink">
-<h3>SetLink <span class="kind">Procedure</span><a class="anchor" href="#setlink" aria-label="Link permanente para SetLink">#</a></h3>
+<h3>SetLink <span class="kind">Procedure</span> <span class="unsup">não suportada</span><a class="anchor" href="#setlink" aria-label="Link permanente para SetLink">#</a></h3>
 <p class="d">RECUSA com -20601, pelo mesmo motivo do AddLink: guardar o destino não adiantaria, porque o /Dest não é emitido e ninguém o lê. Até setembro/2026 levantava ORA-06531.</p>
 <p class="since">Desde a versão <b>0.9.4</b></p>
 <h4>Sintaxe</h4>
@@ -1956,7 +1965,7 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total de páginas:&#x27;</span> || l_
 </article>
 <article class="api" id="loadpdf">
 <h3>LoadPDF <span class="kind">Procedure</span><a class="anchor" href="#loadpdf" aria-label="Link permanente para LoadPDF">#</a></h3>
-<p class="d">Carregar documento PDF existente na memória para leitura e modificação</p>
+<p class="d">Carregar documento PDF existente na memória para leitura e modificação. PDF cifrado é recusado (-20867): decifre antes com DecryptPDF.</p>
 <p class="since">Desde a versão <b>3.0.0</b></p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.LoadPDF(
@@ -1985,11 +1994,11 @@ DBMS_OUTPUT.PUT_LINE(<span class="s">&#x27;Total de páginas:&#x27;</span> || l_
 <h3>OutputModifiedPDF <span class="kind">Function</span><a class="anchor" href="#outputmodifiedpdf" aria-label="Link permanente para OutputModifiedPDF">#</a></h3>
 <p class="d">Gerar o PDF modificado copiando as páginas mantidas objeto a objeto. Conteúdo, fontes, imagens e anotações são copiados sem alteração: nada é re-renderizado. Aplica RemovePage e RotatePage.</p>
 <p class="since">Desde a versão <b>3.0.0</b></p>
+<p class="limit"><b>Limitação:</b> Marcas d&#x27;água e overlays de texto e de imagem são todos desenhados. xref em stream e object streams (PDF 1.5+) são lidos, inclusive com o predictor PNG; um malformado levanta -20843/-20847/-20848.</p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">FUNCTION</span> PL_FPDF.OutputModifiedPDF <span class="k">RETURN</span> <span class="k">BLOB</span>;</pre></div>
 <h4>Retorno</h4><p class="d">Documento PDF modificado</p>
 <h4>Processo</h4><p class="d">1. Valida se PDF está carregado e modificado 2. Indexa a origem (cadeia de xref + árvore de páginas achatada) 3. Seleciona as páginas não marcadas por RemovePage, na ordem original 4. Copia todo objeto alcançável a partir dessas páginas, renumerando as referências indiretas; o payload dos streams é copiado byte a byte 5. Emite um novo Catalog, um novo nó /Pages, xref e trailer</p>
-<h4>Limitação</h4><p class="d">Marcas d&#x27;água e overlays de texto e de imagem são todos desenhados. xref em stream e object streams (PDF 1.5+) são lidos, inclusive com o predictor PNG; um malformado levanta -20843/-20847/-20848.</p>
 <h4>Erros</h4><div class="tbl"><table><thead><tr><th>Código</th><th>Quando</th></tr></thead><tbody>
 <tr><td class="pname">ORA-20809</td><td>nenhum PDF carregado -- chame LoadPDF antes</td></tr>
 <tr><td class="pname">ORA-20819</td><td>o PDF não foi modificado (sem alterações para aplicar)</td></tr>
@@ -2423,7 +2432,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 <tr><td class="pname">p_user_password</td><td class="ptype">VARCHAR2</td><td>—</td><td>Senha para abrir documento</td></tr>
 <tr><td class="pname">p_owner_password</td><td class="ptype">VARCHAR2</td><td><code>NULL</code></td><td>senha de acesso total (opcional)</td></tr>
 <tr><td class="pname">p_permissions</td><td class="ptype">JSON_OBJECT_T</td><td><code>NULL</code></td><td>JSON com flags de permissão</td></tr>
-<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td><code>&#x27;RC4-128&#x27;</code></td><td>Encryption method: &#x27;RC4-40&#x27;,&#x27;RC4-128&#x27;,&#x27;AES-128&#x27;,&#x27;AES-256&#x27;</td></tr>
+<tr><td class="pname">p_encryption</td><td class="ptype">VARCHAR2</td><td><code>&#x27;RC4-128&#x27;</code></td><td>Encryption method: &#x27;RC4-40&#x27;,&#x27;RC4-128&#x27;,&#x27;AES-128&#x27;,&#x27;AES-256&#x27;. O padrão é o RC4-128, legado: informe &#x27;AES-256&#x27;</td></tr>
 </tbody></table></div>
 <h4>Retorno</h4><p class="d">PDF criptografado</p>
 <h4>Nota</h4><p class="d">Origem em PDF 1.5+ (xref em stream, object streams) é achatada: os objetos de dentro dos object streams viram objetos de primeiro nível e a saída leva xref clássica.</p>
@@ -2485,7 +2494,7 @@ PL_FPDF.ClearOverlays(1);</pre></div>
 </article>
 <article class="api" id="setencryption">
 <h3>SetEncryption <span class="kind">Procedure</span><a class="anchor" href="#setencryption" aria-label="Link permanente para SetEncryption">#</a></h3>
-<p class="d">Definir criptografia para PDF em geração (usar antes do Output)</p>
+<p class="d">Definir criptografia para PDF em geração (usar antes do Output). Prefira &#x27;AES-256&#x27;: o RC4 fica só por compatibilidade com leitores antigos.</p>
 <p class="since">Desde a versão <b>3.0.0</b></p>
 <h4>Sintaxe</h4>
 <div class="code"><pre><span class="k">PROCEDURE</span> PL_FPDF.SetEncryption(

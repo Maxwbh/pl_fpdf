@@ -119,6 +119,11 @@
   .api p.see{margin:16px 0 0;font-size:13.5px;color:var(--muted)}
   .api p.since{margin:-2px 0 10px;font-size:12.5px;color:var(--faint)}
   .api p.since .novo{color:var(--accent);font-weight:600}
+  .unsup{font-family:'Inter',sans-serif;font-size:11px;font-weight:700;letter-spacing:.8px;
+         text-transform:uppercase;color:var(--accent);border:1px solid var(--accent);
+         border-radius:999px;padding:2px 10px}
+  .api p.limit{margin:10px 0 0;padding:10px 12px;font-size:14px;color:var(--muted);
+               border-left:3px solid var(--accent);background:var(--chipbg)}
   .api p.see a{color:var(--blue);text-decoration:none}
   .api p.see a:hover{text-decoration:underline}
 
@@ -198,7 +203,10 @@
       <p class="kicker">{{KICKER}}</p>
       <h1>Referência da API</h1>
       <p class="lead">Documentação detalhada de cada função e procedure pública do package <code>PL_FPDF</code>: sintaxe, parâmetros com valores possíveis, retorno, erros e exemplo.
-      Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>.</p>
+      Para um guia por tarefa, veja o <a href="api.html">índice de utilização</a>. Instalação, compatibilidade e problemas comuns estão nos
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/docs/README.md">guias</a>; as 18 APIs do <code>PL_FPDF_UTIL</code> (QR, códigos de barras,
+      compressão e cifra, usadas por dentro do <code>PL_FPDF</code>) estão documentadas na própria
+      <a href="https://github.com/Maxwbh/pl_fpdf/blob/master/src/PL_FPDF_UTIL.pks">spec</a>.</p>
     </header>
 {{ARTIGOS}}
 

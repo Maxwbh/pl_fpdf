@@ -251,6 +251,12 @@ def conferir_meta(api):
     # do PL_FPDF_UTIL entraram sem ninguém perguntar para quem a página e.
     sobram = [n for n in porNome if n not in nos_grupos and n not in fora]
     ambos = sorted(nos_grupos & fora)
+    # selo "não suportada" só em API da página que de fato recusa sempre
+    for n in meta.INDISPONIVEIS:
+        if n not in nos_grupos or not any(
+                e['codigo'] == '-20601' for e in porNome[n]['erros']):
+            raise SystemExit(f'meta.INDISPONIVEIS: {n} não está na página ou '
+                             f'não levanta -20601 -- o selo mentiria')
     if faltam or sobram or ambos:
         raise SystemExit(
             'meta.py e a spec não batem.\n'
