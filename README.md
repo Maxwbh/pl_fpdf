@@ -380,24 +380,6 @@ Veja [CONTRIBUTING.md](CONTRIBUTING.md) para detalhes. Dúvidas de uso? Use as [
 
 ---
 
-## 💼 Mantenedora
-
-O desenvolvimento contínuo do PL_FPDF conta com o apoio financeiro e institucional da
-**[M&S do Brasil LTDA](https://msbrasil.inf.br)**, empresa brasileira especializada em
-soluções para o ecossistema Oracle. É esse patrocínio que garante ao desenvolvedor
-**Maxwell da Silva Oliveira** ([@Maxwbh](https://github.com/Maxwbh)) o tempo e a
-estrutura para evoluir a biblioteca com constância — novas versões, correções,
-documentação e suporte à comunidade — mantendo o projeto **gratuito e open source
-(MIT)** para todos.
-
-Se o PL_FPDF é útil para a sua empresa e você precisa de consultoria, evolução sob
-demanda ou suporte especializado em Oracle/PL/SQL, fale com a mantenedora:
-
-- 🌐 **Site:** [msbrasil.inf.br](https://msbrasil.inf.br)
-- 📧 **Contato:** [contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
-
----
-
 ## 🙏 Agradecimentos
 
 Este projeto só existe porque outros o tornaram possível, e é justo nomeá-los:
@@ -421,7 +403,7 @@ versões 2.x/3.x — mas a fundação é de vocês. **Muito obrigado.**
 - **FPDF (PHP):** [Olivier PLATHEY](http://www.fpdf.org/)
 - **Port PL/SQL original:** [Pierre-Gilles Levallois](https://github.com/Pilooz) ([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)), Anton Scheffer
 - **Modernização e v2.x/v3.x:** Maxwell da Silva Oliveira ([@Maxwbh](https://github.com/Maxwbh))
-- **Mantenedora:** [M&S do Brasil LTDA](https://msbrasil.inf.br) · [contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
+- **Apoio:** [M&S do Brasil](https://msbrasil.inf.br)
 
 ---
 
@@ -432,7 +414,36 @@ modifique, distribua e embarque em produto comercial, mantendo o aviso de
 copyright.
 
 A base de geração descende de um porte PL/SQL de 2017; os créditos de linhagem
-estão logo abaixo.
+estão logo acima.
+
+A licença MIT cobre o código. O nome e a marca **M&S do Brasil**, inclusive a
+assinatura no rodapé, pertencem à M&S do Brasil LTDA e não fazem parte dela.
+
+---
+
+## Apoio
+
+O PL_FPDF é um fork do porte PL/SQL de Pierre-Gilles Levallois, mantido por
+**Maxwell da Silva Oliveira** ([@Maxwbh](https://github.com/Maxwbh)) com apoio da
+**M&S do Brasil** — engenharia de software para sistemas que não podem parar,
+especializada em Oracle: APEX, PL/SQL, ORDS, Forms e Reports. É esse apoio que dá
+tempo e estrutura para novas versões, correções, documentação e suporte à
+comunidade, com o projeto **gratuito e aberto (MIT)** para todos.
+
+Consultoria, evolução sob demanda ou suporte em Oracle e PL/SQL:
+[msbrasil.inf.br](https://msbrasil.inf.br) ·
+[contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
+
+<p align="center">
+  <a href="https://msbrasil.inf.br">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/marca/ms-assinatura-horizontal-fundo-escuro.svg">
+      <img src="docs/assets/marca/ms-assinatura-horizontal-fundo-claro.svg" height="36" alt="M&amp;S do Brasil">
+    </picture>
+  </a>
+  <br><br>
+  <sub>com apoio da M&amp;S do Brasil</sub>
+</p>
 
 ---
 
