@@ -825,6 +825,6 @@ A lista completa, erro a erro e por API, está em
 ## Suporte
 
 - **Autor:** Maxwell da Silva Oliveira ([@maxwbh](https://github.com/maxwbh))
-- **Mantenedora:** [M&S do Brasil LTDA](https://msbrasil.inf.br)
+- **Apoio:** [M&S do Brasil](https://msbrasil.inf.br)
 - **Issues:** [GitHub Issues](https://github.com/Maxwbh/pl_fpdf/issues) · **Dúvidas:** [Discussions](https://github.com/Maxwbh/pl_fpdf/discussions)
 - **E-mail:** contato@msbrasil.inf.br

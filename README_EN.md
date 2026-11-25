@@ -380,21 +380,6 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ---
 
-## 💼 Maintainer & Sponsor
-
-Ongoing development of PL_FPDF is financially supported by
-**[M&S do Brasil LTDA](https://msbrasil.inf.br)**, a Brazilian company specialized in
-Oracle solutions. This sponsorship gives developer
-**Maxwell da Silva Oliveira** ([@Maxwbh](https://github.com/Maxwbh)) the time and
-structure to keep evolving the library — new releases, fixes, documentation and
-community support — while keeping the project **free and open source (MIT)** for everyone.
-
-For consulting, custom development or specialized Oracle/PL/SQL support, contact the
-maintainer company: [msbrasil.inf.br](https://msbrasil.inf.br) ·
-[contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
-
----
-
 ## 🙏 Acknowledgements
 
 This project stands on the shoulders of the developers who came first:
@@ -412,7 +397,7 @@ Oracle Database with the original PL/SQL port this work builds upon; and
 - **FPDF (PHP):** [Olivier PLATHEY](http://www.fpdf.org/)
 - **Original PL/SQL Port:** [Pierre-Gilles Levallois](https://github.com/Pilooz) ([Pilooz/pl_fpdf](https://github.com/Pilooz/pl_fpdf)), Anton Scheffer
 - **Modernization & v2.x/v3.x:** Maxwell da Silva Oliveira ([@Maxwbh](https://github.com/Maxwbh))
-- **Maintainer company:** [M&S do Brasil LTDA](https://msbrasil.inf.br) · [contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
+- **Support:** [M&S do Brasil](https://msbrasil.inf.br)
 
 ---
 
@@ -421,6 +406,35 @@ Oracle Database with the original PL/SQL port this work builds upon; and
 **MIT.** [LICENSE](LICENSE) is this library's licence: use it, modify it,
 redistribute it and ship it inside a commercial product, keeping the copyright
 notice.
+
+The MIT licence covers the code. The **M&S do Brasil** name and mark, including
+the signature in the footer, belong to M&S do Brasil LTDA and are not part of it.
+
+---
+
+## Support
+
+PL_FPDF is a fork of Pierre-Gilles Levallois's PL/SQL port, maintained by
+**Maxwell da Silva Oliveira** ([@Maxwbh](https://github.com/Maxwbh)) with support
+from **M&S do Brasil** — software engineering for systems that cannot stop,
+specialised in Oracle: APEX, PL/SQL, ORDS, Forms and Reports. That support gives
+the time and structure for new releases, fixes, documentation and community help,
+keeping the project **free and open (MIT)** for everyone.
+
+Consulting, custom development or Oracle and PL/SQL support:
+[msbrasil.inf.br](https://msbrasil.inf.br) ·
+[contato@msbrasil.inf.br](mailto:contato@msbrasil.inf.br)
+
+<p align="center">
+  <a href="https://msbrasil.inf.br">
+    <picture>
+      <source media="(prefers-color-scheme: dark)" srcset="docs/assets/marca/ms-assinatura-horizontal-fundo-escuro.svg">
+      <img src="docs/assets/marca/ms-assinatura-horizontal-fundo-claro.svg" height="36" alt="M&amp;S do Brasil">
+    </picture>
+  </a>
+  <br><br>
+  <sub>com apoio da M&amp;S do Brasil · with support from M&amp;S do Brasil</sub>
+</p>
 
 ---
 
